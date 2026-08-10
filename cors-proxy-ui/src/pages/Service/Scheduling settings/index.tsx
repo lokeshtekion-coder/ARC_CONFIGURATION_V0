@@ -1,21 +1,17 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { loadGlobalHeaders } from "../../../services/tekionApiSettings";
 import type { KeyValuePair } from "../../../types/proxy.types";
-
 type SchedulingSubsectionKey =
   | "consumer-scheduling"
   | "transportation"
   | "service-advisors"
   | "shops"
   | "general";
-
 type OperationKey = "get" | "put" | "post" | "configure";
-
 type UiMessage = {
   ok: boolean;
   text: string;
 };
-
 type ConsumerSchedulingResponse = {
   data?: {
     allowToRemoveVehicle?: boolean;
@@ -23,7 +19,6 @@ type ConsumerSchedulingResponse = {
   };
   [key: string]: unknown;
 };
-
 type ShopHour = {
   day?: string;
   blocked?: boolean;
@@ -36,7 +31,6 @@ type ShopHour = {
     timeInMinutes?: number;
   } | null;
 };
-
 type ShopRecord = {
   id?: string;
   name?: string;
@@ -53,31 +47,22 @@ type ShopRecord = {
   hours?: ShopHour[];
   [key: string]: unknown;
 };
-
 const CONSUMER_SCHEDULING_URL =
   "https://preprodapp.tekioncloud.com/api/scheduling/u/cs/settings";
-
 const SERVICE_ADVISORS_URL =
   "https://preprodapp.tekioncloud.com/api/service/u/settings/scheduling/service-advisors";
-
 const GENERAL_SCHEDULING_URL =
   "https://preprodapp.tekioncloud.com/api/service/u/settings/scheduling/general";
-
 const SERVICE_SHOP_LIST_URL =
   "https://preprodapp.tekioncloud.com/api/scheduling/u/settings/serviceShop";
-
 const USERS_BY_PERSONA_URL =
   "https://preprodapp.tekioncloud.com/api/userservice/u/v2/user/by-persona";
-
 const SCHEDULING_AGGREGATED_SETTINGS_URL =
   "https://preprodapp.tekioncloud.com/api/service-module/u/scheduling/aggregated-settings/fetch";
-
 const ACCOUNTING_DEPARTMENTS_URL =
   "https://preprodapp.tekioncloud.com/api/accounting/u/departments";
-
 const ACCOUNTING_BOOTSTRAP_URL =
   "https://preprodapp.tekioncloud.com/api/accounting/u/configurable/bootstrap";
-
 const DAY_OPTIONS = [
   { key: "sunday", label: "Sunday", code: "SUN", defaultBlocked: true },
   { key: "monday", label: "Monday", code: "MON", defaultBlocked: false },
@@ -87,9 +72,7 @@ const DAY_OPTIONS = [
   { key: "friday", label: "Friday", code: "FRI", defaultBlocked: false },
   { key: "saturday", label: "Saturday", code: "SAT", defaultBlocked: false },
 ] as const;
-
 type DayKey = (typeof DAY_OPTIONS)[number]["key"];
-
 type DayState = Record<
   DayKey,
   {
@@ -98,17 +81,14 @@ type DayState = Record<
     blocked: boolean;
   }
 >;
-
 type TransportationSummaryRow = {
   id?: string;
   displayName?: string;
   transportationType?: string;
 };
-
 function normalize(value: unknown): string {
   return String(value ?? "").trim();
 }
-
 function toEnabledHeaderMap(headers: KeyValuePair[]): Record<string, string> {
   const out: Record<string, string> = {};
   for (const row of headers) {
@@ -120,19 +100,15 @@ function toEnabledHeaderMap(headers: KeyValuePair[]): Record<string, string> {
   }
   return out;
 }
-
 function extractDealerIdFromHeaders(headers: Record<string, string>): string {
   const candidates = ["dealerid", "dealerId", "dealer-id", "x-dealer-id"];
   const entries = Object.entries(headers);
-
   for (const candidate of candidates) {
     const hit = entries.find(([key]) => key.toLowerCase() === candidate.toLowerCase());
     if (hit?.[1]) return normalize(hit[1]);
   }
-
   return "";
 }
-
 function buildDefaultDayState(): DayState {
   return DAY_OPTIONS.reduce((acc, day) => {
     acc[day.key] = {
@@ -143,7 +119,6 @@ function buildDefaultDayState(): DayState {
     return acc;
   }, {} as DayState);
 }
-
 function buildScheduleFromDayState(days: DayState): Array<{
   day: string;
   startTime: { timeInHours: number; timeInMinutes: number } | null;
@@ -152,7 +127,6 @@ function buildScheduleFromDayState(days: DayState): Array<{
 }> {
   return DAY_OPTIONS.map((day) => {
     const row = days[day.key];
-
     if (row.blocked || !row.start || !row.end) {
       return {
         day: day.code,
@@ -161,10 +135,8 @@ function buildScheduleFromDayState(days: DayState): Array<{
         blocked: true,
       };
     }
-
     const [startHour, startMinute] = row.start.split(":").map(Number);
     const [endHour, endMinute] = row.end.split(":").map(Number);
-
     return {
       day: day.code,
       startTime: {
@@ -179,7 +151,6 @@ function buildScheduleFromDayState(days: DayState): Array<{
     };
   });
 }
-
 function formatTime(
   timeObj?: { timeInHours?: number; timeInMinutes?: number } | null
 ): string {
@@ -190,7 +161,6 @@ function formatTime(
   const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
   return `${displayHours}:${String(minutes).padStart(2, "0")} ${period}`;
 }
-
 function renderStatusBadge(ok: boolean, text: string): React.ReactNode {
   return (
     <span
@@ -214,42 +184,30 @@ function renderStatusBadge(ok: boolean, text: string): React.ReactNode {
     </span>
   );
 }
-
 const SchedulingSettingsView: React.FC = () => {
   const [subsection, setSubsection] =
     useState<SchedulingSubsectionKey>("consumer-scheduling");
   const [operation, setOperation] = useState<OperationKey | "">("");
-
   const [loading, setLoading] = useState(false);
   const [running, setRunning] = useState(false);
   const [message, setMessage] = useState<UiMessage | null>(null);
-
   const [consumerSettings, setConsumerSettings] =
     useState<ConsumerSchedulingResponse | null>(null);
-  const [consumerPutForm, setConsumerPutForm] = useState({
-    allowToRemoveVehicle: true,
-    allowCustomerToAddVin: true,
-  });
-
   const [serviceAdvisorsRaw, setServiceAdvisorsRaw] = useState<unknown>(null);
   const [generalRaw, setGeneralRaw] = useState<unknown>(null);
   const [shops, setShops] = useState<ShopRecord[]>([]);
   const [transportationRows, setTransportationRows] = useState<TransportationSummaryRow[]>([]);
   const [transportationResult, setTransportationResult] = useState<unknown>(null);
-
   const [advisorSchedule, setAdvisorSchedule] = useState<DayState>(buildDefaultDayState());
   const [shopSchedule, setShopSchedule] = useState<DayState>(buildDefaultDayState());
-
   const enabledHeaders = useMemo(
     () => toEnabledHeaderMap(loadGlobalHeaders()),
     []
   );
-
   const dealerId = useMemo(
     () => extractDealerIdFromHeaders(enabledHeaders),
     [enabledHeaders]
   );
-
   const subsectionMeta = useMemo(() => {
     const map: Record<
       SchedulingSubsectionKey,
@@ -281,15 +239,12 @@ const SchedulingSettingsView: React.FC = () => {
         ops: ["get", "post"],
       },
     };
-
     return map[subsection];
   }, [subsection]);
-
   useEffect(() => {
     setOperation("");
     setMessage(null);
   }, [subsection]);
-
   const proxyRequest = useCallback(
     async (payload: {
       url: string;
@@ -310,56 +265,57 @@ const SchedulingSettingsView: React.FC = () => {
           timeout: 60000,
         }),
       });
-
       if (!res.ok) {
         throw new Error(`Proxy request failed with HTTP ${res.status}`);
       }
-
       const json = await res.json();
-
       if ((json?.status ?? 200) >= 400) {
         throw new Error(
           `${json?.status ?? ""} ${json?.statusText ?? "Request failed"}`.trim()
         );
       }
-
       return json?.body ?? json?.data ?? json;
     },
     [enabledHeaders]
   );
-
   const fetchConsumerScheduling = useCallback(async () => {
     const payload = (await proxyRequest({
       url: CONSUMER_SCHEDULING_URL,
       method: "GET",
     })) as ConsumerSchedulingResponse;
-
     setConsumerSettings(payload);
-    setConsumerPutForm({
-      allowToRemoveVehicle: Boolean(payload?.data?.allowToRemoveVehicle),
-      allowCustomerToAddVin: Boolean(payload?.data?.allowCustomerToAddVin),
-    });
+    return payload;
   }, [proxyRequest]);
-
-  const putConsumerScheduling = useCallback(async () => {
-    const payload = {
-      allowToRemoveVehicle: consumerPutForm.allowToRemoveVehicle,
-      allowCustomerToAddVin: consumerPutForm.allowCustomerToAddVin,
-    };
-
-    await proxyRequest({
-      url: CONSUMER_SCHEDULING_URL,
-      method: "PUT",
-      body: payload,
-    });
-
-    await fetchConsumerScheduling();
-    setMessage({
-      ok: true,
-      text: "Consumer Scheduling settings updated successfully.",
-    });
-  }, [consumerPutForm, fetchConsumerScheduling, proxyRequest]);
-
+  // Automatic PUT flow: fetch current settings, and only if BOTH
+  // "Allow to Remove Vehicle" and "Allow Customer to Add VIN" are false,
+  // build, and send a PUT payload enabling both. Result is reflected in the
+  // same status-badge UI used for the GET view.
+  const autoConfigureConsumerScheduling = useCallback(async () => {
+    const current = await fetchConsumerScheduling();
+    const allowToRemoveVehicle = Boolean(current?.data?.allowToRemoveVehicle);
+    const allowCustomerToAddVin = Boolean(current?.data?.allowCustomerToAddVin);
+    if (!allowToRemoveVehicle && !allowCustomerToAddVin) {
+      const putBody = {
+        allowToRemoveVehicle: true,
+        allowCustomerToAddVin: true,
+      };
+      await proxyRequest({
+        url: CONSUMER_SCHEDULING_URL,
+        method: "PUT",
+        body: putBody,
+      });
+      await fetchConsumerScheduling();
+      setMessage({
+        ok: true,
+        text: "Both settings were disabled. Updated Consumer Scheduling settings to enabled successfully.",
+      });
+    } else {
+      setMessage({
+        ok: true,
+        text: "No update needed — at least one setting is already enabled.",
+      });
+    }
+  }, [fetchConsumerScheduling, proxyRequest]);
   const fetchServiceAdvisors = useCallback(async () => {
     const payload = await proxyRequest({
       url: SERVICE_ADVISORS_URL,
@@ -367,7 +323,6 @@ const SchedulingSettingsView: React.FC = () => {
     });
     setServiceAdvisorsRaw(payload);
   }, [proxyRequest]);
-
   const autoConfigureServiceAdvisors = useCallback(async () => {
     const userFetchPayload = {
       tekSearchAndAggregationRequest: {
@@ -386,13 +341,11 @@ const SchedulingSettingsView: React.FC = () => {
       },
       personas: ["ServiceAdvisor"],
     };
-
     const response = await proxyRequest({
       url: USERS_BY_PERSONA_URL,
       method: "POST",
       body: userFetchPayload,
     });
-
     const advisors = Array.isArray(response)
       ? response
       : Array.isArray((response as any)?.data)
@@ -400,24 +353,18 @@ const SchedulingSettingsView: React.FC = () => {
       : Array.isArray((response as any)?.results)
       ? (response as any).results
       : [];
-
     const advisorIds = advisors.map((x: any) => normalize(x?.id)).filter(Boolean);
-
     if (advisorIds.length === 0) {
       throw new Error("No active Service Advisors found.");
     }
-
     const schedule = buildScheduleFromDayState(advisorSchedule);
-
     for (const advisorId of advisorIds) {
       const tomorrow = new Date();
       tomorrow.setDate(tomorrow.getDate() + 1);
       tomorrow.setHours(0, 0, 0, 0);
-
       const endDate = new Date();
       endDate.setFullYear(endDate.getFullYear() + 2);
       endDate.setHours(23, 59, 59, 999);
-
       const payload = {
         advisorUserId: advisorId,
         blocks: [],
@@ -436,20 +383,17 @@ const SchedulingSettingsView: React.FC = () => {
           },
         ],
       };
-
       await proxyRequest({
         url: "https://preprodapp.tekioncloud.com/api/scheduling/u/settings/serviceAdvisor",
         method: "POST",
         body: payload,
       });
     }
-
     setMessage({
       ok: true,
       text: `Configured ${advisorIds.length} service advisor(s) successfully.`,
     });
   }, [advisorSchedule, proxyRequest]);
-
   const fetchGeneralSettings = useCallback(async () => {
     const payload = await proxyRequest({
       url: GENERAL_SCHEDULING_URL,
@@ -457,68 +401,55 @@ const SchedulingSettingsView: React.FC = () => {
     });
     setGeneralRaw(payload);
   }, [proxyRequest]);
-
   const postGeneralSettings = useCallback(async () => {
     setMessage({
       ok: true,
       text: "General POST placeholder only. API create logic can be added separately.",
     });
   }, []);
-
   const fetchShops = useCallback(async () => {
     const payload = await proxyRequest({
       url: SERVICE_SHOP_LIST_URL,
       method: "GET",
     });
-
     const rows = Array.isArray((payload as any)?.data)
       ? (payload as any).data
       : Array.isArray(payload)
       ? payload
       : [];
-
     const detailed: ShopRecord[] = [];
-
     for (const row of rows) {
       const shopId = normalize((row as any)?.id);
       if (!shopId) continue;
-
       try {
         const detailPayload = await proxyRequest({
           url: `${SERVICE_SHOP_LIST_URL}/${shopId}`,
           method: "GET",
         });
-
         detailed.push(((detailPayload as any)?.data ?? row) as ShopRecord);
       } catch {
         detailed.push(row as ShopRecord);
       }
     }
-
     setShops(detailed);
   }, [proxyRequest]);
-
   const fetchDepartmentId = useCallback(async (): Promise<string> => {
     try {
       const deptPayload = await proxyRequest({
         url: ACCOUNTING_DEPARTMENTS_URL,
         method: "GET",
       });
-
       const rows = Array.isArray((deptPayload as any)?.data)
         ? (deptPayload as any).data
         : Array.isArray((deptPayload as any)?.results)
         ? (deptPayload as any).results
         : [];
-
       const firstId =
         normalize(rows?.[0]?.id) || normalize(rows?.[0]?.departmentId);
-
       if (firstId) return firstId;
     } catch {
       // fallback below
     }
-
     const bootstrapPayload = {
       requestInfo: [
         {
@@ -527,46 +458,37 @@ const SchedulingSettingsView: React.FC = () => {
         },
       ],
     };
-
     const bootstrap = await proxyRequest({
       url: ACCOUNTING_BOOTSTRAP_URL,
       method: "POST",
       body: bootstrapPayload,
     });
-
     const customField = (bootstrap as any)?.data?.customField ?? (bootstrap as any)?.customField;
     const accessibleAssetMap = customField?.accessibleAssetMap ?? {};
     const masterAssetDocMap = customField?.masterAssetDocMap ?? {};
     const customFieldKeys = accessibleAssetMap?.[dealerId] ?? [];
-
     for (const key of customFieldKeys) {
       const masterDoc = masterAssetDocMap?.[key];
       if (!masterDoc) continue;
-
       if (masterDoc?.key === "DEPARTMENT" || masterDoc?.name === "DEPARTMENT") {
         const options = Array.isArray(masterDoc?.options) ? masterDoc.options : [];
-
         for (const option of options) {
           if (option?.extras?.department_type === "SERVICE" && normalize(option?.id)) {
             return normalize(option.id);
           }
         }
-
         for (const option of options) {
           if (normalize(option?.name).toLowerCase().includes("service") && normalize(option?.id)) {
             return normalize(option.id);
           }
         }
-
         if (normalize(options?.[0]?.id)) {
           return normalize(options[0].id);
         }
       }
     }
-
     throw new Error("Could not find department ID. Please create a Service department first.");
   }, [dealerId, proxyRequest]);
-
   const fetchServiceAdvisorIds = useCallback(async (): Promise<string[]> => {
     const userFetchPayload = {
       tekSearchAndAggregationRequest: {
@@ -585,13 +507,11 @@ const SchedulingSettingsView: React.FC = () => {
       },
       personas: ["ServiceAdvisor"],
     };
-
     const response = await proxyRequest({
       url: USERS_BY_PERSONA_URL,
       method: "POST",
       body: userFetchPayload,
     });
-
     const rows = Array.isArray(response)
       ? response
       : Array.isArray((response as any)?.data)
@@ -599,41 +519,32 @@ const SchedulingSettingsView: React.FC = () => {
       : Array.isArray((response as any)?.results)
       ? (response as any).results
       : [];
-
     return rows.map((x: any) => normalize(x?.id)).filter(Boolean);
   }, [proxyRequest]);
-
   const configureMainShop = useCallback(async () => {
     await fetchShops();
-
     const listPayload = await proxyRequest({
       url: SERVICE_SHOP_LIST_URL,
       method: "GET",
     });
-
     const rows = Array.isArray((listPayload as any)?.data)
       ? (listPayload as any).data
       : Array.isArray(listPayload)
       ? listPayload
       : [];
-
     const mainShop =
       rows.find((x: any) => x?.name === "Main Shop" || x?.defaultShop === true) ?? null;
-
     if (!mainShop?.id) {
       throw new Error("Main Shop not found.");
     }
-
     const shopDetailsPayload = await proxyRequest({
       url: `${SERVICE_SHOP_LIST_URL}/${mainShop.id}`,
       method: "GET",
     });
-
     const currentShop = ((shopDetailsPayload as any)?.data ?? mainShop) as ShopRecord;
     const departmentId = await fetchDepartmentId();
     const serviceAdvisors = await fetchServiceAdvisorIds();
     const hours = buildScheduleFromDayState(shopSchedule);
-
     const payload = {
       id: currentShop.id,
       defaultShop: currentShop.defaultShop,
@@ -657,15 +568,12 @@ const SchedulingSettingsView: React.FC = () => {
       updatedOpcodes: [],
       deletedOpcodes: [],
     };
-
     await proxyRequest({
       url: `${SERVICE_SHOP_LIST_URL}/${mainShop.id}`,
       method: "PUT",
       body: payload,
     });
-
     await fetchShops();
-
     setMessage({
       ok: true,
       text: `Main Shop configured successfully with ${serviceAdvisors.length} service advisor(s).`,
@@ -677,7 +585,6 @@ const SchedulingSettingsView: React.FC = () => {
     proxyRequest,
     shopSchedule,
   ]);
-
   const fetchTransportation = useCallback(async () => {
     const payload = await proxyRequest({
       url: SCHEDULING_AGGREGATED_SETTINGS_URL,
@@ -686,13 +593,10 @@ const SchedulingSettingsView: React.FC = () => {
         requestOptions: ["TRANSPORTATION_SETTINGS_SUMMARY"],
       },
     });
-
     const rows =
       (payload as any)?.data?.[0]?.settingDetails?.transportationSummaryDTOList ?? [];
-
     setTransportationRows(Array.isArray(rows) ? rows : []);
   }, [proxyRequest]);
-
   const autoConfigureTransportation = useCallback(async () => {
     const payload = await proxyRequest({
       url: SCHEDULING_AGGREGATED_SETTINGS_URL,
@@ -701,19 +605,14 @@ const SchedulingSettingsView: React.FC = () => {
         requestOptions: ["TRANSPORTATION_SETTINGS_SUMMARY"],
       },
     });
-
     const rows: TransportationSummaryRow[] =
       (payload as any)?.data?.[0]?.settingDetails?.transportationSummaryDTOList ?? [];
-
     const results: Array<{ name: string; ok: boolean; text: string }> = [];
-
     for (const transport of rows) {
       const transportId = normalize(transport?.id);
       const transportType = normalize(transport?.transportationType);
       const displayName = normalize(transport?.displayName || transportType || transportId);
-
       if (!transportId) continue;
-
       if (transportType === "SELF") {
         results.push({
           name: displayName,
@@ -722,19 +621,16 @@ const SchedulingSettingsView: React.FC = () => {
         });
         continue;
       }
-
       try {
         const current = await proxyRequest({
           url: `https://preprodapp.tekioncloud.com/api/scheduling/u/settings/transportation/${transportId}?additionalParams=false`,
           method: "GET",
         });
-
         const currentData = (current as any)?.data ?? current;
         const isExtendedType =
           currentData?.bookingFrom !== undefined ||
           currentData?.vehicles !== undefined ||
           currentData?.rideProviderSettings !== undefined;
-
         const updatePayload = {
           ...currentData,
           schedulingTypes: ["BDC_SCHEDULING", "CONSUMER_SCHEDULING"],
@@ -747,13 +643,11 @@ const SchedulingSettingsView: React.FC = () => {
               }
             : {}),
         };
-
         await proxyRequest({
           url: `https://preprodapp.tekioncloud.com/api/scheduling/u/settings/transportation/${transportId}`,
           method: "PUT",
           body: updatePayload,
         });
-
         results.push({
           name: displayName,
           ok: true,
@@ -767,23 +661,19 @@ const SchedulingSettingsView: React.FC = () => {
         });
       }
     }
-
     setTransportationResult(results);
     setMessage({
       ok: true,
       text: `Transportation auto-config completed for ${results.length} item(s).`,
     });
   }, [proxyRequest]);
-
   const runOperation = useCallback(async () => {
     setLoading(true);
     setMessage(null);
-
     try {
       if (!dealerId) {
         throw new Error("Dealer ID not found in Global Headers. Please set Global Headers first.");
       }
-
       if (subsection === "consumer-scheduling" && operation === "get") {
         await fetchConsumerScheduling();
       } else if (subsection === "consumer-scheduling" && operation === "put") {
@@ -820,14 +710,12 @@ const SchedulingSettingsView: React.FC = () => {
     operation,
     subsection,
   ]);
-
   const executeAction = useCallback(async () => {
     setRunning(true);
     setMessage(null);
-
     try {
       if (subsection === "consumer-scheduling" && operation === "put") {
-        await putConsumerScheduling();
+        await autoConfigureConsumerScheduling();
       } else if (subsection === "service-advisors" && operation === "post") {
         await autoConfigureServiceAdvisors();
       } else if (subsection === "general" && operation === "post") {
@@ -851,15 +739,14 @@ const SchedulingSettingsView: React.FC = () => {
       setRunning(false);
     }
   }, [
+    autoConfigureConsumerScheduling,
     autoConfigureServiceAdvisors,
     autoConfigureTransportation,
     configureMainShop,
     operation,
     postGeneralSettings,
-    putConsumerScheduling,
     subsection,
   ]);
-
   return (
     <div
       style={{
@@ -876,7 +763,6 @@ const SchedulingSettingsView: React.FC = () => {
         .service-scheduling-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 8px; }
         .service-scheduling-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.24); }
       `}</style>
-
       <div>
         <div style={{ fontSize: 24, fontWeight: 800, color: "#f8fafc", marginBottom: 6 }}>
           📅 Scheduling Settings
@@ -885,7 +771,6 @@ const SchedulingSettingsView: React.FC = () => {
           Configure scheduling-related service settings using Global Headers from Settings.
         </div>
       </div>
-
       <div
         style={{
           display: "flex",
@@ -908,7 +793,6 @@ const SchedulingSettingsView: React.FC = () => {
         >
           Dealer ID: <b style={{ color: dealerId ? "#86efac" : "#fca5a5" }}>{dealerId || "Not found"}</b>
         </span>
-
         <span
           style={{
             display: "inline-flex",
@@ -925,7 +809,6 @@ const SchedulingSettingsView: React.FC = () => {
           Global Headers: <b style={{ color: "#f8fafc" }}>{Object.keys(enabledHeaders).length}</b>
         </span>
       </div>
-
       <div
         style={{
           display: "grid",
@@ -962,7 +845,6 @@ const SchedulingSettingsView: React.FC = () => {
             })}
           </div>
         </div>
-
         <div
           style={{
             borderRadius: 14,
@@ -981,7 +863,6 @@ const SchedulingSettingsView: React.FC = () => {
               {subsectionMeta.description}
             </div>
           </div>
-
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             {subsectionMeta.ops.map((op) => {
               const active = operation === op;
@@ -997,7 +878,6 @@ const SchedulingSettingsView: React.FC = () => {
               );
             })}
           </div>
-
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button
               className="btn-secondary btn-sm"
@@ -1006,16 +886,16 @@ const SchedulingSettingsView: React.FC = () => {
             >
               {loading ? "Loading..." : "▶ Load"}
             </button>
-
-            <button
-              className="btn-primary"
-              onClick={() => void executeAction()}
-              disabled={!operation || running}
-            >
-              {running ? "Running..." : "⚙ Execute"}
-            </button>
+            {operation && operation !== "get" ? (
+              <button
+                className="btn-primary"
+                onClick={() => void executeAction()}
+                disabled={!operation || running}
+              >
+                {running ? "Running..." : "⚙ Execute"}
+              </button>
+            ) : null}
           </div>
-
           {message ? (
             <div
               style={{
@@ -1036,8 +916,9 @@ const SchedulingSettingsView: React.FC = () => {
           ) : null}
         </div>
       </div>
-
-      {subsection === "consumer-scheduling" && operation === "get" && consumerSettings ? (
+      {subsection === "consumer-scheduling" &&
+      (operation === "get" || operation === "put") &&
+      consumerSettings ? (
         <div
           style={{
             borderRadius: 16,
@@ -1051,7 +932,6 @@ const SchedulingSettingsView: React.FC = () => {
           <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800 }}>
             Consumer Scheduling Settings
           </div>
-
           <div style={{ display: "grid", gap: 10 }}>
             <div
               style={{
@@ -1067,7 +947,6 @@ const SchedulingSettingsView: React.FC = () => {
               <span style={{ color: "#e2e8f0" }}>Allow to Remove Vehicle</span>
               {renderStatusBadge(Boolean(consumerSettings?.data?.allowToRemoveVehicle), consumerSettings?.data?.allowToRemoveVehicle ? "Enabled" : "Disabled")}
             </div>
-
             <div
               style={{
                 display: "flex",
@@ -1085,52 +964,6 @@ const SchedulingSettingsView: React.FC = () => {
           </div>
         </div>
       ) : null}
-
-      {subsection === "consumer-scheduling" && operation === "put" ? (
-        <div
-          style={{
-            borderRadius: 16,
-            border: "1px solid rgba(255,255,255,0.08)",
-            background: "rgba(255,255,255,0.02)",
-            padding: 16,
-            display: "grid",
-            gap: 14,
-          }}
-        >
-          <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800 }}>
-            Update Consumer Scheduling
-          </div>
-
-          <label style={{ display: "flex", alignItems: "center", gap: 10, color: "#e2e8f0" }}>
-            <input
-              type="checkbox"
-              checked={consumerPutForm.allowToRemoveVehicle}
-              onChange={(e) =>
-                setConsumerPutForm((prev) => ({
-                  ...prev,
-                  allowToRemoveVehicle: e.target.checked,
-                }))
-              }
-            />
-            Allow to Remove Vehicle
-          </label>
-
-          <label style={{ display: "flex", alignItems: "center", gap: 10, color: "#e2e8f0" }}>
-            <input
-              type="checkbox"
-              checked={consumerPutForm.allowCustomerToAddVin}
-              onChange={(e) =>
-                setConsumerPutForm((prev) => ({
-                  ...prev,
-                  allowCustomerToAddVin: e.target.checked,
-                }))
-              }
-            />
-            Allow Customer to Add VIN
-          </label>
-        </div>
-      ) : null}
-
       {subsection === "service-advisors" && operation === "get" && serviceAdvisorsRaw ? (
         <div
           style={{
@@ -1158,7 +991,6 @@ const SchedulingSettingsView: React.FC = () => {
           </pre>
         </div>
       ) : null}
-
       {subsection === "service-advisors" && operation === "post" ? (
         <div
           style={{
@@ -1173,11 +1005,9 @@ const SchedulingSettingsView: React.FC = () => {
           <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800 }}>
             Auto Configure Service Advisors
           </div>
-
           <div style={{ color: "#94a3b8", fontSize: 13 }}>
             Configure a default weekly schedule for all active Service Advisors.
           </div>
-
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
             {DAY_OPTIONS.map((day) => {
               const row = advisorSchedule[day.key];
@@ -1194,7 +1024,6 @@ const SchedulingSettingsView: React.FC = () => {
                   }}
                 >
                   <div style={{ color: "#f8fafc", fontWeight: 700 }}>{day.label}</div>
-
                   <label style={{ display: "flex", alignItems: "center", gap: 8, color: "#cbd5e1", fontSize: 13 }}>
                     <input
                       type="checkbox"
@@ -1213,7 +1042,6 @@ const SchedulingSettingsView: React.FC = () => {
                     />
                     Blocked
                   </label>
-
                   <input
                     type="time"
                     value={row.start}
@@ -1225,7 +1053,6 @@ const SchedulingSettingsView: React.FC = () => {
                       }))
                     }
                   />
-
                   <input
                     type="time"
                     value={row.end}
@@ -1243,7 +1070,6 @@ const SchedulingSettingsView: React.FC = () => {
           </div>
         </div>
       ) : null}
-
       {subsection === "general" && operation === "get" && generalRaw ? (
         <div
           style={{
@@ -1271,7 +1097,6 @@ const SchedulingSettingsView: React.FC = () => {
           </pre>
         </div>
       ) : null}
-
       {subsection === "shops" && operation === "get" && shops.length > 0 ? (
         <div style={{ display: "grid", gap: 12 }}>
           {shops.map((shop, index) => (
@@ -1294,7 +1119,6 @@ const SchedulingSettingsView: React.FC = () => {
                   ID: {shop.id || "—"} · Status: {shop.status || "—"} · Default: {shop.defaultShop ? "Yes" : "No"}
                 </div>
               </div>
-
               <div>
                 <div style={{ color: "#cbd5e1", fontWeight: 700, marginBottom: 8 }}>
                   Hours
@@ -1326,7 +1150,6 @@ const SchedulingSettingsView: React.FC = () => {
                   )}
                 </div>
               </div>
-
               <details>
                 <summary style={{ cursor: "pointer", color: "#93c5fd", fontSize: 13, fontWeight: 700 }}>
                   Show Raw JSON
@@ -1349,7 +1172,6 @@ const SchedulingSettingsView: React.FC = () => {
           ))}
         </div>
       ) : null}
-
       {subsection === "shops" && operation === "configure" ? (
         <div
           style={{
@@ -1364,11 +1186,9 @@ const SchedulingSettingsView: React.FC = () => {
           <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800 }}>
             Configure Main Shop
           </div>
-
           <div style={{ color: "#94a3b8", fontSize: 13 }}>
             Build Main Shop working hours and assign active Service Advisors automatically.
           </div>
-
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
             {DAY_OPTIONS.map((day) => {
               const row = shopSchedule[day.key];
@@ -1385,7 +1205,6 @@ const SchedulingSettingsView: React.FC = () => {
                   }}
                 >
                   <div style={{ color: "#f8fafc", fontWeight: 700 }}>{day.label}</div>
-
                   <label style={{ display: "flex", alignItems: "center", gap: 8, color: "#cbd5e1", fontSize: 13 }}>
                     <input
                       type="checkbox"
@@ -1404,7 +1223,6 @@ const SchedulingSettingsView: React.FC = () => {
                     />
                     Blocked
                   </label>
-
                   <input
                     type="time"
                     value={row.start}
@@ -1416,7 +1234,6 @@ const SchedulingSettingsView: React.FC = () => {
                       }))
                     }
                   />
-
                   <input
                     type="time"
                     value={row.end}
@@ -1434,7 +1251,6 @@ const SchedulingSettingsView: React.FC = () => {
           </div>
         </div>
       ) : null}
-
       {subsection === "transportation" && operation === "get" && transportationRows.length > 0 ? (
         <div
           style={{
@@ -1449,7 +1265,6 @@ const SchedulingSettingsView: React.FC = () => {
           <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800 }}>
             Transportation Types
           </div>
-
           {transportationRows.map((row, index) => (
             <div
               key={`${row.id || row.transportationType || "transport"}-${index}`}
@@ -1476,7 +1291,6 @@ const SchedulingSettingsView: React.FC = () => {
           ))}
         </div>
       ) : null}
-
       {subsection === "transportation" && operation === "configure" && transportationResult ? (
         <div
           style={{
@@ -1489,7 +1303,6 @@ const SchedulingSettingsView: React.FC = () => {
           <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
             Transportation Configuration Results
           </div>
-
           <div style={{ display: "grid", gap: 8 }}>
             {(transportationResult as Array<{ name: string; ok: boolean; text: string }>).map(
               (row, idx) => (
@@ -1518,5 +1331,4 @@ const SchedulingSettingsView: React.FC = () => {
     </div>
   );
 };
-
 export default SchedulingSettingsView;
