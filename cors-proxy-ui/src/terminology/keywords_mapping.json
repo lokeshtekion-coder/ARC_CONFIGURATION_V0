@@ -1,0 +1,94 @@
+[
+  {
+    "key": "payTypes",
+    "column": "Pay Types",
+    "options": []
+  },
+  {
+    "key": "saleTypes",
+    "column": "Sale Types",
+    "options": []
+  },
+  {
+    "key": "stockTypes",
+    "column": "Stock Types",
+    "options": ["NEW", "USED", "SPECIAL"]
+  },
+  {
+    "key": "stockSubTypes",
+    "column": "Stock Sub Types",
+    "options": [
+      "Purchase",
+      "Demo",
+      "Lease",
+      "Loaner",
+      "Program Loaner",
+      "EV",
+      "Trade",
+      "Rental",
+      "OEM",
+      "Dealer Trade",
+      "DP Demo",
+      "Wholesale",
+      "Lease Buyout",
+      "Other"
+    ]
+  },
+  {
+    "key": "bodyClass",
+    "column": "Body Class",
+    "options": ["Car", "Truck/Van", "SUV"]
+  },
+  {
+    "key": "bodyTypes",
+    "column": "Body Types",
+    "options": ["Convertible", "Sports Utility", "Coupe", "Truck", "Sedan"]
+  },
+  {
+    "key": "vehicleTypeList",
+    "column": "Vehicle Type",
+    "options": ["CAR_AUTOMOBILE", "MOTOR_BIKE", "RV", "TRUCKS", "BOATS"]
+  },
+  {
+    "key": "fuelTypeList",
+    "column": "Fuel Type",
+    "options": [
+      "LIQUID_PROPANE_GAS",
+      "FULL HYBRID EV-FLEX (FHEV)",
+      "FULL HYBRID EV-GAS (FHEV)",
+      "MILD HYBRID EV-DIESEL (MHEV)",
+      "ETHANOL",
+      "ELECTRIC/DIESEL",
+      "UNLEADED",
+      "U/K",
+      "PLUG-IN HYBRID EV-GAS (PHEV)",
+      "FLEX",
+      "PLUG-IN FUEL CELL EV (PFCEV)",
+      "HYBRID",
+      "PREMIUM_UNLEADED",
+      "FUEL CELL EV (FCEV)",
+      "BATTERY W/RANGE EXT (BEV REX)",
+      "NATURAL_GAS",
+      "BIODIESEL",
+      "OTHER",
+      "PROPANE",
+      "DUAL_FUEL",
+      "BATTERY EV (EV/BEV)",
+      "MILD HYBRID EV-GAS (MHEV)",
+      "GAS",
+      "CNG",
+      "ELECTRIC/GAS",
+      "ELECTRIC",
+      "N_A",
+      "DIESEL",
+      "PETROL",
+      "BI-FUEL",
+      "LPG"
+    ]
+  },
+  {
+    "key": "paySubTypes",
+    "column": "Pay Sub Types",
+    "options": ["CUSTOMER_PAY", "INTERNAL", "WARRANTY"]
+  }
+]

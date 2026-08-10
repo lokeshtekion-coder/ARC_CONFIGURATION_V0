@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARC Helper</title>
+    <link rel="stylesheet" href="./popup.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <div class="bg-orb orb-1"></div>
+      <div class="bg-orb orb-2"></div>
+
+      <header class="hero">
+        <div class="brand-row">
+          <div class="brand-badge">A</div>
+          <div>
+            <h1>ARC Helper</h1>
+            <p class="subtitle">Chrome Extension Status</p>
+          </div>
+        </div>
+        <div class="version-chip" id="versionChip">v--</div>
+      </header>
+
+      <main class="content">
+        <section class="card status-card">
+          <div class="card-header">
+            <span class="card-title">Connection Status</span>
+            <span class="pulse" id="pulseDot"></span>
+          </div>
+
+          <div class="status-grid">
+            <div class="status-item">
+              <div class="label">Extension</div>
+              <div class="value ok" id="extensionStatus">Loaded</div>
+            </div>
+
+            <div class="status-item">
+              <div class="label">ARC App</div>
+              <div class="value" id="appStatus">Checking...</div>
+            </div>
+
+            <div class="status-item full">
+              <div class="label">Detected URL</div>
+              <div class="value mono small" id="detectedUrl">—</div>
+            </div>
+
+            <div class="status-item full">
+              <div class="label">Last Checked</div>
+              <div class="value small" id="lastChecked">—</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card info-card">
+          <div class="card-header">
+            <span class="card-title">About</span>
+          </div>
+          <p class="info-text">
+            This popup shows whether your local ARC app is open and whether the extension is active.
+          </p>
+        </section>
+
+        <div class="actions">
+          <button class="btn btn-primary" id="openAppBtn">Open ARC App</button>
+          <button class="btn btn-secondary" id="refreshBtn">Refresh Status</button>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="./dist/popup.js"></script>
+  </body>
+</html>

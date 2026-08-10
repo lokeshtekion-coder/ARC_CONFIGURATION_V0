@@ -1,0 +1,5035 @@
+{
+  "dealerId": "8047",
+  "timestamp": "2026-08-04T14-14-46-848Z",
+  "bootstrap": {
+    "dealerId": "8047",
+    "glAccounts": [
+      {
+        "key": "8047_8047_647T",
+        "accountName": "RECON KIA TRUCK RETAIL",
+        "accountNumber": "647T",
+        "active": true,
+        "id": "8047_647T",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K6011",
+        "accountName": "C/S N/C KIA SOUL RTL",
+        "accountNumber": "K6011",
+        "active": true,
+        "id": "8047_K6011",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_081E",
+        "accountName": "AMORT LSHLDS B/S",
+        "accountNumber": "081E",
+        "active": true,
+        "id": "8047_081E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K407H",
+        "accountName": "SLS N/C KIA SORENTO HEV",
+        "accountNumber": "K407H",
+        "active": true,
+        "id": "8047_K407H",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_081F",
+        "accountName": "AMORT LSHLDS P&A",
+        "accountNumber": "081F",
+        "active": true,
+        "id": "8047_081F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_081D",
+        "accountName": "AMORT LSHLDS MECH",
+        "accountNumber": "081D",
+        "active": true,
+        "id": "8047_081D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_081A",
+        "accountName": "AMORT LSHLDS NEW",
+        "accountNumber": "081A",
+        "active": true,
+        "id": "8047_081A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_081B",
+        "accountName": "AMORT LSHLDS USD",
+        "accountNumber": "081B",
+        "active": true,
+        "id": "8047_081B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K601H",
+        "accountName": "C/S N/T KIA SPORT HEV/PLG",
+        "accountNumber": "K601H",
+        "active": true,
+        "id": "8047_K601H",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_647B",
+        "accountName": "RECON KIA CAR RETAIL",
+        "accountNumber": "647B",
+        "active": true,
+        "id": "8047_647B",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_647A",
+        "accountName": "RECON KIA CPO TRK RETAIL",
+        "accountNumber": "647A",
+        "active": true,
+        "id": "8047_647A",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K491",
+        "accountName": "SLS GAS OIL GREASE KIA",
+        "accountNumber": "K491",
+        "active": true,
+        "id": "8047_K491",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K490",
+        "accountName": "SLS TIRES KIA",
+        "accountNumber": "K490",
+        "active": true,
+        "id": "8047_K490",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_810",
+        "accountName": "SLS ACCESSORIES NEW",
+        "accountNumber": "810",
+        "active": true,
+        "id": "8047_810",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_811",
+        "accountName": "SLS ACCESSORIES USD",
+        "accountNumber": "811",
+        "active": true,
+        "id": "8047_811",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_080F",
+        "accountName": "RENT P&A",
+        "accountNumber": "080F",
+        "active": true,
+        "id": "8047_080F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_080D",
+        "accountName": "RENT MECH",
+        "accountNumber": "080D",
+        "active": true,
+        "id": "8047_080D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K246",
+        "accountName": "SUBLET REPAIRS INV KIA *P",
+        "accountNumber": "K246",
+        "active": true,
+        "id": "8047_K246",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_080E",
+        "accountName": "RENT B/S",
+        "accountNumber": "080E",
+        "active": true,
+        "id": "8047_080E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_092F",
+        "accountName": "EQUIP RENTAL P&A",
+        "accountNumber": "092F",
+        "active": true,
+        "id": "8047_092F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K245",
+        "accountName": "B/S PAINT MATERIAL KIA",
+        "accountNumber": "K245",
+        "active": true,
+        "id": "8047_K245",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_080B",
+        "accountName": "RENT USD",
+        "accountNumber": "080B",
+        "active": true,
+        "id": "8047_080B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_809",
+        "accountName": "INSUR COMM EARN USD VEH",
+        "accountNumber": "809",
+        "active": true,
+        "id": "8047_809",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_092D",
+        "accountName": "EQUIP RENTAL MECH",
+        "accountNumber": "092D",
+        "active": true,
+        "id": "8047_092D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_808",
+        "accountName": "FINANCE INCOME USD VEH",
+        "accountNumber": "808",
+        "active": true,
+        "id": "8047_808",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_092A",
+        "accountName": "EQUIP RENTAL NEW",
+        "accountNumber": "092A",
+        "active": true,
+        "id": "8047_092A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_080A",
+        "accountName": "RENT NEW",
+        "accountNumber": "080A",
+        "active": true,
+        "id": "8047_080A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_092B",
+        "accountName": "EQUIP RENTAL USD",
+        "accountNumber": "092B",
+        "active": true,
+        "id": "8047_092B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K240",
+        "accountName": "USED CAR INVENTORY",
+        "accountNumber": "K240",
+        "active": true,
+        "id": "8047_K240",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_K482",
+        "accountName": "SLS P&A COUNTER RETAIL-KI",
+        "accountNumber": "K482",
+        "active": true,
+        "id": "8047_K482",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K481",
+        "accountName": "SLS P&A INTERNAL KIA",
+        "accountNumber": "K481",
+        "active": true,
+        "id": "8047_K481",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_646C",
+        "accountName": "COS CAR CAC DEALS",
+        "accountNumber": "646C",
+        "active": true,
+        "id": "8047_646C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K480",
+        "accountName": "SLS P&A WARR CLMS KIA",
+        "accountNumber": "K480",
+        "active": true,
+        "id": "8047_K480",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_646B",
+        "accountName": "C/S USED CAR RTL OTHER",
+        "accountNumber": "646B",
+        "active": true,
+        "id": "8047_646B",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K242",
+        "accountName": "P&A INVENTORY KIA",
+        "accountNumber": "K242",
+        "active": true,
+        "id": "8047_K242",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_K241",
+        "accountName": "USED TRUCKS KIA",
+        "accountNumber": "K241",
+        "active": true,
+        "id": "8047_K241",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_K483",
+        "accountName": "SLS COUNTER WHSL KIA",
+        "accountNumber": "K483",
+        "active": true,
+        "id": "8047_K483",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_B466",
+        "accountName": "SLS BODY SHOP SUBLET",
+        "accountNumber": "B466",
+        "active": true,
+        "id": "8047_B466",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_807",
+        "accountName": "INSUR COMM EARN NEW VEH",
+        "accountNumber": "807",
+        "active": true,
+        "id": "8047_807",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_806",
+        "accountName": "FINANCE INCOME NEW RETAIL",
+        "accountNumber": "806",
+        "active": true,
+        "id": "8047_806",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_E810M",
+        "accountName": "SLS NEW PREPAID MAINT EV",
+        "accountNumber": "E810M",
+        "active": true,
+        "id": "8047_E810M",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_071F",
+        "accountName": "MBRSP, DUES, PUBL P&A",
+        "accountNumber": "071F",
+        "active": true,
+        "id": "8047_071F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_071D",
+        "accountName": "MBRSP, DUES, PUBL MECH",
+        "accountNumber": "071D",
+        "active": true,
+        "id": "8047_071D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_083F",
+        "accountName": "DEPR BLDG & IMPROV P&A",
+        "accountNumber": "083F",
+        "active": true,
+        "id": "8047_083F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_071B",
+        "accountName": "MBRSP, DUES, PUBL USD",
+        "accountNumber": "071B",
+        "active": true,
+        "id": "8047_071B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_083D",
+        "accountName": "DEPR BLDG & IMPROV MECH",
+        "accountNumber": "083D",
+        "active": true,
+        "id": "8047_083D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_083A",
+        "accountName": "DEPR BLDG & IMPROV NEW",
+        "accountNumber": "083A",
+        "active": true,
+        "id": "8047_083A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_071A",
+        "accountName": "MBRSP, DUES, PUBL NEW",
+        "accountNumber": "071A",
+        "active": true,
+        "id": "8047_071A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_083B",
+        "accountName": "DEPR BLDG & IMPROV USD",
+        "accountNumber": "083B",
+        "active": true,
+        "id": "8047_083B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K409E",
+        "accountName": "SLS N/T KIA EV 6",
+        "accountNumber": "K409E",
+        "active": true,
+        "id": "8047_K409E",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K615E",
+        "accountName": "C/S N/T KIA EV 9",
+        "accountNumber": "K615E",
+        "active": true,
+        "id": "8047_K615E",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_910",
+        "accountName": "DOCUMENT HANDLING FEES",
+        "accountNumber": "910",
+        "active": true,
+        "id": "8047_910",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8047_8047_082F",
+        "accountName": "RPRS REAL ESTATE P&A",
+        "accountNumber": "082F",
+        "active": true,
+        "id": "8047_082F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_070F",
+        "accountName": "TRAVEL PARTS",
+        "accountNumber": "070F",
+        "active": true,
+        "id": "8047_070F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K602E",
+        "accountName": "C/S N/C KIA NIRO EV",
+        "accountNumber": "K602E",
+        "active": true,
+        "id": "8047_K602E",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_082D",
+        "accountName": "RPRS REAL ESTATE MECH",
+        "accountNumber": "082D",
+        "active": true,
+        "id": "8047_082D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_070D",
+        "accountName": "TRAVEL SERVICE",
+        "accountNumber": "070D",
+        "active": true,
+        "id": "8047_070D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_070A",
+        "accountName": "TRAVEL NEW",
+        "accountNumber": "070A",
+        "active": true,
+        "id": "8047_070A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_082B",
+        "accountName": "RPRS REAL ESTATE USD",
+        "accountNumber": "082B",
+        "active": true,
+        "id": "8047_082B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_070B",
+        "accountName": "TRAVEL USED",
+        "accountNumber": "070B",
+        "active": true,
+        "id": "8047_070B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_082A",
+        "accountName": "RPRS REAL ESTATE NEW",
+        "accountNumber": "082A",
+        "active": true,
+        "id": "8047_082A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K261",
+        "accountName": "FACTORY HOLDBACK KIA",
+        "accountNumber": "K261",
+        "active": true,
+        "id": "8047_K261",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_K263",
+        "accountName": "WARRANTY CLAIMS KIA",
+        "accountNumber": "K263",
+        "active": true,
+        "id": "8047_K263",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_905",
+        "accountName": "OTHER INCOME",
+        "accountNumber": "905",
+        "active": true,
+        "id": "8047_905",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8047_8047_K415E",
+        "accountName": "SLS N/T KIA EV 9",
+        "accountNumber": "K415E",
+        "active": true,
+        "id": "8047_K415E",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K455",
+        "accountName": "SLS SRV CONTRACT USED KIA",
+        "accountNumber": "K455",
+        "active": true,
+        "id": "8047_K455",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K691",
+        "accountName": "C/S GAS OIL GREASE KIA",
+        "accountNumber": "K691",
+        "active": true,
+        "id": "8047_K691",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K690",
+        "accountName": "C/S TIRES KIA",
+        "accountNumber": "K690",
+        "active": true,
+        "id": "8047_K690",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K861M",
+        "accountName": "PREPAID MAINT. USED COS",
+        "accountNumber": "K861M",
+        "active": true,
+        "id": "8047_K861M",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K402E",
+        "accountName": "SLS N/C KIA NIRO EV",
+        "accountNumber": "K402E",
+        "active": true,
+        "id": "8047_K402E",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K446",
+        "accountName": "SLS SUBLET REPAIRS MECH *",
+        "accountNumber": "K446",
+        "active": true,
+        "id": "8047_K446",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K444",
+        "accountName": "SLS N/C OTH SER CONTRACT",
+        "accountNumber": "K444",
+        "active": true,
+        "id": "8047_K444",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K448",
+        "accountName": "SLS USED VEH WHSL KIA",
+        "accountNumber": "K448",
+        "active": true,
+        "id": "8047_K448",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K680",
+        "accountName": "C/S P&A WARR CLAIMS KIA",
+        "accountNumber": "K680",
+        "active": true,
+        "id": "8047_K680",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K683",
+        "accountName": "C/S COUNTER WHSL KIA",
+        "accountNumber": "K683",
+        "active": true,
+        "id": "8047_K683",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K682",
+        "accountName": "C/S P&A COUNTER RETAIL-KI",
+        "accountNumber": "K682",
+        "active": true,
+        "id": "8047_K682",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K681",
+        "accountName": "C/S P&A INTERNAL KIA",
+        "accountNumber": "K681",
+        "active": true,
+        "id": "8047_K681",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_B666",
+        "accountName": "CST BODY SUBLET",
+        "accountNumber": "B666",
+        "active": true,
+        "id": "8047_B666",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_091F",
+        "accountName": "DEPR EQUIP P&A",
+        "accountNumber": "091F",
+        "active": true,
+        "id": "8047_091F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K237",
+        "accountName": "NEW VEHICLES KIA TRUCKS",
+        "accountNumber": "K237",
+        "active": true,
+        "id": "8047_K237",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_K405H",
+        "accountName": "SLS N/T KIA CARNIVAL HEV",
+        "accountNumber": "K405H",
+        "active": true,
+        "id": "8047_K405H",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_091D",
+        "accountName": "DEPR EQUIP MECH",
+        "accountNumber": "091D",
+        "active": true,
+        "id": "8047_091D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K477",
+        "accountName": "P&A CUST RO BODY KIA",
+        "accountNumber": "K477",
+        "active": true,
+        "id": "8047_K477",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_091E",
+        "accountName": "DEPR EQUIP B/S",
+        "accountNumber": "091E",
+        "active": true,
+        "id": "8047_091E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_091B",
+        "accountName": "DEPR EQUIP USD",
+        "accountNumber": "091B",
+        "active": true,
+        "id": "8047_091B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_091A",
+        "accountName": "DEPR EQUIP NEW",
+        "accountNumber": "091A",
+        "active": true,
+        "id": "8047_091A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K471",
+        "accountName": "P&A BODY OTHER KIA",
+        "accountNumber": "K471",
+        "active": true,
+        "id": "8047_K471",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K231",
+        "accountName": "NEW VEHICLES KIA CARS",
+        "accountNumber": "K231",
+        "active": true,
+        "id": "8047_K231",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_K230",
+        "accountName": "USED CPO INVENTORY",
+        "accountNumber": "K230",
+        "active": true,
+        "id": "8047_K230",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_E806",
+        "accountName": "FINANCE INCOME NEW KIA EV",
+        "accountNumber": "E806",
+        "active": true,
+        "id": "8047_E806",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_6330",
+        "accountName": "ADJ-USED VEHICLE INVENT.",
+        "accountNumber": "6330",
+        "active": true,
+        "id": "8047_6330",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_090F",
+        "accountName": "REPAIRS EQUIP P&A",
+        "accountNumber": "090F",
+        "active": true,
+        "id": "8047_090F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K404H",
+        "accountName": "SLS N/C OPTIMA HYBRID RTL",
+        "accountNumber": "K404H",
+        "active": true,
+        "id": "8047_K404H",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K467",
+        "accountName": "SLS P&A RO CUST MECH-KIA",
+        "accountNumber": "K467",
+        "active": true,
+        "id": "8047_K467",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_090D",
+        "accountName": "REPAIRS EQUIP MECH",
+        "accountNumber": "090D",
+        "active": true,
+        "id": "8047_090D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_090A",
+        "accountName": "REPAIRS EQUIP NEW",
+        "accountNumber": "090A",
+        "active": true,
+        "id": "8047_090A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_090B",
+        "accountName": "REPAIRS EQUIP USD",
+        "accountNumber": "090B",
+        "active": true,
+        "id": "8047_090B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K460",
+        "accountName": "SLS CUST MECH KABOR-KIA",
+        "accountNumber": "K460",
+        "active": true,
+        "id": "8047_K460",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_438D",
+        "accountName": "SLS N/T OTHER BUICK TRK",
+        "accountNumber": "438D",
+        "active": true,
+        "id": "8047_438D",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K463",
+        "accountName": "SLS INT MECH LABOR KIA",
+        "accountNumber": "K463",
+        "active": true,
+        "id": "8047_K463",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_632D",
+        "accountName": "CST N/T RETAIL",
+        "accountNumber": "632D",
+        "active": true,
+        "id": "8047_632D",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K462",
+        "accountName": "SLS WARR CLM MECH-KIA",
+        "accountNumber": "K462",
+        "active": true,
+        "id": "8047_K462",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K646B",
+        "accountName": "C/S UC RTL BEFORE RECON",
+        "accountNumber": "K646B",
+        "active": true,
+        "id": "8047_K646B",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K646A",
+        "accountName": "C/S USD CPO KIA CAR RTL",
+        "accountNumber": "K646A",
+        "active": true,
+        "id": "8047_K646A",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_077F",
+        "accountName": "MISC EXP P&A",
+        "accountNumber": "077F",
+        "active": true,
+        "id": "8047_077F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_065F",
+        "accountName": "ADVERTISING P&A",
+        "accountNumber": "065F",
+        "active": true,
+        "id": "8047_065F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_077D",
+        "accountName": "MISC EXP MECH",
+        "accountNumber": "077D",
+        "active": true,
+        "id": "8047_077D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K609E",
+        "accountName": "C/S N/T KIA EV 6",
+        "accountNumber": "K609E",
+        "active": true,
+        "id": "8047_K609E",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_065D",
+        "accountName": "ADVERTISING MECH",
+        "accountNumber": "065D",
+        "active": true,
+        "id": "8047_065D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_089F",
+        "accountName": "TAXES OTHER P&A",
+        "accountNumber": "089F",
+        "active": true,
+        "id": "8047_089F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_065A",
+        "accountName": "ADVERTISING NEW",
+        "accountNumber": "065A",
+        "active": true,
+        "id": "8047_065A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_077B",
+        "accountName": "MISC EXP USD",
+        "accountNumber": "077B",
+        "active": true,
+        "id": "8047_077B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_065B",
+        "accountName": "ADVERTISING USD",
+        "accountNumber": "065B",
+        "active": true,
+        "id": "8047_065B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_089D",
+        "accountName": "TAXES OTHER MECH",
+        "accountNumber": "089D",
+        "active": true,
+        "id": "8047_089D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_089A",
+        "accountName": "TAXES OTHER NEW",
+        "accountNumber": "089A",
+        "active": true,
+        "id": "8047_089A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_077A",
+        "accountName": "MISC EXP NEW",
+        "accountNumber": "077A",
+        "active": true,
+        "id": "8047_077A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_089B",
+        "accountName": "TAXES OTHER USD",
+        "accountNumber": "089B",
+        "active": true,
+        "id": "8047_089B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K065D",
+        "accountName": "SERV ADVERT DEPTMTL KIA",
+        "accountNumber": "K065D",
+        "active": true,
+        "id": "8047_K065D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K089F",
+        "accountName": "BAIT TAXES PARTS",
+        "accountNumber": "K089F",
+        "active": true,
+        "id": "8047_K089F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_E666",
+        "accountName": "C/S SUBLET REPR MECH EV",
+        "accountNumber": "E666",
+        "active": true,
+        "id": "8047_E666",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K077F",
+        "accountName": "FREIGHT EXPENSE KIA",
+        "accountNumber": "K077F",
+        "active": true,
+        "id": "8047_K077F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_E667",
+        "accountName": "C/S P&A RO CUST MECH EV",
+        "accountNumber": "E667",
+        "active": true,
+        "id": "8047_E667",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K065F",
+        "accountName": "P&A ADVERT DEPTMNTL KIA",
+        "accountNumber": "K065F",
+        "active": true,
+        "id": "8047_K065F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_E660",
+        "accountName": "C/S CUST MECH LABOR EV",
+        "accountNumber": "E660",
+        "active": true,
+        "id": "8047_E660",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_E662",
+        "accountName": "C/S WARR MECH LABOR EV",
+        "accountNumber": "E662",
+        "active": true,
+        "id": "8047_E662",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_064F",
+        "accountName": "ADVERTISING REBATES P&A",
+        "accountNumber": "064F",
+        "active": true,
+        "id": "8047_064F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_E663",
+        "accountName": "C/S INT MECH LABOR EV",
+        "accountNumber": "E663",
+        "active": true,
+        "id": "8047_E663",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_064D",
+        "accountName": "ADVERTISING REBATES MECH",
+        "accountNumber": "064D",
+        "active": true,
+        "id": "8047_064D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_088F",
+        "accountName": "INSURANCE OTHER P&A",
+        "accountNumber": "088F",
+        "active": true,
+        "id": "8047_088F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_064B",
+        "accountName": "ADVERTISING REBATES USD",
+        "accountNumber": "064B",
+        "active": true,
+        "id": "8047_064B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_088D",
+        "accountName": "INSURANCE OTHER MECH",
+        "accountNumber": "088D",
+        "active": true,
+        "id": "8047_088D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_076A",
+        "accountName": "INTEREST FLOORPLAN NEW",
+        "accountNumber": "076A",
+        "active": true,
+        "id": "8047_076A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_088B",
+        "accountName": "INSURANCE OTHER USD",
+        "accountNumber": "088B",
+        "active": true,
+        "id": "8047_088B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_064A",
+        "accountName": "ADVERTISING REBATES NEW",
+        "accountNumber": "064A",
+        "active": true,
+        "id": "8047_064A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_076B",
+        "accountName": "INTEREST FLOORPLAN USD",
+        "accountNumber": "076B",
+        "active": true,
+        "id": "8047_076B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_088A",
+        "accountName": "INSURANCE OTHER NEW",
+        "accountNumber": "088A",
+        "active": true,
+        "id": "8047_088A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_079A",
+        "accountName": "INT NOTES PAY/OTH NEW",
+        "accountNumber": "079A",
+        "active": true,
+        "id": "8047_079A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_8160",
+        "accountName": "RENTAL EXPENSES",
+        "accountNumber": "8160",
+        "active": true,
+        "id": "8047_8160",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_E690",
+        "accountName": "C/S P&A TIRE SALES EV",
+        "accountNumber": "E690",
+        "active": true,
+        "id": "8047_E690",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_261K",
+        "accountName": "P&A KONQUEST REBATES",
+        "accountNumber": "261K",
+        "active": true,
+        "id": "8047_261K",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_K069A",
+        "accountName": "OUTSIDE SERVICES NEW BLDG",
+        "accountNumber": "K069A",
+        "active": true,
+        "id": "8047_K069A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K069B",
+        "accountName": "OUTSIDE SERVICES USED BLD",
+        "accountNumber": "K069B",
+        "active": true,
+        "id": "8047_K069B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_261I",
+        "accountName": "FACTORY REBATES & INCENTI",
+        "accountNumber": "261I",
+        "active": true,
+        "id": "8047_261I",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_K069D",
+        "accountName": "OUTSIDE SERVICES SER BLDG",
+        "accountNumber": "K069D",
+        "active": true,
+        "id": "8047_K069D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_261F",
+        "accountName": "KIA FLOOR PLAN ASSISTANCE",
+        "accountNumber": "261F",
+        "active": true,
+        "id": "8047_261F",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_K069F",
+        "accountName": "OUTSIDE SERVICES PTS BLDG",
+        "accountNumber": "K069F",
+        "active": true,
+        "id": "8047_K069F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_261D",
+        "accountName": "NEW VEHICLE PREP BUICK *P",
+        "accountNumber": "261D",
+        "active": true,
+        "id": "8047_261D",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_261C",
+        "accountName": "CO-OP ADV FACTORY",
+        "accountNumber": "261C",
+        "active": true,
+        "id": "8047_261C",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_067E",
+        "accountName": "POLICY WORK B/S",
+        "accountNumber": "067E",
+        "active": true,
+        "id": "8047_067E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_079F",
+        "accountName": "INT NOTES PAY/OTH P&A",
+        "accountNumber": "079F",
+        "active": true,
+        "id": "8047_079F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_067F",
+        "accountName": "POLICY WORK P&A",
+        "accountNumber": "067F",
+        "active": true,
+        "id": "8047_067F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_079D",
+        "accountName": "INT NOTES PAY/OTH MECH",
+        "accountNumber": "079D",
+        "active": true,
+        "id": "8047_079D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_067D",
+        "accountName": "POLICY WORK MECH",
+        "accountNumber": "067D",
+        "active": true,
+        "id": "8047_067D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_079B",
+        "accountName": "INT NOTES PAY/OTH USD",
+        "accountNumber": "079B",
+        "active": true,
+        "id": "8047_079B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K261P",
+        "accountName": "PRE-DELIVERY SERVICE KIA",
+        "accountNumber": "K261P",
+        "active": true,
+        "id": "8047_K261P",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_6099",
+        "accountName": "NEW VEH DEALER CASH KIA",
+        "accountNumber": "6099",
+        "active": true,
+        "id": "8047_6099",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K261I",
+        "accountName": "VEHICLE INCENTIVES KIA",
+        "accountNumber": "K261I",
+        "active": true,
+        "id": "8047_K261I",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_E680",
+        "accountName": "C/S P&A RO WARR EV",
+        "accountNumber": "E680",
+        "active": true,
+        "id": "8047_E680",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_E681",
+        "accountName": "C/S P&A RO INTERNAL EV",
+        "accountNumber": "E681",
+        "active": true,
+        "id": "8047_E681",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_G860",
+        "accountName": "C/S NEW GAP",
+        "accountNumber": "G860",
+        "active": true,
+        "id": "8047_G860",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_E682",
+        "accountName": "C/S P&A CNT RETAIL EV",
+        "accountNumber": "E682",
+        "active": true,
+        "id": "8047_E682",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_E683",
+        "accountName": "C/S P&A INTERNET WHSL EV",
+        "accountNumber": "E683",
+        "active": true,
+        "id": "8047_E683",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_G861",
+        "accountName": "C/S USED GAP",
+        "accountNumber": "G861",
+        "active": true,
+        "id": "8047_G861",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_E444",
+        "accountName": "SLS NEW SERVICE CONTRACTS",
+        "accountNumber": "E444",
+        "active": true,
+        "id": "8047_E444",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_066F",
+        "accountName": "CONTRIBUTION P&A",
+        "accountNumber": "066F",
+        "active": true,
+        "id": "8047_066F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_296E",
+        "accountName": "ACCUM AMORT-ORGAN. COST",
+        "accountNumber": "296E",
+        "active": true,
+        "id": "8047_296E",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_066D",
+        "accountName": "CONTRIBUTION MECH",
+        "accountNumber": "066D",
+        "active": true,
+        "id": "8047_066D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_296D",
+        "accountName": "CONV. NOT TO COMPETE",
+        "accountNumber": "296D",
+        "active": true,
+        "id": "8047_296D",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_296C",
+        "accountName": "ACCUM AMORT. CHEV",
+        "accountNumber": "296C",
+        "active": true,
+        "id": "8047_296C",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_066B",
+        "accountName": "CONTRIBUTION USD",
+        "accountNumber": "066B",
+        "active": true,
+        "id": "8047_066B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_296B",
+        "accountName": "ACCUM,AMORT. BUICK",
+        "accountNumber": "296B",
+        "active": true,
+        "id": "8047_296B",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_078A",
+        "accountName": "INT FLOORPLAN CREDIT NEW",
+        "accountNumber": "078A",
+        "active": true,
+        "id": "8047_078A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_066A",
+        "accountName": "CONTRIBUTION NEW",
+        "accountNumber": "066A",
+        "active": true,
+        "id": "8047_066A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_078B",
+        "accountName": "INT FLOORPLAN CREDIT USD",
+        "accountNumber": "078B",
+        "active": true,
+        "id": "8047_078B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_G811",
+        "accountName": "SLS USED GAP",
+        "accountNumber": "G811",
+        "active": true,
+        "id": "8047_G811",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_G810",
+        "accountName": "SLS NEW GAP",
+        "accountNumber": "G810",
+        "active": true,
+        "id": "8047_G810",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_0970",
+        "accountName": "BONUS EMPLOYEE",
+        "accountNumber": "0970",
+        "active": true,
+        "id": "8047_0970",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K810M",
+        "accountName": "PREPAID MAINT. KIA NEW",
+        "accountNumber": "K810M",
+        "active": true,
+        "id": "8047_K810M",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K605H",
+        "accountName": "C/S N/T KIA CARNIVAL HEV",
+        "accountNumber": "K605H",
+        "active": true,
+        "id": "8047_K605H",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_061E",
+        "accountName": "OTHER SUPPLY BODY SHOP",
+        "accountNumber": "061E",
+        "active": true,
+        "id": "8047_061E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_061F",
+        "accountName": "OTHER SUPPLY P&A",
+        "accountNumber": "061F",
+        "active": true,
+        "id": "8047_061F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_097F",
+        "accountName": "BONUS EMPLOYEES-PARTS",
+        "accountNumber": "097F",
+        "active": true,
+        "id": "8047_097F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_061D",
+        "accountName": "OTHER SUPPLY MECH",
+        "accountNumber": "061D",
+        "active": true,
+        "id": "8047_061D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_085F",
+        "accountName": "INS BLDGS & IMPROV P&A",
+        "accountNumber": "085F",
+        "active": true,
+        "id": "8047_085F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_061A",
+        "accountName": "OTHER SUPPLY NEW",
+        "accountNumber": "061A",
+        "active": true,
+        "id": "8047_061A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_097D",
+        "accountName": "BONUS EMPLOYEES-SERVICE",
+        "accountNumber": "097D",
+        "active": true,
+        "id": "8047_097D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_061B",
+        "accountName": "OTHER SUPPLY USD",
+        "accountNumber": "061B",
+        "active": true,
+        "id": "8047_061B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_085D",
+        "accountName": "INS BLDGS & IMPROV MECH",
+        "accountNumber": "085D",
+        "active": true,
+        "id": "8047_085D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_085A",
+        "accountName": "INS BLDGS & IMPROV NEW",
+        "accountNumber": "085A",
+        "active": true,
+        "id": "8047_085A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_097B",
+        "accountName": "BONUS EMPLOYEES-USED",
+        "accountNumber": "097B",
+        "active": true,
+        "id": "8047_097B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_085B",
+        "accountName": "INS BLDGS & IMPROV USD",
+        "accountNumber": "085B",
+        "active": true,
+        "id": "8047_085B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_097A",
+        "accountName": "BONUS EMPLOYEE-NEW",
+        "accountNumber": "097A",
+        "active": true,
+        "id": "8047_097A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_060F",
+        "accountName": "OFF SUPPLY & EXP P&A",
+        "accountNumber": "060F",
+        "active": true,
+        "id": "8047_060F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K604H",
+        "accountName": "C/S N/C KIA OPTIMA HYBRID",
+        "accountNumber": "K604H",
+        "active": true,
+        "id": "8047_K604H",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_060D",
+        "accountName": "OFF SUPPLY & EXP MECH",
+        "accountNumber": "060D",
+        "active": true,
+        "id": "8047_060D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_084F",
+        "accountName": "TAXES REAL ESTATE P&A",
+        "accountNumber": "084F",
+        "active": true,
+        "id": "8047_084F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_072F",
+        "accountName": "LEGAL & AUDIT P&A",
+        "accountNumber": "072F",
+        "active": true,
+        "id": "8047_072F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_060B",
+        "accountName": "OFF SUPPLY & EXP USD",
+        "accountNumber": "060B",
+        "active": true,
+        "id": "8047_060B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_084D",
+        "accountName": "TAXES REAL ESTATE MECH",
+        "accountNumber": "084D",
+        "active": true,
+        "id": "8047_084D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_072D",
+        "accountName": "LEGAL & AUDIT MECH",
+        "accountNumber": "072D",
+        "active": true,
+        "id": "8047_072D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_072A",
+        "accountName": "LEGAL & AUDIT NEW",
+        "accountNumber": "072A",
+        "active": true,
+        "id": "8047_072A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_084B",
+        "accountName": "TAXES REAL ESTATE USD",
+        "accountNumber": "084B",
+        "active": true,
+        "id": "8047_084B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_294",
+        "accountName": "NOTE&ACCT REC-OTHER",
+        "accountNumber": "294",
+        "active": true,
+        "id": "8047_294",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_060A",
+        "accountName": "OFF SUPPLY & EXP NEW",
+        "accountNumber": "060A",
+        "active": true,
+        "id": "8047_060A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_072B",
+        "accountName": "LEGAL & AUDIT USD",
+        "accountNumber": "072B",
+        "active": true,
+        "id": "8047_072B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_293",
+        "accountName": "NOTE&ACCT REC-OFFICERS",
+        "accountNumber": "293",
+        "active": true,
+        "id": "8047_293",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_296",
+        "accountName": "OTHER INVEST&MISC ASSETS",
+        "accountNumber": "296",
+        "active": true,
+        "id": "8047_296",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_084A",
+        "accountName": "TAXES REAL ESTATE NEW",
+        "accountNumber": "084A",
+        "active": true,
+        "id": "8047_084A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_291",
+        "accountName": "LIFE INS-CASH VALUE",
+        "accountNumber": "291",
+        "active": true,
+        "id": "8047_291",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_287",
+        "accountName": "IT - HARDWARE",
+        "accountNumber": "287",
+        "active": true,
+        "id": "8047_287",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_286",
+        "accountName": "LEASEHOLDS",
+        "accountNumber": "286",
+        "active": true,
+        "id": "8047_286",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_289",
+        "accountName": "OTHER FIXED ASSETS",
+        "accountNumber": "289",
+        "active": true,
+        "id": "8047_289",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_288",
+        "accountName": "IT - SOFTWARE",
+        "accountNumber": "288",
+        "active": true,
+        "id": "8047_288",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_0990",
+        "accountName": "INCOME TAX CURR YEAR",
+        "accountNumber": "0990",
+        "active": true,
+        "id": "8047_0990",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K089A",
+        "accountName": "BAIT TAXES NEW",
+        "accountNumber": "K089A",
+        "active": true,
+        "id": "8047_K089A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_051F",
+        "accountName": "CO VEH EXP P&A",
+        "accountNumber": "051F",
+        "active": true,
+        "id": "8047_051F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K089B",
+        "accountName": "BAIT TAXES USED",
+        "accountNumber": "K089B",
+        "active": true,
+        "id": "8047_K089B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K065A",
+        "accountName": "NEW ADVERT DEPTMNTL KIA",
+        "accountNumber": "K065A",
+        "active": true,
+        "id": "8047_K065A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_051D",
+        "accountName": "CO VEH EXP MECH",
+        "accountNumber": "051D",
+        "active": true,
+        "id": "8047_051D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_075F",
+        "accountName": "TRAINING P&A",
+        "accountNumber": "075F",
+        "active": true,
+        "id": "8047_075F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_3900",
+        "accountName": "CAPITAL STOCK",
+        "accountNumber": "3900",
+        "active": true,
+        "id": "8047_3900",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_K065B",
+        "accountName": "USED ADVERT DEPMNTL KIA",
+        "accountNumber": "K065B",
+        "active": true,
+        "id": "8047_K065B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K089D",
+        "accountName": "BAIT TAXES SERVICE",
+        "accountNumber": "K089D",
+        "active": true,
+        "id": "8047_K089D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_063F",
+        "accountName": "E-COMM ADVERTIS/FEES P&A",
+        "accountNumber": "063F",
+        "active": true,
+        "id": "8047_063F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_051B",
+        "accountName": "CO VEH EXP USD",
+        "accountNumber": "051B",
+        "active": true,
+        "id": "8047_051B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_075D",
+        "accountName": "TRAINING MECH",
+        "accountNumber": "075D",
+        "active": true,
+        "id": "8047_075D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_283",
+        "accountName": "PARTS & ACCESS EQUIP",
+        "accountNumber": "283",
+        "active": true,
+        "id": "8047_283",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_063D",
+        "accountName": "E-COMM ADVERTIS/FEES MECH",
+        "accountNumber": "063D",
+        "active": true,
+        "id": "8047_063D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_087F",
+        "accountName": "HT LHT PWR WTR P&A",
+        "accountNumber": "087F",
+        "active": true,
+        "id": "8047_087F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_282",
+        "accountName": "MACH & SHOP EQUIP",
+        "accountNumber": "282",
+        "active": true,
+        "id": "8047_282",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_063A",
+        "accountName": "E-COMM ADVERTIS/FEES NEW",
+        "accountNumber": "063A",
+        "active": true,
+        "id": "8047_063A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_075B",
+        "accountName": "TRAINING USD",
+        "accountNumber": "075B",
+        "active": true,
+        "id": "8047_075B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_285",
+        "accountName": "COMPANY VEHICLES",
+        "accountNumber": "285",
+        "active": true,
+        "id": "8047_285",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_051A",
+        "accountName": "CO VEH EXP NEW",
+        "accountNumber": "051A",
+        "active": true,
+        "id": "8047_051A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_063B",
+        "accountName": "E-COMM ADVERTIS/FEES USD",
+        "accountNumber": "063B",
+        "active": true,
+        "id": "8047_063B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_087D",
+        "accountName": "HT LHT PWR WTR MECH",
+        "accountNumber": "087D",
+        "active": true,
+        "id": "8047_087D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_284",
+        "accountName": "FURNITURE & FIXTURES",
+        "accountNumber": "284",
+        "active": true,
+        "id": "8047_284",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_087A",
+        "accountName": "HT LHT PWR WTR NEW",
+        "accountNumber": "087A",
+        "active": true,
+        "id": "8047_087A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_075A",
+        "accountName": "TRAINING NEW",
+        "accountNumber": "075A",
+        "active": true,
+        "id": "8047_075A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_087B",
+        "accountName": "HT LHT PWR WTR USD",
+        "accountNumber": "087B",
+        "active": true,
+        "id": "8047_087B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K607H",
+        "accountName": "C/S N/C KIA SORENTO HEV",
+        "accountNumber": "K607H",
+        "active": true,
+        "id": "8047_K607H",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_281",
+        "accountName": "BLDGS & IMPROVEMENTS",
+        "accountNumber": "281",
+        "active": true,
+        "id": "8047_281",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_280",
+        "accountName": "LAND",
+        "accountNumber": "280",
+        "active": true,
+        "id": "8047_280",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_399",
+        "accountName": "PROFIT OR LOSS",
+        "accountNumber": "399",
+        "active": true,
+        "id": "8047_399",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_277",
+        "accountName": "L&R NEW UNITS FOR LEASE *",
+        "accountNumber": "277",
+        "active": true,
+        "id": "8047_277",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_E644",
+        "accountName": "C/S NEW SERVICE CONTRACTS",
+        "accountNumber": "E644",
+        "active": true,
+        "id": "8047_E644",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K811M",
+        "accountName": "PREPAID MAINT. USED",
+        "accountNumber": "K811M",
+        "active": true,
+        "id": "8047_K811M",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_0980",
+        "accountName": "BONUS OWNERS",
+        "accountNumber": "0980",
+        "active": true,
+        "id": "8047_0980",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K076A",
+        "accountName": "NEW KIA INTER FLOORPLAN",
+        "accountNumber": "K076A",
+        "active": true,
+        "id": "8047_K076A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_086F",
+        "accountName": "INTEREST MORTGAGES P&A",
+        "accountNumber": "086F",
+        "active": true,
+        "id": "8047_086F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_074F",
+        "accountName": "TELEPHONE P&A",
+        "accountNumber": "074F",
+        "active": true,
+        "id": "8047_074F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K076C",
+        "accountName": "CMA INTEREST",
+        "accountNumber": "K076C",
+        "active": true,
+        "id": "8047_K076C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_086D",
+        "accountName": "INTEREST MORTGAGES MECH",
+        "accountNumber": "086D",
+        "active": true,
+        "id": "8047_086D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_074D",
+        "accountName": "TELEPHONE MECH",
+        "accountNumber": "074D",
+        "active": true,
+        "id": "8047_074D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_271",
+        "accountName": "PREPAID INSURANCE",
+        "accountNumber": "271",
+        "active": true,
+        "id": "8047_271",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_074A",
+        "accountName": "TELEPHONE NEW",
+        "accountNumber": "074A",
+        "active": true,
+        "id": "8047_074A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_086B",
+        "accountName": "INTEREST MORTGAGES USD",
+        "accountNumber": "086B",
+        "active": true,
+        "id": "8047_086B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_274",
+        "accountName": "PREPAID OTHER EXPENSE",
+        "accountNumber": "274",
+        "active": true,
+        "id": "8047_274",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_074B",
+        "accountName": "TELEPHONE USD",
+        "accountNumber": "074B",
+        "active": true,
+        "id": "8047_074B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_086A",
+        "accountName": "INTEREST MORTGAGES NEW",
+        "accountNumber": "086A",
+        "active": true,
+        "id": "8047_086A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_270",
+        "accountName": "PREPAID TAXES",
+        "accountNumber": "270",
+        "active": true,
+        "id": "8047_270",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_390",
+        "accountName": "DRAWINGS",
+        "accountNumber": "390",
+        "active": true,
+        "id": "8047_390",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_025A",
+        "accountName": "TAXES PAYROLL NEW",
+        "accountNumber": "025A",
+        "active": true,
+        "id": "8047_025A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_013A",
+        "accountName": "DELIVERY EXP NEW",
+        "accountNumber": "013A",
+        "active": true,
+        "id": "8047_013A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_025B",
+        "accountName": "TAXES PAYROLL USD",
+        "accountNumber": "025B",
+        "active": true,
+        "id": "8047_025B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_070GF",
+        "accountName": "CLIENT GIFTS PARTS",
+        "accountNumber": "070GF",
+        "active": true,
+        "id": "8047_070GF",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_070GD",
+        "accountName": "CLIENT GIFTS SERVICE",
+        "accountNumber": "070GD",
+        "active": true,
+        "id": "8047_070GD",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_070GB",
+        "accountName": "CLIENT GIFTS USED",
+        "accountNumber": "070GB",
+        "active": true,
+        "id": "8047_070GB",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_070GA",
+        "accountName": "CLIENT GIFTS NEW",
+        "accountNumber": "070GA",
+        "active": true,
+        "id": "8047_070GA",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_3520",
+        "accountName": "OTHER NOTES/CONT. PAYABLE",
+        "accountNumber": "3520",
+        "active": true,
+        "id": "8047_3520",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_K027B",
+        "accountName": "VACATION & TIME OFF USED",
+        "accountNumber": "K027B",
+        "active": true,
+        "id": "8047_K027B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K027D",
+        "accountName": "VACATION & TIME OFF SERV",
+        "accountNumber": "K027D",
+        "active": true,
+        "id": "8047_K027D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K027F",
+        "accountName": "VACATION & TIME OFF PARTS",
+        "accountNumber": "K027F",
+        "active": true,
+        "id": "8047_K027F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K811",
+        "accountName": "SLS USED AFTERMARKET - KI",
+        "accountNumber": "K811",
+        "active": true,
+        "id": "8047_K811",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K810",
+        "accountName": "SLS NEW AFTERMARKET PROD",
+        "accountNumber": "K810",
+        "active": true,
+        "id": "8047_K810",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_261",
+        "accountName": "FACTORY RECEIVABLES",
+        "accountNumber": "261",
+        "active": true,
+        "id": "8047_261",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_263",
+        "accountName": "WARRANTY CLAIMS *P",
+        "accountNumber": "263",
+        "active": true,
+        "id": "8047_263",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_262",
+        "accountName": "DUE FROM GMAC",
+        "accountNumber": "262",
+        "active": true,
+        "id": "8047_262",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_025E",
+        "accountName": "TAXES PAYROLL BODY SHOP",
+        "accountNumber": "025E",
+        "active": true,
+        "id": "8047_025E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_025F",
+        "accountName": "TAXES PAYROLL P&A",
+        "accountNumber": "025F",
+        "active": true,
+        "id": "8047_025F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_013B",
+        "accountName": "DELIVERY EXP USD",
+        "accountNumber": "013B",
+        "active": true,
+        "id": "8047_013B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_380",
+        "accountName": "INVESTMENTS",
+        "accountNumber": "380",
+        "active": true,
+        "id": "8047_380",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_025D",
+        "accountName": "TAXES PAYROLL MECH",
+        "accountNumber": "025D",
+        "active": true,
+        "id": "8047_025D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K027A",
+        "accountName": "VACATION & TIME OFF NEW",
+        "accountNumber": "K027A",
+        "active": true,
+        "id": "8047_K027A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_905P",
+        "accountName": "KIA FLOOR PLAN ASSISTANCE",
+        "accountNumber": "905P",
+        "active": true,
+        "id": "8047_905P",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8047_8047_024A",
+        "accountName": "ABSENTEE COMP NEW",
+        "accountNumber": "024A",
+        "active": true,
+        "id": "8047_024A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_375",
+        "accountName": "DIVIDENDS/DISTRIBUTIONS",
+        "accountNumber": "375",
+        "active": true,
+        "id": "8047_375",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_905R",
+        "accountName": "RENTAL VEHICLE INCOME",
+        "accountNumber": "905R",
+        "active": true,
+        "id": "8047_905R",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8047_8047_K450B",
+        "accountName": "SLS U/T RTL BEFORE RECON",
+        "accountNumber": "K450B",
+        "active": true,
+        "id": "8047_K450B",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K450A",
+        "accountName": "SLS USD CPO KIA TRUCK RET",
+        "accountNumber": "K450A",
+        "active": true,
+        "id": "8047_K450A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_492",
+        "accountName": "SLS P&A MISCELLANEOUS",
+        "accountNumber": "492",
+        "active": true,
+        "id": "8047_492",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_370",
+        "accountName": "RETAINED EARNINGS",
+        "accountNumber": "370",
+        "active": true,
+        "id": "8047_370",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_491",
+        "accountName": "SLS P&A GAS OIL & GREASE",
+        "accountNumber": "491",
+        "active": true,
+        "id": "8047_491",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_024F",
+        "accountName": "ABSENTEE COMP P&A",
+        "accountNumber": "024F",
+        "active": true,
+        "id": "8047_024F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_252",
+        "accountName": "INV OTHER-UNICAP",
+        "accountNumber": "252",
+        "active": true,
+        "id": "8047_252",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_905F",
+        "accountName": "KIA RETAILER SUPPORT KRS",
+        "accountNumber": "905F",
+        "active": true,
+        "id": "8047_905F",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8047_8047_024D",
+        "accountName": "ABSENTEE COMP MECH",
+        "accountNumber": "024D",
+        "active": true,
+        "id": "8047_024D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_024B",
+        "accountName": "ABSENTEE COMP USD",
+        "accountNumber": "024B",
+        "active": true,
+        "id": "8047_024B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_242A",
+        "accountName": "INV-PARTS & ACCESS NON-GM",
+        "accountNumber": "242A",
+        "active": true,
+        "id": "8047_242A",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_490",
+        "accountName": "SLS P&A TIRES",
+        "accountNumber": "490",
+        "active": true,
+        "id": "8047_490",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_015B",
+        "accountName": "POLICY WORK VEH USD",
+        "accountNumber": "015B",
+        "active": true,
+        "id": "8047_015B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_027D",
+        "accountName": "EMPL BENEFITS MECH",
+        "accountNumber": "027D",
+        "active": true,
+        "id": "8047_027D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_246",
+        "accountName": "INV SUBLET REPAIRS",
+        "accountNumber": "246",
+        "active": true,
+        "id": "8047_246",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_027A",
+        "accountName": "EMPL BENEFITS NEW",
+        "accountNumber": "027A",
+        "active": true,
+        "id": "8047_027A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_015A",
+        "accountName": "POLICY WORK VEH NEW",
+        "accountNumber": "015A",
+        "active": true,
+        "id": "8047_015A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_027B",
+        "accountName": "EMPL BENEFITS USD",
+        "accountNumber": "027B",
+        "active": true,
+        "id": "8047_027B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_001",
+        "accountName": "TEMP/AP",
+        "accountNumber": "001",
+        "active": true,
+        "id": "8047_001",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_243",
+        "accountName": "INV TIRES",
+        "accountNumber": "243",
+        "active": true,
+        "id": "8047_243",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_242",
+        "accountName": "INV-PARTS & ACCESS GM",
+        "accountNumber": "242",
+        "active": true,
+        "id": "8047_242",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_484",
+        "accountName": "SLS P&A ACCESSORIES",
+        "accountNumber": "484",
+        "active": true,
+        "id": "8047_484",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_245",
+        "accountName": "INV PAINT & B/S MATL",
+        "accountNumber": "245",
+        "active": true,
+        "id": "8047_245",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_244",
+        "accountName": "INV GAS, OIL, GREASE",
+        "accountNumber": "244",
+        "active": true,
+        "id": "8047_244",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_220W",
+        "accountName": "WHOLESALE VEHICLE RECEIVA",
+        "accountNumber": "220W",
+        "active": true,
+        "id": "8047_220W",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_220P",
+        "accountName": "PARTS STORE CREDITS",
+        "accountNumber": "220P",
+        "active": true,
+        "id": "8047_220P",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_481",
+        "accountName": "SLS P&A INTERNAL",
+        "accountNumber": "481",
+        "active": true,
+        "id": "8047_481",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_480",
+        "accountName": "SLS P&A WARRANTY CLAIMS",
+        "accountNumber": "480",
+        "active": true,
+        "id": "8047_480",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_241",
+        "accountName": "INV USED TRUCKS *P",
+        "accountNumber": "241",
+        "active": true,
+        "id": "8047_241",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_483",
+        "accountName": "SLS P&A WHOLESALE",
+        "accountNumber": "483",
+        "active": true,
+        "id": "8047_483",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_482",
+        "accountName": "SLS P&A COUNTER RETAIL",
+        "accountNumber": "482",
+        "active": true,
+        "id": "8047_482",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_027E",
+        "accountName": "EMPL BENEFITS BODY SHOP",
+        "accountNumber": "027E",
+        "active": true,
+        "id": "8047_027E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K247A",
+        "accountName": "WORK IN PROCESS KIA *P",
+        "accountNumber": "K247A",
+        "active": true,
+        "id": "8047_K247A",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_027F",
+        "accountName": "EMPL BENEFITS P&A",
+        "accountNumber": "027F",
+        "active": true,
+        "id": "8047_027F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_026B",
+        "accountName": "INCENTIVE SUPERVISION USD",
+        "accountNumber": "026B",
+        "active": true,
+        "id": "8047_026B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_357",
+        "accountName": "DEPR IT - HARDWARE",
+        "accountNumber": "357",
+        "active": true,
+        "id": "8047_357",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_356",
+        "accountName": "AMORT OF LEASEHOLDS",
+        "accountNumber": "356",
+        "active": true,
+        "id": "8047_356",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_477",
+        "accountName": "P&A CUSTOMER BODY OTH/INT",
+        "accountNumber": "477",
+        "active": true,
+        "id": "8047_477",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_359",
+        "accountName": "DEPR OTHER FIXED ASSETS",
+        "accountNumber": "359",
+        "active": true,
+        "id": "8047_359",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_026A",
+        "accountName": "INCENTIVE SUPERVISION NEW",
+        "accountNumber": "026A",
+        "active": true,
+        "id": "8047_026A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_358",
+        "accountName": "DEPR IT - SOFTWARE",
+        "accountNumber": "358",
+        "active": true,
+        "id": "8047_358",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_479",
+        "accountName": "BODY SHOP PAINT/MATERIALS",
+        "accountNumber": "479",
+        "active": true,
+        "id": "8047_479",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_353",
+        "accountName": "DEPR PARTS & ACC EQ",
+        "accountNumber": "353",
+        "active": true,
+        "id": "8047_353",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_450C",
+        "accountName": "SALES USED TRUCKS CAC DEA",
+        "accountNumber": "450C",
+        "active": true,
+        "id": "8047_450C",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_352",
+        "accountName": "DEPR MACH & SHOP EQ",
+        "accountNumber": "352",
+        "active": true,
+        "id": "8047_352",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_473",
+        "accountName": "INTERNAL BODY SHOP LABOR",
+        "accountNumber": "473",
+        "active": true,
+        "id": "8047_473",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_355",
+        "accountName": "DEPR CO VEHICLES",
+        "accountNumber": "355",
+        "active": true,
+        "id": "8047_355",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_354",
+        "accountName": "DEPR FURN & FIXTURE",
+        "accountNumber": "354",
+        "active": true,
+        "id": "8047_354",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_LFL",
+        "accountName": "LUBE FOR LIFE-SERVICE POL",
+        "accountNumber": "LFL",
+        "active": true,
+        "id": "8047_LFL",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_220K",
+        "accountName": "BODY SHOP RECEIVABLES JK",
+        "accountNumber": "220K",
+        "active": true,
+        "id": "8047_220K",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_220J",
+        "accountName": "AJAM RECEIVABLES",
+        "accountNumber": "220J",
+        "active": true,
+        "id": "8047_220J",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_220I",
+        "accountName": "INSURANCE COMPANY RECEIVA",
+        "accountNumber": "220I",
+        "active": true,
+        "id": "8047_220I",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_351",
+        "accountName": "DEPR BLDGS & IMPROV",
+        "accountNumber": "351",
+        "active": true,
+        "id": "8047_351",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_220D",
+        "accountName": "SERVICE & PARTS DEPOSITS",
+        "accountNumber": "220D",
+        "active": true,
+        "id": "8047_220D",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_471",
+        "accountName": "P&A INTERNAL BODY OTHER",
+        "accountNumber": "471",
+        "active": true,
+        "id": "8047_471",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_026F",
+        "accountName": "INCENTIVE SUPERVISION P&A",
+        "accountNumber": "026F",
+        "active": true,
+        "id": "8047_026F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_220C",
+        "accountName": "CREDIT CARDS CLEARING",
+        "accountNumber": "220C",
+        "active": true,
+        "id": "8047_220C",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_220B",
+        "accountName": "VEHICLE DEPOSITS",
+        "accountNumber": "220B",
+        "active": true,
+        "id": "8047_220B",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_026D",
+        "accountName": "INCENTIVE SUPERVISION MEC",
+        "accountNumber": "026D",
+        "active": true,
+        "id": "8047_026D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_220A",
+        "accountName": "VEHICLE RECEIVABLE",
+        "accountNumber": "220A",
+        "active": true,
+        "id": "8047_220A",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_069A",
+        "accountName": "OUTSIDE SERV OTHER NEW",
+        "accountNumber": "069A",
+        "active": true,
+        "id": "8047_069A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_225",
+        "accountName": "CASH SALES",
+        "accountNumber": "225",
+        "active": true,
+        "id": "8047_225",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_467",
+        "accountName": "SLS P&A SRV CAR/LD TRK RO",
+        "accountNumber": "467",
+        "active": true,
+        "id": "8047_467",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_069B",
+        "accountName": "OUTSIDE SERV OTHER USD",
+        "accountNumber": "069B",
+        "active": true,
+        "id": "8047_069B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_466",
+        "accountName": "SLS MECH SUBLET REPAIRS",
+        "accountNumber": "466",
+        "active": true,
+        "id": "8047_466",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_469",
+        "accountName": "SLS MECH SHOP SUPPLIES",
+        "accountNumber": "469",
+        "active": true,
+        "id": "8047_469",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_226",
+        "accountName": "RECEIPT CLEARING",
+        "accountNumber": "226",
+        "active": true,
+        "id": "8047_226",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_262Z",
+        "accountName": "AMERICREDIT DEALER RESERV",
+        "accountNumber": "262Z",
+        "active": true,
+        "id": "8047_262Z",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_468",
+        "accountName": "SLS P&A SRV CM,FT,MDTK RO",
+        "accountNumber": "468",
+        "active": true,
+        "id": "8047_468",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_463",
+        "accountName": "SLS MECH INTERNAL LABOR",
+        "accountNumber": "463",
+        "active": true,
+        "id": "8047_463",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_220",
+        "accountName": "ACCOUNTS RECEIVABLE-P&S",
+        "accountNumber": "220",
+        "active": true,
+        "id": "8047_220",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_262X",
+        "accountName": "CONDOR FINANCE RESERVE",
+        "accountNumber": "262X",
+        "active": true,
+        "id": "8047_262X",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_462",
+        "accountName": "SLS MECH WARR CLAIM LBR",
+        "accountNumber": "462",
+        "active": true,
+        "id": "8047_462",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_262W",
+        "accountName": "HSBC",
+        "accountNumber": "262W",
+        "active": true,
+        "id": "8047_262W",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_K240R",
+        "accountName": "LOANER CARS",
+        "accountNumber": "K240R",
+        "active": true,
+        "id": "8047_K240R",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_222",
+        "accountName": "MV FEES",
+        "accountNumber": "222",
+        "active": true,
+        "id": "8047_222",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_262V",
+        "accountName": "DEALER RESERVE VALLEY",
+        "accountNumber": "262V",
+        "active": true,
+        "id": "8047_262V",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_464",
+        "accountName": "SLS MECH NEW VEH INSP LBR",
+        "accountNumber": "464",
+        "active": true,
+        "id": "8047_464",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_262U",
+        "accountName": "DEALER RESERVE CORE STATE",
+        "accountNumber": "262U",
+        "active": true,
+        "id": "8047_262U",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_262T",
+        "accountName": "TRUST RESERVE",
+        "accountNumber": "262T",
+        "active": true,
+        "id": "8047_262T",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_262S",
+        "accountName": "SUMMIT RESERVE",
+        "accountNumber": "262S",
+        "active": true,
+        "id": "8047_262S",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_262P",
+        "accountName": "PROVIDENT RESERVE",
+        "accountNumber": "262P",
+        "active": true,
+        "id": "8047_262P",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_262O",
+        "accountName": "ONYX RESERVE",
+        "accountNumber": "262O",
+        "active": true,
+        "id": "8047_262O",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_274P",
+        "accountName": "PREPAID PRODUCT CANCELS",
+        "accountNumber": "274P",
+        "active": true,
+        "id": "8047_274P",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_262N",
+        "accountName": "1ST UNION D/R",
+        "accountNumber": "262N",
+        "active": true,
+        "id": "8047_262N",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_3970",
+        "accountName": "ADD'L PAID IN CAPITAL",
+        "accountNumber": "3970",
+        "active": true,
+        "id": "8047_3970",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_060OD",
+        "accountName": "OFFICE EXPENSES SERVICE",
+        "accountNumber": "060OD",
+        "active": true,
+        "id": "8047_060OD",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_060OA",
+        "accountName": "OFFICE EXPENSES NEW",
+        "accountNumber": "060OA",
+        "active": true,
+        "id": "8047_060OA",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_060OB",
+        "accountName": "OFFICE EXPENSES USED",
+        "accountNumber": "060OB",
+        "active": true,
+        "id": "8047_060OB",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_033F",
+        "accountName": "FREIGHT,POSTAGE,SHIP P&A",
+        "accountNumber": "033F",
+        "active": true,
+        "id": "8047_033F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_021F",
+        "accountName": "SALARIES SUPRVSN P&A",
+        "accountNumber": "021F",
+        "active": true,
+        "id": "8047_021F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_033D",
+        "accountName": "FREIGHT,POSTAGE,SHIP MECH",
+        "accountNumber": "033D",
+        "active": true,
+        "id": "8047_033D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_461",
+        "accountName": "SLS SRV C/L COM,FLT,MDTRK",
+        "accountNumber": "461",
+        "active": true,
+        "id": "8047_461",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_021D",
+        "accountName": "SALARIES SUPRVSN MECH",
+        "accountNumber": "021D",
+        "active": true,
+        "id": "8047_021D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_460",
+        "accountName": "SLS SRV C/L CARS & LD TRK",
+        "accountNumber": "460",
+        "active": true,
+        "id": "8047_460",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_021A",
+        "accountName": "SALARIES SUPRVSN NEW",
+        "accountNumber": "021A",
+        "active": true,
+        "id": "8047_021A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_033B",
+        "accountName": "FREIGHT,POSTAGE,SHIP USD",
+        "accountNumber": "033B",
+        "active": true,
+        "id": "8047_033B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_069E",
+        "accountName": "OUTSIDE SERV OTHER BODY S",
+        "accountNumber": "069E",
+        "active": true,
+        "id": "8047_069E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_021B",
+        "accountName": "SALARIES SUPRVSN USD",
+        "accountNumber": "021B",
+        "active": true,
+        "id": "8047_021B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_069F",
+        "accountName": "OUTSIDE SERV OTHER P&A",
+        "accountNumber": "069F",
+        "active": true,
+        "id": "8047_069F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_033A",
+        "accountName": "FREIGHT,POSTAGE,SHIP NEW",
+        "accountNumber": "033A",
+        "active": true,
+        "id": "8047_033A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_069D",
+        "accountName": "OUTSIDE SERV OTHER MECH",
+        "accountNumber": "069D",
+        "active": true,
+        "id": "8047_069D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_068A",
+        "accountName": "OUTSIDE SERV DP NEW",
+        "accountNumber": "068A",
+        "active": true,
+        "id": "8047_068A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_334",
+        "accountName": "LONG TERM DEBT",
+        "accountNumber": "334",
+        "active": true,
+        "id": "8047_334",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_210",
+        "accountName": "NOTES REC CUSTOMER VEH",
+        "accountNumber": "210",
+        "active": true,
+        "id": "8047_210",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_331",
+        "accountName": "OTHER EXPENSES PAYABLE",
+        "accountNumber": "331",
+        "active": true,
+        "id": "8047_331",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_452",
+        "accountName": "SLS U/T WHOLESALE",
+        "accountNumber": "452",
+        "active": true,
+        "id": "8047_452",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_211",
+        "accountName": "NOTES REC CUSTOMER OTHER",
+        "accountNumber": "211",
+        "active": true,
+        "id": "8047_211",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_E467",
+        "accountName": "SLS P&A RO CUST MECH EV",
+        "accountNumber": "E467",
+        "active": true,
+        "id": "8047_E467",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_261S",
+        "accountName": "KIA INCENTIVE RECEIVABLE",
+        "accountNumber": "261S",
+        "active": true,
+        "id": "8047_261S",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_261R",
+        "accountName": "KIA RETAILER SUPPORT KRS",
+        "accountNumber": "261R",
+        "active": true,
+        "id": "8047_261R",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_261O",
+        "accountName": "KIA ORDER ASSISTANCE OA",
+        "accountNumber": "261O",
+        "active": true,
+        "id": "8047_261O",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_262L",
+        "accountName": "WELLS FARGO RESERVE",
+        "accountNumber": "262L",
+        "active": true,
+        "id": "8047_262L",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_68F",
+        "accountName": "OUTSIDE SERV DP B/S",
+        "accountNumber": "68F",
+        "active": true,
+        "id": "8047_68F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_E460",
+        "accountName": "SLS CUST MECH LABOR EV",
+        "accountNumber": "E460",
+        "active": true,
+        "id": "8047_E460",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_262J",
+        "accountName": "DEALER RESERVE AMERICREDI",
+        "accountNumber": "262J",
+        "active": true,
+        "id": "8047_262J",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_E462",
+        "accountName": "SLS WARR MECH LABOR EV",
+        "accountNumber": "E462",
+        "active": true,
+        "id": "8047_E462",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_E463",
+        "accountName": "SLS INT MECH LABOR EV",
+        "accountNumber": "E463",
+        "active": true,
+        "id": "8047_E463",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_020F",
+        "accountName": "SALARIES OWNERS P&A",
+        "accountNumber": "020F",
+        "active": true,
+        "id": "8047_020F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_262G",
+        "accountName": "GE CAPITAL RESERVE",
+        "accountNumber": "262G",
+        "active": true,
+        "id": "8047_262G",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_262F",
+        "accountName": "CITIZENS RESERVE",
+        "accountNumber": "262F",
+        "active": true,
+        "id": "8047_262F",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_E466",
+        "accountName": "SLS SUBLET REPR MECH EV",
+        "accountNumber": "E466",
+        "active": true,
+        "id": "8047_E466",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_E860M",
+        "accountName": "C/S NEW KIA PREPD MAIN EV",
+        "accountNumber": "E860M",
+        "active": true,
+        "id": "8047_E860M",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_020D",
+        "accountName": "SALARIES OWNERS MECH",
+        "accountNumber": "020D",
+        "active": true,
+        "id": "8047_020D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_262E",
+        "accountName": "DUE FROM CAPITAL ONE FINA",
+        "accountNumber": "262E",
+        "active": true,
+        "id": "8047_262E",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_690",
+        "accountName": "CST P&A TIRES",
+        "accountNumber": "690",
+        "active": true,
+        "id": "8047_690",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_262D",
+        "accountName": "DUE FROM FINANCE CO",
+        "accountNumber": "262D",
+        "active": true,
+        "id": "8047_262D",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_020B",
+        "accountName": "SALARIES OWNERS USD",
+        "accountNumber": "020B",
+        "active": true,
+        "id": "8047_020B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_068F",
+        "accountName": "OUTSIDE SERV DP P&A",
+        "accountNumber": "068F",
+        "active": true,
+        "id": "8047_068F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_262C",
+        "accountName": "HOUSEHOLD FINANCE",
+        "accountNumber": "262C",
+        "active": true,
+        "id": "8047_262C",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_692",
+        "accountName": "CST P&A MISCELLANEOUS",
+        "accountNumber": "692",
+        "active": true,
+        "id": "8047_692",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_262B",
+        "accountName": "SOVEREIGN BANK D/R",
+        "accountNumber": "262B",
+        "active": true,
+        "id": "8047_262B",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_691",
+        "accountName": "CST P&A GAS OIL & GREASE",
+        "accountNumber": "691",
+        "active": true,
+        "id": "8047_691",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_068D",
+        "accountName": "OUTSIDE SERV DP MECH",
+        "accountNumber": "068D",
+        "active": true,
+        "id": "8047_068D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_262A",
+        "accountName": "CHASE RESERVE",
+        "accountNumber": "262A",
+        "active": true,
+        "id": "8047_262A",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_020A",
+        "accountName": "SALARIES OWNERS NEW",
+        "accountNumber": "020A",
+        "active": true,
+        "id": "8047_020A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_068E",
+        "accountName": "OUTSIDE SERV DP B/S",
+        "accountNumber": "068E",
+        "active": true,
+        "id": "8047_068E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_068B",
+        "accountName": "OUTSIDE SERV DP USD",
+        "accountNumber": "068B",
+        "active": true,
+        "id": "8047_068B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_203",
+        "accountName": "EXCHANGE ACC",
+        "accountNumber": "203",
+        "active": true,
+        "id": "8047_203",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_324",
+        "accountName": "SALES TAX PAYABLE",
+        "accountNumber": "324",
+        "active": true,
+        "id": "8047_324",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_687",
+        "accountName": "PURCHASE ALLOWANCES",
+        "accountNumber": "687",
+        "active": true,
+        "id": "8047_687",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_202",
+        "accountName": "CASH IN BANK *P",
+        "accountNumber": "202",
+        "active": true,
+        "id": "8047_202",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_205",
+        "accountName": "CONTRACTS IN TRANSIT",
+        "accountNumber": "205",
+        "active": true,
+        "id": "8047_205",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_688",
+        "accountName": "ADJ P&A INVENTORY",
+        "accountNumber": "688",
+        "active": true,
+        "id": "8047_688",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_683",
+        "accountName": "CST P&A WHOLESALE",
+        "accountNumber": "683",
+        "active": true,
+        "id": "8047_683",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_682",
+        "accountName": "CST P&A COUNTER RETAIL",
+        "accountNumber": "682",
+        "active": true,
+        "id": "8047_682",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_201",
+        "accountName": "CASH ON HAND *P",
+        "accountNumber": "201",
+        "active": true,
+        "id": "8047_201",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_200",
+        "accountName": "PETTY CASH",
+        "accountNumber": "200",
+        "active": true,
+        "id": "8047_200",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_321",
+        "accountName": "SLRYS WGS COMM PAY",
+        "accountNumber": "321",
+        "active": true,
+        "id": "8047_321",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_684",
+        "accountName": "CST P&A ACCESSORIES",
+        "accountNumber": "684",
+        "active": true,
+        "id": "8047_684",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K230R",
+        "accountName": "RENTAL VEHICLE W/D",
+        "accountNumber": "K230R",
+        "active": true,
+        "id": "8047_K230R",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_070MF",
+        "accountName": "MEALS PARTS",
+        "accountNumber": "070MF",
+        "active": true,
+        "id": "8047_070MF",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_448",
+        "accountName": "SLS U/C WHOLESALE",
+        "accountNumber": "448",
+        "active": true,
+        "id": "8047_448",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_070MD",
+        "accountName": "MEALS SERVICE",
+        "accountNumber": "070MD",
+        "active": true,
+        "id": "8047_070MD",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_7650A",
+        "accountName": "BLDG & LAND IMPROVE/MAIN",
+        "accountNumber": "7650A",
+        "active": true,
+        "id": "8047_7650A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_7650B",
+        "accountName": "BLDG & LAND IMPROVE/MAIN",
+        "accountNumber": "7650B",
+        "active": true,
+        "id": "8047_7650B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_023E",
+        "accountName": "OTHER SLRY & WGS BODY SHP",
+        "accountNumber": "023E",
+        "active": true,
+        "id": "8047_023E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_681",
+        "accountName": "CST P&A INTERNAL",
+        "accountNumber": "681",
+        "active": true,
+        "id": "8047_681",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_023F",
+        "accountName": "OTHER SLRY & WGS P&A",
+        "accountNumber": "023F",
+        "active": true,
+        "id": "8047_023F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_680",
+        "accountName": "CST P&A WARRANTY CLAIMS",
+        "accountNumber": "680",
+        "active": true,
+        "id": "8047_680",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_7650D",
+        "accountName": "BLDG & LAND IMPROVE/MAIN",
+        "accountNumber": "7650D",
+        "active": true,
+        "id": "8047_7650D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_011B",
+        "accountName": "VEH SLS-COMP & OTH USD",
+        "accountNumber": "011B",
+        "active": true,
+        "id": "8047_011B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_023D",
+        "accountName": "OTHER SLRY & WGS MECH",
+        "accountNumber": "023D",
+        "active": true,
+        "id": "8047_023D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_7650F",
+        "accountName": "BLDG & LAND IMPROVE/MAIN",
+        "accountNumber": "7650F",
+        "active": true,
+        "id": "8047_7650F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_023A",
+        "accountName": "OTHER SLRY & WGS NEW",
+        "accountNumber": "023A",
+        "active": true,
+        "id": "8047_023A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_E490",
+        "accountName": "SLS P&A TIRE SALES EV",
+        "accountNumber": "E490",
+        "active": true,
+        "id": "8047_E490",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_011A",
+        "accountName": "VEH SLS-COMP & OTH NEW",
+        "accountNumber": "011A",
+        "active": true,
+        "id": "8047_011A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_023B",
+        "accountName": "OTHER SLRY & WGS USD",
+        "accountNumber": "023B",
+        "active": true,
+        "id": "8047_023B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_675",
+        "accountName": "ADJ BODY SHOP COST OF LBR",
+        "accountNumber": "675",
+        "active": true,
+        "id": "8047_675",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_677",
+        "accountName": "CST P&A BODY OTHER/INTER",
+        "accountNumber": "677",
+        "active": true,
+        "id": "8047_677",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_671",
+        "accountName": "P&A BODY INTERNAL OTHER",
+        "accountNumber": "671",
+        "active": true,
+        "id": "8047_671",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_673",
+        "accountName": "CST INTERNAL BODY LABOR",
+        "accountNumber": "673",
+        "active": true,
+        "id": "8047_673",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K241R",
+        "accountName": "LOANER TRUCKS",
+        "accountNumber": "K241R",
+        "active": true,
+        "id": "8047_K241R",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_679",
+        "accountName": "CST BODY SHOP PAINT/MATER",
+        "accountNumber": "679",
+        "active": true,
+        "id": "8047_679",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_060OF",
+        "accountName": "OFFICE EXPENSES PARTS",
+        "accountNumber": "060OF",
+        "active": true,
+        "id": "8047_060OF",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_E481",
+        "accountName": "SLS P&A RO INTERNAL EV",
+        "accountNumber": "E481",
+        "active": true,
+        "id": "8047_E481",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_070MB",
+        "accountName": "MEALS USED",
+        "accountNumber": "070MB",
+        "active": true,
+        "id": "8047_070MB",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_E482",
+        "accountName": "SLS P&A CNT RETAIL EV",
+        "accountNumber": "E482",
+        "active": true,
+        "id": "8047_E482",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_070MA",
+        "accountName": "MEALS NEW",
+        "accountNumber": "070MA",
+        "active": true,
+        "id": "8047_070MA",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_E483",
+        "accountName": "SLS P&A INTERNET WHLE EV",
+        "accountNumber": "E483",
+        "active": true,
+        "id": "8047_E483",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_022F",
+        "accountName": "SALARIES CLERICAL P&A",
+        "accountNumber": "022F",
+        "active": true,
+        "id": "8047_022F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_022D",
+        "accountName": "SALARIES CLERICAL MECH",
+        "accountNumber": "022D",
+        "active": true,
+        "id": "8047_022D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_670",
+        "accountName": "CST OF SALE CUST BODY LBR",
+        "accountNumber": "670",
+        "active": true,
+        "id": "8047_670",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_022B",
+        "accountName": "SALARIES CLERICAL USD",
+        "accountNumber": "022B",
+        "active": true,
+        "id": "8047_022B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_806L",
+        "accountName": "FINANCE INCOME NEW LEASE",
+        "accountNumber": "806L",
+        "active": true,
+        "id": "8047_806L",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_022A",
+        "accountName": "SALARIES CLERICAL NEW",
+        "accountNumber": "022A",
+        "active": true,
+        "id": "8047_022A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_E480",
+        "accountName": "SLS P&A WARR EV",
+        "accountNumber": "E480",
+        "active": true,
+        "id": "8047_E480",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_203D",
+        "accountName": "EXCHANGE-DENTAL",
+        "accountNumber": "203D",
+        "active": true,
+        "id": "8047_203D",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_665",
+        "accountName": "ADJ MECH COST OF LABOR",
+        "accountNumber": "665",
+        "active": true,
+        "id": "8047_665",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_301",
+        "accountName": "WE OWE",
+        "accountNumber": "301",
+        "active": true,
+        "id": "8047_301",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_664",
+        "accountName": "CST MECH NEW VEH INSP LBR",
+        "accountNumber": "664",
+        "active": true,
+        "id": "8047_664",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_203B",
+        "accountName": "BODY SHOP EXCHANGE ACCT",
+        "accountNumber": "203B",
+        "active": true,
+        "id": "8047_203B",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_667",
+        "accountName": "CST P&A SRV CAR/LD TRK RO",
+        "accountNumber": "667",
+        "active": true,
+        "id": "8047_667",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_203A",
+        "accountName": "EXCHANGE-AFLAC",
+        "accountNumber": "203A",
+        "active": true,
+        "id": "8047_203A",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_666",
+        "accountName": "CST MECH SUBLET REPAIRS",
+        "accountNumber": "666",
+        "active": true,
+        "id": "8047_666",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_661",
+        "accountName": "CST SRV CTR LBR CAR LDTRK",
+        "accountNumber": "661",
+        "active": true,
+        "id": "8047_661",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_660",
+        "accountName": "CST SRV C/L CARS & LD TRK",
+        "accountNumber": "660",
+        "active": true,
+        "id": "8047_660",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_300",
+        "accountName": "ACCOUNTS PAYABLE",
+        "accountNumber": "300",
+        "active": true,
+        "id": "8047_300",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_663",
+        "accountName": "CST MECH INTERNAL LABOR",
+        "accountNumber": "663",
+        "active": true,
+        "id": "8047_663",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_324L",
+        "accountName": "LUXURY SALES TAX",
+        "accountNumber": "324L",
+        "active": true,
+        "id": "8047_324L",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_662",
+        "accountName": "CST SRV QK LBR CAR/LD TRK",
+        "accountNumber": "662",
+        "active": true,
+        "id": "8047_662",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_4460",
+        "accountName": "SUBLET OTHER -SERV RENTAL",
+        "accountNumber": "4460",
+        "active": true,
+        "id": "8047_4460",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_669",
+        "accountName": "CST MECH SHOP SUPPLIES",
+        "accountNumber": "669",
+        "active": true,
+        "id": "8047_669",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_202V",
+        "accountName": "VALLEY NAT'L BANK",
+        "accountNumber": "202V",
+        "active": true,
+        "id": "8047_202V",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_324R",
+        "accountName": "STATE CHARGE RENTAL CARS",
+        "accountNumber": "324R",
+        "active": true,
+        "id": "8047_324R",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_668",
+        "accountName": "CST P&A SRV CM,FT,MDTK RO",
+        "accountNumber": "668",
+        "active": true,
+        "id": "8047_668",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_324S",
+        "accountName": ".4% MV SURCHARGE",
+        "accountNumber": "324S",
+        "active": true,
+        "id": "8047_324S",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_324T",
+        "accountName": "TIRE TAX",
+        "accountNumber": "324T",
+        "active": true,
+        "id": "8047_324T",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_K413",
+        "accountName": "SLS N/T KIA TELLURIDE RET",
+        "accountNumber": "K413",
+        "active": true,
+        "id": "8047_K413",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K655",
+        "accountName": "C/S SEV CONTRACTS USED",
+        "accountNumber": "K655",
+        "active": true,
+        "id": "8047_K655",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K412",
+        "accountName": "SLS N/C KIA STINGER RET.",
+        "accountNumber": "K412",
+        "active": true,
+        "id": "8047_K412",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_203N",
+        "accountName": "EXCHANGE-NADART",
+        "accountNumber": "203N",
+        "active": true,
+        "id": "8047_203N",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_K414",
+        "accountName": "SLS N/C KIA K5 RETAIL",
+        "accountNumber": "K414",
+        "active": true,
+        "id": "8047_K414",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_300A",
+        "accountName": "DEALER SWAP",
+        "accountNumber": "300A",
+        "active": true,
+        "id": "8047_300A",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_300B",
+        "accountName": "PAYOFFS",
+        "accountNumber": "300B",
+        "active": true,
+        "id": "8047_300B",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_202C",
+        "accountName": "CMA ACCOUNT",
+        "accountNumber": "202C",
+        "active": true,
+        "id": "8047_202C",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_323D",
+        "accountName": "LOCAL WITHOLD TAXES",
+        "accountNumber": "323D",
+        "active": true,
+        "id": "8047_323D",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_323E",
+        "accountName": "FED UNEMP TAXES",
+        "accountNumber": "323E",
+        "active": true,
+        "id": "8047_323E",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_432D",
+        "accountName": "SLS N/T RETAIL",
+        "accountNumber": "432D",
+        "active": true,
+        "id": "8047_432D",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_202A",
+        "accountName": "CASH IN BANK CHASE BANK",
+        "accountNumber": "202A",
+        "active": true,
+        "id": "8047_202A",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_323F",
+        "accountName": "STATE WITHOLD TAXES",
+        "accountNumber": "323F",
+        "active": true,
+        "id": "8047_323F",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_650C",
+        "accountName": "COS TRUCKS CAC DEALS",
+        "accountNumber": "650C",
+        "active": true,
+        "id": "8047_650C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_652",
+        "accountName": "CST U/T WHOLESALE",
+        "accountNumber": "652",
+        "active": true,
+        "id": "8047_652",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K409",
+        "accountName": "SLS N/C KIA CADENZA RETAI",
+        "accountNumber": "K409",
+        "active": true,
+        "id": "8047_K409",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K408",
+        "accountName": "SLS N/T KIA SELTOS RETAIL",
+        "accountNumber": "K408",
+        "active": true,
+        "id": "8047_K408",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K407",
+        "accountName": "SLS N/C KIA SORENTO RETAI",
+        "accountNumber": "K407",
+        "active": true,
+        "id": "8047_K407",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K402",
+        "accountName": "SLS N/C KIA NIRO HYB/PLUG",
+        "accountNumber": "K402",
+        "active": true,
+        "id": "8047_K402",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K644",
+        "accountName": "C/S N/C OTH SRV CONTACT K",
+        "accountNumber": "K644",
+        "active": true,
+        "id": "8047_K644",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_202R",
+        "accountName": "M&T DMV",
+        "accountNumber": "202R",
+        "active": true,
+        "id": "8047_202R",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_K401",
+        "accountName": "SLS N/C KIA SPORTAGE RETA",
+        "accountNumber": "K401",
+        "active": true,
+        "id": "8047_K401",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_202P",
+        "accountName": "M&T PAYROLL",
+        "accountNumber": "202P",
+        "active": true,
+        "id": "8047_202P",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_202O",
+        "accountName": "M&T OPERATING",
+        "accountNumber": "202O",
+        "active": true,
+        "id": "8047_202O",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_K406",
+        "accountName": "SLS N/C KIA K4/FORTE RTL",
+        "accountNumber": "K406",
+        "active": true,
+        "id": "8047_K406",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K648",
+        "accountName": "C/S USD VEH WHSL KIA",
+        "accountNumber": "K648",
+        "active": true,
+        "id": "8047_K648",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K405",
+        "accountName": "SLS N KIA CARNIVAL RETAIL",
+        "accountNumber": "K405",
+        "active": true,
+        "id": "8047_K405",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K404",
+        "accountName": "SLS N/C KIA OPTIMA RETAIL",
+        "accountNumber": "K404",
+        "active": true,
+        "id": "8047_K404",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K646",
+        "accountName": "C/S SUBLET REPAIRS MECH K",
+        "accountNumber": "K646",
+        "active": true,
+        "id": "8047_K646",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_202L",
+        "accountName": "VALLEY NATIONAL PPP LOAN",
+        "accountNumber": "202L",
+        "active": true,
+        "id": "8047_202L",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_K403",
+        "accountName": "SLS N/C KIA RIO RETAIL",
+        "accountNumber": "K403",
+        "active": true,
+        "id": "8047_K403",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_202G",
+        "accountName": "M&T CREDIT CARDS",
+        "accountNumber": "202G",
+        "active": true,
+        "id": "8047_202G",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_K446A",
+        "accountName": "SLS USED CPO KIA CAR RETA",
+        "accountNumber": "K446A",
+        "active": true,
+        "id": "8047_K446A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_202F",
+        "accountName": "CASH IN BANK VALLEY NAT'L",
+        "accountNumber": "202F",
+        "active": true,
+        "id": "8047_202F",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_323A",
+        "accountName": "FED WITHHOLD TAXES",
+        "accountNumber": "323A",
+        "active": true,
+        "id": "8047_323A",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_K446B",
+        "accountName": "SLS U/C RTL BEFORE RECON",
+        "accountNumber": "K446B",
+        "active": true,
+        "id": "8047_K446B",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_202E",
+        "accountName": "CASH IN BANK AJAM",
+        "accountNumber": "202E",
+        "active": true,
+        "id": "8047_202E",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_323B",
+        "accountName": "FED FICA TAXES",
+        "accountNumber": "323B",
+        "active": true,
+        "id": "8047_323B",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_323C",
+        "accountName": "STATE UNEMP TAXES",
+        "accountNumber": "323C",
+        "active": true,
+        "id": "8047_323C",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_K860M",
+        "accountName": "PREPAID MAINT.KIA COS NEW",
+        "accountNumber": "K860M",
+        "active": true,
+        "id": "8047_K860M",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_647",
+        "accountName": "RECON KIA CPO CAR RETAIL",
+        "accountNumber": "647",
+        "active": true,
+        "id": "8047_647",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K4011",
+        "accountName": "SLS N/C KIA SOUL RETAIL",
+        "accountNumber": "K4011",
+        "active": true,
+        "id": "8047_K4011",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_648",
+        "accountName": "CST U/C WHOLESALE",
+        "accountNumber": "648",
+        "active": true,
+        "id": "8047_648",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K677",
+        "accountName": "CST P&A BODY RO KIA",
+        "accountNumber": "K677",
+        "active": true,
+        "id": "8047_K677",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K311",
+        "accountName": "N/P USED VEHICLES KIA",
+        "accountNumber": "K311",
+        "active": true,
+        "id": "8047_K311",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_K401H",
+        "accountName": "SLS N/T KIA SPORT HEV/PLG",
+        "accountNumber": "K401H",
+        "active": true,
+        "id": "8047_K401H",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K310",
+        "accountName": "N/P NEW VEH & DEMOS KIA",
+        "accountNumber": "K310",
+        "active": true,
+        "id": "8047_K310",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_K671",
+        "accountName": "CST P&A INTERNAL BODY KIA",
+        "accountNumber": "K671",
+        "active": true,
+        "id": "8047_K671",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_203V",
+        "accountName": "EXCHANGE-VENDING",
+        "accountNumber": "203V",
+        "active": true,
+        "id": "8047_203V",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_203U",
+        "accountName": "EXCHANGE-UNION DUES",
+        "accountNumber": "203U",
+        "active": true,
+        "id": "8047_203U",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_324U",
+        "accountName": "USE TAX PAYABLE",
+        "accountNumber": "324U",
+        "active": true,
+        "id": "8047_324U",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_K663",
+        "accountName": "C/S INT MECH LABOR KIA",
+        "accountNumber": "K663",
+        "active": true,
+        "id": "8047_K663",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_300Z",
+        "accountName": "OPEN ITEM A/P",
+        "accountNumber": "300Z",
+        "active": true,
+        "id": "8047_300Z",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_K667",
+        "accountName": "C/S P&A RO CUST MECH KIA",
+        "accountNumber": "K667",
+        "active": true,
+        "id": "8047_K667",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K420",
+        "accountName": "SLS N/C KIA FLEET",
+        "accountNumber": "K420",
+        "active": true,
+        "id": "8047_K420",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K662",
+        "accountName": "C/S SLS WARR CLM MECH-KIA",
+        "accountNumber": "K662",
+        "active": true,
+        "id": "8047_K662",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_446C",
+        "accountName": "SALES USED CARS CAC DEALS",
+        "accountNumber": "446C",
+        "active": true,
+        "id": "8047_446C",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8047_8047_K660",
+        "accountName": "C/S CUST MECH LABOR-KIA",
+        "accountNumber": "K660",
+        "active": true,
+        "id": "8047_K660",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_247B",
+        "accountName": "INV WIP LABOR-BODY SHOP",
+        "accountNumber": "247B",
+        "active": true,
+        "id": "8047_247B",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_070CF",
+        "accountName": "CONFER/SEMINAR/SHOWS PTS",
+        "accountNumber": "070CF",
+        "active": true,
+        "id": "8047_070CF",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_247A",
+        "accountName": "INV WIP LABOR-MECH",
+        "accountNumber": "247A",
+        "active": true,
+        "id": "8047_247A",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_070CD",
+        "accountName": "CONFER/SEMINAR/SHOWS SERV",
+        "accountNumber": "070CD",
+        "active": true,
+        "id": "8047_070CD",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_861",
+        "accountName": "CST ACCESSORIES USD",
+        "accountNumber": "861",
+        "active": true,
+        "id": "8047_861",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_070CB",
+        "accountName": "CONFER/SEMINAR/SHOWS USED",
+        "accountNumber": "070CB",
+        "active": true,
+        "id": "8047_070CB",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_860",
+        "accountName": "CST ACCESSORIES NEW",
+        "accountNumber": "860",
+        "active": true,
+        "id": "8047_860",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_070CA",
+        "accountName": "CONFER/SEMINAR/SHOWS NEW",
+        "accountNumber": "070CA",
+        "active": true,
+        "id": "8047_070CA",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_K610",
+        "accountName": "C/S NEW AFTERMARKET PROD",
+        "accountNumber": "K610",
+        "active": true,
+        "id": "8047_K610",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K614",
+        "accountName": "C/S NC KIA K5",
+        "accountNumber": "K614",
+        "active": true,
+        "id": "8047_K614",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K613",
+        "accountName": "C/S N/T KIA TELLURIDE",
+        "accountNumber": "K613",
+        "active": true,
+        "id": "8047_K613",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K612",
+        "accountName": "C/S N/C KIA STINGER",
+        "accountNumber": "K612",
+        "active": true,
+        "id": "8047_K612",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_028D",
+        "accountName": "UNIFORMS-SERVICE",
+        "accountNumber": "028D",
+        "active": true,
+        "id": "8047_028D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_851",
+        "accountName": "FIN & INSUR CHGBKS USD",
+        "accountNumber": "851",
+        "active": true,
+        "id": "8047_851",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_028B",
+        "accountName": "UNIFORMS-USED",
+        "accountNumber": "028B",
+        "active": true,
+        "id": "8047_028B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_028A",
+        "accountName": "UNIFORMS-NEW",
+        "accountNumber": "028A",
+        "active": true,
+        "id": "8047_028A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_850",
+        "accountName": "FIN & INSUR CHGBKS NEW",
+        "accountNumber": "850",
+        "active": true,
+        "id": "8047_850",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K608",
+        "accountName": "C/S N/T KIA SELTOS RTL",
+        "accountNumber": "K608",
+        "active": true,
+        "id": "8047_K608",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K607",
+        "accountName": "C/S N/C KIA SORENTO RTL",
+        "accountNumber": "K607",
+        "active": true,
+        "id": "8047_K607",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K606",
+        "accountName": "C/S N/C KIA K4/FORTE RTL",
+        "accountNumber": "K606",
+        "active": true,
+        "id": "8047_K606",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_331L",
+        "accountName": "ACCRUED LEGAL & ACCTNG.",
+        "accountNumber": "331L",
+        "active": true,
+        "id": "8047_331L",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_K605",
+        "accountName": "C/S N KIA CARNIVAL RTL",
+        "accountNumber": "K605",
+        "active": true,
+        "id": "8047_K605",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_856",
+        "accountName": "F&I COMPENSATION USD",
+        "accountNumber": "856",
+        "active": true,
+        "id": "8047_856",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_855",
+        "accountName": "F&I COMPENSATION NEW",
+        "accountNumber": "855",
+        "active": true,
+        "id": "8047_855",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_331P",
+        "accountName": "PARTS INVENTORY CORRECTIO",
+        "accountNumber": "331P",
+        "active": true,
+        "id": "8047_331P",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_K609",
+        "accountName": "C/S N/C KIA CADENZA RTL",
+        "accountNumber": "K609",
+        "active": true,
+        "id": "8047_K609",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K604",
+        "accountName": "C/S N/C KIA OPTIMA",
+        "accountNumber": "K604",
+        "active": true,
+        "id": "8047_K604",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K603",
+        "accountName": "C/S N/C KIA RIO RTL",
+        "accountNumber": "K603",
+        "active": true,
+        "id": "8047_K603",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K602",
+        "accountName": "C/S N/C KIA NIRO HYB/PLUG",
+        "accountNumber": "K602",
+        "active": true,
+        "id": "8047_K602",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K601",
+        "accountName": "C/S N/C KIA SPORTAGE RTL",
+        "accountNumber": "K601",
+        "active": true,
+        "id": "8047_K601",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_028F",
+        "accountName": "UNIFORMS-PARTS",
+        "accountNumber": "028F",
+        "active": true,
+        "id": "8047_028F",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_225A",
+        "accountName": "P&S CASH CLEARING",
+        "accountNumber": "225A",
+        "active": true,
+        "id": "8047_225A",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8047_8047_334G",
+        "accountName": "GE CAPITAL LEASE COPIER",
+        "accountNumber": "334G",
+        "active": true,
+        "id": "8047_334G",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_K311R",
+        "accountName": "LOANERS ON FLOORPLAN",
+        "accountNumber": "K311R",
+        "active": true,
+        "id": "8047_K311R",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_070EF",
+        "accountName": "ENTERTAINMENT PARTS",
+        "accountNumber": "070EF",
+        "active": true,
+        "id": "8047_070EF",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_070ED",
+        "accountName": "ENTERTAINMENT SERVICE",
+        "accountNumber": "070ED",
+        "active": true,
+        "id": "8047_070ED",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_070EB",
+        "accountName": "ENTERTAINMENT USED",
+        "accountNumber": "070EB",
+        "active": true,
+        "id": "8047_070EB",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_070EA",
+        "accountName": "ENTERTAINMENT NEW",
+        "accountNumber": "070EA",
+        "active": true,
+        "id": "8047_070EA",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8047_8047_334O",
+        "accountName": "CONTRACTED LOF/CAR WASHES",
+        "accountNumber": "334O",
+        "active": true,
+        "id": "8047_334O",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_334P",
+        "accountName": "PNC COPIER LEASE",
+        "accountNumber": "334P",
+        "active": true,
+        "id": "8047_334P",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_321V",
+        "accountName": "VACATION/PTO/HOLIDAY PAY",
+        "accountNumber": "321V",
+        "active": true,
+        "id": "8047_321V",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_334A",
+        "accountName": "F&I RESOURCE WARR. ADVANC",
+        "accountNumber": "334A",
+        "active": true,
+        "id": "8047_334A",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8047_8047_K650A",
+        "accountName": "C/S USD CPO KIA TRUCK RTL",
+        "accountNumber": "K650A",
+        "active": true,
+        "id": "8047_K650A",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K620",
+        "accountName": "C/S N/C KIA SALES FLEET",
+        "accountNumber": "K620",
+        "active": true,
+        "id": "8047_K620",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K861",
+        "accountName": "C/S USED AFTERMARKET-KIA",
+        "accountNumber": "K861",
+        "active": true,
+        "id": "8047_K861",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K650B",
+        "accountName": "C/S UT RTL BEFORE RECON",
+        "accountNumber": "K650B",
+        "active": true,
+        "id": "8047_K650B",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8047_8047_K860",
+        "accountName": "CST NEW AFTERMARKET-KIA",
+        "accountNumber": "K860",
+        "active": true,
+        "id": "8047_K860",
+        "accountTypeId": "COST_OF_SALE"
+      }
+    ],
+    "costCenterSetup": [
+      {
+        "key": "8047_6a577b19fc9e820e4a44b021",
+        "customFieldKey": "REPAIR_ORDER_INTERNAL",
+        "options": [
+          {
+            "id": "6a60d9add937be09423fa897",
+            "name": "Internal"
+          }
+        ]
+      },
+      {
+        "key": "8047_6a577b19fc9e820e4a44b022",
+        "customFieldKey": "REPAIR_ORDER_CP_IW_SPLIT",
+        "options": [
+          {
+            "id": "6a6c75c285439553d540ae73",
+            "name": "Service Contracts Receivables"
+          }
+        ]
+      },
+      {
+        "key": "8047_6a577b19fc9e820e4a44b024",
+        "customFieldKey": "PARTS_SALES_ORDER_INTERNAL",
+        "options": [
+          {
+            "id": "NEW_CAR_INVENTORY",
+            "name": "New Car Inventory"
+          },
+          {
+            "id": "NEW_TRUCK_INVENTORY",
+            "name": "New Truck Inventory"
+          },
+          {
+            "id": "USED_CAR_INVENTORY",
+            "name": "Used Car Inventory"
+          },
+          {
+            "id": "USED_TRUCK_INVENTORY",
+            "name": "Used Truck Inventory"
+          },
+          {
+            "id": "INTERNAL_DUE_BILL",
+            "name": "Internal Due Bill"
+          },
+          {
+            "id": "SHOP_SUPPLIES",
+            "name": "Shop Supplies"
+          },
+          {
+            "id": "SERVICE_POLICY",
+            "name": "Service Policy"
+          },
+          {
+            "id": "INTERNAL_POLICY_PARTS",
+            "name": "Internal Policy Parts"
+          },
+          {
+            "id": "INTERNAL_INTER_FRANCHISE",
+            "name": "Internal Inter Franchise"
+          }
+        ]
+      },
+      {
+        "key": "8047_6a577b19fc9e820e4a44b01e",
+        "customFieldKey": "DEPARTMENT",
+        "options": [
+          {
+            "id": "6a63b6cefc9e820e4a44cc65",
+            "name": "Service"
+          },
+          {
+            "id": "6a63b6c5d937be09423fb1b9",
+            "name": "Parts"
+          },
+          {
+            "id": "6a63b6b9d937be09423fb1b8",
+            "name": "Used Vehicle Sales"
+          },
+          {
+            "id": "6a63b6b1fc9e820e4a44cc64",
+            "name": "New Vehicle Sales"
+          }
+        ]
+      },
+      {
+        "key": "8047_6a577b19fc9e820e4a44b01f",
+        "customFieldKey": "REPAIR_ORDER_WARRANTY",
+        "options": [
+          {
+            "id": "6a60d9bad937be09423fa898",
+            "name": "Warranty Receivables"
+          }
+        ]
+      }
+    ],
+    "journals": [
+      {
+        "key": "8047_8047_09",
+        "id": "8047_09",
+        "journalName": "PRIOR MONTH ADJUSTMENTS",
+        "journalNumber": "09"
+      },
+      {
+        "key": "8047_8047_YE",
+        "id": "8047_YE",
+        "journalName": "YEAR END",
+        "journalNumber": "YE"
+      },
+      {
+        "key": "8047_8047_88",
+        "id": "8047_88",
+        "journalName": "STANDARD ENTRIES",
+        "journalNumber": "88"
+      },
+      {
+        "key": "8047_8047_56",
+        "id": "8047_56",
+        "journalName": "CASH RECEIPTS ",
+        "journalNumber": "56"
+      },
+      {
+        "key": "8047_8047_13",
+        "id": "8047_13",
+        "journalName": "13TH MONTH ENTRIES",
+        "journalNumber": "13"
+      },
+      {
+        "key": "8047_8047_57",
+        "id": "8047_57",
+        "journalName": "CASH RECEIPTS OPEN ITEM",
+        "journalNumber": "57"
+      },
+      {
+        "key": "8047_8047_25",
+        "id": "8047_25",
+        "journalName": "USED CAR WHOLESALE",
+        "journalNumber": "25"
+      },
+      {
+        "key": "8047_8047_58",
+        "id": "8047_58",
+        "journalName": "WARRANTY CREDITS",
+        "journalNumber": "58"
+      },
+      {
+        "key": "8047_8047_15",
+        "id": "8047_15",
+        "journalName": "DEALER TRADES",
+        "journalNumber": "15"
+      },
+      {
+        "key": "8047_8047_80",
+        "id": "8047_80",
+        "journalName": "GENERAL JOURNAL",
+        "journalNumber": "80"
+      },
+      {
+        "key": "8047_8047_70",
+        "id": "8047_70",
+        "journalName": "NEW VEHICLE PURCHARSES",
+        "journalNumber": "70"
+      },
+      {
+        "key": "8047_8047_60",
+        "id": "8047_60",
+        "journalName": "CASH DISBURSEMENTS",
+        "journalNumber": "60"
+      },
+      {
+        "key": "8047_8047_40",
+        "id": "8047_40",
+        "journalName": "PAYROLL",
+        "journalNumber": "40"
+      },
+      {
+        "key": "8047_8047_73",
+        "id": "8047_73",
+        "journalName": "USED VEHICLE PURCHASE",
+        "journalNumber": "73"
+      },
+      {
+        "key": "8047_8047_30",
+        "id": "8047_30",
+        "journalName": "SERVICE SALES",
+        "journalNumber": "30"
+      },
+      {
+        "key": "8047_8047_FC",
+        "id": "8047_FC",
+        "journalName": "FINANCE CHARGE",
+        "journalNumber": "FC"
+      },
+      {
+        "key": "8047_8047_20",
+        "id": "8047_20",
+        "journalName": "USED VEHICLE SALES",
+        "journalNumber": "20"
+      },
+      {
+        "key": "8047_8047_75",
+        "id": "8047_75",
+        "journalName": "GENERAL PURCHARSES",
+        "journalNumber": "75"
+      },
+      {
+        "key": "8047_8047_10",
+        "id": "8047_10",
+        "journalName": "NEW VEHICLE SALES",
+        "journalNumber": "10"
+      },
+      {
+        "key": "8047_8047_32",
+        "id": "8047_32",
+        "journalName": "PARTS SALES",
+        "journalNumber": "32"
+      }
+    ]
+  }
+}

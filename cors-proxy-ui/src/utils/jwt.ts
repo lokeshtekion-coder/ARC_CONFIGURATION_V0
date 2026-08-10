@@ -1,0 +1,87 @@
+export interface DecodedJwtPart {
+  raw: string;
+  json: Record<string, unknown> | null;
+}
+
+export interface DecodedJwt {
+  header: DecodedJwtPart | null;
+  payload: DecodedJwtPart | null;
+  signature: string | null;
+  issuedAt?: string;
+  expiresAt?: string;
+  isExpired?: boolean;
+  error?: string;
+}
+
+function base64UrlDecode(input: string): string {
+  const normalized = input.replace(/-/g, "+").replace(/_/g, "/");
+  const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+  return atob(padded);
+}
+
+function tryParseJson(raw: string): Record<string, unknown> | null {
+  try {
+    return JSON.parse(raw) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+function toIsoFromEpochSeconds(value: unknown): string | undefined {
+  if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
+  return new Date(value * 1000).toISOString();
+}
+
+export function decodeJwt(token: string): DecodedJwt {
+  try {
+    const trimmed = token.trim();
+    const parts = trimmed.split(".");
+
+    if (parts.length < 2) {
+      return {
+        header: null,
+        payload: null,
+        signature: null,
+        error: "Not a valid JWT",
+      };
+    }
+
+    const headerRaw = base64UrlDecode(parts[0]);
+    const payloadRaw = base64UrlDecode(parts[1]);
+
+    const headerJson = tryParseJson(headerRaw);
+    const payloadJson = tryParseJson(payloadRaw);
+
+    const exp =
+      payloadJson && typeof payloadJson.exp === "number"
+        ? payloadJson.exp
+        : undefined;
+
+    const iat =
+      payloadJson && typeof payloadJson.iat === "number"
+        ? payloadJson.iat
+        : undefined;
+
+    return {
+      header: {
+        raw: headerRaw,
+        json: headerJson,
+      },
+      payload: {
+        raw: payloadRaw,
+        json: payloadJson,
+      },
+      signature: parts[2] ?? null,
+      issuedAt: toIsoFromEpochSeconds(iat),
+      expiresAt: toIsoFromEpochSeconds(exp),
+      isExpired: typeof exp === "number" ? Date.now() >= exp * 1000 : undefined,
+    };
+  } catch (error) {
+    return {
+      header: null,
+      payload: null,
+      signature: null,
+      error: error instanceof Error ? error.message : "Failed to decode JWT",
+    };
+  }
+}

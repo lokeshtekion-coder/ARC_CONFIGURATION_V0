@@ -1,0 +1,6 @@
+node_modules/
+downloads/
+.temp_archive.txt
+downloads.json
+settings.json
+.DS_Store
