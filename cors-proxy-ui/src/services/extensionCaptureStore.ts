@@ -9,14 +9,17 @@ export interface ArcBrowserCaptureState {
   graphHeaders?: HeaderMap;
   tekionImplementationHeaders?: HeaderMap;
   tekionBootstrapHeaders?: HeaderMap;
+  tekionProdTechMotorsHeaders?: HeaderMap;
 
   lastGraphSourceUrl?: string;
   lastTekionImplementationSourceUrl?: string;
   lastTekionBootstrapSourceUrl?: string;
+  lastTekionProdTechMotorsSourceUrl?: string;
 
   lastGraphCaptureAt?: string;
   lastTekionImplementationCaptureAt?: string;
   lastTekionBootstrapCaptureAt?: string;
+  lastTekionProdTechMotorsCaptureAt?: string;
 }
 
 const STORAGE_KEY = "arc-extension-browser-capture";
@@ -53,14 +56,17 @@ function normalizeCaptureState(input: unknown): ArcBrowserCaptureState {
     graphHeaders: normalizeHeaderMap(raw.graphHeaders),
     tekionImplementationHeaders: normalizeHeaderMap(raw.tekionImplementationHeaders),
     tekionBootstrapHeaders: normalizeHeaderMap(raw.tekionBootstrapHeaders),
+    tekionProdTechMotorsHeaders: normalizeHeaderMap(raw.tekionProdTechMotorsHeaders),
 
     lastGraphSourceUrl: normalizeString(raw.lastGraphSourceUrl),
     lastTekionImplementationSourceUrl: normalizeString(raw.lastTekionImplementationSourceUrl),
     lastTekionBootstrapSourceUrl: normalizeString(raw.lastTekionBootstrapSourceUrl),
+    lastTekionProdTechMotorsSourceUrl: normalizeString(raw.lastTekionProdTechMotorsSourceUrl),
 
     lastGraphCaptureAt: normalizeString(raw.lastGraphCaptureAt),
     lastTekionImplementationCaptureAt: normalizeString(raw.lastTekionImplementationCaptureAt),
     lastTekionBootstrapCaptureAt: normalizeString(raw.lastTekionBootstrapCaptureAt),
+    lastTekionProdTechMotorsCaptureAt: normalizeString(raw.lastTekionProdTechMotorsCaptureAt),
   };
 }
 

@@ -1,4 +1,10 @@
-import { loadTekionApiSettings } from "./tekionApiSettings";
+import {
+  loadLatestExtensionCapture,
+  hasExpiredCustomToken,
+  type ArcCustomCapturedApi,
+} from "./extensionBridge";
+import { loadGlobalHeaders, loadTekionApiSettings } from "./tekionApiSettings";
+import type { KeyValuePair } from "../types/proxy.types";
 
 export type TRange = 7 | 30 | 60 | 90;
 
@@ -13,7 +19,18 @@ export interface StoreRecord {
 }
 
 const STORES_API_URL =
-  "https://us-west1-tapapi.tekioncloud.com/tapapi/tap-crm-implementations-backend/public/v1/implementation-dealer-st";
+  "https://us-west1-tapapi.tekioncloud.com/tapapi/tap-crm-implementations-backend/public/v1/entity-instance/1";
+
+export class ExpiredCaptureTokenError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "ExpiredCaptureTokenError";
+  }
+}
+
+function normalize(value: unknown): string {
+  return String(value ?? "").trim();
+}
 
 function getUnixStartOfDay(date: Date): number {
   const d = new Date(date);
@@ -40,158 +57,292 @@ export function getTDaysRange(days: TRange) {
   };
 }
 
-function buildTekionStoresHeaders(): Record<string, string> {
-  const settings = loadTekionApiSettings();
+function normalizeHeaderMap(input: unknown): Record<string, string> {
+  if (!input || typeof input !== "object" || Array.isArray(input)) return {};
 
-  console.log("[tekionStoresApi] Loaded settings:", {
-    hasToken: !!settings.tapDuoApiToken,
-    tokenLength: settings.tapDuoApiToken?.length ?? 0,
+  const out: Record<string, string> = {};
+  for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
+    if (typeof value === "string" && key.trim() && value.trim()) {
+      out[key.toLowerCase()] = value.trim();
+    }
+  }
+  return out;
+}
+
+function keyValuePairsToHeaderMap(pairs: KeyValuePair[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const pair of pairs) {
+    const key = normalize(pair.key).toLowerCase();
+    const value = normalize(pair.value);
+    if (!pair.enabled || !key || !value) continue;
+    out[key] = value;
+  }
+  return out;
+}
+
+function getPreferredStoresCapture(): ArcCustomCapturedApi | null {
+  const settings = loadTekionApiSettings();
+  const capture = loadLatestExtensionCapture();
+  const customCaptures = Object.values(capture?.customCaptures ?? {});
+
+  const exactStoresApiCapture =
+    customCaptures.find((item) => item.id === settings.storesApiCaptureId) ?? null;
+
+  const exactProfileCapture =
+    customCaptures.find((item) => item.id === settings.storesCustomCaptureId) ?? null;
+
+  const storesEndpointFallback =
+    customCaptures.find((item) =>
+      normalize(item.pattern).toLowerCase().includes("/entity-instance/1")
+    ) ??
+    customCaptures.find((item) =>
+      normalize(item.matchedUrl).toLowerCase().includes("/entity-instance/1")
+    ) ??
+    null;
+
+  const userProfileFallback =
+    customCaptures.find((item) =>
+      normalize(item.pattern).toLowerCase().includes("/tapapi/v2/usermanagement/getuserprofile")
+    ) ??
+    customCaptures.find((item) =>
+      normalize(item.matchedUrl).toLowerCase().includes("/tapapi/v2/usermanagement/getuserprofile")
+    ) ??
+    null;
+
+  const preferred =
+    exactStoresApiCapture ||
+    storesEndpointFallback ||
+    exactProfileCapture ||
+    userProfileFallback ||
+    null;
+
+  console.log("[tekionStoresApi] preferred stores custom capture resolution", {
+    selectedStoresApiCaptureId: settings.storesApiCaptureId,
+    selectedStoresCustomCaptureId: settings.storesCustomCaptureId,
+    chosen: preferred
+      ? {
+          id: preferred.id,
+          label: preferred.label,
+          pattern: preferred.pattern,
+          matchedUrl: preferred.matchedUrl,
+          headerKeys: Object.keys(preferred.headers ?? {}).sort(),
+          expiresAt: preferred.decodedToken?.expiresAt,
+          isExpired: preferred.decodedToken?.isExpired,
+        }
+      : null,
   });
 
-  if (!settings.tapDuoApiToken.trim()) {
-    throw new Error("tap-duo-api-token is missing. Please save it in Settings.");
+  return preferred;
+}
+
+function buildTekionStoresHeaders(): Record<string, string> {
+  const selectedCapture = getPreferredStoresCapture();
+
+  if (!selectedCapture) {
+    throw new Error(
+      'Stores auth headers are missing. Capture either "/tapapi/v2/usermanagement/getuserprofile" or "/entity-instance/1" and then reload the website.'
+    );
   }
 
-  const headers = {
-    accept: "application/json, text/plain, */*",
-    "accept-language": "en-GB,en-US;q=0.9,en;q=0.8",
-    "cache-control": "no-cache",
-    "content-type": "application/json",
-    dnt: "1",
-    origin: "https://tap.tekioncloud.com",
-    pragma: "no-cache",
-    priority: "u=1, i",
-    referer: "https://tap.tekioncloud.com/",
-    "sec-ch-ua": "\"Not;A=Brand\";v=\"8\", \"Chromium\";v=\"150\", \"Google Chrome\";v=\"150\"",
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": "\"macOS\"",
-    "sec-fetch-dest": "empty",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-site",
-    "user-agent":
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
-    "tap-duo-api-token": settings.tapDuoApiToken.trim(),
+  if (hasExpiredCustomToken(selectedCapture)) {
+    throw new ExpiredCaptureTokenError(
+      "Captured Stores token has expired. Please reload the website to capture a fresh token."
+    );
+  }
+
+  const capturedHeaders = normalizeHeaderMap(selectedCapture.headers);
+  const globalHeaders = keyValuePairsToHeaderMap(loadGlobalHeaders());
+
+  const mergedHeaders: Record<string, string> = {
+    ...capturedHeaders,
+    ...globalHeaders,
   };
 
-  console.log("[tekionStoresApi] Built headers keys:", Object.keys(headers));
-  return headers;
-}
+  if (!Object.keys(mergedHeaders).length) {
+    throw new Error(
+      "Stores auth headers are empty. Please reload the website and recapture Stores headers."
+    );
+  }
 
-function mapStore(item: any): StoreRecord {
-  return {
-    tekion_id: String(item?.tekion_id ?? ""),
-    dealer_id: String(item?.dealer_id ?? ""),
-    dba_name: String(item?.dba_name ?? ""),
-    launch_date: String(item?.actual_launch_date?.launch_date ?? ""),
-    implementation_type: String(item?.implementation_type ?? ""),
-    pre_production_environment_status: String(item?.pre_production_environment_status ?? ""),
-    superpod_id: String(item?.implementation_tm_sync_status_tracking?.superpod_id ?? ""),
-  };
-}
+  mergedHeaders["content-type"] = "application/json";
+  mergedHeaders["accept"] =
+    mergedHeaders["accept"] || "application/json, text/plain, */*";
 
-function extractRows(body: any): any[] {
-  console.log("[tekionStoresApi] Extracting rows from body shape:", {
-    hasBody: !!body,
-    bodyKeys: body && typeof body === "object" ? Object.keys(body) : [],
-    hasData: !!body?.data,
-    dataType: Array.isArray(body?.data) ? "array" : typeof body?.data,
+  console.log("[tekionStoresApi] Built NEW stores headers", {
+    selectedCaptureLabel: selectedCapture.label,
+    selectedCapturePattern: selectedCapture.pattern,
+    selectedCaptureMatchedUrl: selectedCapture.matchedUrl,
+    expiresAt: selectedCapture.decodedToken?.expiresAt,
+    isExpired: selectedCapture.decodedToken?.isExpired,
+    finalHeaderKeys: Object.keys(mergedHeaders).sort(),
   });
 
-  if (Array.isArray(body)) return body;
-  if (Array.isArray(body?.data)) return body.data;
-  if (Array.isArray(body?.data?.hits)) return body.data.hits;
-  if (Array.isArray(body?.hits)) return body.hits;
-  if (Array.isArray(body?.results)) return body.results;
-  if (Array.isArray(body?.data?.results)) return body.data.results;
-  if (Array.isArray(body?.data?.data)) return body.data.data;
+  return mergedHeaders;
+}
+
+function mapStore(item: Record<string, unknown>): StoreRecord {
+  return {
+    tekion_id: normalize(item.tekion_id),
+    dealer_id: normalize(item.dealer_id),
+    dba_name: normalize(item.dealership_name || item.dba_name),
+    launch_date: normalize(item.arc_launch_date ?? item.actual_launch_date ?? item.launch_date),
+    implementation_type: normalize(
+      item.workorder_consolidated_implementation_types ?? item.arc_implementation_type
+    ),
+    pre_production_environment_status: normalize(item.pre_production_environment_status),
+    superpod_id: normalize(
+      item.workorder_consolidated_super_pod_id ?? item.arc_super_pod_id ?? item.superpod_id
+    ),
+  };
+}
+
+function extractRows(body: unknown): Record<string, unknown>[] {
+  if (Array.isArray(body)) {
+    return body.filter(
+      (item): item is Record<string, unknown> =>
+        Boolean(item) && typeof item === "object" && !Array.isArray(item)
+    );
+  }
+
+  if (body && typeof body === "object" && !Array.isArray(body)) {
+    const record = body as Record<string, unknown>;
+    if (Array.isArray(record.data)) {
+      return record.data.filter(
+        (item): item is Record<string, unknown> =>
+          Boolean(item) && typeof item === "object" && !Array.isArray(item)
+      );
+    }
+  }
 
   return [];
 }
 
-export async function fetchStores(days: TRange): Promise<StoreRecord[]> {
-  console.log("[tekionStoresApi] fetchStores called with range:", days);
+function buildStoresPayload(days: TRange): Record<string, unknown> {
+  const { fromUnix, toUnix } = getTDaysRange(days);
 
-  try {
-    const { fromDate, toDate, fromUnix, toUnix } = getTDaysRange(days);
-
-    const payload = {
-      page_info: { start: 0, rows: 500 },
-      search_text: "",
-      selected_filters: [
-        {
-          type: "actual_launch_date_value",
-          operator: "BTW",
-          values: [fromUnix, toUnix],
-        },
-      ],
-      product_type: "ARC",
-    };
-
-    console.log("[tekionStoresApi] Date window:", {
-      fromDate: fromDate.toISOString(),
-      toDate: toDate.toISOString(),
-      fromUnix,
-      toUnix,
-    });
-
-    console.log("[tekionStoresApi] Payload:", payload);
-
-    const requestBody = {
-      url: STORES_API_URL,
-      method: "POST",
-      headers: buildTekionStoresHeaders(),
-      body: JSON.stringify(payload),
-    };
-
-    console.log("[tekionStoresApi] Sending proxy request:", {
-      url: requestBody.url,
-      method: requestBody.method,
-      payload,
-    });
-
-    const res = await fetch("http://localhost:4000/api/proxy", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+  return {
+    selected_filters: [
+      {
+        type: "parent_implementation_tm_sync_status_tracking_id",
+        operator: "IN",
+        values: [0],
       },
-      body: JSON.stringify(requestBody),
-    });
+      {
+        type: "product_types",
+        operator: "IN",
+        values: ["ARC"],
+      },
+      {
+        type: "actual_launch_date",
+        operator: "BTW",
+        values: [fromUnix, toUnix],
+      },
+      {
+        type: "launch_date",
+        operator: "BTW",
+        values: [fromUnix, toUnix],
+      },
+      {
+        type: "implementation_region_name",
+        operator: "IN",
+        values: [
+          "Canada",
+          "Enterprise",
+          "Mid Market",
+          "Mid Market 2",
+          "United Kingdom",
+          "USA East",
+          "USA West and Central",
+        ],
+      },
+    ],
+    search_field: "all",
+    search_text: "",
+    page_info: {
+      start: 0,
+      rows: 200,
+    },
+    sort: [
+      {
+        field: "actual_launch_date",
+        order: "ASC",
+      },
+      {
+        field: "tekion_id",
+        order: "ASC",
+      },
+    ],
+  };
+}
 
-    console.log("[tekionStoresApi] Proxy response status:", res.status, res.statusText);
+export async function fetchStores(days: TRange): Promise<StoreRecord[]> {
+  console.log("[tekionStoresApi] fetchStores called with NEW API range:", days);
 
-    const rawText = await res.text();
-    console.log("[tekionStoresApi] Proxy raw response text:", rawText);
+  const payload = buildStoresPayload(days);
+  const headers = buildTekionStoresHeaders();
 
-    let proxyData: any;
-    try {
-      proxyData = rawText ? JSON.parse(rawText) : {};
-    } catch (parseError) {
-      console.error("[tekionStoresApi] Failed to parse proxy response JSON:", parseError);
-      throw new Error(`Proxy returned non-JSON response: ${rawText.substring(0, 300)}`);
-    }
+  const requestBody = {
+    url: STORES_API_URL,
+    method: "POST",
+    headers,
+    body: JSON.stringify(payload),
+    timeout: 60000,
+  };
 
-    console.log("[tekionStoresApi] Proxy response data:", proxyData);
+  const res = await fetch("http://localhost:4000/api/proxy", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(requestBody),
+  });
 
-    if (!res.ok) {
-      throw new Error(proxyData?.error ?? proxyData?.body ?? `HTTP ${res.status}`);
-    }
+  const rawText = await res.text();
 
-    const body =
-      typeof proxyData.body === "string"
-        ? JSON.parse(proxyData.body)
-        : proxyData.body;
-
-    console.log("[tekionStoresApi] Parsed upstream body:", body);
-
-    const rows = extractRows(body);
-    console.log("[tekionStoresApi] Rows count:", rows.length);
-
-    const mapped = rows.map(mapStore);
-    console.log("[tekionStoresApi] Mapped stores count:", mapped.length);
-
-    return mapped;
-  } catch (error) {
-    console.error("[tekionStoresApi] fetchStores failed:", error);
-    throw error;
+  let proxyData: Record<string, unknown> = {};
+  try {
+    proxyData = rawText ? (JSON.parse(rawText) as Record<string, unknown>) : {};
+  } catch {
+    throw new Error(`Proxy returned non-JSON wrapper response: ${rawText.substring(0, 300)}`);
   }
+
+  const upstreamStatus =
+    typeof proxyData.status === "number" ? proxyData.status : res.status;
+
+  if (upstreamStatus >= 400) {
+    const upstreamBodyText =
+      typeof proxyData.body === "string"
+        ? proxyData.body
+        : JSON.stringify(proxyData.body ?? "");
+
+    if (
+      upstreamStatus === 401 &&
+      upstreamBodyText.toLowerCase().includes("invalid token")
+    ) {
+      throw new ExpiredCaptureTokenError(
+        "Captured Stores token is invalid or expired. Please reload the website to capture a fresh token."
+      );
+    }
+
+    throw new Error(
+      `Stores API failed with ${upstreamStatus} ${String(
+        proxyData.statusText ?? ""
+      ).trim()} ${upstreamBodyText}`.trim()
+    );
+  }
+
+  let upstreamBody: unknown = proxyData.body ?? proxyData;
+
+  if (typeof upstreamBody === "string") {
+    try {
+      upstreamBody = JSON.parse(upstreamBody);
+    } catch {
+      // leave as-is
+    }
+  }
+
+  const rows = extractRows(upstreamBody);
+  return rows
+    .map(mapStore)
+    .filter((item) => item.tekion_id && item.dealer_id);
 }

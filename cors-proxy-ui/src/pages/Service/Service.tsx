@@ -1,5 +1,4 @@
-import React, { useMemo, useState } from "react";
-
+import React, { useEffect, useMemo, useState } from "react";
 import SchedulingSettingsView from "./Scheduling settings";
 import DealerConfigView from "./Dealer config";
 import SetupFieldsView from "./Setup fields";
@@ -12,6 +11,10 @@ import PdfView from "./Pdf";
 import CheckInSetupView from "./Check in setup";
 import MpviView from "./Mpvi";
 import DispatchSettingsView from "./Dispatch Settings";
+import {
+  loadLatestExtensionCapture,
+  subscribeToExtensionCapture,
+} from "../../services/extensionBridge";
 
 interface Props {
   onBack: () => void;
@@ -37,11 +40,14 @@ type ServiceNavItem = {
   description: string;
 };
 
+const SELECTED_DEALER_PROFILE_KEY = "arc_selected_dealer_profile_id_v1";
+
 const SERVICE_ITEMS: ServiceNavItem[] = [
   {
     key: "scheduling-settings",
     label: "1. Scheduling settings",
-    description: "Consumer scheduling, transportation, advisors, shops, and general scheduling settings.",
+    description:
+      "Consumer scheduling, transportation, advisors, shops, and general scheduling settings.",
   },
   {
     key: "dealer-config",
@@ -132,12 +138,67 @@ function renderServiceSection(activeKey: ServiceSectionKey): React.ReactNode {
 }
 
 export const Service: React.FC<Props> = ({ onBack }) => {
-  const [activeKey, setActiveKey] = useState<ServiceSectionKey>("scheduling-settings");
+  const [activeKey, setActiveKey] =
+    useState<ServiceSectionKey>("scheduling-settings");
+  const [selectedDealerProfileId, setSelectedDealerProfileId] = useState<string | null>(null);
+  const [selectedDealerId, setSelectedDealerId] = useState<string>("");
+  const [selectedDealerTenant, setSelectedDealerTenant] = useState<string>("");
+
+  useEffect(() => {
+    const syncSelectedDealer = () => {
+      const storedProfileId = localStorage.getItem(SELECTED_DEALER_PROFILE_KEY);
+      const latestCapture = loadLatestExtensionCapture();
+      const matchedProfile =
+        latestCapture?.tekionProfiles?.find((profile) => profile.id === storedProfileId) ?? null;
+
+      setSelectedDealerProfileId(storedProfileId);
+      setSelectedDealerId(matchedProfile?.dealerId ?? "");
+      setSelectedDealerTenant(matchedProfile?.tenantName ?? "");
+
+      console.log("[Service] synced selected dealer profile", {
+        storedProfileId,
+        matchedDealerId: matchedProfile?.dealerId ?? null,
+        matchedTenantName: matchedProfile?.tenantName ?? null,
+      });
+    };
+
+    console.log("[Service] page mounted");
+    syncSelectedDealer();
+
+    const unsubscribe = subscribeToExtensionCapture(() => {
+      console.log("[Service] extension capture update received, resyncing selected dealer");
+      syncSelectedDealer();
+    });
+
+    const handleWindowFocus = () => {
+      console.log("[Service] window focused, resyncing selected dealer");
+      syncSelectedDealer();
+    };
+
+    window.addEventListener("focus", handleWindowFocus);
+
+    return () => {
+      console.log("[Service] page unmounted");
+      unsubscribe();
+      window.removeEventListener("focus", handleWindowFocus);
+    };
+  }, []);
+
+  useEffect(() => {
+    console.log("[Service] active section changed", { activeKey });
+  }, [activeKey]);
 
   const activeMeta = useMemo(
     () => SERVICE_ITEMS.find((item) => item.key === activeKey) ?? SERVICE_ITEMS[0],
     [activeKey]
   );
+
+  const selectedDealerDisplay = selectedDealerId || "Not Selected";
+  const selectedDealerSubText = selectedDealerTenant
+    ? selectedDealerTenant
+    : selectedDealerProfileId
+    ? "Dealer profile selected"
+    : "Select a dealer in Settings to apply dealer-specific headers";
 
   return (
     <div
@@ -150,12 +211,27 @@ export const Service: React.FC<Props> = ({ onBack }) => {
       }}
       className="service-page-scroll"
     >
-      <style>{`
-        .service-page-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
-        .service-page-scroll::-webkit-scrollbar-track { background: transparent; }
-        .service-page-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 8px; }
-        .service-page-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.24); }
-      `}</style>
+      <style>
+        {`
+          .service-page-scroll::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+          }
+
+          .service-page-scroll::-webkit-scrollbar-track {
+            background: transparent;
+          }
+
+          .service-page-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.14);
+            border-radius: 8px;
+          }
+
+          .service-page-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.24);
+          }
+        `}
+      </style>
 
       <div style={{ maxWidth: 1400, margin: "0 auto", display: "grid", gap: 16 }}>
         <div
@@ -168,11 +244,62 @@ export const Service: React.FC<Props> = ({ onBack }) => {
           }}
         >
           <div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: "#f8fafc", marginBottom: 4 }}>
-              🛠 Service
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                flexWrap: "wrap",
+                marginBottom: 4,
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 28,
+                  fontWeight: 800,
+                  color: "#f8fafc",
+                }}
+              >
+                🛠 Service
+              </div>
+
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "6px 10px",
+                  borderRadius: 999,
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "rgba(255,255,255,0.04)",
+                  color: "#cbd5e1",
+                  fontSize: 12,
+                  lineHeight: 1.2,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <span style={{ color: "#94a3b8" }}>Selected Dealer ID</span>
+                <span style={{ color: "#f8fafc", fontWeight: 800 }}>
+                  {selectedDealerDisplay}
+                </span>
+              </div>
             </div>
+
             <div style={{ color: "#94a3b8", fontSize: 14 }}>
               Service auto-configuration workspace
+            </div>
+
+            <div
+              style={{
+                color: "#64748b",
+                fontSize: 12,
+                lineHeight: 1.6,
+                marginTop: 4,
+                whiteSpace: "pre-wrap",
+                overflowWrap: "anywhere",
+              }}
+            >
+              {selectedDealerSubText}
             </div>
           </div>
 
@@ -204,7 +331,14 @@ export const Service: React.FC<Props> = ({ onBack }) => {
             }}
             className="service-left-scroll"
           >
-            <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 800, padding: "4px 4px 2px" }}>
+            <div
+              style={{
+                color: "#f8fafc",
+                fontSize: 18,
+                fontWeight: 800,
+                padding: "4px 4px 2px",
+              }}
+            >
               Service Sections
             </div>
 
@@ -241,6 +375,7 @@ export const Service: React.FC<Props> = ({ onBack }) => {
                     >
                       {item.label}
                     </div>
+
                     <div
                       style={{
                         color: isActive ? "#bfdbfe" : "#94a3b8",
@@ -269,12 +404,50 @@ export const Service: React.FC<Props> = ({ onBack }) => {
             className="service-content-scroll"
           >
             <div style={{ marginBottom: 14 }}>
-              <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 4 }}>
-                Active Section
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "6px 10px",
+                    borderRadius: 999,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(255,255,255,0.03)",
+                    color: "#cbd5e1",
+                    fontSize: 12,
+                  }}
+                >
+                  Active Section
+                  <span style={{ color: "#f8fafc", fontWeight: 700 }}>
+                    {activeMeta.label}
+                  </span>
+                </div>
+
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "6px 10px",
+                    borderRadius: 999,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(255,255,255,0.03)",
+                    color: "#cbd5e1",
+                    fontSize: 12,
+                  }}
+                >
+                  Dealer ID
+                  <span style={{ color: "#f8fafc", fontWeight: 700 }}>
+                    {selectedDealerDisplay}
+                  </span>
+                </div>
               </div>
+
               <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 800 }}>
                 {activeMeta.label}
               </div>
+
               <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>
                 {activeMeta.description}
               </div>

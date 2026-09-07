@@ -1,0 +1,152 @@
+{
+    "kia": [
+      "kia"
+    ],
+    "fisker": [
+      "karma"
+    ],
+    "chery": [
+      "omoda",
+      "chery",
+      "jaecoo",
+      "omada"
+    ],
+    "hyundai": [
+      "genesis",
+      "hyundai"
+    ],
+    "fca": [
+      "chrysler",
+      "dodge",
+      "maserati",
+      "fca",
+      "jeep",
+      "fiat",
+      "alfaromeo",
+      "ram"
+    ],
+    "tesla": [
+      "tesla"
+    ],
+    "geelyandetika": [
+      "lotus"
+    ],
+    "czinger": [
+      "czinger"
+    ],
+    "ford": [
+      "lincoln",
+      "mercury",
+      "ford"
+    ],
+    "bmw": [
+      "rollsroyce",
+      "mini",
+      "bmw"
+    ],
+    "mazda": [
+      "mazda"
+    ],
+    "rimac": [
+      "rimac"
+    ],
+    "kenworth": [
+      "kenworth"
+    ],
+    "astonmartin": [
+      "astonmartin"
+    ],
+    "international": [
+      "international"
+    ],
+    "volkswagen": [
+      "porsche",
+      "audi",
+      "bentley",
+      "lamborghini",
+      "volkswagen",
+      "bugatti"
+    ],
+    "others": [
+      "suzuki",
+      "others"
+    ],
+    "stellantis": [
+      "lancia"
+    ],
+    "benz": [
+      "sprinter",
+      "metris",
+      "freightliner",
+      "mercedesbenz",
+      "smart"
+    ],
+    "pagani": [
+      "pagani"
+    ],
+    "mclaren": [
+      "mclaren"
+    ],
+    "gm": [
+      "saturn",
+      "pont",
+      "hummer",
+      "chevrolet",
+      "buick",
+      "saab",
+      "cadillac",
+      "gmc",
+      "oldsmobile",
+      "pontiac"
+    ],
+    "ferrari": [
+      "ferrari"
+    ],
+    "mahindragroup": [
+      "pininfarina"
+    ],
+    "honda": [
+      "acura",
+      "honda"
+    ],
+    "byd": [
+      "byd"
+    ],
+    "renault_nissan_mitsubishi_alliance": [
+      "mitsubishi",
+      "infiniti",
+      "nissan"
+    ],
+    "tata": [
+      "landrover",
+      "jaguar"
+    ],
+    "koenigsegg": [
+      "koenigsegg"
+    ],
+    "hino": [
+      "hino"
+    ],
+    "peterbilt": [
+      "peterbilt"
+    ],
+    "subaru": [
+      "subaru"
+    ],
+    "toyota": [
+      "toyota",
+      "scion",
+      "lexus"
+    ],
+    "isuzu": [
+      "isuzu"
+    ],
+    "gwm": [
+      "ora",
+      "haval"
+    ],
+    "volvo": [
+      "polestar",
+      "volvo"
+    ]
+  }

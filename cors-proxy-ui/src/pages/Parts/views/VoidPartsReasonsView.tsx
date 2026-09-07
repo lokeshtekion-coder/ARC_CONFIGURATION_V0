@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { loadTekionApiSettingsBundle } from "../../../services/tekionApiSettings";
 import type { KeyValuePair } from "../../../types/proxy.types";
+import "./VoidPartsReasonsView.css"; // <- Imported styles here
 
 const TARGET_REASON_CODE = "Customer Cancelled - with Lost Sale";
 const TARGET_REASON_ID = "23";
@@ -273,38 +274,20 @@ export const VoidPartsReasonsView: React.FC = () => {
     }
   };
 
+  // Determine which status class to apply based on state
+  const getStatusClass = () => {
+    if (runState === "error") return "status-error";
+    if (runState === "success") return "status-success";
+    if (runState === "warning") return "status-warning";
+    return "";
+  };
+
   return (
-    <div style={{ display: "grid", gap: 16 }}>
-      <div
-        style={{
-          borderRadius: 18,
-          border: "1px solid rgba(255,255,255,0.08)",
-          background: "rgba(255,255,255,0.03)",
-          padding: 20,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 12,
-            flexWrap: "wrap",
-            marginBottom: 14,
-          }}
-        >
-          <div style={{ minWidth: 0 }}>
-            <div
-              style={{
-                fontSize: 24,
-                fontWeight: 800,
-                color: "#f8fafc",
-                marginBottom: 6,
-                wordBreak: "break-word",
-              }}
-            >
-              Void parts reasons
-            </div>
+    <div className="void-parts-container">
+      <div className="card card-top">
+        <div className="header-row">
+          <div className="title-container">
+            <div className="page-title">Void parts reasons</div>
           </div>
 
           <button
@@ -319,94 +302,31 @@ export const VoidPartsReasonsView: React.FC = () => {
           </button>
         </div>
 
-        <div
-          style={{
-            borderRadius: 14,
-            padding: "12px 14px",
-            fontSize: 13,
-            lineHeight: 1.6,
-            border:
-              runState === "error"
-                ? "1px solid rgba(239,68,68,0.25)"
-                : runState === "success"
-                ? "1px solid rgba(34,197,94,0.25)"
-                : runState === "warning"
-                ? "1px solid rgba(245,158,11,0.25)"
-                : "1px solid rgba(255,255,255,0.08)",
-            background:
-              runState === "error"
-                ? "rgba(239,68,68,0.10)"
-                : runState === "success"
-                ? "rgba(34,197,94,0.10)"
-                : runState === "warning"
-                ? "rgba(245,158,11,0.10)"
-                : "rgba(255,255,255,0.03)",
-            color:
-              runState === "error"
-                ? "#fecaca"
-                : runState === "success"
-                ? "#bbf7d0"
-                : runState === "warning"
-                ? "#fde68a"
-                : "#cbd5e1",
-            whiteSpace: "pre-wrap",
-            overflowWrap: "anywhere",
-          }}
-        >
-          <div style={{ fontWeight: 700, marginBottom: errorText ? 6 : 0 }}>{statusText}</div>
+        <div className={`status-box ${getStatusClass()}`}>
+          <div className={`status-text-main ${errorText ? "status-text-margin" : ""}`}>
+            {statusText}
+          </div>
           {errorText ? <div>{errorText}</div> : null}
         </div>
       </div>
 
-      <div
-        style={{
-          borderRadius: 18,
-          border: "1px solid rgba(255,255,255,0.08)",
-          background: "rgba(255,255,255,0.03)",
-          padding: 18,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 800,
-            color: "#f8fafc",
-            marginBottom: 12,
-          }}
-        >
-          Void Reasons Table
-        </div>
+      <div className="card card-bottom">
+        <div className="section-title">Void Reasons Table</div>
 
         {rows.length === 0 ? (
-          <div
-            style={{
-              borderRadius: 14,
-              border: "1px dashed rgba(148,163,184,0.30)",
-              padding: 24,
-              color: "#94a3b8",
-              textAlign: "center",
-            }}
-          >
-            No data loaded yet. Click Send.
-          </div>
+          <div className="empty-state">No data loaded yet. Click Send.</div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                minWidth: 900,
-              }}
-            >
+          <div className="table-container">
+            <table className="void-reasons-table">
               <thead>
-                <tr style={{ background: "rgba(255,255,255,0.04)" }}>
-                  <th style={thStyle}>#</th>
-                  <th style={thStyle}>ID</th>
-                  <th style={thStyle}>Reason</th>
-                  <th style={thStyle}>Type</th>
-                  <th style={thStyle}>Active</th>
-                  <th style={thStyle}>Count In Lost Sale</th>
-                  <th style={thStyle}>Target</th>
+                <tr className="table-header-row">
+                  <th>#</th>
+                  <th>ID</th>
+                  <th>Reason</th>
+                  <th>Type</th>
+                  <th>Active</th>
+                  <th>Count In Lost Sale</th>
+                  <th>Target</th>
                 </tr>
               </thead>
               <tbody>
@@ -418,55 +338,20 @@ export const VoidPartsReasonsView: React.FC = () => {
                   return (
                     <tr
                       key={`${row.id}-${index}`}
-                      style={{
-                        borderTop: "1px solid rgba(255,255,255,0.08)",
-                        background: isTarget ? "rgba(59,130,246,0.08)" : "transparent",
-                      }}
+                      className={`table-row ${isTarget ? "table-row-target" : ""}`}
                     >
-                      <td style={tdStyle}>{index + 1}</td>
-                      <td style={tdMonoStyle}>{String(row.id)}</td>
-                      <td style={tdStyle}>{row.detail?.reasonCode || "—"}</td>
-                      <td style={tdStyle}>{row.type || "—"}</td>
-                      <td style={tdStyle}>{row.active ? "Yes" : "No"}</td>
-                      <td style={tdStyle}>
-                        <span
-                          style={{
-                            display: "inline-flex",
-                            padding: "4px 10px",
-                            borderRadius: 999,
-                            border: row.detail?.countInLostSale
-                              ? "1px solid rgba(34,197,94,0.25)"
-                              : "1px solid rgba(239,68,68,0.25)",
-                            background: row.detail?.countInLostSale
-                              ? "rgba(34,197,94,0.10)"
-                              : "rgba(239,68,68,0.10)",
-                            color: row.detail?.countInLostSale ? "#86efac" : "#fca5a5",
-                            fontSize: 12,
-                            fontWeight: 700,
-                          }}
-                        >
+                      <td>{index + 1}</td>
+                      <td className="td-mono">{String(row.id)}</td>
+                      <td>{row.detail?.reasonCode || "—"}</td>
+                      <td>{row.type || "—"}</td>
+                      <td>{row.active ? "Yes" : "No"}</td>
+                      <td>
+                        <span className={`badge ${row.detail?.countInLostSale ? "badge-true" : "badge-false"}`}>
                           {row.detail?.countInLostSale ? "True" : "False"}
                         </span>
                       </td>
-                      <td style={tdStyle}>
-                        {isTarget ? (
-                          <span
-                            style={{
-                              display: "inline-flex",
-                              padding: "4px 10px",
-                              borderRadius: 999,
-                              border: "1px solid rgba(59,130,246,0.25)",
-                              background: "rgba(59,130,246,0.10)",
-                              color: "#93c5fd",
-                              fontSize: 12,
-                              fontWeight: 700,
-                            }}
-                          >
-                            Target
-                          </span>
-                        ) : (
-                          "—"
-                        )}
+                      <td>
+                        {isTarget ? <span className="badge badge-target">Target</span> : "—"}
                       </td>
                     </tr>
                   );
@@ -478,28 +363,4 @@ export const VoidPartsReasonsView: React.FC = () => {
       </div>
     </div>
   );
-};
-
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "12px 10px",
-  color: "#cbd5e1",
-  fontSize: 12,
-  fontWeight: 800,
-  whiteSpace: "nowrap",
-};
-
-const tdStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "12px 10px",
-  color: "#e2e8f0",
-  fontSize: 13,
-  verticalAlign: "top",
-  whiteSpace: "pre-wrap",
-  overflowWrap: "anywhere",
-};
-
-const tdMonoStyle: React.CSSProperties = {
-  ...tdStyle,
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
 };

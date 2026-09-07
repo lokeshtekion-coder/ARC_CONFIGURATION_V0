@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { PARTS_NAV_ITEMS, type PartsSectionKey } from "./partsConfig";
+import { loadLatestExtensionCapture, subscribeToExtensionCapture } from "../../services/extensionBridge";
 import { VoidPartsReasonsView } from "./views/VoidPartsReasonsView";
 import { CodeSetupView } from "./views/CodeSetupView";
 import { ReturnReasonsView } from "./views/ReturnReasonsView";
@@ -22,8 +23,12 @@ interface Props {
   onBack: () => void;
 }
 
+const SELECTED_DEALER_PROFILE_KEY = "arc_selected_dealer_profile_id_v1";
+
 const PAGE_STYLE: React.CSSProperties = {
-  minHeight: "100vh",
+  height: "100vh",           // Constrains the container to the height of the viewport
+  maxHeight: "1080px",       // Strictly caps the maximum height at 1080px
+  overflowY: "auto",         // Adds a vertical scrollbar only if content exceeds the height
   padding: "20px 16px 28px",
   boxSizing: "border-box",
 };
@@ -65,6 +70,28 @@ const CONTENT_STYLE: React.CSSProperties = {
   minWidth: 0,
   display: "grid",
   gap: 16,
+};
+
+const TITLE_ROW_STYLE: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  flexWrap: "wrap",
+  marginBottom: 4,
+};
+
+const DEALER_PILL_STYLE: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "6px 10px",
+  borderRadius: 999,
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(255,255,255,0.04)",
+  color: "#cbd5e1",
+  fontSize: 12,
+  lineHeight: 1.2,
+  whiteSpace: "nowrap",
 };
 
 function renderActiveView(activeKey: PartsSectionKey): React.ReactNode {
@@ -110,12 +137,49 @@ function renderActiveView(activeKey: PartsSectionKey): React.ReactNode {
 
 export const Parts: React.FC<Props> = ({ onBack }) => {
   const [activeKey, setActiveKey] = useState<PartsSectionKey>("void-parts-reasons");
+  const [selectedDealerProfileId, setSelectedDealerProfileId] = useState<string | null>(null);
+  const [selectedDealerId, setSelectedDealerId] = useState<string>("");
+  const [selectedDealerTenant, setSelectedDealerTenant] = useState<string>("");
 
   useEffect(() => {
     console.log("[Parts] page mounted");
     console.log("[Parts] nav items loaded", PARTS_NAV_ITEMS);
+
+    const syncSelectedDealer = () => {
+      const storedProfileId = localStorage.getItem(SELECTED_DEALER_PROFILE_KEY);
+      const latestCapture = loadLatestExtensionCapture();
+      const matchedProfile =
+        latestCapture?.tekionProfiles?.find((profile) => profile.id === storedProfileId) ?? null;
+
+      setSelectedDealerProfileId(storedProfileId);
+      setSelectedDealerId(matchedProfile?.dealerId ?? "");
+      setSelectedDealerTenant(matchedProfile?.tenantName ?? "");
+
+      console.log("[Parts] synced selected dealer profile", {
+        storedProfileId,
+        matchedDealerId: matchedProfile?.dealerId ?? null,
+        matchedTenantName: matchedProfile?.tenantName ?? null,
+      });
+    };
+
+    syncSelectedDealer();
+
+    const unsubscribe = subscribeToExtensionCapture(() => {
+      console.log("[Parts] extension capture update received, resyncing selected dealer");
+      syncSelectedDealer();
+    });
+
+    const handleWindowFocus = () => {
+      console.log("[Parts] window focused, resyncing selected dealer");
+      syncSelectedDealer();
+    };
+
+    window.addEventListener("focus", handleWindowFocus);
+
     return () => {
       console.log("[Parts] page unmounted");
+      unsubscribe();
+      window.removeEventListener("focus", handleWindowFocus);
     };
   }, []);
 
@@ -134,22 +198,36 @@ export const Parts: React.FC<Props> = ({ onBack }) => {
     return renderActiveView(activeKey);
   }, [activeKey]);
 
+  const selectedDealerDisplay = selectedDealerId || "Not Selected";
+  const selectedDealerSubText = selectedDealerTenant
+    ? selectedDealerTenant
+    : selectedDealerProfileId
+    ? "Dealer profile selected"
+    : "Select a dealer in Settings to apply dealer-specific headers";
+
   return (
     <div style={PAGE_STYLE}>
       <div style={CONTAINER_STYLE}>
         <div style={HEADER_STYLE}>
           <div>
-            <div
-              style={{
-                fontSize: 30,
-                fontWeight: 800,
-                color: "#f8fafc",
-                marginBottom: 4,
-                wordBreak: "break-word",
-              }}
-            >
-              🧩 Parts
+            <div style={TITLE_ROW_STYLE}>
+              <div
+                style={{
+                  fontSize: 30,
+                  fontWeight: 800,
+                  color: "#f8fafc",
+                  wordBreak: "break-word",
+                }}
+              >
+                🧩 Parts
+              </div>
+
+              <div style={DEALER_PILL_STYLE}>
+                <span style={{ color: "#94a3b8" }}>Selected Dealer ID</span>
+                <span style={{ color: "#f8fafc", fontWeight: 800 }}>{selectedDealerDisplay}</span>
+              </div>
             </div>
+
             <div
               style={{
                 color: "#94a3b8",
@@ -160,6 +238,19 @@ export const Parts: React.FC<Props> = ({ onBack }) => {
               }}
             >
               Parts auto-configuration workspace
+            </div>
+
+            <div
+              style={{
+                color: "#64748b",
+                fontSize: 12,
+                lineHeight: 1.6,
+                marginTop: 4,
+                whiteSpace: "pre-wrap",
+                overflowWrap: "anywhere",
+              }}
+            >
+              {selectedDealerSubText}
             </div>
           </div>
 
@@ -174,10 +265,7 @@ export const Parts: React.FC<Props> = ({ onBack }) => {
           </button>
         </div>
 
-        <div
-          className="parts-responsive-grid"
-          style={LAYOUT_STYLE}
-        >
+        <div className="parts-responsive-grid" style={LAYOUT_STYLE}>
           <aside style={SIDEBAR_STYLE}>
             <div
               style={{
@@ -279,21 +367,42 @@ export const Parts: React.FC<Props> = ({ onBack }) => {
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "6px 10px",
-                    borderRadius: 999,
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    background: "rgba(255,255,255,0.03)",
-                    color: "#cbd5e1",
-                    fontSize: 12,
-                  }}
-                >
-                  Active Section
-                  <span style={{ color: "#f8fafc", fontWeight: 700 }}>{activeItem.label}</span>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "6px 10px",
+                      borderRadius: 999,
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "rgba(255,255,255,0.03)",
+                      color: "#cbd5e1",
+                      fontSize: 12,
+                    }}
+                  >
+                    Active Section
+                    <span style={{ color: "#f8fafc", fontWeight: 700 }}>{activeItem.label}</span>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "6px 10px",
+                      borderRadius: 999,
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      background: "rgba(255,255,255,0.03)",
+                      color: "#cbd5e1",
+                      fontSize: 12,
+                    }}
+                  >
+                    Dealer ID
+                    <span style={{ color: "#f8fafc", fontWeight: 700 }}>
+                      {selectedDealerDisplay}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

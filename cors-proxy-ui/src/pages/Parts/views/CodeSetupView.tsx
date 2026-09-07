@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { loadTekionApiSettingsBundle } from "../../../services/tekionApiSettings";
 import type { KeyValuePair } from "../../../types/proxy.types";
+import "./CodeSetupView.css";
 
 const MODULE_NAME = "Code Setup";
 const BASE_URL = "https://preprodapp.tekioncloud.com/api/parts/proxy/u/settings/priority-code";
@@ -328,6 +329,7 @@ export const CodeSetupView: React.FC = () => {
   const [errorText, setErrorText] = useState("");
   const [lastRunAt, setLastRunAt] = useState("");
   const [isAutoFixing, setIsAutoFixing] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   // Dynamic state for Included List
   const [requiredCodes, setRequiredCodes] = useState<{ code: string; description: string }[]>(() => {
@@ -375,7 +377,7 @@ export const CodeSetupView: React.FC = () => {
   };
 
   const handleRunValidation = async (): Promise<void> => {
-    logger.info("Send clicked for validation");
+    logger.info("GET clicked for validation");
 
     setRunState("loading");
     setStatusText("Loading and validating priority codes...");
@@ -433,10 +435,7 @@ export const CodeSetupView: React.FC = () => {
   };
 
   const handleAutoFix = async (): Promise<void> => {
-    logger.info("Auto Fix clicked", {
-      invalidCount: validation.invalidRecords.length,
-      missingCount: validation.missingRequiredCodes.length,
-    });
+    logger.info("Auto Fix clicked - initiating fetch and analyze");
 
     const headers = getEnabledGlobalHeaders();
 
@@ -450,32 +449,55 @@ export const CodeSetupView: React.FC = () => {
       return;
     }
 
-    const confirmed = window.confirm(
-      [
-        "Auto Fix will do the following:",
-        validation.invalidRecords.length > 0
-          ? `• Delete ${validation.invalidRecords.length} invalid code(s)`
-          : "• No invalid codes to delete",
-        validation.missingRequiredCodes.length > 0
-          ? `• Create ${validation.missingRequiredCodes.length} missing included code(s)`
-          : "• No missing codes to create",
-        "",
-        "Do you want to continue?",
-      ].join("\n")
-    );
-
-    if (!confirmed) {
-      logger.info("user cancelled auto fix");
-      return;
-    }
-
     setIsAutoFixing(true);
     setRunState("loading");
-    setStatusText("Running auto fix for priority codes...");
+    setStatusText("Fetching and analyzing latest data before Auto Fix...");
     setErrorText("");
 
     try {
-      for (const record of validation.invalidRecords) {
+      // 1. Fetch the absolute latest state before making any decisions
+      const latestRows = await refreshData(headers);
+      const latestValidation = validatePriorityCodes(latestRows, requiredCodes);
+
+      // If everything is already perfect, no need to auto fix
+      if (latestValidation.invalidRecords.length === 0 && latestValidation.missingRequiredCodes.length === 0) {
+        setRunState("success");
+        setStatusText("All included priority codes are already present and valid. No fixes needed.");
+        logger.info("auto fix skipped, data already valid");
+        setIsAutoFixing(false);
+        return;
+      }
+
+      // Yield execution slightly so React can render the "Fetching and analyzing…" state
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // 2. Prompt user based on the fresh data
+      const confirmed = window.confirm(
+        [
+          "Analysis Complete. Auto Fix will do the following:",
+          latestValidation.invalidRecords.length > 0
+            ? `• Delete ${latestValidation.invalidRecords.length} invalid code(s)`
+            : "• No invalid codes to delete",
+          latestValidation.missingRequiredCodes.length > 0
+            ? `• Create ${latestValidation.missingRequiredCodes.length} missing included code(s)`
+            : "• No missing codes to create",
+          "",
+          "Do you want to continue?",
+        ].join("\n")
+      );
+
+      if (!confirmed) {
+        logger.info("user cancelled auto fix after analysis");
+        setRunState("idle");
+        setStatusText("Auto Fix cancelled by user.");
+        setIsAutoFixing(false);
+        return;
+      }
+
+      setStatusText("Running auto fix for priority codes...");
+
+      // 3. Execute Deletions
+      for (const record of latestValidation.invalidRecords) {
         logger.info("deleting invalid priority code", {
           id: record.id,
           code: getRecordCode(record),
@@ -484,7 +506,8 @@ export const CodeSetupView: React.FC = () => {
         await deletePriorityCode(record, headers);
       }
 
-      for (const missing of validation.missingRequiredCodes) {
+      // 4. Execute Creations
+      for (const missing of latestValidation.missingRequiredCodes) {
         const payload: CreatePriorityCodePayload = {
           code: missing.code,
           description: missing.description,
@@ -494,6 +517,7 @@ export const CodeSetupView: React.FC = () => {
         await createPriorityCode(payload, headers);
       }
 
+      // 5. Final verification fetch
       const refreshedRows = await refreshData(headers);
       const refreshedValidation = validatePriorityCodes(refreshedRows, requiredCodes);
 
@@ -547,53 +571,46 @@ export const CodeSetupView: React.FC = () => {
     }
   };
 
-  return (
-    <div style={{ display: "grid", gap: 16 }}>
-      <div
-        style={{
-          borderRadius: 18,
-          border: "1px solid rgba(255,255,255,0.08)",
-          background: "rgba(255,255,255,0.03)",
-          padding: 20,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 12,
-            flexWrap: "wrap",
-            marginBottom: 14,
-          }}
-        >
-          <div style={{ minWidth: 0 }}>
-            <div
-              style={{
-                fontSize: 24,
-                fontWeight: 800,
-                color: "#f8fafc",
-                marginBottom: 6,
-                wordBreak: "break-word",
-              }}
-            >
-              Code setup
-            </div>
+  const getStatusBannerClass = () => {
+    switch (runState) {
+      case "error":
+        return "csv-status-error";
+      case "success":
+        return "csv-status-success";
+      case "warning":
+        return "csv-status-warning";
+      default:
+        return "csv-status-default";
+    }
+  };
 
-            <div
-              style={{
-                color: "#94a3b8",
-                fontSize: 14,
-                lineHeight: 1.7,
-                whiteSpace: "pre-wrap",
-                overflowWrap: "anywhere",
-              }}
-            >
-              Validates priority codes, removes invalid ones, and creates missing included codes using the active Global Headers from Settings.
+  return (
+    <div className="csv-container">
+      <div className="csv-header-card">
+        <div className="csv-header-row">
+          <div style={{ minWidth: 0 }}>
+            <div className="csv-title-group">
+              <div className="csv-title">Code setup</div>
+              <div className="csv-info-wrapper">
+                <button
+                  type="button"
+                  onClick={() => setShowInfo((prev) => !prev)}
+                  className={`csv-info-btn ${showInfo ? "active" : ""}`}
+                  title="Show Info"
+                >
+                  i
+                </button>
+                {showInfo && (
+                  <div className="csv-info-tooltip">
+                    Validates priority codes, removes invalid ones, and creates missing included
+                    codes using the active Global Headers from Settings.
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div className="csv-action-group">
             <button
               className="btn-postman"
               type="button"
@@ -602,7 +619,7 @@ export const CodeSetupView: React.FC = () => {
               }}
               disabled={runState === "loading" || isAutoFixing}
             >
-              {runState === "loading" && !isAutoFixing ? "Running..." : "Send"}
+              {runState === "loading" && !isAutoFixing ? "Running..." : "GET"}
             </button>
 
             <button
@@ -615,22 +632,16 @@ export const CodeSetupView: React.FC = () => {
                 isAutoFixing ||
                 runState === "loading" ||
                 (validation.invalidRecords.length === 0 &&
-                  validation.missingRequiredCodes.length === 0)
+                  validation.missingRequiredCodes.length === 0 &&
+                  rows.length > 0)
               }
             >
-              {isAutoFixing ? "Auto Fixing..." : "Auto Fix"}
+              {isAutoFixing ? "Analyzing & Fixing..." : "Auto Fix"}
             </button>
           </div>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
-            marginBottom: 14,
-          }}
-        >
+        <div className="csv-stats-row">
           <Pill label="Module" value={MODULE_NAME} />
           <Pill label="Rows Loaded" value={String(rows.length)} />
           <Pill label="Valid" value={String(validation.validRecords.length)} />
@@ -639,67 +650,31 @@ export const CodeSetupView: React.FC = () => {
           {lastRunAt ? <Pill label="Last Run" value={lastRunAt} /> : null}
         </div>
 
-        <div
-          style={{
-            borderRadius: 14,
-            padding: "12px 14px",
-            fontSize: 13,
-            lineHeight: 1.6,
-            border:
-              runState === "error"
-                ? "1px solid rgba(239,68,68,0.25)"
-                : runState === "success"
-                ? "1px solid rgba(34,197,94,0.25)"
-                : runState === "warning"
-                ? "1px solid rgba(245,158,11,0.25)"
-                : "1px solid rgba(255,255,255,0.08)",
-            background:
-              runState === "error"
-                ? "rgba(239,68,68,0.10)"
-                : runState === "success"
-                ? "rgba(34,197,94,0.10)"
-                : runState === "warning"
-                ? "rgba(245,158,11,0.10)"
-                : "rgba(255,255,255,0.03)",
-            color:
-              runState === "error"
-                ? "#fecaca"
-                : runState === "success"
-                ? "#bbf7d0"
-                : runState === "warning"
-                ? "#fde68a"
-                : "#cbd5e1",
-            whiteSpace: "pre-wrap",
-            overflowWrap: "anywhere",
-          }}
-        >
-          <div style={{ fontWeight: 700, marginBottom: errorText ? 6 : 0 }}>{statusText}</div>
+        <div className={`csv-status-box ${getStatusBannerClass()}`}>
+          <div
+            className="csv-status-title"
+            style={{ marginBottom: errorText ? 6 : 0 }}
+          >
+            {statusText}
+          </div>
           {errorText ? <div>{errorText}</div> : null}
         </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-          gap: 16,
-        }}
-      >
+      <div className="csv-grid">
         <SectionCard title="Included List">
-          <div style={{ display: "flex", gap: 8, marginBottom: 8, flexWrap: "wrap" }}>
+          <div className="csv-input-group">
             <input
-              className="st-input"
+              className="st-input csv-input"
               value={newCodeInput}
               onChange={(e) => setNewCodeInput(e.target.value)}
               placeholder="Code (e.g. RUSH)"
-              style={inputStyle}
             />
             <input
-              className="st-input"
+              className="st-input csv-input csv-input-flex"
               value={newDescInput}
               onChange={(e) => setNewDescInput(e.target.value)}
               placeholder="Description"
-              style={{ ...inputStyle, flex: 1 }}
             />
             <button
               className="btn-secondary btn-sm"
@@ -724,20 +699,7 @@ export const CodeSetupView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleRemoveCustomCode(item.code)}
-                        style={{
-                          border: "none",
-                          background: "rgba(239,68,68,0.1)",
-                          color: "#fca5a5",
-                          borderRadius: "4px",
-                          width: "20px",
-                          height: "20px",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          cursor: "pointer",
-                          marginRight: "6px",
-                          fontSize: "12px",
-                        }}
+                        className="csv-remove-btn"
                         title="Remove from included list"
                       >
                         ×
@@ -752,10 +714,9 @@ export const CodeSetupView: React.FC = () => {
             })
           )}
 
-          <div style={{ marginTop: 8, textAlign: "right" }}>
+          <div className="csv-reset-container">
             <button
-              className="btn-secondary btn-sm"
-              style={{ fontSize: 11, padding: "4px 8px" }}
+              className="btn-secondary btn-sm csv-reset-btn"
               type="button"
               onClick={handleResetCodes}
             >
@@ -797,35 +758,19 @@ export const CodeSetupView: React.FC = () => {
 
       <SectionCard title="Existing Priority Codes">
         {rows.length === 0 ? (
-          <div
-            style={{
-              borderRadius: 14,
-              border: "1px dashed rgba(148,163,184,0.30)",
-              padding: 24,
-              color: "#94a3b8",
-              textAlign: "center",
-            }}
-          >
-            No data loaded yet. Click Send.
-          </div>
+          <div className="csv-empty-table-state">No data loaded yet. Click GET.</div>
         ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                minWidth: 980,
-              }}
-            >
+          <div className="csv-table-wrapper">
+            <table className="csv-table">
               <thead>
-                <tr style={{ background: "rgba(255,255,255,0.04)" }}>
-                  <th style={thStyle}>#</th>
-                  <th style={thStyle}>ID</th>
-                  <th style={thStyle}>Code</th>
-                  <th style={thStyle}>Description</th>
-                  <th style={thStyle}>Default</th>
-                  <th style={thStyle}>Dealer ID</th>
-                  <th style={thStyle}>Status</th>
+                <tr>
+                  <th>#</th>
+                  <th>ID</th>
+                  <th>Code</th>
+                  <th>Description</th>
+                  <th>Default</th>
+                  <th>Dealer ID</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -838,33 +783,19 @@ export const CodeSetupView: React.FC = () => {
                   return (
                     <tr
                       key={`${row.id ?? "no-id"}-${index}`}
-                      style={{
-                        borderTop: "1px solid rgba(255,255,255,0.08)",
-                        background: isValid ? "transparent" : "rgba(239,68,68,0.05)",
-                      }}
+                      className={isValid ? "csv-tr-valid" : "csv-tr-invalid"}
                     >
-                      <td style={tdStyle}>{index + 1}</td>
-                      <td style={tdMonoStyle}>{normalizeText(row.id) || "—"}</td>
-                      <td style={tdMonoStyle}>{code || "—"}</td>
-                      <td style={tdStyle}>{getRecordDescription(row) || "—"}</td>
-                      <td style={tdStyle}>{getRecordIsDefault(row) ? "Yes" : "No"}</td>
-                      <td style={tdStyle}>{normalizeText(row.dealerId) || "—"}</td>
-                      <td style={tdStyle}>
+                      <td>{index + 1}</td>
+                      <td className="csv-td-mono">{normalizeText(row.id) || "—"}</td>
+                      <td className="csv-td-mono">{code || "—"}</td>
+                      <td>{getRecordDescription(row) || "—"}</td>
+                      <td>{getRecordIsDefault(row) ? "Yes" : "No"}</td>
+                      <td>{normalizeText(row.dealerId) || "—"}</td>
+                      <td>
                         <span
-                          style={{
-                            display: "inline-flex",
-                            padding: "4px 10px",
-                            borderRadius: 999,
-                            border: isValid
-                              ? "1px solid rgba(34,197,94,0.25)"
-                              : "1px solid rgba(239,68,68,0.25)",
-                            background: isValid
-                              ? "rgba(34,197,94,0.10)"
-                              : "rgba(239,68,68,0.10)",
-                            color: isValid ? "#86efac" : "#fca5a5",
-                            fontSize: 12,
-                            fontWeight: 700,
-                          }}
+                          className={`csv-table-status-pill ${
+                            isValid ? "csv-table-status-valid" : "csv-table-status-invalid"
+                          }`}
                         >
                           {isValid ? "✓ Valid" : "Invalid"}
                         </span>
@@ -878,28 +809,18 @@ export const CodeSetupView: React.FC = () => {
         )}
 
         {rows.length > 0 ? (
-          <div
-            style={{
-              marginTop: 16,
-              borderRadius: 14,
-              border: "1px solid rgba(255,255,255,0.08)",
-              background: "rgba(255,255,255,0.03)",
-              padding: 14,
-              display: "grid",
-              gap: 6,
-              fontSize: 13,
-              color: "#cbd5e1",
-            }}
-          >
+          <div className="csv-bottom-summary">
             <div>
-              <b style={{ color: "#f8fafc" }}>All required codes present:</b>{" "}
+              <b className="csv-summary-bold">All required codes present:</b>{" "}
               {allRequiredPresent ? "Yes" : "No"}
             </div>
             <div>
-              <b style={{ color: "#f8fafc" }}>Has invalid codes:</b> {hasInvalidCodes ? "Yes" : "No"}
+              <b className="csv-summary-bold">Has invalid codes:</b>{" "}
+              {hasInvalidCodes ? "Yes" : "No"}
             </div>
             <div>
-              <b style={{ color: "#f8fafc" }}>Expected final state:</b> Only included list codes should remain valid.
+              <b className="csv-summary-bold">Expected final state:</b> Only included list codes
+              should remain valid.
             </div>
           </div>
         ) : null}
@@ -908,56 +829,11 @@ export const CodeSetupView: React.FC = () => {
   );
 };
 
-const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "12px 10px",
-  color: "#cbd5e1",
-  fontSize: 12,
-  fontWeight: 800,
-  whiteSpace: "nowrap",
-};
-
-const tdStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "12px 10px",
-  color: "#e2e8f0",
-  fontSize: 13,
-  verticalAlign: "top",
-  whiteSpace: "pre-wrap",
-  overflowWrap: "anywhere",
-};
-
-const tdMonoStyle: React.CSSProperties = {
-  ...tdStyle,
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-};
-
-const inputStyle: React.CSSProperties = {
-  minHeight: 36,
-  borderRadius: 8,
-  padding: "6px 10px",
-  fontSize: 13,
-  boxSizing: "border-box",
-  width: "auto",
-};
-
 const Pill: React.FC<{ label: string; value: string }> = ({ label, value }) => {
   return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 8,
-        padding: "6px 10px",
-        borderRadius: 999,
-        border: "1px solid rgba(255,255,255,0.08)",
-        background: "rgba(255,255,255,0.03)",
-        color: "#cbd5e1",
-        fontSize: 12,
-      }}
-    >
+    <span className="csv-pill">
       {label}
-      <b style={{ color: "#f8fafc" }}>{value}</b>
+      <b className="csv-pill-bold">{value}</b>
     </span>
   );
 };
@@ -969,62 +845,22 @@ const SectionCard: React.FC<{
   const [isExpanded, setIsExpanded] = useState(true);
 
   return (
-    <div
-      style={{
-        borderRadius: 18,
-        border: "1px solid rgba(255,255,255,0.08)",
-        background: "rgba(255,255,255,0.03)",
-        padding: 16,
-        minWidth: 0,
-      }}
-    >
+    <div className="csv-section-card">
       <div
         onClick={() => setIsExpanded(!isExpanded)}
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          cursor: "pointer",
-          marginBottom: isExpanded ? 12 : 0,
-        }}
+        className="csv-section-header"
+        style={{ marginBottom: isExpanded ? 12 : 0 }}
       >
-        <div
-          style={{
-            fontSize: 16,
-            fontWeight: 800,
-            color: "#f8fafc",
-          }}
-        >
-          {title}
-        </div>
+        <div className="csv-section-title">{title}</div>
         <button
           type="button"
-          style={{
-            border: "none",
-            background: "transparent",
-            color: "#94a3b8",
-            cursor: "pointer",
-            fontSize: 14,
-            padding: "4px",
-          }}
+          className="csv-section-toggle"
           title={isExpanded ? "Collapse section" : "Expand section"}
         >
           {isExpanded ? "▲" : "▼"}
         </button>
       </div>
-      {isExpanded && (
-        <div
-          style={{
-            display: "grid",
-            gap: 8,
-            maxHeight: "500px",
-            overflowY: "auto",
-            paddingRight: 4,
-          }}
-        >
-          {children}
-        </div>
-      )}
+      {isExpanded && <div className="csv-section-content">{children}</div>}
     </div>
   );
 };
@@ -1035,42 +871,9 @@ const RowLine: React.FC<{
   rightColor?: string;
 }> = ({ left, right, rightColor = "#cbd5e1" }) => {
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        gap: 12,
-        alignItems: "flex-start",
-        padding: "10px 12px",
-        borderRadius: 12,
-        border: "1px solid rgba(255,255,255,0.08)",
-        background: "rgba(255,255,255,0.02)",
-        flexWrap: "wrap",
-      }}
-    >
-      <div
-        style={{
-          color: "#e2e8f0",
-          fontSize: 13,
-          lineHeight: 1.5,
-          whiteSpace: "pre-wrap",
-          overflowWrap: "anywhere",
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        {left}
-      </div>
-
-      <div
-        style={{
-          color: rightColor,
-          fontSize: 12,
-          fontWeight: 700,
-          whiteSpace: "nowrap",
-          marginTop: 2,
-        }}
-      >
+    <div className="csv-row-line">
+      <div className="csv-row-left">{left}</div>
+      <div className="csv-row-right" style={{ color: rightColor }}>
         {right}
       </div>
     </div>
@@ -1078,15 +881,5 @@ const RowLine: React.FC<{
 };
 
 const EmptyText: React.FC<{ text: string }> = ({ text }) => {
-  return (
-    <div
-      style={{
-        color: "#94a3b8",
-        fontSize: 13,
-        lineHeight: 1.6,
-      }}
-    >
-      {text}
-    </div>
-  );
+  return <div className="csv-empty-text">{text}</div>;
 };

@@ -3,13 +3,9 @@
   "name": "ARC Token Sync",
   "version": "0.1.0",
   "description": "Local ARC helper extension.",
-  "permissions": ["storage", "tabs", "webRequest"],
+  "permissions": ["storage", "tabs", "webRequest", "alarms"],
   "host_permissions": [
-    "https://graph.microsoft.com/v1.0/*",
-    "https://us-west1-tapapi.tekioncloud.com/*",
-    "https://preprodapp.tekioncloud.com/*",
-    "https://tap.tekioncloud.com/*",
-    "https://webshell.suite.office.com/*",
+    "<all_urls>",
     "http://localhost:5174/*",
     "http://127.0.0.1:5174/*"
   ],

@@ -5,6 +5,7 @@ import { loadGlobalHeaders } from "../../../../../services/tekionApiSettings";
 import type { KeyValuePair } from "../../../../../types/proxy.types";
 import makeModelsRaw from "../../../../../terminology/MAKE_MODELS_DATA.json";
 import terminologyMapRaw from "../../../../../terminology/terminology_mapping.json" with { type: "json" };
+import "./index.css"; // Added import
 
 type MakeModelsEntry = {
   Makes?: string;
@@ -605,8 +606,6 @@ function buildGenericModelAliases(model: string): string[] {
     aliases.add(withoutMarketingWords.join(" "));
   }
 
-  // Strict Token Validation:
-  // We only add the first token if it is NOT a generic word like "CHEVY", "VAN", etc.
   if (tokens.length > 0) {
     const firstToken = tokens[0];
     if (firstToken.length > 2 && !GENERIC_MODEL_IGNORE.has(normalizeUpper(firstToken))) {
@@ -637,9 +636,7 @@ function buildGenericModelAliases(model: string): string[] {
     .map((v) => normalizeModelAlias(v))
     .filter((v) => {
       const upper = normalizeUpper(v);
-      // Strip aliases that are literally just make names or generic classifiers
       if (GENERIC_MODEL_IGNORE.has(upper)) return false;
-      // Strip suspiciously short aliases unless they are purely numerical (like "86" or "1500")
       if (upper.length < 3 && !/^\d+$/.test(upper)) return false;
       return true;
     });
@@ -719,7 +716,6 @@ function buildModelMatchesForMake(
   const matchedRows: ModelMatchRow[] = [];
   const claimedModels = new Set<string>();
 
-  // Sort model rows so we evaluate the longest alias capable ones first (general fallback)
   const modelRowsSorted = [...modelRows].sort((a, b) => {
     const aLen = Math.max(...getModelAliases(a.model).map((x) => normalizeModelAlias(x).length), 0);
     const bLen = Math.max(...getModelAliases(b.model).map((x) => normalizeModelAlias(x).length), 0);
@@ -728,8 +724,8 @@ function buildModelMatchesForMake(
 
   for (const candidate of candidates) {
     let best: { make: string; model: string } | null = null;
-    let bestMatchLen = -1; // The length of the ACTUAL phrase that matched in the account name
-    let bestModelLen = Infinity; // Tie-breaker: shortest original model name wins
+    let bestMatchLen = -1;
+    let bestModelLen = Infinity;
     let bestReason = "";
 
     const saleName = normalizeLoose(candidate.saleAccountId_Name);
@@ -741,14 +737,9 @@ function buildModelMatchesForMake(
       for (const alias of getModelAliases(model)) {
         const normalizedAlias = normalizeModelAlias(alias);
 
-        // Exact strict check to find actual substring matches dynamically
         if (containsLoose(saleName, normalizedAlias)) {
           const matchLen = normalizedAlias.length;
 
-          // TIE BREAKER RULES:
-          // 1. If this alias matches MORE characters than the current best, it takes the lead.
-          // 2. If it matches the SAME number of characters, the shorter/base original model name wins.
-          //    (e.g., matching "TAHOE" means "Tahoe" (len 5) beats "Tahoe Special Service Veh" (len 25))
           if (
             matchLen > bestMatchLen ||
             (matchLen === bestMatchLen && model.length < bestModelLen)
@@ -932,168 +923,9 @@ function findResolvedMakesFromMetadata(metadataMakes: string[]): string[] {
   return Array.from(new Set(resolved));
 }
 
-const badgeStyle: React.CSSProperties = {
-  padding: "4px 10px",
-  borderRadius: 999,
-  border: "1px solid rgba(255,255,255,0.1)",
-  background: "rgba(255,255,255,0.03)",
-  color: "#cbd5e1",
-  fontSize: 12,
-  whiteSpace: "nowrap",
-};
-
-const pageStyle: React.CSSProperties = {
-  display: "grid",
-  gap: 16,
-  minWidth: 0,
-  width: "100%",
-  maxWidth: "100%",
-  maxHeight: "calc(100vh - 24px)",
-  overflow: "auto",
-  boxSizing: "border-box",
-  paddingRight: 6,
-  paddingBottom: 8,
-};
-
-const cardStyle: React.CSSProperties = {
-  borderRadius: 16,
-  border: "1px solid rgba(255,255,255,0.08)",
-  background: "rgba(255,255,255,0.02)",
-  padding: 16,
-  minWidth: 0,
-};
-
-const monoStyle: React.CSSProperties = {
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-  fontSize: 12,
-  color: "#e2e8f0",
-  whiteSpace: "pre-wrap",
-  overflowWrap: "anywhere",
-};
-
-const statGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-  gap: 12,
-};
-
-const cardTitleStyle: React.CSSProperties = {
-  color: "#f8fafc",
-  fontSize: 15,
-  fontWeight: 800,
-  marginBottom: 10,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 8,
-  flexWrap: "wrap",
-};
-
-const rowCountBadgeStyle: React.CSSProperties = {
-  ...badgeStyle,
-  fontSize: 11,
-  color: "#94a3b8",
-};
-
-const infoButtonStyle: React.CSSProperties = {
-  width: 28,
-  height: 28,
-  borderRadius: 999,
-  border: "1px solid rgba(255,255,255,0.12)",
-  background: "rgba(255,255,255,0.04)",
-  color: "#cbd5e1",
-  display: "inline-flex",
-  alignItems: "center",
-  justifyContent: "center",
-  cursor: "pointer",
-  fontSize: 14,
-  fontWeight: 800,
-  flexShrink: 0,
-};
-
-const infoPanelStyle: React.CSSProperties = {
-  borderRadius: 14,
-  border: "1px solid rgba(96,165,250,0.22)",
-  background: "rgba(37,99,235,0.08)",
-  padding: 14,
-  display: "grid",
-  gap: 12,
-};
-
-const infoGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: 10,
-};
-
-const infoItemStyle: React.CSSProperties = {
-  borderRadius: 12,
-  border: "1px solid rgba(255,255,255,0.08)",
-  background: "rgba(255,255,255,0.03)",
-  padding: "10px 12px",
-  minWidth: 0,
-};
-
-function tableScrollWrapStyle(maxHeight: number): React.CSSProperties {
-  return {
-    maxHeight,
-    overflowY: "auto",
-    overflowX: "auto",
-    borderRadius: 10,
-    border: "1px solid rgba(255,255,255,0.06)",
-    maxWidth: "100%",
-  };
-}
-
-const tableElementStyle: React.CSSProperties = {
-  width: "100%",
-  minWidth: 980,
-  borderCollapse: "collapse",
-};
-
-const stickyThStyle: React.CSSProperties = {
-  position: "sticky",
-  top: 0,
-  background: "#111827",
-  color: "#94a3b8",
-  textAlign: "left",
-  padding: "8px 10px",
-  fontSize: 12,
-  fontWeight: 700,
-  zIndex: 1,
-  borderBottom: "1px solid rgba(255,255,255,0.08)",
-  whiteSpace: "nowrap",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "8px 10px",
-  fontSize: 13,
-  borderBottom: "1px solid rgba(255,255,255,0.04)",
-  verticalAlign: "middle",
-};
-
-function zebraRowStyle(index: number): React.CSSProperties {
-  return {
-    background: index % 2 === 1 ? "rgba(255,255,255,0.015)" : "transparent",
-  };
-}
-
-const collapsibleHeaderStyle: React.CSSProperties = {
-  width: "100%",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: 8,
-  flexWrap: "wrap",
-  background: "transparent",
-  border: "none",
-  padding: "4px 6px",
-  margin: "-4px -6px 6px -6px",
-  borderRadius: 8,
-  cursor: "pointer",
-  textAlign: "left",
-  font: "inherit",
-};
+// ----------------------------------------------------------------------
+// View Components
+// ----------------------------------------------------------------------
 
 function ChevronIcon({ open }: { open: boolean }): JSX.Element {
   return (
@@ -1106,12 +938,7 @@ function ChevronIcon({ open }: { open: boolean }): JSX.Element {
       strokeWidth={2.5}
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{
-        flexShrink: 0,
-        color: "#94a3b8",
-        transform: open ? "rotate(180deg)" : "rotate(-90deg)",
-        transition: "transform 0.15s ease",
-      }}
+      className={`nv-chevron-icon ${open ? "nv-chevron-open" : "nv-chevron-closed"}`}
     >
       <polyline points="6 9 12 15 18 9" />
     </svg>
@@ -1122,11 +949,7 @@ function InfoIcon({ open }: { open: boolean }): JSX.Element {
   return (
     <span
       aria-hidden="true"
-      style={{
-        ...infoButtonStyle,
-        background: open ? "rgba(96,165,250,0.18)" : "rgba(255,255,255,0.04)",
-        color: open ? "#dbeafe" : "#cbd5e1",
-      }}
+      className={`nv-info-button ${open ? "nv-info-icon-open" : ""}`}
     >
       i
     </span>
@@ -1147,10 +970,9 @@ function SectionHeader({
   return (
     <button
       type="button"
-      className="nv-section-header"
+      className="nv-collapsible-header"
       onClick={onToggle}
       aria-expanded={open}
-      style={collapsibleHeaderStyle}
     >
       <span style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
         <ChevronIcon open={open} />
@@ -1371,7 +1193,9 @@ const NewVehiclesView: React.FC = () => {
       const fallbackRows = modelMatches.filter((row) => !row.matched);
       if (fallbackRows.length > 0) {
         warnings.push(
-          `Fallback row added for make "${make}": MODEL="All" (${fallbackRows.length} row${fallbackRows.length === 1 ? "" : "s"})`
+          `Fallback row added for make "${make}": MODEL="All" (${fallbackRows.length} row${
+            fallbackRows.length === 1 ? "" : "s"
+          })`
         );
       }
     }
@@ -1573,32 +1397,14 @@ const NewVehiclesView: React.FC = () => {
   }, [allCandidateSaleAccounts.length, buildResult, detectedDealerId, fallbackCount, matchedCount]);
 
   return (
-    <div style={pageStyle} className="nv-page-scroll">
-      <style>{`
-        .nv-page-scroll::-webkit-scrollbar,
-        .nv-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
-        .nv-page-scroll::-webkit-scrollbar-track,
-        .nv-scroll::-webkit-scrollbar-track { background: transparent; }
-        .nv-page-scroll::-webkit-scrollbar-thumb,
-        .nv-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 8px; }
-        .nv-page-scroll::-webkit-scrollbar-thumb:hover,
-        .nv-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.24); }
-        .nv-section-header:hover { background: rgba(255,255,255,0.04); }
-        .nv-section-header:hover .nv-section-header-title { color: #ffffff; }
-        .nv-section-header:focus-visible,
-        .nv-info-button:focus-visible {
-          outline: 2px solid rgba(96,165,250,0.6);
-          outline-offset: 2px;
-        }
-      `}</style>
-
+    <div className="nv-page-scroll nv-page">
       <GlamSectionHeader
         title="New Vehicles"
         description="GLAM content for new vehicle accounting flows"
         breadcrumb="Accounting / Variable Operations / New Vehicles"
       />
 
-      <div style={cardStyle}>
+      <div className="nv-card">
         <div style={{ display: "grid", gap: 14 }}>
           <div
             style={{
@@ -1637,7 +1443,6 @@ const NewVehiclesView: React.FC = () => {
               onClick={() => setInfoOpen((v) => !v)}
               aria-expanded={infoOpen}
               aria-label="Toggle new vehicles information"
-              style={infoButtonStyle}
               title="Show information"
             >
               <InfoIcon open={infoOpen} />
@@ -1645,13 +1450,13 @@ const NewVehiclesView: React.FC = () => {
           </div>
 
           {infoOpen ? (
-            <div style={infoPanelStyle}>
+            <div className="nv-info-panel">
               <div style={{ color: "#dbeafe", fontSize: 14, fontWeight: 800 }}>
                 New Vehicles Information
               </div>
 
-              <div style={infoGridStyle}>
-                <div style={infoItemStyle}>
+              <div className="nv-info-grid">
+                <div className="nv-info-item">
                   <div style={{ color: "#93c5fd", fontSize: 11, fontWeight: 700, marginBottom: 6 }}>
                     FLOW
                   </div>
@@ -1659,13 +1464,13 @@ const NewVehiclesView: React.FC = () => {
                     1. Keep existing functionality.<br />
                     2. Fetch makes from mapping metadata API.<br />
                     3. Match metadata makes with MAKE_MODELS_DATA.json.<br />
-                    4. Create separate payloads like <code style={monoStyle}>New Vehicles - Kia</code> for each make.<br />
-                    5. Detect abbreviated make names through JSON <code style={monoStyle}>IncludeAny</code> aliases.<br />
+                    4. Create separate payloads like <code className="nv-mono">New Vehicles - Kia</code> for each make.<br />
+                    5. Detect abbreviated make names through JSON <code className="nv-mono">IncludeAny</code> aliases.<br />
                     6. Detect model phrases dynamically from JSON models, using string-length tiebreakers to resolve generic vs specific variants.
                   </div>
                 </div>
 
-                <div style={infoItemStyle}>
+                <div className="nv-info-item">
                   <div style={{ color: "#93c5fd", fontSize: 11, fontWeight: 700, marginBottom: 6 }}>
                     CONFIG
                   </div>
@@ -1678,7 +1483,7 @@ const NewVehiclesView: React.FC = () => {
                   </div>
                 </div>
 
-                <div style={infoItemStyle}>
+                <div className="nv-info-item">
                   <div style={{ color: "#93c5fd", fontSize: 11, fontWeight: 700, marginBottom: 6 }}>
                     CONTEXT
                   </div>
@@ -1691,7 +1496,7 @@ const NewVehiclesView: React.FC = () => {
                   </div>
                 </div>
 
-                <div style={infoItemStyle}>
+                <div className="nv-info-item">
                   <div style={{ color: "#93c5fd", fontSize: 11, fontWeight: 700, marginBottom: 6 }}>
                     OUTPUT
                   </div>
@@ -1707,16 +1512,16 @@ const NewVehiclesView: React.FC = () => {
           ) : null}
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <span style={badgeStyle}>
+            <span className="nv-badge">
               Dealer ID:{" "}
               <b style={{ color: detectedDealerId ? "#86efac" : "#fca5a5" }}>
                 {detectedDealerId || "Not found"}
               </b>
             </span>
-            <span style={badgeStyle}>
+            <span className="nv-badge">
               Module: <b style={{ color: "#f8fafc" }}>NEW_VEHICLE</b>
             </span>
-            <span style={badgeStyle}>
+            <span className="nv-badge">
               Status:{" "}
               <b style={{ color: buildResult?.existingRule ? "#fbbf24" : "#86efac" }}>
                 {buildResult?.existingRule ? "Existing rule found" : "Ready to analyze"}
@@ -1760,28 +1565,15 @@ const NewVehiclesView: React.FC = () => {
           </div>
 
           {message ? (
-            <div
-              style={{
-                borderRadius: 12,
-                padding: "10px 12px",
-                fontSize: 13,
-                color: message.ok ? "#bbf7d0" : "#fecaca",
-                background: message.ok
-                  ? "rgba(34,197,94,0.10)"
-                  : "rgba(239,68,68,0.10)",
-                border: message.ok
-                  ? "1px solid rgba(34,197,94,0.22)"
-                  : "1px solid rgba(239,68,68,0.22)",
-              }}
-            >
+            <div className={`nv-msg-panel ${message.ok ? "nv-msg-success" : "nv-msg-error"}`}>
               {message.text}
             </div>
           ) : null}
 
           {buildResult ? (
             <div style={{ display: "grid", gap: 14, minWidth: 0 }}>
-              <div style={statGridStyle}>
-                <div style={cardStyle}>
+              <div className="nv-stat-grid">
+                <div className="nv-card">
                   <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>
                     Metadata Makes
                   </div>
@@ -1793,7 +1585,7 @@ const NewVehiclesView: React.FC = () => {
                   </div>
                 </div>
 
-                <div style={cardStyle}>
+                <div className="nv-card">
                   <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>
                     Resolved Makes
                   </div>
@@ -1805,7 +1597,7 @@ const NewVehiclesView: React.FC = () => {
                   </div>
                 </div>
 
-                <div style={cardStyle}>
+                <div className="nv-card">
                   <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>
                     Cost Offset Buckets
                   </div>
@@ -1817,7 +1609,7 @@ const NewVehiclesView: React.FC = () => {
                   </div>
                 </div>
 
-                <div style={cardStyle}>
+                <div className="nv-card">
                   <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>
                     Linked Sale Accounts
                   </div>
@@ -1829,7 +1621,7 @@ const NewVehiclesView: React.FC = () => {
                   </div>
                 </div>
 
-                <div style={cardStyle}>
+                <div className="nv-card">
                   <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>
                     Matched Rows
                   </div>
@@ -1841,7 +1633,7 @@ const NewVehiclesView: React.FC = () => {
                   </div>
                 </div>
 
-                <div style={cardStyle}>
+                <div className="nv-card">
                   <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>
                     Fallback Rows
                   </div>
@@ -1853,7 +1645,7 @@ const NewVehiclesView: React.FC = () => {
                   </div>
                 </div>
 
-                <div style={cardStyle}>
+                <div className="nv-card">
                   <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>
                     Payloads
                   </div>
@@ -1875,7 +1667,7 @@ const NewVehiclesView: React.FC = () => {
                 </button>
               </div>
 
-              <div style={cardStyle}>
+              <div className="nv-card">
                 <SectionHeader
                   title="Match Summary"
                   open={!collapsedSections.matchSummary}
@@ -1900,7 +1692,7 @@ const NewVehiclesView: React.FC = () => {
                         {buildResult.costOffsetBuckets.map((bucket) => (
                           <li key={bucket.costOffsetAccountId}>
                             {bucket.costOffsetAccountName}{" "}
-                            (<code style={monoStyle}>{bucket.costOffsetAccountId}</code>) ·{" "}
+                            (<code className="nv-mono">{bucket.costOffsetAccountId}</code>) ·{" "}
                             {bucket.bucketRows.length} chain row
                             {bucket.bucketRows.length === 1 ? "" : "s"}
                           </li>
@@ -1928,56 +1720,56 @@ const NewVehiclesView: React.FC = () => {
                 ) : null}
               </div>
 
-              <div style={cardStyle}>
+              <div className="nv-card">
                 <SectionHeader
                   title="Linked Sale Accounts For Detected Cost Offsets"
                   open={!collapsedSections.linkedSaleAccounts}
                   onToggle={() => toggleSection("linkedSaleAccounts")}
                   badge={
-                    <span style={rowCountBadgeStyle}>
+                    <span className="nv-row-count-badge">
                       {allCandidateSaleAccounts.length} row
                       {allCandidateSaleAccounts.length === 1 ? "" : "s"}
                     </span>
                   }
                 />
                 {!collapsedSections.linkedSaleAccounts ? (
-                  <div className="nv-scroll" style={tableScrollWrapStyle(320)}>
-                    <table className="bx-table" style={{ ...tableElementStyle, minWidth: 1180 }}>
+                  <div className="nv-scroll nv-table-scroll-wrap" style={{ maxHeight: 320 }}>
+                    <table className="bx-table nv-table-element">
                       <thead>
                         <tr>
-                          <th style={stickyThStyle}>Sale Account #</th>
-                          <th style={stickyThStyle}>Sale Account Name</th>
-                          <th style={stickyThStyle}>Mapped Asset ID</th>
-                          <th style={stickyThStyle}>Detected Make</th>
-                          <th style={stickyThStyle}>Make Reason</th>
-                          <th style={stickyThStyle}>Model Hints</th>
-                          <th style={stickyThStyle}>Cost Offset #</th>
-                          <th style={stickyThStyle}>Cost Offset Name</th>
-                          <th style={stickyThStyle}>Detected Body Classes</th>
+                          <th className="nv-sticky-th">Sale Account #</th>
+                          <th className="nv-sticky-th">Sale Account Name</th>
+                          <th className="nv-sticky-th">Mapped Asset ID</th>
+                          <th className="nv-sticky-th">Detected Make</th>
+                          <th className="nv-sticky-th">Make Reason</th>
+                          <th className="nv-sticky-th">Model Hints</th>
+                          <th className="nv-sticky-th">Cost Offset #</th>
+                          <th className="nv-sticky-th">Cost Offset Name</th>
+                          <th className="nv-sticky-th">Detected Body Classes</th>
                         </tr>
                       </thead>
                       <tbody>
                         {allCandidateSaleAccounts.map((row, index) => (
-                          <tr key={`${row.saleAccountId}-${index}`} style={zebraRowStyle(index)}>
-                            <td style={tdStyle}>
-                              <code style={monoStyle}>{row.saleAccountId_Number || "—"}</code>
+                          <tr key={`${row.saleAccountId}-${index}`} className="nv-zebra-row">
+                            <td className="nv-td">
+                              <code className="nv-mono">{row.saleAccountId_Number || "—"}</code>
                             </td>
-                            <td style={tdStyle}>{row.saleAccountId_Name || "—"}</td>
-                            <td style={tdStyle}>
-                              <code style={monoStyle}>{row.saleAccountId || "—"}</code>
+                            <td className="nv-td">{row.saleAccountId_Name || "—"}</td>
+                            <td className="nv-td">
+                              <code className="nv-mono">{row.saleAccountId || "—"}</code>
                             </td>
-                            <td style={tdStyle}>{row.detectedMake || "—"}</td>
-                            <td style={tdStyle}>{row.detectedMakeReason || "—"}</td>
-                            <td style={tdStyle}>
+                            <td className="nv-td">{row.detectedMake || "—"}</td>
+                            <td className="nv-td">{row.detectedMakeReason || "—"}</td>
+                            <td className="nv-td">
                               {row.detectedModelHints.length > 0
                                 ? row.detectedModelHints.join(", ")
                                 : "—"}
                             </td>
-                            <td style={tdStyle}>
-                              <code style={monoStyle}>{row.costOffsetAccountId || "—"}</code>
+                            <td className="nv-td">
+                              <code className="nv-mono">{row.costOffsetAccountId || "—"}</code>
                             </td>
-                            <td style={tdStyle}>{row.costOffsetAccountId_Name || "—"}</td>
-                            <td style={tdStyle}>
+                            <td className="nv-td">{row.costOffsetAccountId_Name || "—"}</td>
+                            <td className="nv-td">
                               {row.detectedBodyClasses.length > 0
                                 ? row.detectedBodyClasses.join(", ")
                                 : "—"}
@@ -1991,13 +1783,13 @@ const NewVehiclesView: React.FC = () => {
               </div>
 
               {buildResult.warnings.length > 0 ? (
-                <div style={cardStyle}>
+                <div className="nv-card">
                   <SectionHeader
                     title="Warnings"
                     open={!collapsedSections.warnings}
                     onToggle={() => toggleSection("warnings")}
                     badge={
-                      <span style={rowCountBadgeStyle}>
+                      <span className="nv-row-count-badge">
                         {buildResult.warnings.length} warning
                         {buildResult.warnings.length === 1 ? "" : "s"}
                       </span>
@@ -2017,13 +1809,13 @@ const NewVehiclesView: React.FC = () => {
                 </div>
               ) : null}
 
-              <div style={cardStyle}>
+              <div className="nv-card">
                 <SectionHeader
                   title="Model to Sale Account Mapping"
                   open={!collapsedSections.modelMapping}
                   onToggle={() => toggleSection("modelMapping")}
                   badge={
-                    <span style={rowCountBadgeStyle}>
+                    <span className="nv-row-count-badge">
                       {buildResult.modelMatches.length} row
                       {buildResult.modelMatches.length === 1 ? "" : "s"} · {matchedCount} matched ·{" "}
                       {fallbackCount} fallback
@@ -2031,49 +1823,47 @@ const NewVehiclesView: React.FC = () => {
                   }
                 />
                 {!collapsedSections.modelMapping ? (
-                  <div className="nv-scroll" style={tableScrollWrapStyle(520)}>
-                    <table className="bx-table" style={{ ...tableElementStyle, minWidth: 1180 }}>
+                  <div className="nv-scroll nv-table-scroll-wrap" style={{ maxHeight: 520 }}>
+                    <table className="bx-table nv-table-element">
                       <thead>
                         <tr>
-                          <th style={stickyThStyle}>Make</th>
-                          <th style={stickyThStyle}>Model</th>
-                          <th style={stickyThStyle}>Body Class</th>
-                          <th style={stickyThStyle}>Sale Account #</th>
-                          <th style={stickyThStyle}>Sale Account Name</th>
-                          <th style={stickyThStyle}>Mapped Asset ID</th>
-                          <th style={stickyThStyle}>Cost Offset Name</th>
-                          <th style={stickyThStyle}>Matched</th>
-                          <th style={stickyThStyle}>Reason</th>
+                          <th className="nv-sticky-th">Make</th>
+                          <th className="nv-sticky-th">Model</th>
+                          <th className="nv-sticky-th">Body Class</th>
+                          <th className="nv-sticky-th">Sale Account #</th>
+                          <th className="nv-sticky-th">Sale Account Name</th>
+                          <th className="nv-sticky-th">Mapped Asset ID</th>
+                          <th className="nv-sticky-th">Cost Offset Name</th>
+                          <th className="nv-sticky-th">Matched</th>
+                          <th className="nv-sticky-th">Reason</th>
                         </tr>
                       </thead>
                       <tbody>
                         {buildResult.makePlans.flatMap((plan) =>
                           plan.modelMatches.map((row, idx) => (
-                            <tr key={`${plan.make}-${row.model}-${idx}`} style={zebraRowStyle(idx)}>
-                              <td style={tdStyle}>{plan.make || row.make || "—"}</td>
-                              <td style={tdStyle}>{row.model || "—"}</td>
-                              <td style={tdStyle}>
+                            <tr key={`${plan.make}-${row.model}-${idx}`} className="nv-zebra-row">
+                              <td className="nv-td">{plan.make || row.make || "—"}</td>
+                              <td className="nv-td">{row.model || "—"}</td>
+                              <td className="nv-td">
                                 {row.bodyClasses.length > 0 ? row.bodyClasses[0] : "—"}
                               </td>
-                              <td style={tdStyle}>
-                                <code style={monoStyle}>{row.saleAccountId_Number || "—"}</code>
+                              <td className="nv-td">
+                                <code className="nv-mono">{row.saleAccountId_Number || "—"}</code>
                               </td>
-                              <td style={tdStyle}>{row.saleAccountId_Name || "—"}</td>
-                              <td style={tdStyle}>
-                                <code style={monoStyle}>{row.mappedAssetId || "—"}</code>
+                              <td className="nv-td">{row.saleAccountId_Name || "—"}</td>
+                              <td className="nv-td">
+                                <code className="nv-mono">{row.mappedAssetId || "—"}</code>
                               </td>
-                              <td style={tdStyle}>{row.costOffsetAccountId_Name || "—"}</td>
-                              <td style={tdStyle}>
+                              <td className="nv-td">{row.costOffsetAccountId_Name || "—"}</td>
+                              <td className="nv-td">
                                 <span
-                                  style={{
-                                    ...badgeStyle,
-                                    color: row.matched ? "#30d158" : "#ff9f0a",
-                                  }}
+                                  className="nv-badge"
+                                  style={{ color: row.matched ? "#30d158" : "#ff9f0a" }}
                                 >
                                   {row.matched ? "YES" : "ALL"}
                                 </span>
                               </td>
-                              <td style={tdStyle}>{row.matchReason || "—"}</td>
+                              <td className="nv-td">{row.matchReason || "—"}</td>
                             </tr>
                           ))
                         )}
@@ -2083,13 +1873,13 @@ const NewVehiclesView: React.FC = () => {
                 ) : null}
               </div>
 
-              <div style={cardStyle}>
+              <div className="nv-card">
                 <SectionHeader
                   title="Payloads By Make"
                   open={!collapsedSections.payloads}
                   onToggle={() => toggleSection("payloads")}
                   badge={
-                    <span style={rowCountBadgeStyle}>
+                    <span className="nv-row-count-badge">
                       {buildResult.payloads.length} payload
                       {buildResult.payloads.length === 1 ? "" : "s"}
                     </span>
@@ -2107,11 +1897,11 @@ const NewVehiclesView: React.FC = () => {
                           padding: 12,
                         }}
                       >
-                        <div style={cardTitleStyle}>
+                        <div className="nv-card-title">
                           <span>{entry.ruleName}</span>
                         </div>
-                        <div className="nv-scroll" style={tableScrollWrapStyle(280)}>
-                          <pre style={{ ...monoStyle, margin: 0, padding: 10 }}>
+                        <div className="nv-scroll nv-table-scroll-wrap" style={{ maxHeight: 280 }}>
+                          <pre className="nv-mono" style={{ margin: 0, padding: 10 }}>
                             {JSON.stringify(entry.payload, null, 2)}
                           </pre>
                         </div>
@@ -2122,10 +1912,10 @@ const NewVehiclesView: React.FC = () => {
               </div>
 
               {previewOpen && buildResult.payloads.length > 0 ? (
-                <div style={cardStyle}>
-                  <div style={cardTitleStyle}>Create Payload Preview</div>
-                  <div className="nv-scroll" style={tableScrollWrapStyle(360)}>
-                    <pre style={{ ...monoStyle, margin: 0, padding: 10 }}>
+                <div className="nv-card">
+                  <div className="nv-card-title">Create Payload Preview</div>
+                  <div className="nv-scroll nv-table-scroll-wrap" style={{ maxHeight: 360 }}>
+                    <pre className="nv-mono" style={{ margin: 0, padding: 10 }}>
                       {JSON.stringify(buildResult.payloads, null, 2)}
                     </pre>
                   </div>

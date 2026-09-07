@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 
 const router = Router();
 
-// ── POST /api/settings/tekion-token ──────────────────────────────────────────
+// ── POST /API/settings/tekion-token ──────────────────────────────────────────
 // Proxies to Tekion auth API — bypasses CORS
 router.post("/tekion-token", async (req: Request, res: Response) => {
   const { username, password, endpoint } = req.body as {
@@ -48,7 +48,7 @@ router.post("/tekion-token", async (req: Request, res: Response) => {
     const rawExpiry = raw.expiresAt ?? raw.expires_at ?? raw.expiry ?? raw.expires_in;
     let expiresAt: string;
     if (typeof rawExpiry === "number") {
-      // treat as seconds from now if < 1_000_000, else epoch ms
+      // Treat as seconds from now if < 1_000_000, else epoch ms
       expiresAt = new Date(
         rawExpiry < 1_000_000
           ? Date.now() + rawExpiry * 1000
@@ -69,7 +69,7 @@ router.post("/tekion-token", async (req: Request, res: Response) => {
   }
 });
 
-// ── GET /api/settings/ms-photo?email=... ─────────────────────────────────────
+// ── GET /API/settings/ms-photo?email=... ─────────────────────────────────────
 // Proxies to Microsoft Graph — bypasses CORS
 // Requires:  Authorization: Bearer <token>  header from client
 router.get("/ms-photo", async (req: Request, res: Response) => {

@@ -3,6 +3,8 @@ import type { KeyValuePair } from "../types/proxy.types";
 export interface TekionApiSettings extends Record<string, string> {
   tapDuoApiToken: string;
   graphApiToken: string;
+  storesCustomCaptureId: string;
+  storesApiCaptureId: string;
 }
 
 export interface TekionApiSettingsBundle {
@@ -13,10 +15,13 @@ export interface TekionApiSettingsBundle {
 }
 
 const STORAGE_KEY = "tekion-api-settings";
+const SELECTED_DEALER_PROFILE_KEY = "arc_selected_dealer_profile_id_v1";
 
 const DEFAULT_SETTINGS: TekionApiSettings = {
   tapDuoApiToken: "",
   graphApiToken: "",
+  storesCustomCaptureId: "",
+  storesApiCaptureId: "",
 };
 
 function normalizeStringMap(input: unknown): Record<string, string> {
@@ -43,8 +48,7 @@ function normalizeGlobalHeaders(input: unknown): KeyValuePair[] {
       const row = item as Record<string, unknown>;
       const key = typeof row.key === "string" ? row.key : "";
       const value = typeof row.value === "string" ? row.value : "";
-      const enabled =
-        typeof row.enabled === "boolean" ? row.enabled : true;
+      const enabled = typeof row.enabled === "boolean" ? row.enabled : true;
 
       if (!key.trim()) return null;
 
@@ -65,16 +69,20 @@ function withDefaults(values: Record<string, string>): TekionApiSettings {
 }
 
 function persistBundle(bundle: TekionApiSettingsBundle): void {
-  localStorage.setItem(
-    STORAGE_KEY,
-    JSON.stringify({
-      version: 3,
-      values: bundle.values,
-      savedAtByKey: bundle.savedAtByKey,
-      updatedAt: bundle.updatedAt,
-      globalHeaders: bundle.globalHeaders,
-    })
-  );
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 5,
+        values: bundle.values,
+        savedAtByKey: bundle.savedAtByKey,
+        updatedAt: bundle.updatedAt,
+        globalHeaders: bundle.globalHeaders,
+      })
+    );
+  } catch (error) {
+    console.error("[SettingsService] Failed to persist bundle to localStorage", error);
+  }
 }
 
 export function loadTekionApiSettingsBundle(): TekionApiSettingsBundle {
@@ -191,17 +199,7 @@ export function saveGlobalHeaders(globalHeaders: KeyValuePair[]): KeyValuePair[]
 }
 
 export function clearGlobalHeaders(): void {
-  const current = loadTekionApiSettingsBundle();
-  const now = new Date().toISOString();
-
-  const bundle: TekionApiSettingsBundle = {
-    values: current.values,
-    savedAtByKey: current.savedAtByKey,
-    updatedAt: now,
-    globalHeaders: [],
-  };
-
-  persistBundle(bundle);
+  saveGlobalHeaders([]);
 }
 
 export function clearTekionApiSetting(key: string): TekionApiSettings {
@@ -231,5 +229,40 @@ export function clearTekionApiSetting(key: string): TekionApiSettings {
 }
 
 export function clearTekionApiSettings(): void {
-  localStorage.removeItem(STORAGE_KEY);
+  try {
+    const bundle: TekionApiSettingsBundle = {
+      values: withDefaults({}),
+      savedAtByKey: {},
+      updatedAt: new Date().toISOString(),
+      globalHeaders: [],
+    };
+    persistBundle(bundle);
+  } catch (error) {
+    console.error("[SettingsService] Failed to clear API settings", error);
+  }
+}
+
+export function getSelectedDealerProfileId(): string | null {
+  try {
+    return localStorage.getItem(SELECTED_DEALER_PROFILE_KEY);
+  } catch (error) {
+    console.error("[SettingsService] Failed to read selected dealer profile ID", error);
+    return null;
+  }
+}
+
+export function saveSelectedDealerProfileId(profileId: string): void {
+  try {
+    localStorage.setItem(SELECTED_DEALER_PROFILE_KEY, profileId);
+  } catch (error) {
+    console.error("[SettingsService] Failed to save selected dealer profile ID", error);
+  }
+}
+
+export function clearSelectedDealerProfileId(): void {
+  try {
+    localStorage.removeItem(SELECTED_DEALER_PROFILE_KEY);
+  } catch (error) {
+    console.error("[SettingsService] Failed to clear selected dealer profile ID", error);
+  }
 }

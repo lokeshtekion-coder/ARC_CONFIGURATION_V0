@@ -29,17 +29,17 @@ import type { KeyValuePair } from "../types/proxy.types";
  * (dealerId, glAccounts, costCenterSetup, journals).
  *
  * During save, we preserve BOTH:
- * 1. the extracted bootstrap result used by the UI
- * 2. only the approved raw accounting bootstrap asset sections from
+ * 1. The extracted bootstrap result used by the UI
+ * 2. Only the approved raw accounting bootstrap asset sections from
  *    the original JSON payload
  *
  * The saved IndexedDB record goes into:
- *   DB    : arc_bootstrap_db
+ *   db rc_bootstrap_db
  *   Store : bootstraps
  *
  * using dealerId as the key.
  *
- * Inside record.data, we keep extracted fields and attach only:
+ * Inside record.Data, we keep extracted fields and attach only:
  * - apSetup
  * - accountingSettings
  * - allAccounts
@@ -208,15 +208,16 @@ function getSalesChainsRows(data: unknown): Array<Record<string, unknown>> {
 
   const deduped = new Map<string, Record<string, unknown>>();
 
-  for (const row of rows) {
+  rows.forEach((row, index) => {
     const id = normalize(row.id);
     const entryKey = normalize(row.__entryKey);
-    // Include source in dedupe to prevent collisions if IDs match
-    const dedupeKey = `${id || entryKey}-${row.__source}`;
+    // Fix: Include index in dedupe to prevent silent collision losses if explicit IDs are missing
+    const dedupeKey = id ? `${id}-${row.__source}` : `${entryKey}-${index}-${row.__source}`;
+
     if (!deduped.has(dedupeKey)) {
       deduped.set(dedupeKey, row);
     }
-  }
+  });
 
   return Array.from(deduped.values());
 }
@@ -246,9 +247,9 @@ const GLAccountsView: React.FC<{ accounts: GLAccount[] }> = ({ accounts }) => {
       .filter(
         (a) =>
           !q ||
-          a.accountName.toLowerCase().includes(q) ||
-          a.accountNumber.toLowerCase().includes(q) ||
-          a.accountTypeId.toLowerCase().includes(q)
+          (a.accountName ?? "").toLowerCase().includes(q) ||
+          (a.accountNumber ?? "").toLowerCase().includes(q) ||
+          (a.accountTypeId ?? "").toLowerCase().includes(q)
       )
       .sort((a, b) => {
         const av = String(a[sortBy]);
@@ -301,8 +302,8 @@ const GLAccountsView: React.FC<{ accounts: GLAccount[] }> = ({ accounts }) => {
           </tr>
         </thead>
         <tbody>
-          {filtered.map((a) => (
-            <tr key={a.key}>
+          {filtered.map((a, i) => (
+            <tr key={a.key || a.id || a.accountNumber || i}>
               <td>
                 <code className="bx-mono">{a.accountNumber}</code>
               </td>
@@ -338,6 +339,8 @@ const CostCenterView: React.FC<{
       {[...COST_CENTER_KEYS].map((key) => {
         const found = stats.foundKeys.includes(key);
         const entry = setup.find((cc) => cc.customFieldKey === key);
+        const optionCount = entry?.options?.length ?? 0;
+
         return (
           <div key={key} className={`bx-key-card ${found ? "bx-key-ok" : "bx-key-miss"}`}>
             <div className="bx-key-top">
@@ -346,20 +349,20 @@ const CostCenterView: React.FC<{
             </div>
             <div className="bx-key-sub">
               {found
-                ? `${entry!.options.length} option${entry!.options.length !== 1 ? "s" : ""}`
+                ? `${optionCount} option${optionCount !== 1 ? "s" : ""}`
                 : "not found in data"}
             </div>
           </div>
         );
       })}
     </div>
-    {setup.map((cc) => (
-      <div key={cc.key} className="bx-cc-block">
+    {setup.map((cc, index) => (
+      <div key={cc.key || cc.customFieldKey || index} className="bx-cc-block">
         <div className="bx-cc-header">
           <code className="bx-key-label">{cc.customFieldKey}</code>
-          <span className="bx-count-badge">{cc.options.length} options</span>
+          <span className="bx-count-badge">{cc.options?.length ?? 0} options</span>
         </div>
-        {cc.options.length === 0 ? (
+        {!cc.options || cc.options.length === 0 ? (
           <div className="bx-no-opts">No options configured</div>
         ) : (
           <table className="bx-table">
@@ -370,8 +373,8 @@ const CostCenterView: React.FC<{
               </tr>
             </thead>
             <tbody>
-              {cc.options.map((opt) => (
-                <tr key={opt.id}>
+              {cc.options.map((opt, idx) => (
+                <tr key={opt.id || idx}>
                   <td>
                     <code className="bx-mono">{opt.id}</code>
                   </td>
@@ -396,8 +399,8 @@ const JournalsView: React.FC<{ journals: Journal[] }> = ({ journals }) => (
       </tr>
     </thead>
     <tbody>
-      {journals.map((j) => (
-        <tr key={j.key}>
+      {journals.map((j, i) => (
+        <tr key={j.key || j.id || j.journalNumber || i}>
           <td>{j.journalName}</td>
           <td>
             <code className="bx-mono">{j.journalNumber}</code>
@@ -456,7 +459,7 @@ const SalesChainsView: React.FC<{ data: unknown; glAccounts: GLAccount[] }> = ({
 
         const gl = glMap.get(String(acctId));
         // Sort by the GL Account Name if found, otherwise fallback to the ID itself
-        if (gl) return gl.accountName.toLowerCase();
+        if (gl) return (gl.accountName ?? "").toLowerCase();
         return String(acctId).toLowerCase();
       };
 
@@ -819,8 +822,16 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
       // We cast to any so we can seamlessly inject the decoded sales chains for storage
       const output = extractBootstrapData(parsed) as any;
 
+      // Fix: Safely deep clone the parsed structure before modification to prevent React state mutation bugs
+      let payloadToSave: Record<string, unknown>;
+      try {
+        payloadToSave = structuredClone(parsed);
+      } catch {
+        payloadToSave = JSON.parse(JSON.stringify(parsed));
+      }
+
       // Extract and enrich sales chains directly into the output object for storage
-      const rawRows = getSalesChainsRows(parsed);
+      const rawRows = getSalesChainsRows(payloadToSave);
       if (rawRows.length > 0) {
         const glMap = new Map<string, GLAccount>();
         if (Array.isArray(output.glAccounts)) {
@@ -847,14 +858,14 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
         output.SalesChains_Decoded = decodedRows;
 
         // 2. Attach to the raw payload structure exactly alongside standard salesChains
-        const rootData = (asObject(parsed.data) ? parsed.data : parsed) as any;
+        const rootData = (asObject(payloadToSave.data) ? payloadToSave.data : payloadToSave) as any;
         if (rootData) {
           rootData.SalesChains_Decoded = decodedRows;
         }
       }
 
       setResult(output);
-      setRawJson(parsed);
+      setRawJson(payloadToSave);
       setStats(computeStats(output));
       setError(null);
       return output;
@@ -1059,12 +1070,18 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
 
   const handleHistoryDownloadJson = (record: BootstrapRecord) => {
     const tag = `bootstrap__${record.dealerName}__${record.savedAt.replace(/[:.]/g, "-")}`;
-    downloadFile(JSON.stringify(record.data, null, 2), `${tag}.json`, "application/json");
+    // Fix: Cast the entire record to any to bypass strict typing for missing properties
+    const rec = record as any;
+    const dataToDownload = rec.data || rec.extractedData;
+    downloadFile(JSON.stringify(dataToDownload, null, 2), `${tag}.json`, "application/json");
   };
 
   const handleHistoryDownloadCsv = (record: BootstrapRecord) => {
     const tag = `bootstrap__${record.dealerName}__${record.savedAt.replace(/[:.]/g, "-")}`;
-    downloadFile(toCsvString(record.data as BootstrapOutput), `${tag}.csv`, "text/csv");
+    // Fix: Cast the entire record to any
+    const rec = record as any;
+    const dataToDownload = rec.data || rec.extractedData;
+    downloadFile(toCsvString(dataToDownload as BootstrapOutput), `${tag}.csv`, "text/csv");
   };
 
   const handleIdbDelete = async (key: string) => {

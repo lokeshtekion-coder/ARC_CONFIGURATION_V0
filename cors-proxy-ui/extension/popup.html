@@ -54,6 +54,52 @@
 
         <section class="card info-card">
           <div class="card-header">
+            <span class="card-title">Watch Custom API</span>
+          </div>
+
+          <div style="display: grid; gap: 10px;">
+            <input
+              id="customUrlInput"
+              type="text"
+              placeholder="Enter full URL or partial endpoint path"
+              class="popup-input"
+            />
+
+            <div style="display: grid; grid-template-columns: 1fr 120px; gap: 8px;">
+              <select id="customMatchMode" class="popup-input">
+                <option value="includes">Match: Contains</option>
+                <option value="exact">Match: Exact URL</option>
+              </select>
+
+              <input
+                id="customExpiryInput"
+                type="number"
+                min="1"
+                step="1"
+                value="48"
+                placeholder="Expiry hours"
+                class="popup-input"
+              />
+            </div>
+
+            <input
+              id="customLabelInput"
+              type="text"
+              placeholder="Optional label, e.g. Approval Tenants API"
+              class="popup-input"
+            />
+
+            <button class="btn btn-primary" id="addUrlBtn">Add Watched API</button>
+
+            <div>
+              <div class="label" style="margin-bottom: 8px;">Watched APIs</div>
+              <div id="watchedUrlsList" style="display: grid; gap: 8px;"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card info-card">
+          <div class="card-header">
             <span class="card-title">About</span>
           </div>
           <p class="info-text">

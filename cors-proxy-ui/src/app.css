@@ -1,3 +1,14 @@
+@import "tailwindcss";
+
+/* The rest of your custom CSS stays here */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Any other custom CSS you have can stay below this */
+
+
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;

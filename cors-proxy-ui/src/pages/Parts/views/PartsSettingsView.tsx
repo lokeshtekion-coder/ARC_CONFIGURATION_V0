@@ -72,10 +72,7 @@ function normalizeText(value: unknown): string {
 }
 
 function processEscapeSequences(text: string): string {
-  return text
-    .replace(/\\n/g, "\n")
-    .replace(/\\t/g, "\t")
-    .replace(/\\r/g, "\r");
+  return text.replace(/\\n/g, "\n").replace(/\\t/g, "\t").replace(/\\r/g, "\r");
 }
 
 function getEnabledGlobalHeaders(): Record<string, string> {
@@ -84,9 +81,7 @@ function getEnabledGlobalHeaders(): Record<string, string> {
   const headers = (bundle.globalHeaders ?? [])
     .filter(
       (header: KeyValuePair) =>
-        header.enabled &&
-        header.key.trim() &&
-        String(header.value).trim()
+        header.enabled && header.key.trim() && String(header.value).trim()
     )
     .reduce<Record<string, string>>((acc, header) => {
       acc[header.key] = String(header.value);
@@ -215,12 +210,15 @@ export const PartsSettingsView: React.FC = () => {
   const [warrantyText, setWarrantyText] = useState("");
   const [returnTermsText, setReturnTermsText] = useState("");
   const [runState, setRunState] = useState<RunState>("idle");
-  const [statusText, setStatusText] = useState("Ready to submit PDF configuration to all 9 PDF types");
+  const [statusText, setStatusText] = useState(
+    "Ready to submit PDF configuration to all 9 PDF types"
+  );
   const [errorText, setErrorText] = useState("");
   const [lastRunAt, setLastRunAt] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [progressCurrent, setProgressCurrent] = useState(0);
   const [results, setResults] = useState<RequestResult[]>([]);
+  const [showInfo, setShowInfo] = useState(false);
 
   useEffect(() => {
     logger.info("component mounted");
@@ -228,7 +226,11 @@ export const PartsSettingsView: React.FC = () => {
     return () => logger.info("component unmounted");
   }, []);
 
-  const processedWarrantyText = useMemo(() => processEscapeSequences(warrantyText.trim()), [warrantyText]);
+  const processedWarrantyText = useMemo(
+    () => processEscapeSequences(warrantyText.trim()),
+    [warrantyText]
+  );
+
   const processedReturnTermsText = useMemo(
     () => processEscapeSequences(returnTermsText.trim()),
     [returnTermsText]
@@ -248,7 +250,9 @@ export const PartsSettingsView: React.FC = () => {
       processedWarrantyLength: processedWarrantyText.length,
       processedReturnTermsLength: processedReturnTermsText.length,
       warrantyPreview: processedWarrantyText.substring(0, 100).replace(/\n/g, "\\n"),
-      returnTermsPreview: processedReturnTermsText.substring(0, 100).replace(/\n/g, "\\n"),
+      returnTermsPreview: processedReturnTermsText
+        .substring(0, 100)
+        .replace(/\n/g, "\\n"),
     });
 
     if (!processedWarrantyText && !processedReturnTermsText) {
@@ -337,9 +341,10 @@ export const PartsSettingsView: React.FC = () => {
 
       if (failedCount === 0) {
         setRunState("success");
-        setStatusText(`PDF configuration saved successfully for all ${successCount} PDF types`);
+        setStatusText(
+          `PDF configuration saved successfully for all ${successCount} PDF types`
+        );
         setErrorText("");
-
         logger.info("all submissions succeeded, clearing form");
         setWarrantyText("");
         setReturnTermsText("");
@@ -349,7 +354,9 @@ export const PartsSettingsView: React.FC = () => {
           `Completed with partial success. ${successCount} succeeded and ${failedCount} failed.`
         );
         setErrorText(
-          failedResults.map((item) => `${item.pdfType}: ${item.error ?? "Unknown error"}`).join("\n")
+          failedResults
+            .map((item) => `${item.pdfType}: ${item.error ?? "Unknown error"}`)
+            .join("\n")
         );
       }
     } catch (error: unknown) {
@@ -363,79 +370,62 @@ export const PartsSettingsView: React.FC = () => {
     }
   };
 
-  return (
-    <div style={{ display: "grid", gap: 16 }}>
-      <div
-        style={{
-          borderRadius: 18,
-          border: "1px solid rgba(255,255,255,0.08)",
-          background: "rgba(255,255,255,0.03)",
-          padding: 20,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 12,
-            flexWrap: "wrap",
-            marginBottom: 14,
-          }}
-        >
-          <div style={{ minWidth: 0 }}>
-            <div
-              style={{
-                fontSize: 24,
-                fontWeight: 800,
-                color: "#f8fafc",
-                marginBottom: 6,
-                wordBreak: "break-word",
-              }}
-            >
-              Parts settings
-            </div>
+  const successCount = results.filter((item) => item.success).length;
+  const failedCount = results.filter((item) => !item.success).length;
 
-            <div
-              style={{
-                color: "#94a3b8",
-                fontSize: 14,
-                lineHeight: 1.7,
-                whiteSpace: "pre-wrap",
-                overflowWrap: "anywhere",
-              }}
-            >
-              Configure Warranty and Return Terms PDF settings for all 9 sales order PDF types using active Global Headers from Settings.
+  return (
+    <div style={pageStyle}>
+      <div style={mainCardStyle}>
+        <div style={topBarStyle}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={titleStyle}>Parts settings</div>
+            <div style={subtitleStyle}>
+              Configure Warranty and Return Terms PDF settings for all 9 sales order PDF
+              types using active Global Headers from Settings.
             </div>
           </div>
 
-          <button
-            className="btn-postman"
-            type="button"
-            onClick={() => {
-              void handleSubmit();
-            }}
-            disabled={!canSubmit}
-          >
-            {isSubmitting ? "Processing..." : "Submit to All PDF Types"}
-          </button>
+          <div style={topActionsStyle}>
+            <button
+              type="button"
+              className="btn-secondary"
+              aria-label={showInfo ? "Hide info" : "Show info"}
+              title={showInfo ? "Hide info" : "Show info"}
+              onClick={() => setShowInfo((prev) => !prev)}
+              style={infoButtonStyle}
+            >
+              ℹ️
+            </button>
+
+            <button
+              className="btn-postman"
+              type="button"
+              onClick={() => {
+                void handleSubmit();
+              }}
+              disabled={!canSubmit}
+              style={submitButtonStyle}
+            >
+              {isSubmitting ? "Processing..." : "Submit to All PDF Types"}
+            </button>
+          </div>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: 14,
-            marginBottom: 16,
-          }}
-        >
-          <div>
-            <div style={labelStyle}>
-              Warranty <span style={{ color: "#94a3b8", fontWeight: 500 }}>(Max 2000 characters)</span>
+        <div style={primaryStackStyle}>
+          <div style={editorCardStyle}>
+            <div style={editorHeaderStyle}>
+              <div style={{ minWidth: 0 }}>
+                <div style={editorTitleStyle}>Warranty</div>
+                <div style={editorSubStyle}>
+                  Primary input area for disclaimer/warranty content.
+                </div>
+              </div>
+              <div style={counterBadgeStyle}>{warrantyCharCount} / 2000</div>
             </div>
+
             <textarea
               className="st-input"
-              rows={12}
+              rows={14}
               maxLength={2000}
               value={warrantyText}
               onChange={(e) => {
@@ -445,128 +435,82 @@ export const PartsSettingsView: React.FC = () => {
               placeholder="Enter warranty text..."
               style={textareaStyle}
             />
-            <div style={counterStyle}>{warrantyCharCount} / 2000 characters</div>
+
+            <div style={editorFooterStyle}>
+              <span style={helperTextStyle}>Supports \n \t \r escape processing</span>
+              <span style={processedCountStyle}>
+                {processedWarrantyText.length} processed chars
+              </span>
+            </div>
           </div>
 
-          <div>
-            <div style={labelStyle}>
-              Return Terms <span style={{ color: "#94a3b8", fontWeight: 500 }}>(Max 2000 characters)</span>
+          <div style={editorCardStyle}>
+            <div style={editorHeaderStyle}>
+              <div style={{ minWidth: 0 }}>
+                <div style={editorTitleStyle}>Return Terms</div>
+                <div style={editorSubStyle}>
+                  Primary input area for return terms content.
+                </div>
+              </div>
+              <div style={counterBadgeStyle}>{returnTermsCharCount} / 2000</div>
             </div>
+
             <textarea
               className="st-input"
-              rows={12}
+              rows={14}
               maxLength={2000}
               value={returnTermsText}
               onChange={(e) => {
-                logger.debug("return terms input changed", { length: e.target.value.length });
+                logger.debug("return terms input changed", {
+                  length: e.target.value.length,
+                });
                 setReturnTermsText(e.target.value);
               }}
               placeholder="Enter return terms..."
               style={textareaStyle}
             />
-            <div style={counterStyle}>{returnTermsCharCount} / 2000 characters</div>
+
+            <div style={editorFooterStyle}>
+              <span style={helperTextStyle}>Supports \n \t \r escape processing</span>
+              <span style={processedCountStyle}>
+                {processedReturnTermsText.length} processed chars
+              </span>
+            </div>
           </div>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
-            marginBottom: 14,
-          }}
-        >
-          <Pill label="Module" value={MODULE_NAME} />
-          <Pill label="PDF Types" value={String(PDF_TYPES.length)} />
-          <Pill label="Warranty Length" value={String(processedWarrantyText.length)} />
-          <Pill label="Return Terms Length" value={String(processedReturnTermsText.length)} />
-          {lastRunAt ? <Pill label="Last Run" value={lastRunAt} /> : null}
-        </div>
-
-        {isSubmitting || progressCurrent > 0 ? (
-          <div
-            style={{
-              borderRadius: 14,
-              border: "1px solid rgba(255,255,255,0.08)",
-              background: "rgba(255,255,255,0.03)",
-              padding: 14,
-              marginBottom: 14,
-            }}
-          >
-            <div
-              style={{
-                color: "#e2e8f0",
-                fontSize: 13,
-                fontWeight: 700,
-                marginBottom: 8,
-              }}
-            >
-              Processing: {progressCurrent} / {PDF_TYPES.length}
+        {(isSubmitting || progressCurrent > 0) && (
+          <div style={progressCardStyle}>
+            <div style={progressHeaderStyle}>
+              <span style={progressTitleStyle}>
+                Processing {progressCurrent} / {PDF_TYPES.length}
+              </span>
+              <span style={progressPercentStyle}>{progressPercent}%</span>
             </div>
 
-            <div
-              style={{
-                height: 10,
-                width: "100%",
-                borderRadius: 999,
-                background: "rgba(255,255,255,0.08)",
-                overflow: "hidden",
-              }}
-            >
+            <div style={progressTrackStyle}>
               <div
                 style={{
+                  ...progressFillStyle,
                   width: `${progressPercent}%`,
-                  height: "100%",
-                  background: "linear-gradient(90deg, #0a84ff 0%, #30d158 100%)",
-                  transition: "width 200ms ease",
                 }}
               />
             </div>
 
-            <div
-              style={{
-                marginTop: 8,
-                color: "#94a3b8",
-                fontSize: 12,
-              }}
-            >
-              {progressPercent}% complete
-            </div>
+            <div style={progressMetaStyle}>{statusText}</div>
           </div>
-        ) : null}
+        )}
 
         <div
           style={{
-            borderRadius: 14,
-            padding: "12px 14px",
-            fontSize: 13,
-            lineHeight: 1.6,
-            border:
-              runState === "error"
-                ? "1px solid rgba(239,68,68,0.25)"
-                : runState === "success"
-                ? "1px solid rgba(34,197,94,0.25)"
-                : runState === "warning"
-                ? "1px solid rgba(245,158,11,0.25)"
-                : "1px solid rgba(255,255,255,0.08)",
-            background:
-              runState === "error"
-                ? "rgba(239,68,68,0.10)"
-                : runState === "success"
-                ? "rgba(34,197,94,0.10)"
-                : runState === "warning"
-                ? "rgba(245,158,11,0.10)"
-                : "rgba(255,255,255,0.03)",
-            color:
-              runState === "error"
-                ? "#fecaca"
-                : runState === "success"
-                ? "#bbf7d0"
-                : runState === "warning"
-                ? "#fde68a"
-                : "#cbd5e1",
-            whiteSpace: "pre-wrap",
-            overflowWrap: "anywhere",
+            ...statusCardStyle,
+            ...(runState === "error"
+              ? statusErrorStyle
+              : runState === "success"
+              ? statusSuccessStyle
+              : runState === "warning"
+              ? statusWarningStyle
+              : statusIdleStyle),
           }}
         >
           <div style={{ fontWeight: 700, marginBottom: errorText ? 6 : 0 }}>{statusText}</div>
@@ -574,171 +518,498 @@ export const PartsSettingsView: React.FC = () => {
         </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: 16,
-        }}
-      >
-        <SectionCard title="PDF Types To Be Updated">
-          {PDF_TYPES.map((pdfType, index) => (
-            <RowLine
-              key={pdfType}
-              left={`${index + 1}. ${pdfType}`}
-              right={
-                results.find((item) => item.pdfType === pdfType)?.success
-                  ? "Success"
-                  : results.find((item) => item.pdfType === pdfType)?.success === false
-                  ? "Failed"
-                  : "Pending"
-              }
-              rightColor={
-                results.find((item) => item.pdfType === pdfType)?.success
-                  ? "#86efac"
-                  : results.find((item) => item.pdfType === pdfType)?.success === false
-                  ? "#fca5a5"
-                  : "#cbd5e1"
-              }
-            />
-          ))}
-        </SectionCard>
-
-        <SectionCard title="Processed Input Preview">
-          <RowLine left="Warranty Characters" right={String(processedWarrantyText.length)} />
-          <RowLine left="Return Terms Characters" right={String(processedReturnTermsText.length)} />
-          <RowLine
-            left="Warranty Preview"
-            right={processedWarrantyText ? processedWarrantyText.slice(0, 60).replace(/\n/g, "\\n") : "—"}
-          />
-          <RowLine
-            left="Return Terms Preview"
-            right={processedReturnTermsText ? processedReturnTermsText.slice(0, 60).replace(/\n/g, "\\n") : "—"}
-          />
-        </SectionCard>
-
-        <SectionCard title="Write API Info">
-          <RowLine left="Method" right="POST" rightColor="#86efac" />
-          <RowLine left="Endpoint" right={PDF_CONFIGURATION_URL} />
-          <RowLine left="Mode" right="Submit to all 9 PDF types sequentially" />
-          <RowLine left="PUT Available in reference?" right="No" rightColor="#fca5a5" />
-        </SectionCard>
-      </div>
-
-      <div
-        style={{
-          borderRadius: 18,
-          border: "1px solid rgba(255,255,255,0.08)",
-          background: "rgba(255,255,255,0.03)",
-          padding: 18,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 800,
-            color: "#f8fafc",
-            marginBottom: 12,
-          }}
-        >
-          Submission Results
-        </div>
-
-        {results.length === 0 ? (
-          <div
-            style={{
-              borderRadius: 14,
-              border: "1px dashed rgba(148,163,184,0.30)",
-              padding: 24,
-              color: "#94a3b8",
-              textAlign: "center",
-            }}
-          >
-            No submissions yet. Fill Warranty and/or Return Terms, then click Submit.
+      {showInfo ? (
+        <div style={infoPanelStyle}>
+          <div style={infoPanelHeaderStyle}>
+            <div>
+              <div style={infoPanelTitleStyle}>Information</div>
+              <div style={infoPanelSubStyle}>
+                Secondary details, previews, API info, and submission results.
+              </div>
+            </div>
           </div>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                minWidth: 900,
-              }}
-            >
-              <thead>
-                <tr style={{ background: "rgba(255,255,255,0.04)" }}>
-                  <th style={thStyle}>#</th>
-                  <th style={thStyle}>PDF Type</th>
-                  <th style={thStyle}>Status</th>
-                  <th style={thStyle}>Error</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.map((result, index) => (
-                  <tr
-                    key={`${result.pdfType}-${index}`}
-                    style={{
-                      borderTop: "1px solid rgba(255,255,255,0.08)",
-                      background: result.success ? "rgba(34,197,94,0.04)" : "rgba(239,68,68,0.04)",
-                    }}
-                  >
-                    <td style={tdStyle}>{index + 1}</td>
-                    <td style={tdMonoStyle}>{result.pdfType}</td>
-                    <td style={tdStyle}>
-                      <span
+
+          <div style={pillWrapStyle}>
+            <Pill label="Module" value={MODULE_NAME} />
+            <Pill label="PDF Types" value={String(PDF_TYPES.length)} />
+            <Pill label="Warranty Length" value={String(processedWarrantyText.length)} />
+            <Pill
+              label="Return Terms Length"
+              value={String(processedReturnTermsText.length)}
+            />
+            {lastRunAt ? <Pill label="Last Run" value={lastRunAt} /> : null}
+          </div>
+
+          <div style={infoGridStyle}>
+            <SectionCard title="PDF Types To Be Updated">
+              {PDF_TYPES.map((pdfType, index) => {
+                const matched = results.find((item) => item.pdfType === pdfType);
+                return (
+                  <RowLine
+                    key={pdfType}
+                    left={`${index + 1}. ${pdfType}`}
+                    right={
+                      matched?.success
+                        ? "Success"
+                        : matched?.success === false
+                        ? "Failed"
+                        : "Pending"
+                    }
+                    rightColor={
+                      matched?.success
+                        ? "#86efac"
+                        : matched?.success === false
+                        ? "#fca5a5"
+                        : "#cbd5e1"
+                    }
+                  />
+                );
+              })}
+            </SectionCard>
+
+            <SectionCard title="Processed Input Preview">
+              <RowLine left="Warranty Characters" right={String(processedWarrantyText.length)} />
+              <RowLine
+                left="Return Terms Characters"
+                right={String(processedReturnTermsText.length)}
+              />
+              <RowLine
+                left="Warranty Preview"
+                right={
+                  processedWarrantyText
+                    ? processedWarrantyText.slice(0, 60).replace(/\n/g, "\\n")
+                    : "—"
+                }
+              />
+              <RowLine
+                left="Return Terms Preview"
+                right={
+                  processedReturnTermsText
+                    ? processedReturnTermsText.slice(0, 60).replace(/\n/g, "\\n")
+                    : "—"
+                }
+              />
+            </SectionCard>
+
+            <SectionCard title="Write API Info">
+              <RowLine left="Method" right="POST" rightColor="#86efac" />
+              <RowLine left="Endpoint" right={PDF_CONFIGURATION_URL} />
+              <RowLine left="Mode" right="Submit to all 9 PDF types sequentially" />
+              <RowLine left="PUT Available in reference?" right="No" rightColor="#fca5a5" />
+            </SectionCard>
+          </div>
+
+          <div style={resultsCardStyle}>
+            <div style={resultsHeaderStyle}>
+              <div>
+                <div style={resultsTitleStyle}>Submission Results</div>
+                <div style={resultsSubStyle}>
+                  Detailed result info shown only when info is opened.
+                </div>
+              </div>
+
+              {results.length > 0 ? (
+                <div style={resultsSummaryStyle}>
+                  <span style={resultsSummarySuccessStyle}>Success {successCount}</span>
+                  <span style={resultsSummaryFailStyle}>Failed {failedCount}</span>
+                </div>
+              ) : null}
+            </div>
+
+            {results.length === 0 ? (
+              <div style={emptyResultsStyle}>
+                No submissions yet. Fill Warranty and/or Return Terms, then click Submit.
+              </div>
+            ) : (
+              <div style={{ overflowX: "auto" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
+                  <thead>
+                    <tr style={{ background: "rgba(255,255,255,0.04)" }}>
+                      <th style={thStyle}>#</th>
+                      <th style={thStyle}>PDF Type</th>
+                      <th style={thStyle}>Status</th>
+                      <th style={thStyle}>Error</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {results.map((result, index) => (
+                      <tr
+                        key={`${result.pdfType}-${index}`}
                         style={{
-                          display: "inline-flex",
-                          padding: "4px 10px",
-                          borderRadius: 999,
-                          border: result.success
-                            ? "1px solid rgba(34,197,94,0.25)"
-                            : "1px solid rgba(239,68,68,0.25)",
+                          borderTop: "1px solid rgba(255,255,255,0.08)",
                           background: result.success
-                            ? "rgba(34,197,94,0.10)"
-                            : "rgba(239,68,68,0.10)",
-                          color: result.success ? "#86efac" : "#fca5a5",
-                          fontSize: 12,
-                          fontWeight: 700,
+                            ? "rgba(34,197,94,0.04)"
+                            : "rgba(239,68,68,0.04)",
                         }}
                       >
-                        {result.success ? "Success" : "Failed"}
-                      </span>
-                    </td>
-                    <td style={tdStyle}>{normalizeText(result.error) || "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                        <td style={tdStyle}>{index + 1}</td>
+                        <td style={tdMonoStyle}>{result.pdfType}</td>
+                        <td style={tdStyle}>
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              padding: "4px 10px",
+                              borderRadius: 999,
+                              border: result.success
+                                ? "1px solid rgba(34,197,94,0.25)"
+                                : "1px solid rgba(239,68,68,0.25)",
+                              background: result.success
+                                ? "rgba(34,197,94,0.10)"
+                                : "rgba(239,68,68,0.10)",
+                              color: result.success ? "#86efac" : "#fca5a5",
+                              fontSize: 12,
+                              fontWeight: 700,
+                            }}
+                          >
+                            {result.success ? "Success" : "Failed"}
+                          </span>
+                        </td>
+                        <td style={tdStyle}>{normalizeText(result.error) || "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      ) : null}
     </div>
   );
 };
 
-const labelStyle: React.CSSProperties = {
+const pageStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 16,
+  width: "100%",
+};
+
+const mainCardStyle: React.CSSProperties = {
+  borderRadius: 20,
+  border: "1px solid rgba(255,255,255,0.08)",
+  background:
+    "linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.025) 100%)",
+  padding: 20,
+};
+
+const topBarStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+  gap: 16,
+  flexWrap: "wrap",
+  marginBottom: 18,
+};
+
+const titleStyle: React.CSSProperties = {
+  fontSize: 26,
+  fontWeight: 800,
+  color: "#f8fafc",
+  marginBottom: 6,
+  wordBreak: "break-word",
+};
+
+const subtitleStyle: React.CSSProperties = {
   color: "#94a3b8",
+  fontSize: 14,
+  lineHeight: 1.7,
+  whiteSpace: "pre-wrap",
+  overflowWrap: "anywhere",
+  maxWidth: 900,
+};
+
+const topActionsStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  flexWrap: "wrap",
+};
+
+const infoButtonStyle: React.CSSProperties = {
+  width: 42,
+  height: 42,
+  minWidth: 42,
+  borderRadius: 999,
+  padding: 0,
+  fontSize: 18,
+  fontWeight: 700,
+};
+
+const submitButtonStyle: React.CSSProperties = {
+  minWidth: 220,
+};
+
+const primaryStackStyle: React.CSSProperties = {
+  display: "grid",
+  gap: 16,
+  marginBottom: 16,
+};
+
+const editorCardStyle: React.CSSProperties = {
+  borderRadius: 18,
+  border: "1px solid rgba(255,255,255,0.10)",
+  background: "rgba(15,23,42,0.45)",
+  padding: 16,
+  minWidth: 0,
+  boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
+};
+
+const editorHeaderStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+  gap: 12,
+  flexWrap: "wrap",
+  marginBottom: 12,
+};
+
+const editorTitleStyle: React.CSSProperties = {
+  fontSize: 18,
+  fontWeight: 800,
+  color: "#f8fafc",
+  marginBottom: 4,
+};
+
+const editorSubStyle: React.CSSProperties = {
+  fontSize: 12,
+  color: "#94a3b8",
+  lineHeight: 1.6,
+};
+
+const counterBadgeStyle: React.CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "6px 10px",
+  borderRadius: 999,
+  border: "1px solid rgba(255,255,255,0.10)",
+  background: "rgba(255,255,255,0.04)",
+  color: "#cbd5e1",
   fontSize: 12,
   fontWeight: 700,
-  marginBottom: 6,
 };
 
 const textareaStyle: React.CSSProperties = {
   width: "100%",
-  minHeight: 220,
-  borderRadius: 12,
-  padding: "12px 14px",
-  fontSize: 13,
+  minHeight: 280,
+  borderRadius: 14,
+  padding: "14px 16px",
+  fontSize: 14,
   boxSizing: "border-box",
   resize: "vertical",
   whiteSpace: "pre-wrap",
   overflowWrap: "anywhere",
+  lineHeight: 1.7,
+  background: "rgba(255,255,255,0.04)",
+  border: "1px solid rgba(255,255,255,0.10)",
+  color: "#f8fafc",
 };
 
-const counterStyle: React.CSSProperties = {
+const editorFooterStyle: React.CSSProperties = {
+  marginTop: 10,
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: 12,
+  flexWrap: "wrap",
+};
+
+const helperTextStyle: React.CSSProperties = {
+  color: "#94a3b8",
+  fontSize: 12,
+};
+
+const processedCountStyle: React.CSSProperties = {
+  color: "#cbd5e1",
+  fontSize: 12,
+  fontWeight: 700,
+};
+
+const progressCardStyle: React.CSSProperties = {
+  borderRadius: 14,
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(255,255,255,0.03)",
+  padding: 14,
+  marginBottom: 14,
+};
+
+const progressHeaderStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: 12,
+  marginBottom: 8,
+  flexWrap: "wrap",
+};
+
+const progressTitleStyle: React.CSSProperties = {
+  color: "#e2e8f0",
+  fontSize: 13,
+  fontWeight: 700,
+};
+
+const progressPercentStyle: React.CSSProperties = {
+  color: "#93c5fd",
+  fontSize: 12,
+  fontWeight: 700,
+};
+
+const progressTrackStyle: React.CSSProperties = {
+  height: 10,
+  width: "100%",
+  borderRadius: 999,
+  background: "rgba(255,255,255,0.08)",
+  overflow: "hidden",
+};
+
+const progressFillStyle: React.CSSProperties = {
+  height: "100%",
+  background: "linear-gradient(90deg, #0a84ff 0%, #30d158 100%)",
+  transition: "width 200ms ease",
+};
+
+const progressMetaStyle: React.CSSProperties = {
   marginTop: 8,
   color: "#94a3b8",
   fontSize: 12,
+};
+
+const statusCardStyle: React.CSSProperties = {
+  borderRadius: 14,
+  padding: "12px 14px",
+  fontSize: 13,
+  lineHeight: 1.6,
+  whiteSpace: "pre-wrap",
+  overflowWrap: "anywhere",
+};
+
+const statusIdleStyle: React.CSSProperties = {
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(255,255,255,0.03)",
+  color: "#cbd5e1",
+};
+
+const statusSuccessStyle: React.CSSProperties = {
+  border: "1px solid rgba(34,197,94,0.25)",
+  background: "rgba(34,197,94,0.10)",
+  color: "#bbf7d0",
+};
+
+const statusWarningStyle: React.CSSProperties = {
+  border: "1px solid rgba(245,158,11,0.25)",
+  background: "rgba(245,158,11,0.10)",
+  color: "#fde68a",
+};
+
+const statusErrorStyle: React.CSSProperties = {
+  border: "1px solid rgba(239,68,68,0.25)",
+  background: "rgba(239,68,68,0.10)",
+  color: "#fecaca",
+};
+
+const infoPanelStyle: React.CSSProperties = {
+  borderRadius: 20,
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(255,255,255,0.03)",
+  padding: 18,
+  display: "grid",
+  gap: 16,
+};
+
+const infoPanelHeaderStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+  gap: 12,
+  flexWrap: "wrap",
+};
+
+const infoPanelTitleStyle: React.CSSProperties = {
+  fontSize: 18,
+  fontWeight: 800,
+  color: "#f8fafc",
+  marginBottom: 4,
+};
+
+const infoPanelSubStyle: React.CSSProperties = {
+  fontSize: 12,
+  color: "#94a3b8",
+};
+
+const pillWrapStyle: React.CSSProperties = {
+  display: "flex",
+  gap: 8,
+  flexWrap: "wrap",
+};
+
+const infoGridStyle: React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+  gap: 16,
+};
+
+const resultsCardStyle: React.CSSProperties = {
+  borderRadius: 18,
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(255,255,255,0.03)",
+  padding: 18,
+};
+
+const resultsHeaderStyle: React.CSSProperties = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "flex-start",
+  gap: 12,
+  flexWrap: "wrap",
+  marginBottom: 12,
+};
+
+const resultsTitleStyle: React.CSSProperties = {
+  fontSize: 18,
+  fontWeight: 800,
+  color: "#f8fafc",
+  marginBottom: 4,
+};
+
+const resultsSubStyle: React.CSSProperties = {
+  fontSize: 12,
+  color: "#94a3b8",
+};
+
+const resultsSummaryStyle: React.CSSProperties = {
+  display: "flex",
+  gap: 8,
+  flexWrap: "wrap",
+};
+
+const resultsSummarySuccessStyle: React.CSSProperties = {
+  display: "inline-flex",
+  padding: "6px 10px",
+  borderRadius: 999,
+  border: "1px solid rgba(34,197,94,0.25)",
+  background: "rgba(34,197,94,0.10)",
+  color: "#86efac",
+  fontSize: 12,
+  fontWeight: 700,
+};
+
+const resultsSummaryFailStyle: React.CSSProperties = {
+  display: "inline-flex",
+  padding: "6px 10px",
+  borderRadius: 999,
+  border: "1px solid rgba(239,68,68,0.25)",
+  background: "rgba(239,68,68,0.10)",
+  color: "#fca5a5",
+  fontSize: 12,
+  fontWeight: 700,
+};
+
+const emptyResultsStyle: React.CSSProperties = {
+  borderRadius: 14,
+  border: "1px dashed rgba(148,163,184,0.30)",
+  padding: 24,
+  color: "#94a3b8",
+  textAlign: "center",
 };
 
 const thStyle: React.CSSProperties = {
@@ -778,10 +1049,11 @@ const Pill: React.FC<{ label: string; value: string }> = ({ label, value }) => {
         background: "rgba(255,255,255,0.03)",
         color: "#cbd5e1",
         fontSize: 12,
+        maxWidth: "100%",
+        flexWrap: "wrap",
       }}
     >
-      {label}
-      <b style={{ color: "#f8fafc" }}>{value}</b>
+      {label} <b style={{ color: "#f8fafc", wordBreak: "break-word" }}>{value}</b>
     </span>
   );
 };

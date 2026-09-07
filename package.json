@@ -7,6 +7,20 @@
     "dev": "concurrently \"npm run backend\" \"npm run frontend\""
   },
   "devDependencies": {
-    "concurrently": "^9.0.1"
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/dompurify": "^3.0.5",
+    "@types/marked": "^5.0.2",
+    "autoprefixer": "^10.5.4",
+    "concurrently": "^9.0.1",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^4.3.3"
+  },
+  "dependencies": {
+    "@microsoft/fetch-event-source": "^2.0.1",
+    "dompurify": "^3.4.13",
+    "lucide-react": "^1.31.0",
+    "marked": "^18.0.9",
+    "mermaid": "^11.16.1",
+    "react-dropzone": "^20.1.0"
   }
 }

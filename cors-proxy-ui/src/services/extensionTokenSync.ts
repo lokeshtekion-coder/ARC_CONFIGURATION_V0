@@ -62,6 +62,7 @@ export function registerExtensionTokenSync(): () => void {
       graphCapturedAt: payload.lastGraphCaptureAt,
       tekionImplementationCapturedAt: payload.lastTekionImplementationCaptureAt,
       tekionBootstrapCapturedAt: payload.lastTekionBootstrapCaptureAt,
+      tekionProdTechMotorsCapturedAt: payload.lastTekionProdTechMotorsCaptureAt,
     });
   };
 
