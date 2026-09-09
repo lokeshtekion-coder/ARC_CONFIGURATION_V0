@@ -4,15 +4,8 @@ const DB_VERSION = 4;
 const BLUEPRINTS_STORE = "blueprints";
 const STORES_STORE = "stores";
 
-function log(...args: unknown[]) {
-  console.log("[arcConfigDb]", ...args);
-}
-
 function createBlueprintsStore(db: IDBDatabase): void {
   if (db.objectStoreNames.contains(BLUEPRINTS_STORE)) return;
-
-  log("creating store", BLUEPRINTS_STORE);
-
   const store = db.createObjectStore(BLUEPRINTS_STORE, { keyPath: "key" });
   store.createIndex("tekionId", "tekionId", { unique: false });
   store.createIndex("dealerId", "dealerId", { unique: false });
@@ -22,9 +15,6 @@ function createBlueprintsStore(db: IDBDatabase): void {
 
 function createStoresStore(db: IDBDatabase): void {
   if (db.objectStoreNames.contains(STORES_STORE)) return;
-
-  log("creating store", STORES_STORE);
-
   const store = db.createObjectStore(STORES_STORE, { keyPath: "tekion_id" });
   store.createIndex("dealer_id", "dealer_id", { unique: false });
   store.createIndex("dba_name", "dba_name", { unique: false });
@@ -36,77 +26,51 @@ function createStoresStore(db: IDBDatabase): void {
 function ensureRequiredStores(db: IDBDatabase): void {
   const missing: string[] = [];
 
-  if (!db.objectStoreNames.contains(BLUEPRINTS_STORE)) {
-    missing.push(BLUEPRINTS_STORE);
-  }
-
-  if (!db.objectStoreNames.contains(STORES_STORE)) {
-    missing.push(STORES_STORE);
-  }
+  if (!db.objectStoreNames.contains(BLUEPRINTS_STORE)) missing.push(BLUEPRINTS_STORE);
+  if (!db.objectStoreNames.contains(STORES_STORE)) missing.push(STORES_STORE);
 
   if (missing.length > 0) {
-    throw new Error(
-      `IndexedDB "${DB_NAME}" is missing store(s): ${missing.join(", ")}`
-    );
+    throw new Error(`Database is missing required tables: ${missing.join(", ")}. Try clearing your browser data.`);
   }
 }
 
 export function openArcConfigDb(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    log("opening DB", { DB_NAME, DB_VERSION });
-
     const req = indexedDB.open(DB_NAME, DB_VERSION);
 
-    req.onupgradeneeded = (event) => {
+    req.onupgradeneeded = () => {
       const db = req.result;
-      const oldVersion = event.oldVersion;
-      const newVersion = db.version;
-
-      log("onupgradeneeded", {
-        oldVersion,
-        newVersion,
-        existingStores: Array.from(db.objectStoreNames),
-      });
-
       createBlueprintsStore(db);
       createStoresStore(db);
-
-      log("stores after upgrade", Array.from(db.objectStoreNames));
+      console.log("🛠️ Local database upgraded successfully.");
     };
 
     req.onsuccess = () => {
       const db = req.result;
-
       try {
-        log("open success", {
-          name: db.name,
-          version: db.version,
-          stores: Array.from(db.objectStoreNames),
-        });
-
         ensureRequiredStores(db);
         resolve(db);
       } catch (err) {
-        log("open success but validation failed", err);
+        console.error("❌ Failed to validate local database.", err);
         db.close();
         reject(err);
       }
     };
 
     req.onerror = () => {
-      console.error("[arcConfigDb] open error", req.error);
+      console.error("❌ Cannot access local database. Are you in Private/Incognito mode?", req.error);
       reject(req.error);
     };
 
     req.onblocked = () => {
-      console.warn("[arcConfigDb] open blocked - close other tabs using IndexedDB");
+      console.warn("⚠️ Database update blocked. Please close other tabs running this application.");
     };
   });
 }
 
 export function ensureStoreExists(db: IDBDatabase, storeName: string): void {
   if (!db.objectStoreNames.contains(storeName)) {
-    throw new Error(`IndexedDB store "${storeName}" not found in DB "${DB_NAME}"`);
+    throw new Error(`Cannot find the "${storeName}" table in the local database.`);
   }
 }
 

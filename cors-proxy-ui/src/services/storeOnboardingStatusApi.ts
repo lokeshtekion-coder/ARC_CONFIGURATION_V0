@@ -1,8 +1,5 @@
 import { loadTekionApiSettingsBundle } from "./tekionApiSettings";
-import {
-  loadLatestExtensionCapture,
-  ArcCustomCapturedApi,
-} from "./extensionBridge";
+import { loadLatestExtensionCapture, type ArcCustomCapturedApi } from "./extensionBridge";
 
 export type OnboardingStatus =
   | "COMPLETED"
@@ -54,6 +51,13 @@ interface FormEvaluationItem {
 const FORMS_API_URL =
   "https://us-west1-tapapi-01.tekioncloud.com/dealer-onboarding/u/forms/responses";
 
+const log = {
+  info: (...args: unknown[]) => console.info("[storeOnboardingStatusApi]", ...args),
+  debug: (...args: unknown[]) => console.debug("[storeOnboardingStatusApi]", ...args),
+  warn: (...args: unknown[]) => console.warn("[storeOnboardingStatusApi]", ...args),
+  error: (...args: unknown[]) => console.error("[storeOnboardingStatusApi]", ...args),
+};
+
 const DEFAULT_BLUEPRINT: StoreBlueprintStatuses = {
   parts: "UNKNOWN",
   parts_last_released_time: "",
@@ -78,6 +82,10 @@ const DEFAULT_SIGNOFF: StoreSignoffStatuses = {
 
 type BlueprintKey = "parts" | "service" | "accounting" | "crm" | "analytics";
 type SignoffKey = "parts" | "service" | "accounting";
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
 
 function cleanString(val: string): string {
   return val.toLowerCase().replace(/[\s\-_–—]+/g, " ").trim();
@@ -147,22 +155,12 @@ function detectSignoffKey(cleanedName: string): SignoffKey | null {
 }
 
 function getLatestTimestamp(timestamps: string[]): string {
-  const valid = timestamps
-    .map((t) => String(t ?? "").trim())
-    .filter(Boolean);
-
+  const valid = timestamps.map((t) => String(t ?? "").trim()).filter(Boolean);
   if (valid.length === 0) return "";
-
   valid.sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
   return valid[0];
 }
 
-/**
- * Resolves final status and timestamp when multiple forms exist:
- * 1. COMPLETED always wins (picks latest timestamp among completed forms)
- * 2. If no completed, IN_PROGRESS wins over NOT_YET_STARTED
- * 3. Otherwise NOT_YET_STARTED
- */
 function resolveModuleStatus(items: FormEvaluationItem[]): {
   status: OnboardingStatus;
   time: string;
@@ -192,6 +190,18 @@ function resolveModuleStatus(items: FormEvaluationItem[]): {
   return { status: "UNKNOWN", time: "" };
 }
 
+function maskHeadersForLog(headers: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(headers).map(([key, value]) => {
+      const lower = key.toLowerCase();
+      if (lower.includes("token") || lower === "authorization" || lower === "cookie") {
+        return [key, `present(${value.length})`];
+      }
+      return [key, value];
+    })
+  );
+}
+
 function resolveDynamicHeaders(): Record<string, string> {
   const bundle = loadTekionApiSettingsBundle();
   const latestCapture = loadLatestExtensionCapture();
@@ -201,16 +211,14 @@ function resolveDynamicHeaders(): Record<string, string> {
 
   if (bundle.values?.storesApiCaptureId && customCaptures[bundle.values.storesApiCaptureId]) {
     selectedCapture = customCaptures[bundle.values.storesApiCaptureId];
-    console.info(
-      `[StoreOnboarding] Using Direct Stores API Capture: "${selectedCapture.label}"`
-    );
   }
 
-  if (!selectedCapture && bundle.values?.storesCustomCaptureId && customCaptures[bundle.values.storesCustomCaptureId]) {
+  if (
+    !selectedCapture &&
+    bundle.values?.storesCustomCaptureId &&
+    customCaptures[bundle.values.storesCustomCaptureId]
+  ) {
     selectedCapture = customCaptures[bundle.values.storesCustomCaptureId];
-    console.info(
-      `[StoreOnboarding] Using Stores Profile Capture: "${selectedCapture.label}"`
-    );
   }
 
   if (!selectedCapture) {
@@ -226,12 +234,6 @@ function resolveDynamicHeaders(): Record<string, string> {
         l.includes("tap")
       );
     });
-
-    if (selectedCapture) {
-      console.info(
-        `[StoreOnboarding] Auto-resolved fallback Custom Capture: "${selectedCapture.label}"`
-      );
-    }
   }
 
   const baseHeaders: Record<string, string> = {
@@ -247,18 +249,22 @@ function resolveDynamicHeaders(): Record<string, string> {
     for (const [key, value] of Object.entries(selectedCapture.headers)) {
       const lower = key.toLowerCase().trim();
       const val = String(value ?? "").trim();
+
       if (!val || ["host", "connection", "content-length"].includes(lower)) {
         continue;
       }
+
       baseHeaders[lower] = val;
     }
   } else if (latestCapture?.tekionImplementationHeaders) {
     for (const [key, value] of Object.entries(latestCapture.tekionImplementationHeaders)) {
       const lower = key.toLowerCase().trim();
       const val = String(value ?? "").trim();
+
       if (!val || ["host", "connection", "content-length"].includes(lower)) {
         continue;
       }
+
       baseHeaders[lower] = val;
     }
   }
@@ -282,11 +288,27 @@ function resolveDynamicHeaders(): Record<string, string> {
     baseHeaders["tap-duo-api-token"] = tapToken;
   }
 
-  if (!baseHeaders["tap-duo-api-token"] && !baseHeaders["authorization"]) {
+  if (!baseHeaders["tap-duo-api-token"] && !baseHeaders.authorization) {
+    log.error("No valid auth header found for onboarding status API");
     throw new Error(
       "No valid tap-duo-api-token or authorization header found in Stores Dashboard captures or settings. Please select an active Stores capture in Settings."
     );
   }
+
+  log.info("Resolved onboarding status headers", {
+    selectedCapture: selectedCapture
+      ? {
+          id: selectedCapture.id,
+          label: selectedCapture.label,
+          pattern: selectedCapture.pattern,
+          matchedUrl: selectedCapture.matchedUrl,
+          expiresAt: selectedCapture.decodedToken?.expiresAt,
+          isExpired: selectedCapture.decodedToken?.isExpired,
+        }
+      : null,
+    headerKeys: Object.keys(baseHeaders).sort(),
+    headersPreview: maskHeadersForLog(baseHeaders),
+  });
 
   return baseHeaders;
 }
@@ -329,6 +351,12 @@ async function fetchBatch(
     },
   };
 
+  log.info("Fetching onboarding batch", {
+    tekionIdsCount: tekionIds.length,
+    sampleTekionIds: tekionIds.slice(0, 10),
+    payload,
+  });
+
   const requestBody = {
     url: FORMS_API_URL,
     method: "POST",
@@ -344,23 +372,57 @@ async function fetchBatch(
     body: JSON.stringify(requestBody),
   });
 
-  const proxyData = await res.json();
+  log.info("Received onboarding batch proxy response", {
+    responseStatus: res.status,
+    responseStatusText: res.statusText,
+    tekionIdsCount: tekionIds.length,
+  });
+
+  const proxyData = (await res.json()) as Record<string, unknown>;
+
+  log.info("Parsed onboarding batch proxy wrapper", {
+    upstreamStatus: proxyData.status,
+    upstreamStatusText: proxyData.statusText,
+    bodyType: typeof proxyData.body,
+  });
 
   if (!res.ok) {
-    throw new Error(proxyData?.error ?? `HTTP ${res.status}`);
+    log.error("Onboarding batch proxy failed", {
+      responseStatus: res.status,
+      proxyData,
+    });
+    throw new Error(String(proxyData.error ?? `HTTP ${res.status}`));
   }
 
-  const body =
+  const body: unknown =
     typeof proxyData.body === "string"
       ? JSON.parse(proxyData.body)
       : proxyData.body;
 
-  if (body?.status && body.status !== 200 && !body?.data) {
-    console.warn("[StoreOnboarding] Upstream API non-200 response:", body);
+  const hits =
+    isRecord(body) &&
+    isRecord(body.data) &&
+    Array.isArray(body.data.hits)
+      ? (body.data.hits as FormHit[])
+      : [];
+
+  log.info("Parsed onboarding batch upstream body", {
+    bodyKeys: isRecord(body) ? Object.keys(body) : [],
+    hasData: isRecord(body) && isRecord(body.data),
+    hitsLength: hits.length,
+  });
+
+  if (isRecord(body) && typeof body.status === "number" && body.status !== 200 && !isRecord(body.data)) {
+    log.warn("Tekion onboarding API returned non-200 warning body", body);
   }
 
-  const hits = Array.isArray(body?.data?.hits) ? body.data.hits : [];
-  return hits as FormHit[];
+  log.info("Extracted onboarding batch hits", {
+    tekionIdsCount: tekionIds.length,
+    hitsCount: hits.length,
+    sampleHits: hits.slice(0, 3),
+  });
+
+  return hits;
 }
 
 async function runWithConcurrency<T, R>(
@@ -375,9 +437,7 @@ async function runWithConcurrency<T, R>(
     while (true) {
       const index = currentIndex;
       currentIndex += 1;
-
       if (index >= items.length) return;
-
       results[index] = await worker(items[index]);
     }
   }
@@ -435,27 +495,23 @@ function deriveStatusesFromHits(hits: FormHit[]): StoreOnboardingStatuses {
     }
   }
 
-  // Resolve Blueprint statuses: COMPLETED takes precedence
   (Object.keys(bpGroups) as BlueprintKey[]).forEach((key) => {
     const group = bpGroups[key];
     if (group.length > 0) {
       const resolved = resolveModuleStatus(group);
       blueprint[key] = resolved.status;
-      if (key !== "analytics") {
-        blueprint[`${key}_last_released_time` as keyof StoreBlueprintStatuses] =
-          resolved.time as any;
-      }
+      blueprint[`${key}_last_released_time` as keyof StoreBlueprintStatuses] =
+        resolved.time as never;
     }
   });
 
-  // Resolve Sign-off statuses: COMPLETED takes precedence
   (Object.keys(soGroups) as SignoffKey[]).forEach((key) => {
     const group = soGroups[key];
     if (group.length > 0) {
       const resolved = resolveModuleStatus(group);
       signoff[key] = resolved.status;
       signoff[`${key}_last_released_time` as keyof StoreSignoffStatuses] =
-        resolved.time as any;
+        resolved.time as never;
     }
   });
 
@@ -467,18 +523,23 @@ function deriveStatusesFromHits(hits: FormHit[]): StoreOnboardingStatuses {
 
 export async function fetchStoreOnboardingStatuses(
   tekionIds: string[],
-  options?: {
-    chunkSize?: number;
-    concurrency?: number;
-  }
+  options?: { chunkSize?: number; concurrency?: number }
 ): Promise<Record<string, StoreOnboardingStatuses>> {
   const uniqueTekionIds = Array.from(
     new Set(tekionIds.map((x) => String(x).trim()).filter(Boolean))
   );
 
+  log.info("Starting onboarding status fetch", {
+    requestedTekionIdsCount: tekionIds.length,
+    uniqueTekionIdsCount: uniqueTekionIds.length,
+    sampleTekionIds: uniqueTekionIds.slice(0, 15),
+    options,
+  });
+
   const result: Record<string, StoreOnboardingStatuses> = {};
 
   if (uniqueTekionIds.length === 0) {
+    log.warn("No Tekion IDs supplied for onboarding status fetch");
     return result;
   }
 
@@ -494,6 +555,13 @@ export async function fetchStoreOnboardingStatuses(
   const concurrency = options?.concurrency ?? 3;
   const chunks = chunkArray(uniqueTekionIds, chunkSize);
 
+  log.info("Prepared onboarding status batches", {
+    chunkSize,
+    concurrency,
+    batchCount: chunks.length,
+    batchSizes: chunks.map((chunk) => chunk.length),
+  });
+
   const batchResults = await runWithConcurrency(
     chunks,
     async (chunk) => fetchBatch(chunk, headers),
@@ -502,16 +570,12 @@ export async function fetchStoreOnboardingStatuses(
 
   const allHits = batchResults.flat();
 
-  console.info(
-    `[StoreOnboarding] Fetched ${allHits.length} total hits across ${chunks.length} batches.`
-  );
-
   if (allHits.length > 0) {
-    console.info("[StoreOnboarding] Sample hit preview:", allHits[0]);
+    log.info("✅ Successfully downloaded detailed onboarding records", {
+      totalHitCount: allHits.length,
+    });
   } else {
-    console.warn(
-      "[StoreOnboarding] 0 hits returned. Verify that the selected Stores Header Source in Settings has an unexpired token."
-    );
+    log.warn("⚠️ 0 onboarding status records found");
   }
 
   const hitsByTekionId = new Map<string, FormHit[]>();
@@ -524,13 +588,28 @@ export async function fetchStoreOnboardingStatuses(
       hitsByTekionId.set(tekionId, []);
     }
 
-    hitsByTekionId.get(tekionId)!.push(hit);
+    hitsByTekionId.get(tekionId)?.push(hit);
   }
+
+  log.info("Grouped onboarding hits by Tekion ID", {
+    groupedTekionIdCount: hitsByTekionId.size,
+  });
 
   for (const tekionId of uniqueTekionIds) {
     const hits = hitsByTekionId.get(tekionId) ?? [];
     result[tekionId] = deriveStatusesFromHits(hits);
   }
+
+  log.info("Derived onboarding statuses complete", {
+    finalStoreCount: Object.keys(result).length,
+    sample: Object.entries(result)
+      .slice(0, 3)
+      .map(([tekionId, value]) => ({
+        tekionId,
+        blueprint: value.blueprint_statuses,
+        signoff: value.signoff_statuses,
+      })),
+  });
 
   return result;
 }

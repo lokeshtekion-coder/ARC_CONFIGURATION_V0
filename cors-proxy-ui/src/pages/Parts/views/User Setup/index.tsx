@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
-import { loadTekionApiSettingsBundle } from "../../../services/tekionApiSettings";
-import type { KeyValuePair } from "../../../types/proxy.types";
+import { loadTekionApiSettingsBundle } from "../../../../services/tekionApiSettings";
+import type { KeyValuePair } from "../../../../types/proxy.types";
+import "./UserResetView.css";
+
 
 const MODULE_NAME = "User Reset";
 const USERS_AND_ROLES_URL =
@@ -69,9 +71,7 @@ function getEnabledGlobalHeaders(): Record<string, string> {
   const headers = (bundle.globalHeaders ?? [])
     .filter(
       (header: KeyValuePair) =>
-        header.enabled &&
-        header.key.trim() &&
-        String(header.value).trim()
+        header.enabled && header.key.trim() && String(header.value).trim()
     )
     .reduce<Record<string, string>>((acc, header) => {
       acc[header.key] = String(header.value);
@@ -90,15 +90,28 @@ function buildUsersFetchPayload() {
   const payload = {
     sort: [],
     filters: [
-      { field: "active", operator: "IN", values: [true], key: "active" },
-      { field: "type", operator: "IN", values: [2], key: "type" },
+      {
+        field: "active",
+        operator: "IN",
+        values: [true],
+        key: "active",
+      },
+      {
+        field: "type",
+        operator: "IN",
+        values: [2],
+        key: "type",
+      },
     ],
     searchText: "",
     groupBy: [],
     includeFields: [],
     searchableFields: [],
     excludeFields: [],
-    pageInfo: { start: 0, rows: 200 },
+    pageInfo: {
+      start: 0,
+      rows: 200,
+    },
   };
 
   logger.debug("built users fetch payload", payload);
@@ -152,6 +165,7 @@ async function fetchUsersAndRoles(headers: Record<string, string>): Promise<User
   logger.debug("users and roles response json", json);
 
   const users = json.data?.userAndRoleResponses ?? [];
+
   logger.info("fetched active employee users", {
     count: users.length,
   });
@@ -235,7 +249,6 @@ export const UserResetView: React.FC = () => {
   const [statusText, setStatusText] = useState("Ready");
   const [errorText, setErrorText] = useState("");
   const [lastRunAt, setLastRunAt] = useState("");
-
   const [isExpanded, setIsExpanded] = useState(false);
 
   const [allUsers, setAllUsers] = useState<UserRecord[]>([]);
@@ -257,7 +270,6 @@ export const UserResetView: React.FC = () => {
 
   const handleLoadRoles = useCallback(async (): Promise<void> => {
     logger.info("load roles requested");
-
     setIsLoadingRoles(true);
     setRunState("loading");
     setStatusText("Loading active employee users and roles...");
@@ -310,7 +322,6 @@ export const UserResetView: React.FC = () => {
     }
   }, []);
 
-  // Handle automatic role loading on view mode change
   useEffect(() => {
     logger.info("view mode changed", { viewMode });
     setResetResults(null);
@@ -396,6 +407,7 @@ export const UserResetView: React.FC = () => {
         const current = index + 1;
 
         setProgressText(`Resetting passwords... (${current}/${usersToUpdate.length})`);
+
         logger.info("processing password reset for user", {
           current,
           total: usersToUpdate.length,
@@ -418,7 +430,6 @@ export const UserResetView: React.FC = () => {
             displayName,
             error: message,
           });
-
           logger.error("password reset failed for user", {
             userId: user.id,
             displayName,
@@ -428,7 +439,6 @@ export const UserResetView: React.FC = () => {
       }
 
       logger.info("password reset completed", results);
-
       setResetResults(results);
       setLastRunAt(new Date().toLocaleString());
 
@@ -483,8 +493,10 @@ export const UserResetView: React.FC = () => {
 
     if (users.length === 0) {
       logger.info("all users cache empty, fetching before reset all");
+
       try {
         const headers = getEnabledGlobalHeaders();
+
         if (Object.keys(headers).length === 0) {
           setRunState("error");
           setStatusText("Global headers are missing");
@@ -606,7 +618,8 @@ export const UserResetView: React.FC = () => {
                 overflowWrap: "anywhere",
               }}
             >
-              Reset user passwords for all active employee users or for selected roles. Uses active Global Headers from Settings.
+              Reset user passwords for all active employee users or for selected roles. Uses active
+              Global Headers from Settings.
             </div>
           </div>
 
@@ -618,6 +631,7 @@ export const UserResetView: React.FC = () => {
             >
               Home
             </button>
+
             <button
               className={viewMode === "reset-all" ? "btn-postman ui-btn-active" : "btn-secondary btn-sm ui-btn"}
               type="button"
@@ -625,6 +639,7 @@ export const UserResetView: React.FC = () => {
             >
               Option 1
             </button>
+
             <button
               className={viewMode === "reset-by-role" ? "btn-postman ui-btn-active" : "btn-secondary btn-sm ui-btn"}
               type="button"
@@ -632,7 +647,16 @@ export const UserResetView: React.FC = () => {
             >
               Option 2
             </button>
-            <div style={{ width: 1, height: 24, background: "rgba(255,255,255,0.1)", margin: "0 4px" }} />
+
+            <div
+              style={{
+                width: 1,
+                height: 24,
+                background: "rgba(255,255,255,0.1)",
+                margin: "0 4px",
+              }}
+            />
+
             <button
               className="btn-secondary btn-sm ui-btn"
               type="button"
@@ -647,16 +671,18 @@ export const UserResetView: React.FC = () => {
           </div>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 10,
-            flexWrap: "wrap",
-            marginBottom: 20,
-          }}
-        >
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 20 }}>
           <Pill label="Module" value={MODULE_NAME} />
-          <Pill label="Mode" value={viewMode === "reset-by-role" ? "By Role" : viewMode === "reset-all" ? "All Users" : "Home"} />
+          <Pill
+            label="Mode"
+            value={
+              viewMode === "reset-by-role"
+                ? "By Role"
+                : viewMode === "reset-all"
+                ? "All Users"
+                : "Home"
+            }
+          />
           <Pill label="Users Loaded" value={String(allUsers.length)} />
           <Pill label="Roles Loaded" value={String(roleOptions.length)} />
           <Pill label="Selected Roles" value={String(selectedRoleCount)} />
@@ -699,10 +725,14 @@ export const UserResetView: React.FC = () => {
           }}
         >
           <div style={{ fontWeight: 600, marginBottom: errorText ? 4 : 0 }}>
-             {runState === 'loading' ? '⏳ ' : ''}{statusText}
+            {runState === "loading" ? "⏳ " : ""}
+            {statusText}
           </div>
+
           {errorText ? <div style={{ opacity: 0.9 }}>{errorText}</div> : null}
-          {progressText ? <div style={{ marginTop: 8, fontStyle: "italic", opacity: 0.8 }}>{progressText}</div> : null}
+          {progressText ? (
+            <div style={{ marginTop: 8, fontStyle: "italic", opacity: 0.8 }}>{progressText}</div>
+          ) : null}
         </div>
       </div>
 
@@ -718,38 +748,35 @@ export const UserResetView: React.FC = () => {
         }}
       >
         {viewMode === "home" ? (
-          <>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-                gap: 20,
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: 20,
+            }}
+          >
+            <ActionCard
+              icon="🔐"
+              title="Option 1: Reset ALL Users"
+              description="Reset passwords for all active employee users (Type 2) in the system in a single batch operation."
+              buttonLabel="Open Option 1"
+              onClick={() => {
+                logger.info("home action clicked", { action: "reset-all" });
+                setViewMode("reset-all");
               }}
-            >
-              <ActionCard
-                icon="🔐"
-                title="Option 1: Reset ALL Users"
-                description="Reset passwords for all active employee users (Type 2) in the system in a single batch operation."
-                buttonLabel="Open Option 1"
-                onClick={() => {
-                  logger.info("home action clicked", { action: "reset-all" });
-                  setViewMode("reset-all");
-                }}
-              />
+            />
 
-              <ActionCard
-                icon="👥"
-                title="Option 2: Reset by Role"
-                description="Selectively target one or more roles and reset passwords exclusively for users associated with those specific roles."
-                buttonLabel="Open Option 2"
-                onClick={() => {
-                  logger.info("home action clicked", { action: "reset-by-role" });
-                  setViewMode("reset-by-role");
-                }}
-              />
-            </div>
-          </>
+            <ActionCard
+              icon="👥"
+              title="Option 2: Reset by Role"
+              description="Selectively target one or more roles and reset passwords exclusively for users associated with those specific roles."
+              buttonLabel="Open Option 2"
+              onClick={() => {
+                logger.info("home action clicked", { action: "reset-by-role" });
+                setViewMode("reset-by-role");
+              }}
+            />
+          </div>
         ) : null}
 
         {viewMode === "reset-all" ? (
@@ -773,8 +800,8 @@ export const UserResetView: React.FC = () => {
               <div style={warningBlockStyle}>
                 <div style={{ fontWeight: 700, marginBottom: 8, fontSize: 15 }}>⚠️ Warning</div>
                 <div style={{ lineHeight: 1.7 }}>
-                  This will reset passwords for ALL active employee users (Type 2).
-                  Users will be required to change their password on next login.
+                  This will reset passwords for ALL active employee users (Type 2). Users will be
+                  required to change their password on next login.
                 </div>
               </div>
 
@@ -858,9 +885,9 @@ export const UserResetView: React.FC = () => {
                       fontSize: 16,
                       fontWeight: 700,
                       marginBottom: 16,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
                     }}
                   >
                     <span>👥</span> Role Selection
@@ -922,6 +949,7 @@ export const UserResetView: React.FC = () => {
                                 });
                               }}
                             />
+
                             <div style={{ minWidth: 0 }}>
                               <div
                                 style={{
@@ -934,6 +962,7 @@ export const UserResetView: React.FC = () => {
                               >
                                 {role.roleName}
                               </div>
+
                               <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 2 }}>
                                 {role.users.length} user{role.users.length === 1 ? "" : "s"}
                               </div>
@@ -953,7 +982,7 @@ export const UserResetView: React.FC = () => {
                       background: "rgba(255,255,255,0.05)",
                       padding: "10px 14px",
                       borderRadius: 8,
-                      textAlign: "center"
+                      textAlign: "center",
                     }}
                   >
                     {selectedUsersCount} users selected from {selectedRoleCount} roles
@@ -975,9 +1004,9 @@ export const UserResetView: React.FC = () => {
                       fontSize: 16,
                       fontWeight: 700,
                       marginBottom: 16,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
                     }}
                   >
                     <span>🔐</span> Password Configuration
@@ -997,8 +1026,8 @@ export const UserResetView: React.FC = () => {
                   <div style={{ ...warningBlockStyle, marginTop: 24, marginBottom: 24 }}>
                     <div style={{ fontWeight: 700, marginBottom: 8, fontSize: 15 }}>⚠️ Warning</div>
                     <div style={{ lineHeight: 1.7 }}>
-                      This will reset passwords for all users with the selected roles.
-                      Users will be required to change their password on next login.
+                      This will reset passwords for all users with the selected roles. Users will be
+                      required to change their password on next login.
                     </div>
                   </div>
 
@@ -1031,7 +1060,7 @@ export const UserResetView: React.FC = () => {
                     overflowY: "auto",
                     borderRadius: 16,
                     border: "1px solid rgba(255,255,255,0.1)",
-                    background: "rgba(0,0,0,0.2)"
+                    background: "rgba(0,0,0,0.2)",
                   }}
                 >
                   <table
@@ -1047,7 +1076,7 @@ export const UserResetView: React.FC = () => {
                         top: 0,
                         zIndex: 1,
                         background: "#1e293b",
-                        boxShadow: "0 1px 0 rgba(255,255,255,0.1)"
+                        boxShadow: "0 1px 0 rgba(255,255,255,0.1)",
                       }}
                     >
                       <tr>
@@ -1058,6 +1087,7 @@ export const UserResetView: React.FC = () => {
                         <th style={thStyle}>Roles</th>
                       </tr>
                     </thead>
+
                     <tbody>
                       {selectedUsersByRole.map((user, index) => (
                         <tr
@@ -1065,17 +1095,20 @@ export const UserResetView: React.FC = () => {
                           className="ui-table-row"
                           style={{
                             borderTop: "1px solid rgba(255,255,255,0.05)",
-                            transition: "background 0.2s ease"
+                            transition: "background 0.2s ease",
                           }}
                         >
                           <td style={tdStyle}>{index + 1}</td>
-                          <td style={{...tdStyle, fontWeight: 500, color: "#f8fafc"}}>{getDisplayName(user)}</td>
+                          <td style={{ ...tdStyle, fontWeight: 500, color: "#f8fafc" }}>
+                            {getDisplayName(user)}
+                          </td>
                           <td style={tdMonoStyle}>{user.id}</td>
                           <td style={tdStyle}>{normalizeText(user.email) || "—"}</td>
                           <td style={tdStyle}>
                             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                               {(user.userRoleDetails ?? []).map((role, roleIndex) => {
                                 const roleName = normalizeText(role.roleName);
+
                                 return (
                                   <span
                                     key={`${user.id}-${roleName}-${roleIndex}`}
@@ -1128,20 +1161,32 @@ export const UserResetView: React.FC = () => {
                   background: "rgba(245,158,11,0.1)",
                   padding: 20,
                   color: "#fde68a",
-                  marginTop: 8
+                  marginTop: 8,
                 }}
               >
                 <div style={{ fontWeight: 700, marginBottom: 16, fontSize: 16 }}>
                   ⚠️ Errors ({resetResults.errors.length})
                 </div>
+
                 <div style={{ display: "grid", gap: 10, fontSize: 14 }}>
                   {resetResults.errors.slice(0, 10).map((error) => (
-                    <div key={`${error.userId}-${error.displayName}`} style={{ background: "rgba(0,0,0,0.2)", padding: "10px 14px", borderRadius: 8 }}>
-                      <b style={{ color: "#fff" }}>{error.displayName}</b> <span style={{ opacity: 0.7 }}>({error.userId})</span> — {error.error}
+                    <div
+                      key={`${error.userId}-${error.displayName}`}
+                      style={{
+                        background: "rgba(0,0,0,0.2)",
+                        padding: "10px 14px",
+                        borderRadius: 8,
+                      }}
+                    >
+                      <b style={{ color: "#fff" }}>{error.displayName}</b>
+                      <span style={{ opacity: 0.7 }}>({error.userId})</span> — {error.error}
                     </div>
                   ))}
+
                   {resetResults.errors.length > 10 ? (
-                    <div style={{ fontStyle: "italic", opacity: 0.8, padding: "8px 0" }}>... and {resetResults.errors.length - 10} more</div>
+                    <div style={{ fontStyle: "italic", opacity: 0.8, padding: "8px 0" }}>
+                      ... and {resetResults.errors.length - 10} more
+                    </div>
                   ) : null}
                 </div>
               </div>
@@ -1149,105 +1194,6 @@ export const UserResetView: React.FC = () => {
           </SectionCard>
         ) : null}
       </div>
-
-      <style>
-        {`
-          @media (max-width: 900px) {
-            .user-reset-role-grid {
-              grid-template-columns: 1fr !important;
-            }
-          }
-
-          /* Custom Scrollbar for better UI in dark mode */
-          .custom-scrollbar::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-          }
-          .custom-scrollbar::-webkit-scrollbar-track {
-            background: rgba(255,255,255,0.02);
-            border-radius: 4px;
-          }
-          .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.15);
-            border-radius: 4px;
-          }
-          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255,255,255,0.25);
-          }
-
-          /* Interactive UI components */
-          .ui-action-card:hover {
-            transform: translateY(-3px);
-            border-color: rgba(59,130,246,0.5) !important;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-          }
-
-          .ui-role-label:hover {
-            background: rgba(255,255,255,0.06) !important;
-          }
-
-          .ui-table-row:hover {
-            background: rgba(255,255,255,0.04) !important;
-          }
-
-          .ui-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            cursor: pointer;
-          }
-
-          .ui-btn:active {
-            transform: scale(0.97);
-          }
-
-          .ui-btn-primary {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
-          }
-
-          .ui-btn-primary:hover:not(:disabled) {
-            background: #2563eb;
-            box-shadow: 0 6px 16px rgba(59,130,246,0.4);
-            transform: translateY(-1px);
-          }
-
-          .ui-btn-primary:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            box-shadow: none;
-          }
-
-          .ui-btn-active {
-            background: rgba(59,130,246,0.15) !important;
-            color: #93c5fd !important;
-            border: 1px solid rgba(59,130,246,0.4) !important;
-          }
-
-          .st-input {
-            background: rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.15);
-            color: #f8fafc;
-            transition: all 0.2s ease;
-          }
-
-          .st-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
-          }
-        `}
-      </style>
     </div>
   );
 };
@@ -1260,7 +1206,7 @@ const thStyle: React.CSSProperties = {
   fontWeight: 700,
   whiteSpace: "nowrap",
   textTransform: "uppercase",
-  letterSpacing: "0.05em"
+  letterSpacing: "0.05em",
 };
 
 const tdStyle: React.CSSProperties = {
@@ -1277,7 +1223,7 @@ const tdMonoStyle: React.CSSProperties = {
   ...tdStyle,
   fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
   fontSize: 13,
-  color: "#94a3b8"
+  color: "#94a3b8",
 };
 
 const inputStyle: React.CSSProperties = {
@@ -1334,18 +1280,17 @@ const Pill: React.FC<{ label: string; value: string }> = ({ label, value }) => (
       background: "rgba(255,255,255,0.05)",
       color: "#94a3b8",
       fontSize: 13,
-      fontWeight: 500
+      fontWeight: 500,
     }}
   >
-    {label}
-    <b style={{ color: "#f8fafc", fontWeight: 700 }}>{value}</b>
+    {label} <b style={{ color: "#f8fafc", fontWeight: 700 }}>{value}</b>
   </span>
 );
 
-const SectionCard: React.FC<{
-  title: string;
-  children: React.ReactNode;
-}> = ({ title, children }) => (
+const SectionCard: React.FC<{ title: string; children: React.ReactNode }> = ({
+  title,
+  children,
+}) => (
   <div
     style={{
       borderRadius: 20,
@@ -1362,11 +1307,12 @@ const SectionCard: React.FC<{
         fontWeight: 800,
         color: "#f8fafc",
         marginBottom: 20,
-        letterSpacing: "-0.01em"
+        letterSpacing: "-0.01em",
       }}
     >
       {title}
     </div>
+
     <div style={{ display: "grid", gap: 16 }}>{children}</div>
   </div>
 );
@@ -1381,7 +1327,7 @@ const EmptyText: React.FC<{ text: string }> = ({ text }) => (
       textAlign: "center",
       fontSize: 14,
       fontWeight: 500,
-      background: "rgba(0,0,0,0.1)"
+      background: "rgba(0,0,0,0.1)",
     }}
   >
     {text}
@@ -1406,7 +1352,7 @@ const ActionCard: React.FC<{
       flexDirection: "column",
       gap: 20,
       transition: "all 0.3s ease",
-      cursor: "pointer"
+      cursor: "pointer",
     }}
     onClick={onClick}
   >
@@ -1420,11 +1366,12 @@ const ActionCard: React.FC<{
           placeItems: "center",
           background: "linear-gradient(135deg, rgba(0,184,204,0.2) 0%, rgba(0,184,204,0.05) 100%)",
           fontSize: 24,
-          border: "1px solid rgba(0,184,204,0.2)"
+          border: "1px solid rgba(0,184,204,0.2)",
         }}
       >
         {icon}
       </div>
+
       <div style={{ minWidth: 0 }}>
         <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 700, marginBottom: 8 }}>
           {title}
@@ -1433,10 +1380,14 @@ const ActionCard: React.FC<{
       </div>
     </div>
 
-    <button className="btn-postman ui-btn-primary" type="button" onClick={(e) => {
-      e.stopPropagation(); // Prevent double trigger if card is also clickable
-      onClick();
-    }}>
+    <button
+      className="btn-postman ui-btn-primary"
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+    >
       {buttonLabel}
     </button>
   </div>
@@ -1481,14 +1432,7 @@ const RowLine: React.FC<{
       flexWrap: "wrap",
     }}
   >
-    <div
-      style={{
-        color: "#94a3b8",
-        fontSize: 14,
-        fontWeight: 500,
-        maxWidth: "100%",
-      }}
-    >
+    <div style={{ color: "#94a3b8", fontSize: 14, fontWeight: 500, maxWidth: "100%" }}>
       {left}
     </div>
 
@@ -1521,10 +1465,26 @@ const MetricCard: React.FC<{
       flexDirection: "column",
       alignItems: "center",
       justifyContent: "center",
-      boxShadow: "inset 0 2px 10px rgba(0,0,0,0.1)"
+      boxShadow: "inset 0 2px 10px rgba(0,0,0,0.1)",
     }}
   >
-    <div style={{ color: "#94a3b8", fontSize: 13, fontWeight: 600, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</div>
-    <div style={{ color, fontSize: 36, fontWeight: 800, letterSpacing: "-0.02em" }}>{value}</div>
+    <div
+      style={{
+        color: "#94a3b8",
+        fontSize: 13,
+        fontWeight: 600,
+        marginBottom: 8,
+        textTransform: "uppercase",
+        letterSpacing: "0.05em",
+      }}
+    >
+      {label}
+    </div>
+
+    <div style={{ color, fontSize: 36, fontWeight: 800, letterSpacing: "-0.02em" }}>
+      {value}
+    </div>
   </div>
 );
+
+export default UserResetView;

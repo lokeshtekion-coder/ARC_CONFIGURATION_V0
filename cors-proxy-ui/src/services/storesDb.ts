@@ -1,8 +1,11 @@
+///Users/tlreddy/Desktop/ARC_CONFIGURATION_V0/cors-proxy-ui/src/services/storesDb.ts
 import type {
   StoreBlueprintStatuses,
   StoreSignoffStatuses,
 } from "./storeOnboardingStatusApi";
 import { ensureStoreExists, getArcConfigDbMeta, openArcConfigDb } from "./arcConfigDb";
+
+export type CustomPhaseStatus = "TO DO" | "WIP" | "Completed";
 
 export interface StoreRecord {
   tekion_id: string;
@@ -12,57 +15,50 @@ export interface StoreRecord {
   implementation_type: string;
   pre_production_environment_status: string;
   superpod_id: string;
+  product_types?: string;
   blueprint_statuses?: StoreBlueprintStatuses;
   signoff_statuses?: StoreSignoffStatuses;
   onboarding_status_fetched_at?: string;
+
+  // Custom Manual Trackers
+  configuration_status?: CustomPhaseStatus;
+  testing_status?: CustomPhaseStatus;
 }
 
 const { STORES_STORE: STORE_NAME } = getArcConfigDbMeta();
-
-function log(...args: unknown[]) {
-  console.log("[storesDb]", ...args);
-}
 
 export async function saveStores(records: StoreRecord[]): Promise<void> {
   const db = await openArcConfigDb();
 
   return new Promise<void>((resolve, reject) => {
-    try {
-      ensureStoreExists(db, STORE_NAME);
+    ensureStoreExists(db, STORE_NAME);
 
-      log("saveStores start", { count: records.length });
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
 
-      const tx = db.transaction(STORE_NAME, "readwrite");
-      const store = tx.objectStore(STORE_NAME);
-
-      store.clear();
-
-      for (const record of records) {
-        store.put(record);
-      }
-
-      tx.oncomplete = () => {
-        log("saveStores complete", { count: records.length });
-        db.close();
-        resolve();
-      };
-
-      tx.onerror = () => {
-        console.error("[storesDb] saveStores tx error", tx.error);
-        db.close();
-        reject(tx.error);
-      };
-
-      tx.onabort = () => {
-        console.error("[storesDb] saveStores tx abort", tx.error);
-        db.close();
-        reject(tx.error ?? new Error("saveStores transaction aborted"));
-      };
-    } catch (err) {
-      console.error("[storesDb] saveStores failed before tx", err);
-      db.close();
-      reject(err);
+    // Clear old data and write the new list
+    store.clear();
+    for (const record of records) {
+      store.put(record);
     }
+
+    tx.oncomplete = () => {
+      console.log(`💾 Successfully saved ${records.length} stores to local memory.`);
+      db.close();
+      resolve();
+    };
+
+    tx.onerror = () => {
+      console.error("❌ Failed to save stores to local memory.", tx.error);
+      db.close();
+      reject(tx.error);
+    };
+
+    tx.onabort = () => {
+      console.warn("⚠️ Save operation was aborted.");
+      db.close();
+      reject(new Error("Save transaction aborted."));
+    };
   });
 }
 
@@ -70,38 +66,24 @@ export async function getStores(): Promise<StoreRecord[]> {
   const db = await openArcConfigDb();
 
   return new Promise((resolve, reject) => {
-    try {
-      ensureStoreExists(db, STORE_NAME);
+    ensureStoreExists(db, STORE_NAME);
 
-      log("getStores start");
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.getAll();
 
-      const tx = db.transaction(STORE_NAME, "readonly");
-      const store = tx.objectStore(STORE_NAME);
-      const req = store.getAll();
-
-      req.onsuccess = () => {
-        const rows = (req.result as StoreRecord[]) ?? [];
-        log("getStores success", { count: rows.length });
-        db.close();
-        resolve(rows);
-      };
-
-      req.onerror = () => {
-        console.error("[storesDb] getStores req error", req.error);
-        db.close();
-        reject(req.error);
-      };
-
-      tx.onabort = () => {
-        console.error("[storesDb] getStores tx abort", tx.error);
-        db.close();
-        reject(tx.error ?? new Error("getStores transaction aborted"));
-      };
-    } catch (err) {
-      console.error("[storesDb] getStores failed before tx", err);
+    req.onsuccess = () => {
+      const rows = (req.result as StoreRecord[]) ?? [];
+      console.log(`📂 Loaded ${rows.length} stores from local memory.`);
       db.close();
-      reject(err);
-    }
+      resolve(rows);
+    };
+
+    req.onerror = () => {
+      console.error("❌ Failed to load stores from local memory.", req.error);
+      db.close();
+      reject(req.error);
+    };
   });
 }
 
@@ -109,36 +91,22 @@ export async function clearStores(): Promise<void> {
   const db = await openArcConfigDb();
 
   return new Promise<void>((resolve, reject) => {
-    try {
-      ensureStoreExists(db, STORE_NAME);
+    ensureStoreExists(db, STORE_NAME);
 
-      log("clearStores start");
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    const req = store.clear();
 
-      const tx = db.transaction(STORE_NAME, "readwrite");
-      const store = tx.objectStore(STORE_NAME);
-      const req = store.clear();
-
-      req.onsuccess = () => {
-        log("clearStores success");
-        db.close();
-        resolve();
-      };
-
-      req.onerror = () => {
-        console.error("[storesDb] clearStores req error", req.error);
-        db.close();
-        reject(req.error);
-      };
-
-      tx.onabort = () => {
-        console.error("[storesDb] clearStores tx abort", tx.error);
-        db.close();
-        reject(tx.error ?? new Error("clearStores transaction aborted"));
-      };
-    } catch (err) {
-      console.error("[storesDb] clearStores failed before tx", err);
+    req.onsuccess = () => {
+      console.log("🧹 Successfully cleared all stores from local memory.");
       db.close();
-      reject(err);
-    }
+      resolve();
+    };
+
+    req.onerror = () => {
+      console.error("❌ Failed to clear stores.", req.error);
+      db.close();
+      reject(req.error);
+    };
   });
 }

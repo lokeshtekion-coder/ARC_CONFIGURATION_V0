@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { loadTekionApiSettingsBundle } from "../../../services/tekionApiSettings";
-import type { KeyValuePair } from "../../../types/proxy.types";
+import { loadTekionApiSettingsBundle } from "../../../../services/tekionApiSettings";
+import type { KeyValuePair } from "../../../../types/proxy.types";
 
 const MODULE_NAME = "Return Reasons";
-const BASE_URL = "https://preprodapp.tekioncloud.com/api/parts/proxy/u/settings/return-reason";
+const BASE_URL =
+  "https://preprodapp.tekioncloud.com/api/parts/proxy/u/settings/return-reason";
 
 const TARGET_RETURN_REASONS = [
   {
@@ -92,6 +93,7 @@ function parsePositiveInteger(value: string): number | null {
   const trimmed = value.trim();
   if (!trimmed) return null;
   if (!/^\d+$/.test(trimmed)) return null;
+
   const num = Number(trimmed);
   if (!Number.isFinite(num)) return null;
   return num;
@@ -116,12 +118,12 @@ function getEnabledGlobalHeaders(): Record<string, string> {
   const headers = (bundle.globalHeaders ?? [])
     .filter(
       (header: KeyValuePair) =>
-        header.enabled &&
-        header.key.trim() &&
-        String(header.value).trim()
+        Boolean(header.enabled) &&
+        normalizeText(header.key) &&
+        normalizeText(header.value)
     )
-    .reduce<Record<string, string>>((acc, header) => {
-      acc[header.key] = String(header.value);
+    .reduce<Record<string, string>>((acc: Record<string, string>, header: KeyValuePair) => {
+      acc[normalizeText(header.key)] = normalizeText(header.value);
       return acc;
     }, {});
 
@@ -133,7 +135,9 @@ function getEnabledGlobalHeaders(): Record<string, string> {
   return headers;
 }
 
-async function fetchReturnReasons(headers: Record<string, string>): Promise<ReturnReasonListResponse> {
+async function fetchReturnReasons(
+  headers: Record<string, string>
+): Promise<ReturnReasonListResponse> {
   logger.info("GET return reasons started", {
     url: BASE_URL,
     headerKeys: Object.keys(headers),
@@ -178,9 +182,7 @@ function findReasonByCode(
   rows: ReturnReasonRecord[],
   reasonCode: string
 ): ReturnReasonRecord | null {
-  return (
-    rows.find((row) => normalizeLower(row.reasonCode) === normalizeLower(reasonCode)) ?? null
-  );
+  return rows.find((row) => normalizeLower(row.reasonCode) === normalizeLower(reasonCode)) ?? null;
 }
 
 function buildCreatePayload(
@@ -321,7 +323,6 @@ export const ReturnReasonsView: React.FC = () => {
   const [selectedReasonCode, setSelectedReasonCode] = useState<string>(
     TARGET_RETURN_REASONS[0]?.reasonCode ?? ""
   );
-
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -371,7 +372,6 @@ export const ReturnReasonsView: React.FC = () => {
 
   const handleValidate = async (): Promise<void> => {
     logger.info("validate button clicked");
-
     setRunState("loading");
     setStatusText("Loading and validating return reasons...");
     setErrorText("");
@@ -417,7 +417,7 @@ export const ReturnReasonsView: React.FC = () => {
       amountInput,
     });
 
-    if (!parsedAmount) {
+    if (parsedAmount === null) {
       logger.warn("invalid amount for create", { amountInput });
       setRunState("error");
       setStatusText("Invalid amount");
@@ -477,7 +477,7 @@ export const ReturnReasonsView: React.FC = () => {
       amountInput,
     });
 
-    if (!parsedAmount) {
+    if (parsedAmount === null) {
       logger.warn("invalid amount for update", { amountInput });
       setRunState("error");
       setStatusText("Invalid amount");
@@ -515,6 +515,7 @@ export const ReturnReasonsView: React.FC = () => {
 
       const id = normalizeText(found.id);
       const payload = buildUpdatePayload(selectedTarget, parsedAmount);
+
       await updateReturnReason(id, payload, headers);
       await refreshData(headers);
 
@@ -662,10 +663,7 @@ export const ReturnReasonsView: React.FC = () => {
               className="st-input"
               value={selectedTarget.reasonCode}
               readOnly
-              style={{
-                ...inputStyle,
-                opacity: 0.85,
-              }}
+              style={{ ...inputStyle, opacity: 0.85 }}
             />
           </div>
 
@@ -675,10 +673,7 @@ export const ReturnReasonsView: React.FC = () => {
               className="st-input"
               value={selectedTarget.description}
               readOnly
-              style={{
-                ...inputStyle,
-                opacity: 0.85,
-              }}
+              style={{ ...inputStyle, opacity: 0.85 }}
             />
           </div>
         </div>
@@ -850,11 +845,11 @@ export const ReturnReasonsView: React.FC = () => {
                   <th style={thStyle}>Target</th>
                 </tr>
               </thead>
+
               <tbody>
                 {rows.map((row, index) => {
                   const isTarget = TARGET_RETURN_REASONS.some(
-                    (target) =>
-                      normalizeLower(target.reasonCode) === normalizeLower(row.reasonCode)
+                    (target) => normalizeLower(target.reasonCode) === normalizeLower(row.reasonCode)
                   );
 
                   return (
@@ -961,8 +956,7 @@ const Pill: React.FC<{ label: string; value: string }> = ({ label, value }) => {
         fontSize: 12,
       }}
     >
-      {label}
-      <b style={{ color: "#f8fafc" }}>{value}</b>
+      {label} <b style={{ color: "#f8fafc" }}>{value}</b>
     </span>
   );
 };
@@ -1027,7 +1021,6 @@ const RowLine: React.FC<{
       >
         {left}
       </div>
-
       <div
         style={{
           color: rightColor,
@@ -1058,3 +1051,5 @@ const EmptyText: React.FC<{ text: string }> = ({ text }) => {
     </div>
   );
 };
+
+export default ReturnReasonsView;

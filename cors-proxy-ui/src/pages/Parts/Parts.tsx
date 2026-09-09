@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { PARTS_NAV_ITEMS, type PartsSectionKey } from "./partsConfig";
 import { loadLatestExtensionCapture, subscribeToExtensionCapture } from "../../services/extensionBridge";
-import { VoidPartsReasonsView } from "./views/VoidPartsReasonsView";
+import { VoidPartsReasonsView } from "./views/Void Parts Reasons";
 import { CodeSetupView } from "./views/CodeSetupView";
-import { ReturnReasonsView } from "./views/ReturnReasonsView";
+import ReturnReasonsView from "./views/Return_Reasons/ReturnReasonsView";
 import { CoreManagementSetupView } from "./views/CoreManagementSetupView";
 import { AdjustmentReasonsView } from "./views/AdjustmentReasonsView";
 import { CouponsView } from "./views/CouponsView";
-import { FeesView } from "./views/FeesView";
+import { FeesView } from "./views/Fees/index";
 import { PriceCodeView } from "./views/PriceCodeView";
 import { PriceBreakFormulasView } from "./views/PriceBreakFormulasView";
 import { CustomisedPriceSetupView } from "./views/CustomisedPriceSetupView";
@@ -16,7 +16,7 @@ import { WarehouseManagementView } from "./views/WarehouseManagementView";
 import { ManufacturerView } from "./views/ManufacturerView";
 import { DealerConfigView } from "./views/DealerConfigView";
 import { PartsSettingsView } from "./views/PartsSettingsView";
-import { UserResetView } from "./views/UserResetView";
+import { UserResetView } from "./views/User Setup";
 import { RaiseOemIdRequestView } from "./views/RaiseOemIdRequestView";
 
 interface Props {

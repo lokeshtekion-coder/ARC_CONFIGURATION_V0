@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { loadTekionApiSettingsBundle } from "../../../services/tekionApiSettings";
-import type { KeyValuePair } from "../../../types/proxy.types";
+import { loadTekionApiSettingsBundle } from "../../../../services/tekionApiSettings";
+import type { KeyValuePair } from "../../../../types/proxy.types";
 
 const MODULE_NAME = "Fees";
 const SEARCH_URL =
@@ -72,9 +72,7 @@ function getEnabledGlobalHeaders(): Record<string, string> {
   const headers = (bundle.globalHeaders ?? [])
     .filter(
       (header: KeyValuePair) =>
-        header.enabled &&
-        header.key.trim() &&
-        String(header.value).trim()
+        header.enabled && header.key.trim() && String(header.value).trim()
     )
     .reduce<Record<string, string>>((acc, header) => {
       acc[header.key] = String(header.value);
@@ -90,23 +88,33 @@ function getEnabledGlobalHeaders(): Record<string, string> {
 }
 
 function getDealerIdFromHeaders(headers: Record<string, string>): string {
-  const lowerMap = Object.entries(headers).reduce<Record<string, string>>((acc, [key, value]) => {
-    acc[key.toLowerCase()] = value;
-    return acc;
-  }, {});
+  const lowerMap = Object.entries(headers).reduce<Record<string, string>>(
+    (acc, [key, value]) => {
+      acc[key.toLowerCase()] = value;
+      return acc;
+    },
+    {}
+  );
+
   const dealerId = lowerMap["dealerid"] || lowerMap["dealer-id"] || "";
-  logger.info("resolved dealer id from headers", { dealerId: dealerId || "NOT_FOUND" });
+
+  logger.info("resolved dealer id from headers", {
+    dealerId: dealerId || "NOT_FOUND",
+  });
+
   return dealerId;
 }
 
 function detectFeeType(description: string): FeeType {
   const desc = description.toLowerCase();
+
   logger.debug("detecting fee type", { description, normalized: desc });
 
   if (desc.includes("shop") && desc.includes("suppl")) return "ShopSupplies";
   if (desc.includes("paint") && desc.includes("material")) return "PaintMaterials";
-  if (desc.includes("public") && (desc.includes("transport") || desc.includes("transit")))
+  if (desc.includes("public") && (desc.includes("transport") || desc.includes("transit"))) {
     return "PublicTransport";
+  }
   if (desc.includes("warranty") && desc.includes("claim")) return "Warranty Claim";
   if (desc.includes("admin") && desc.includes("allowance")) return "AdminAllowance";
 
@@ -157,6 +165,7 @@ function getTomorrowMidnight(): number {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(0, 0, 0, 0);
+
   const timestamp = tomorrow.getTime();
 
   logger.debug("calculated tomorrow midnight", {
@@ -221,6 +230,7 @@ async function fetchFees(headers: Record<string, string>): Promise<FeeRecord[]> 
     statusText: response.statusText,
     rawStatus: json?.status,
   });
+
   logger.debug("fee search response json", json);
 
   if (!response.ok) {
@@ -228,8 +238,8 @@ async function fetchFees(headers: Record<string, string>): Promise<FeeRecord[]> 
   }
 
   const fees = extractFeesArray(json);
-  logger.info("extracted fee records", { count: fees.length });
 
+  logger.info("extracted fee records", { count: fees.length });
   return fees;
 }
 
@@ -242,10 +252,7 @@ function buildCreatePayload(args: {
   amountInput: number;
 }) {
   const { dealerId, feeCode, description, feeType, pricingType, amountInput } = args;
-
-  const amount =
-    pricingType === "FLAT_PRICE" ? Math.round(amountInput * 100) : amountInput;
-
+  const amount = pricingType === "FLAT_PRICE" ? Math.round(amountInput * 100) : amountInput;
   const effectiveTimeInMillis = getTomorrowMidnight();
   const glAccountIdOrNumber = `${dealerId}_9999`;
 
@@ -363,7 +370,10 @@ function buildCreatePayload(args: {
           internalCostCenters: [],
           EXCLUDE_SERVICE_TYPES: [],
           EXCLUDE_OP_CODES: [],
-          feeQuantity: { type: "NUMERIC", value: 1 },
+          feeQuantity: {
+            type: "NUMERIC",
+            value: 1,
+          },
           glAccountNo: "-",
           AUTO_ADD_FEE_BASED_ON_RO_TYPE: [],
           AUTO_ADD_FEE_BASED_ON_DEPARTMENT: [],
@@ -458,8 +468,8 @@ function buildCreatePayload(args: {
     convertedAmount: amount,
     payloadSize: JSON.stringify(payload).length,
   });
-  logger.debug("full create fee payload", payload);
 
+  logger.debug("full create fee payload", payload);
   return payload;
 }
 
@@ -494,6 +504,7 @@ async function createFee(
     statusText: response.statusText,
     feeId: json?.data?.id || null,
   });
+
   logger.debug("create fee response json", json);
 
   if (!response.ok) {
@@ -520,6 +531,7 @@ export const FeesView: React.FC = () => {
   const [pricingType, setPricingType] = useState<PricingType>("FLAT_PRICE");
   const [amountInput, setAmountInput] = useState("");
   const [selectedDefaultFee, setSelectedDefaultFee] = useState<string>("");
+
   const [isCreatingFee, setIsCreatingFee] = useState(false);
   const [createResponseText, setCreateResponseText] = useState("");
 
@@ -568,6 +580,7 @@ export const FeesView: React.FC = () => {
       const descValue = normalizeText(item.description).toLowerCase();
       const deptValue = normalizeText(item.department).toLowerCase();
       const typeValue = normalizeText(item.type).toLowerCase();
+
       return (
         feeCodeValue.includes(query) ||
         descValue.includes(query) ||
@@ -587,6 +600,7 @@ export const FeesView: React.FC = () => {
 
   const handleLoadFees = async (): Promise<void> => {
     logger.info("GET fees button clicked");
+
     setIsLoadingFees(true);
     setRunState("loading");
     setStatusText("Loading fees...");
@@ -594,6 +608,7 @@ export const FeesView: React.FC = () => {
 
     try {
       const headers = getEnabledGlobalHeaders();
+
       if (Object.keys(headers).length === 0) {
         logger.warn("global headers missing before GET fees");
         setRunState("error");
@@ -609,6 +624,7 @@ export const FeesView: React.FC = () => {
       setRunState("success");
       setStatusText(`Retrieved ${rows.length} fee record${rows.length === 1 ? "" : "s"}`);
       setLastRunAt(new Date().toLocaleString());
+
       logger.info("fees loaded successfully", { count: rows.length });
     } catch (error: unknown) {
       logger.error("GET fees failed", error);
@@ -662,6 +678,7 @@ export const FeesView: React.FC = () => {
 
     try {
       const headers = getEnabledGlobalHeaders();
+
       if (Object.keys(headers).length === 0) {
         logger.warn("global headers missing before create fee");
         setRunState("error");
@@ -673,6 +690,7 @@ export const FeesView: React.FC = () => {
       }
 
       const dealerId = getDealerIdFromHeaders(headers);
+
       if (!dealerId) {
         logger.error("dealer id missing from headers");
         setRunState("error");
@@ -767,7 +785,8 @@ export const FeesView: React.FC = () => {
                 overflowWrap: "anywhere",
               }}
             >
-              Search existing fee configurations, create new fees, and keep room for future PUT support. Uses active Global Headers from Settings.
+              Search existing fee configurations, create new fees, and keep room for future PUT
+              support. Uses active Global Headers from Settings.
             </div>
           </div>
 
@@ -779,6 +798,7 @@ export const FeesView: React.FC = () => {
             >
               Home
             </button>
+
             <button
               className={viewMode === "get" ? "btn-postman" : "btn-secondary btn-sm"}
               type="button"
@@ -786,6 +806,7 @@ export const FeesView: React.FC = () => {
             >
               GET
             </button>
+
             <button
               className={viewMode === "post" ? "btn-postman" : "btn-secondary btn-sm"}
               type="button"
@@ -793,6 +814,7 @@ export const FeesView: React.FC = () => {
             >
               POST
             </button>
+
             <button
               className={viewMode === "put" ? "btn-postman" : "btn-secondary btn-sm"}
               type="button"
@@ -803,14 +825,7 @@ export const FeesView: React.FC = () => {
           </div>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
-            marginBottom: 14,
-          }}
-        >
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
           <Pill label="Module" value={MODULE_NAME} />
           <Pill label="Mode" value={viewMode.toUpperCase()} />
           <Pill label="Loaded Fees" value={String(fees.length)} />
@@ -919,14 +934,7 @@ export const FeesView: React.FC = () => {
           </SectionCard>
 
           <SectionCard title="Fee Search / Results">
-            <div
-              style={{
-                display: "flex",
-                gap: 12,
-                flexWrap: "wrap",
-                alignItems: "center",
-              }}
-            >
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
               <input
                 className="st-input"
                 type="text"
@@ -936,11 +944,7 @@ export const FeesView: React.FC = () => {
                   setSearchText(e.target.value);
                 }}
                 placeholder="Search fee code, description, department, type..."
-                style={{
-                  ...inputStyle,
-                  flex: 1,
-                  minWidth: 260,
-                }}
+                style={{ ...inputStyle, flex: 1, minWidth: 260 }}
               />
 
               <div
@@ -994,6 +998,7 @@ export const FeesView: React.FC = () => {
                       <th style={thStyle}>Active</th>
                     </tr>
                   </thead>
+
                   <tbody>
                     {filteredFees.map((item, index) => (
                       <tr
@@ -1069,6 +1074,7 @@ export const FeesView: React.FC = () => {
               >
                 {DEFAULT_FEES.map((fee) => {
                   const isSelected = selectedDefaultFee === fee;
+
                   return (
                     <button
                       key={fee}
@@ -1188,7 +1194,9 @@ export const FeesView: React.FC = () => {
                       value="PERCENTAGE_PART"
                       checked={pricingType === "PERCENTAGE_PART"}
                       onChange={() => {
-                        logger.info("pricing type radio changed", { value: "PERCENTAGE_PART" });
+                        logger.info("pricing type radio changed", {
+                          value: "PERCENTAGE_PART",
+                        });
                         setPricingType("PERCENTAGE_PART");
                       }}
                     />
@@ -1206,11 +1214,7 @@ export const FeesView: React.FC = () => {
                   setAmountInput(value);
                 }}
                 type="number"
-                hint={
-                  pricingType === "FLAT_PRICE"
-                    ? "Enter dollar amount"
-                    : "Enter percentage"
-                }
+                hint={pricingType === "FLAT_PRICE" ? "Enter dollar amount" : "Enter percentage"}
               />
             </div>
 
@@ -1277,6 +1281,7 @@ export const FeesView: React.FC = () => {
             }}
           >
             <div style={{ fontSize: 56, marginBottom: 16 }}>🚧</div>
+
             <div
               style={{
                 color: "#f8fafc",
@@ -1287,6 +1292,7 @@ export const FeesView: React.FC = () => {
             >
               Update Fee - Coming Soon
             </div>
+
             <div
               style={{
                 color: "#94a3b8",
@@ -1298,8 +1304,8 @@ export const FeesView: React.FC = () => {
                 overflowWrap: "anywhere",
               }}
             >
-              The PUT operation for updating fees is currently under development.
-              This section is intentionally reserved for future update support.
+              The PUT operation for updating fees is currently under development. This section is
+              intentionally reserved for future update support.
             </div>
 
             <div
@@ -1323,6 +1329,7 @@ export const FeesView: React.FC = () => {
               >
                 Planned Features
               </div>
+
               <ul
                 style={{
                   margin: 0,
@@ -1414,8 +1421,7 @@ const Pill: React.FC<{ label: string; value: string }> = ({ label, value }) => (
       fontSize: 12,
     }}
   >
-    {label}
-    <b style={{ color: "#f8fafc" }}>{value}</b>
+    {label} <b style={{ color: "#f8fafc" }}>{value}</b>
   </span>
 );
 
@@ -1442,6 +1448,7 @@ const SectionCard: React.FC<{
     >
       {title}
     </div>
+
     <div style={{ display: "grid", gap: 12 }}>{children}</div>
   </div>
 );
@@ -1491,6 +1498,7 @@ const ActionCard: React.FC<{
       >
         {icon}
       </div>
+
       <div style={{ minWidth: 0 }}>
         <div style={{ color: "#f8fafc", fontSize: 16, fontWeight: 800, marginBottom: 4 }}>
           {title}
@@ -1578,3 +1586,5 @@ const RowLine: React.FC<{
     </div>
   </div>
 );
+
+export default FeesView;

@@ -4,9 +4,9 @@ import {
   getTDaysRange,
   ExpiredCaptureTokenError,
 } from "../services/tekionStoresApi";
-import type { TRange, StoreRecord as ApiStoreRecord } from "../services/tekionStoresApi";
+import type { TRange } from "../services/tekionStoresApi";
 import { getStores, saveStores } from "../services/storesDb";
-import type { StoreRecord } from "../services/storesDb";
+import type { StoreRecord, CustomPhaseStatus } from "../services/storesDb";
 import type {
   OnboardingStatus,
   StoreBlueprintStatuses,
@@ -38,12 +38,14 @@ function cleanImpType(value?: string): string {
 
 function parseLaunchDate(value: string): Date | null {
   if (!value) return null;
+
   if (/^\d+$/.test(value)) {
     const num = Number(value);
     const ms = value.length <= 10 ? num * 1000 : num;
     const d = new Date(ms);
     return Number.isNaN(d.getTime()) ? null : d;
   }
+
   const d = new Date(value);
   return Number.isNaN(d.getTime()) ? null : d;
 }
@@ -60,7 +62,21 @@ function formatLaunchDate(value: string): string {
   return `${weekday} ${month}/${day}/${year}`;
 }
 
-function getTLabel(value: string): { label: string; tone: "future" | "today" | "past" | "unknown" } {
+function getMonthYearString(value: string): string | null {
+  const d = parseLaunchDate(value);
+  if (!d) return null;
+  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+}
+
+function getMonthYearSortKey(value: string): number {
+  const d = parseLaunchDate(value);
+  if (!d) return 0;
+  return d.getFullYear() * 100 + d.getMonth();
+}
+
+function getTLabel(
+  value: string
+): { label: string; tone: "future" | "today" | "past" | "unknown" } {
   const d = parseLaunchDate(value);
   if (!d) return { label: "Unknown", tone: "unknown" };
 
@@ -91,6 +107,43 @@ function startOfDayUnix(dateStr: string): number {
 function endOfDayUnix(dateStr: string): number {
   const d = new Date(`${dateStr}T23:59:59`);
   return Math.floor(d.getTime() / 1000);
+}
+
+function startOfDayMs(dateStr: string): number {
+  const d = new Date(`${dateStr}T00:00:00`);
+  return d.getTime();
+}
+
+function endOfDayMs(dateStr: string): number {
+  const d = new Date(`${dateStr}T23:59:59.999`);
+  return d.getTime();
+}
+
+function buildTapWorkordersUrl(fromDate: string, toDate: string): string {
+  const filters = [
+    {
+      type: "actual_launch_date",
+      operator: "BTW",
+      values: [startOfDayMs(fromDate), endOfDayMs(toDate)],
+    },
+    {
+      type: "product_types",
+      operator: "IN",
+      values: ["Analytics", "ARC", "CRM"],
+    },
+  ];
+
+  const sort = {
+    actual_launch_date: "ASC",
+  };
+
+  const params = new URLSearchParams({
+    filters: JSON.stringify(filters),
+    searchField: "All",
+    sort: JSON.stringify(sort),
+  });
+
+  return `https://tap.tekioncloud.com/workorders/list?${params.toString()}`;
 }
 
 function isSameLocalDay(isoString?: string): boolean {
@@ -196,8 +249,65 @@ const StatusChipGroup: React.FC<{
   </div>
 );
 
+const CustomStatusSelect: React.FC<{
+  value?: CustomPhaseStatus;
+  onChange: (newVal: CustomPhaseStatus) => void;
+}> = ({ value, onChange }) => {
+  const currentVal = value || "TO DO";
+  const colors = {
+    "TO DO": {
+      bg: "rgba(148, 163, 184, 0.14)",
+      text: "#94a3b8",
+      border: "rgba(148, 163, 184, 0.24)",
+    },
+    WIP: {
+      bg: "rgba(245, 158, 11, 0.16)",
+      text: "#f59e0b",
+      border: "rgba(245, 158, 11, 0.30)",
+    },
+    Completed: {
+      bg: "rgba(34, 197, 94, 0.16)",
+      text: "#22c55e",
+      border: "rgba(34, 197, 94, 0.30)",
+    },
+  } as const;
+
+  const style = colors[currentVal];
+
+  return (
+    <select
+      value={currentVal}
+      onChange={(e) => onChange(e.target.value as CustomPhaseStatus)}
+      style={{
+        background: style.bg,
+        color: style.text,
+        border: `1px solid ${style.border}`,
+        borderRadius: 999,
+        padding: "4px 8px",
+        fontSize: 11,
+        fontWeight: 700,
+        cursor: "pointer",
+        outline: "none",
+        appearance: "none",
+        textAlign: "center",
+        minWidth: "85px",
+      }}
+    >
+      <option value="TO DO" style={{ background: "#1c1c1e", color: "#fff" }}>
+        TO DO
+      </option>
+      <option value="WIP" style={{ background: "#1c1c1e", color: "#fff" }}>
+        WIP
+      </option>
+      <option value="Completed" style={{ background: "#1c1c1e", color: "#fff" }}>
+        Completed
+      </option>
+    </select>
+  );
+};
+
 function withOnboardingStatuses(
-  stores: ApiStoreRecord[],
+  stores: StoreRecord[],
   statusMap: Record<
     string,
     {
@@ -226,10 +336,8 @@ function copyText(value: string): void {
 export const Stores: React.FC<Props> = ({ onBack }) => {
   const [records, setRecords] = useState<StoreRecord[]>([]);
   const [loadingStores, setLoadingStores] = useState(false);
-  const [loadingStatuses, setLoadingStatuses] = useState(false);
   const [syncingExcel, setSyncingExcel] = useState(false);
   const [error, setError] = useState("");
-  const [statusError, setStatusError] = useState("");
   const [tokenExpiredMessage, setTokenExpiredMessage] = useState("");
   const [actionMessage, setActionMessage] = useState("");
   const [filtersCollapsed, setFiltersCollapsed] = useState(false);
@@ -238,6 +346,8 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
   const [search, setSearch] = useState("");
   const [superpodId, setSuperpodId] = useState("");
   const [implementationType, setImplementationType] = useState("");
+  const [productType, setProductType] = useState("");
+  const [selectedMonth, setSelectedMonth] = useState("");
 
   const presetRange = useMemo(() => getTDaysRange(range), [range]);
 
@@ -249,20 +359,22 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     setToDate(toInputDate(presetRange.toDate));
   }, [range, presetRange.fromDate, presetRange.toDate]);
 
+  const tapWorkordersUrl = useMemo(
+    () => buildTapWorkordersUrl(fromDate, toDate),
+    [fromDate, toDate]
+  );
+
   const showActionMessage = useCallback((msg: string) => {
     setActionMessage(msg);
     window.setTimeout(() => setActionMessage(""), 3000);
   }, []);
 
-  const loadStatusesForStores = useCallback(async (stores: ApiStoreRecord[]) => {
+  const loadStatusesForStores = useCallback(async (stores: StoreRecord[]) => {
     const tekionIds = stores.map((item) => item.tekion_id).filter(Boolean);
+
     if (tekionIds.length === 0) {
-      setStatusError("");
       return;
     }
-
-    setLoadingStatuses(true);
-    setStatusError("");
 
     try {
       const statusMap = await fetchStoreOnboardingStatuses(tekionIds, {
@@ -274,86 +386,94 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       setRecords(merged);
       await saveStores(merged);
     } catch (err: unknown) {
-      setStatusError(err instanceof Error ? err.message : "Failed to fetch onboarding statuses");
-    } finally {
-      setLoadingStatuses(false);
+      logger.error("Failed to fetch onboarding statuses", err);
     }
   }, []);
 
-  const handleFetch = useCallback(async (forceStatusRefresh = true) => {
-    setLoadingStores(true);
-    setError("");
-    setStatusError("");
-    setTokenExpiredMessage("");
-    setActionMessage("");
+  const handleFetch = useCallback(
+    async (forceStatusRefresh = true) => {
+      setLoadingStores(true);
+      setError("");
+      setTokenExpiredMessage("");
+      setActionMessage("");
 
-    try {
-      const rawStores = await fetchStores(range);
+      try {
+        const rawStores = await fetchStores(range);
 
-      const uniqueStores = Array.from(
-        new Map<string, StoreRecord>(
-          (rawStores as StoreRecord[]).map((store) => [store.tekion_id, store])
-        ).values()
-      );
+        const existingDbStores = await getStores();
+        const existingMap = new Map(existingDbStores.map((s) => [s.tekion_id, s]));
 
-      setRecords(uniqueStores);
-      await saveStores(uniqueStores);
+        const duplicateTekionIds = rawStores
+          .map((store) => store.tekion_id)
+          .filter(Boolean)
+          .filter((tekionId, index, arr) => arr.indexOf(tekionId) !== index);
 
-      if (forceStatusRefresh) {
-        void loadStatusesForStores(uniqueStores as unknown as ApiStoreRecord[]);
+        logger.info("Fetched stores before dedupe", {
+          fetchedCount: rawStores.length,
+          duplicateTekionIdCount: duplicateTekionIds.length,
+          duplicateTekionIdSamples: duplicateTekionIds.slice(0, 10),
+        });
+
+        const uniqueStores = Array.from(
+          new Map<string, StoreRecord>(
+            (rawStores as StoreRecord[]).map((store) => {
+              const existing = existingMap.get(store.tekion_id);
+              return [
+                store.tekion_id,
+                {
+                  ...store,
+                  configuration_status: existing?.configuration_status || "TO DO",
+                  testing_status: existing?.testing_status || "TO DO",
+                },
+              ];
+            })
+          ).values()
+        );
+
+        logger.info("Prepared unique stores for save", {
+          uniqueStoresCount: uniqueStores.length,
+        });
+
+        setRecords(uniqueStores);
+        await saveStores(uniqueStores);
+
+        if (forceStatusRefresh) {
+          void loadStatusesForStores(uniqueStores);
+        }
+      } catch (err: unknown) {
+        logger.error("handleFetch failed", err);
+
+        if (err instanceof ExpiredCaptureTokenError) {
+          setTokenExpiredMessage(err.message);
+          setError("");
+        } else {
+          setError(err instanceof Error ? err.message : "Failed to fetch stores");
+        }
+      } finally {
+        setLoadingStores(false);
       }
-    } catch (err: unknown) {
-      logger.error("handleFetch failed", err);
-
-      if (err instanceof ExpiredCaptureTokenError) {
-        setTokenExpiredMessage(err.message);
-        setError("");
-      } else {
-        setError(err instanceof Error ? err.message : "Failed to fetch stores");
-      }
-    } finally {
-      setLoadingStores(false);
-    }
-  }, [range, loadStatusesForStores]);
-
-  const handleRetryStatuses = useCallback(async () => {
-    const baseStores: ApiStoreRecord[] = records.map((row) => ({
-      tekion_id: row.tekion_id,
-      dealer_id: row.dealer_id,
-      dba_name: row.dba_name,
-      launch_date: row.launch_date,
-      implementation_type: row.implementation_type,
-      pre_production_environment_status: row.pre_production_environment_status,
-      superpod_id: row.superpod_id,
-    }));
-
-    await loadStatusesForStores(baseStores);
-  }, [records, loadStatusesForStores]);
+    },
+    [range, loadStatusesForStores]
+  );
 
   const handleLoadIndexedDb = useCallback(async () => {
     try {
       const rawData = await getStores();
+
       const uniqueData = Array.from(
-        new Map<string, StoreRecord>(
-          rawData.map((store) => [store.tekion_id, store])
-        ).values()
+        new Map<string, StoreRecord>(rawData.map((store) => [store.tekion_id, store])).values()
       );
+
+      logger.info("Loaded stores from IndexedDB", {
+        indexedDbCount: rawData.length,
+        uniqueCount: uniqueData.length,
+      });
 
       setRecords(uniqueData);
 
       if (shouldAutoFetchStatuses(uniqueData)) {
-        const baseStores: ApiStoreRecord[] = uniqueData.map((row) => ({
-          tekion_id: row.tekion_id,
-          dealer_id: row.dealer_id,
-          dba_name: row.dba_name,
-          launch_date: row.launch_date,
-          implementation_type: row.implementation_type,
-          pre_production_environment_status: row.pre_production_environment_status,
-          superpod_id: row.superpod_id,
-        }));
-
-        if (baseStores.length > 0) {
-          void loadStatusesForStores(baseStores);
+        if (uniqueData.length > 0) {
+          void loadStatusesForStores(uniqueData);
         }
       }
     } catch (err: unknown) {
@@ -365,6 +485,24 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     void handleLoadIndexedDb();
   }, [handleLoadIndexedDb]);
 
+  const updateCustomStatus = async (
+    tekion_id: string,
+    field: "configuration_status" | "testing_status",
+    value: CustomPhaseStatus
+  ) => {
+    const updatedRecords = records.map((r) =>
+      r.tekion_id === tekion_id ? { ...r, [field]: value } : r
+    );
+
+    setRecords(updatedRecords);
+
+    try {
+      await saveStores(updatedRecords);
+    } catch (err) {
+      logger.error("Failed to save custom status to IndexedDB", err);
+    }
+  };
+
   const superpodOptions = useMemo(
     () => Array.from(new Set(records.map((r) => r.superpod_id).filter(Boolean))).sort(),
     [records]
@@ -372,11 +510,26 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
   const implementationTypeOptions = useMemo(
     () =>
-      Array.from(
-        new Set(records.map((r) => cleanImpType(r.implementation_type)).filter(Boolean))
-      ).sort(),
+      Array.from(new Set(records.map((r) => cleanImpType(r.implementation_type)).filter(Boolean))).sort(),
     [records]
   );
+
+  const productTypeOptions = useMemo(() => ["ARC", "CRM", "Analytics"], []);
+
+  const monthOptions = useMemo(() => {
+    const map = new Map<string, number>();
+
+    records.forEach((r) => {
+      const label = getMonthYearString(r.launch_date);
+      if (label) {
+        map.set(label, getMonthYearSortKey(r.launch_date));
+      }
+    });
+
+    return Array.from(map.entries())
+      .sort((a, b) => a[1] - b[1])
+      .map((entry) => entry[0]);
+  }, [records]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -395,13 +548,24 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         const normalizedImp = cleanImpType(item.implementation_type);
         const matchesImplementationType =
           !implementationType || normalizedImp === implementationType;
+        const matchesProductType =
+          !productType || (item.product_types || "").toLowerCase().includes(productType.toLowerCase());
+        const matchesMonth =
+          !selectedMonth || getMonthYearString(item.launch_date) === selectedMonth;
 
         const launch = parseLaunchDate(item.launch_date);
         const launchUnix = launch ? Math.floor(launch.getTime() / 1000) : null;
         const matchesDate =
           launchUnix == null ? true : launchUnix >= fromUnix && launchUnix <= toUnix;
 
-        return matchesSearch && matchesSuperpod && matchesImplementationType && matchesDate;
+        return (
+          matchesSearch &&
+          matchesSuperpod &&
+          matchesImplementationType &&
+          matchesProductType &&
+          matchesMonth &&
+          matchesDate
+        );
       })
       .sort((a, b) => {
         const aDate = parseLaunchDate(a.launch_date);
@@ -412,7 +576,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
         return aTime - bTime;
       });
-  }, [records, search, superpodId, implementationType, fromDate, toDate]);
+  }, [records, search, superpodId, implementationType, productType, selectedMonth, fromDate, toDate]);
 
   const exportJson = () => {
     const blob = new Blob([JSON.stringify(filtered, null, 2)], {
@@ -442,6 +606,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     }
 
     setSyncingExcel(true);
+
     try {
       const result = await syncStoresToGraphWorkbook(records);
       showActionMessage(
@@ -458,6 +623,8 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     setSearch("");
     setSuperpodId("");
     setImplementationType("");
+    setProductType("");
+    setSelectedMonth("");
     setFromDate(toInputDate(presetRange.fromDate));
     setToDate(toInputDate(presetRange.toDate));
   };
@@ -471,9 +638,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           </button>
           <div>
             <div className="stores-page-title">🏬 Stores</div>
-            <div className="stores-page-subtitle">
-              Uses new entity-instance ARC stores API
-            </div>
+            <div className="stores-page-subtitle">Uses new entity-instance ARC stores API</div>
           </div>
         </div>
 
@@ -503,6 +668,20 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       {tokenExpiredMessage && (
         <div className="bx-error" style={{ marginBottom: 12 }}>
           ⚠ {tokenExpiredMessage}
+          <div style={{ marginTop: 8 }}>
+            <a
+              href={tapWorkordersUrl}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                color: "#93c5fd",
+                textDecoration: "underline",
+                fontWeight: 700,
+              }}
+            >
+              Open TAP Workorders to recapture Stores APIs
+            </a>
+          </div>
         </div>
       )}
 
@@ -575,6 +754,22 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
               </div>
 
               <div className="stores-field">
+                <label className="stores-label">Go-Live Month</label>
+                <select
+                  className="stores-input"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                >
+                  <option value="">All Months</option>
+                  {monthOptions.map((m) => (
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="stores-field">
                 <label className="stores-label">Pre-Prod POD</label>
                 <select
                   className="stores-input"
@@ -606,6 +801,22 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                 </select>
               </div>
 
+              <div className="stores-field">
+                <label className="stores-label">Product Type</label>
+                <select
+                  className="stores-input"
+                  value={productType}
+                  onChange={(e) => setProductType(e.target.value)}
+                >
+                  <option value="">All Products</option>
+                  {productTypeOptions.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <div className="stores-actions">
                 <button className="btn-postman" onClick={() => void handleFetch(true)} disabled={loadingStores}>
                   {loadingStores ? "⏳ Fetching..." : "Refresh Data"}
@@ -624,7 +835,22 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           <div className="stores-table-card">
             <div className="stores-table-header" style={{ display: "flex", justifyContent: "space-between" }}>
               <div>
-                <div className="stores-panel-title">Store Records</div>
+                <div className="stores-panel-title" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                  <a
+                    href={tapWorkordersUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open TAP Workorders page for this date range so extension can capture Stores APIs"
+                    style={{
+                      color: "#93c5fd",
+                      textDecoration: "underline",
+                      fontWeight: 700,
+                    }}
+                  >
+                    Store Records
+                  </a>
+                </div>
+
                 <div className="stores-table-subtitle">
                   {filtered.length} shown · {records.length} total
                 </div>
@@ -647,10 +873,13 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     <th>Dealership</th>
                     <th>Go Live</th>
                     <th>IMP Type</th>
+                    <th>Products</th>
                     <th>Pre-Prod</th>
                     <th>POD</th>
                     <th>Blueprint</th>
+                    <th>Configuration</th>
                     <th>Sign_Off</th>
+                    <th>Testing</th>
                   </tr>
                 </thead>
 
@@ -664,19 +893,43 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
                     return (
                       <tr key={row.tekion_id}>
-                        <td><button type="button" className="stores-copy-btn" onClick={() => copyText(row.tekion_id)}>{row.tekion_id}</button></td>
-                        <td><button type="button" className="stores-copy-btn" onClick={() => copyText(row.dealer_id)}>{row.dealer_id}</button></td>
-                        <td><button type="button" className="stores-copy-btn" onClick={() => copyText(row.dba_name)}>{row.dba_name}</button></td>
                         <td>
-                          <button type="button" className="stores-copy-btn stores-copy-btn-left" onClick={() => copyText(formatLaunchDate(row.launch_date))}>
+                          <button type="button" className="stores-copy-btn" onClick={() => copyText(row.tekion_id)}>
+                            {row.tekion_id}
+                          </button>
+                        </td>
+
+                        <td>
+                          <button type="button" className="stores-copy-btn" onClick={() => copyText(row.dealer_id)}>
+                            {row.dealer_id}
+                          </button>
+                        </td>
+
+                        <td>
+                          <button type="button" className="stores-copy-btn" onClick={() => copyText(row.dba_name)}>
+                            {row.dba_name}
+                          </button>
+                        </td>
+
+                        <td>
+                          <button
+                            type="button"
+                            className="stores-copy-btn stores-copy-btn-left"
+                            onClick={() => copyText(formatLaunchDate(row.launch_date))}
+                          >
                             <div className="stores-date-cell">
                               <div className="stores-date-main">{formatLaunchDate(row.launch_date)}</div>
                               <div className={`stores-date-sub stores-date-${tLabel.tone}`}>{tLabel.label}</div>
                             </div>
                           </button>
                         </td>
+
                         <td>{cleanedImp || "—"}</td>
+                        <td style={{ fontSize: 11, maxWidth: 120, whiteSpace: "normal" }}>
+                          {row.product_types || "—"}
+                        </td>
                         <td>{row.pre_production_environment_status || "—"}</td>
+
                         <td>
                           <span
                             style={{
@@ -699,6 +952,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                             {row.superpod_id || "—"}
                           </span>
                         </td>
+
                         <td>
                           <StatusChipGroup
                             items={[
@@ -710,6 +964,14 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                             ]}
                           />
                         </td>
+
+                        <td style={{ textAlign: "center" }}>
+                          <CustomStatusSelect
+                            value={row.configuration_status}
+                            onChange={(val) => void updateCustomStatus(row.tekion_id, "configuration_status", val)}
+                          />
+                        </td>
+
                         <td>
                           <StatusChipGroup
                             items={[
@@ -717,6 +979,13 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                               { short: "S", fullName: "Service Operational Sign-Off", status: signoff?.service ?? "UNKNOWN" },
                               { short: "A", fullName: "Accounting Operational Sign-Off", status: signoff?.accounting ?? "UNKNOWN" },
                             ]}
+                          />
+                        </td>
+
+                        <td style={{ textAlign: "center" }}>
+                          <CustomStatusSelect
+                            value={row.testing_status}
+                            onChange={(val) => void updateCustomStatus(row.tekion_id, "testing_status", val)}
                           />
                         </td>
                       </tr>

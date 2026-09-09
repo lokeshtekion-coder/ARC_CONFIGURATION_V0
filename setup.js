@@ -1,13 +1,32 @@
-// setup.js  ← run with: node setup.js
-
-const fs   = require("fs");
+// /Users/tlreddy/Desktop/ARC_CONFIGURATION_V0/setup.js
+const fs = require("fs");
 const path = require("path");
+const readline = require("readline");
+const { execSync } = require("child_process");
 
-const files = {
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 
-  // ── BACKEND ─────────────────────────────────────────────────────────────────
+const ask = (query, defaultVal) =>
+  new Promise((resolve) =>
+    rl.question(`${query} [${defaultVal}]: `, (ans) => resolve(ans.trim() || defaultVal))
+  );
 
-  "cors-proxy/package.json": `{
+async function init() {
+  console.log("⚡ ARC Configuration Workspace Initializer\n");
+
+  const backendPort = await ask("Backend proxy port", "4000");
+  const frontendPort = await ask("Frontend UI port", "5174");
+  const runInstall = await ask("Run npm install automatically? (y/N)", "N");
+
+  rl.close();
+
+  // Template dictionary with dynamic port injection
+  const files = {
+    // ── BACKEND ───────────────────────────────────────────────────────────────
+    "cors-proxy/package.json": `{
   "name": "cors-proxy",
   "version": "1.0.0",
   "scripts": {
@@ -31,7 +50,7 @@ const files = {
   }
 }`,
 
-  "cors-proxy/tsconfig.json": `{
+    "cors-proxy/tsconfig.json": `{
   "compilerOptions": {
     "target": "ES2020",
     "module": "CommonJS",
@@ -47,7 +66,7 @@ const files = {
   "exclude": ["node_modules", "dist"]
 }`,
 
-  "cors-proxy/src/types/proxy.types.ts": `export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+    "cors-proxy/src/types/proxy.types.ts": `export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 export interface ProxyRequestBody {
   url: string;
@@ -75,12 +94,12 @@ export interface ProxyErrorResponse {
   requestUrl?: string;
 }`,
 
-  "cors-proxy/src/middleware/cors.middleware.ts": `import { RequestHandler } from "express";
+    "cors-proxy/src/middleware/cors.middleware.ts": `import { RequestHandler } from "express";
 import cors, { CorsOptions } from "cors";
 
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "http://localhost:3000",
-  "http://localhost:5174",
+  "http://localhost:${frontendPort}",
   "http://localhost:8080",
   /^https:\\/\\/.*\\.tekion\\.com$/,
 ];
@@ -112,7 +131,7 @@ const corsOptions: CorsOptions = {
 
 export const corsMiddleware: RequestHandler = cors(corsOptions);`,
 
-  "cors-proxy/src/middleware/logger.middleware.ts": `import morgan, { StreamOptions } from "morgan";
+    "cors-proxy/src/middleware/logger.middleware.ts": `import morgan, { StreamOptions } from "morgan";
 import { RequestHandler } from "express";
 
 const stream: StreamOptions = {
@@ -130,7 +149,7 @@ export const loggerMiddleware: RequestHandler = morgan(
   { stream }
 );`,
 
-  "cors-proxy/src/router/proxy.routes.ts": `import { Router, Request, Response } from "express";
+    "cors-proxy/src/router/proxy.routes.ts": `import { Router, Request, Response } from "express";
 import axios, { AxiosRequestConfig, AxiosError } from "axios";
 import {
   ProxyRequestBody,
@@ -232,13 +251,13 @@ router.get("/proxy/health", (_req: Request, res: Response): void => {
 
 export default router;`,
 
-  "cors-proxy/src/server.ts": `import express, { Application, Request, Response, NextFunction } from "express";
+    "cors-proxy/src/server.ts": `import express, { Application, Request, Response, NextFunction } from "express";
 import { corsMiddleware } from "./middleware/cors.middleware";
 import { loggerMiddleware } from "./middleware/logger.middleware";
 import proxyRouter from "./router/proxy.routes";
 
 const app: Application = express();
-const PORT = process.env.PORT ?? 4000;
+const PORT = process.env.PORT ?? ${backendPort};
 
 app.use(corsMiddleware);
 app.options("*", corsMiddleware);
@@ -262,9 +281,8 @@ app.listen(PORT, () => {
   console.log(\`📡  Health check    → http://localhost:\${PORT}/api/proxy/health\`);
 });`,
 
-  // ── FRONTEND ────────────────────────────────────────────────────────────────
-
-  "cors-proxy-ui/package.json": `{
+    // ── FRONTEND ──────────────────────────────────────────────────────────────
+    "cors-proxy-ui/package.json": `{
   "name": "cors-proxy-ui",
   "version": "1.0.0",
   "scripts": {
@@ -285,7 +303,7 @@ app.listen(PORT, () => {
   }
 }`,
 
-  "cors-proxy-ui/tsconfig.json": `{
+    "cors-proxy-ui/tsconfig.json": `{
   "compilerOptions": {
     "target": "ES2020",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
@@ -300,23 +318,23 @@ app.listen(PORT, () => {
   "include": ["src"]
 }`,
 
-  "cors-proxy-ui/vite.config.ts": `import { defineConfig } from "vite";
+    "cors-proxy-ui/vite.config.ts": `import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5174,
+    port: ${frontendPort},
     proxy: {
       "/api": {
-        target: "http://localhost:4000",
+        target: "http://localhost:${backendPort}",
         changeOrigin: true,
       },
     },
   },
 });`,
 
-  "cors-proxy-ui/index.html": `<!DOCTYPE html>
+    "cors-proxy-ui/index.html": `<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -329,7 +347,7 @@ export default defineConfig({
   </body>
 </html>`,
 
-  "cors-proxy-ui/src/main.tsx": `import React from "react";
+    "cors-proxy-ui/src/main.tsx": `import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 
@@ -339,7 +357,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   </React.StrictMode>
 );`,
 
-  "cors-proxy-ui/src/types/proxy.types.ts": `export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+    "cors-proxy-ui/src/types/proxy.types.ts": `export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
 export interface KeyValuePair {
   key: string;
@@ -382,9 +400,9 @@ export interface HistoryEntry {
   response: ProxyEnvelope;
 }`,
 
-  "cors-proxy-ui/src/utils/proxy.ts": `import type { HttpMethod, ProxyEnvelope, RequestState } from "../types/proxy.types";
+    "cors-proxy-ui/src/utils/proxy.ts": `import type { HttpMethod, ProxyEnvelope, RequestState } from "../types/proxy.types";
 
-const PROXY_BASE = "http://localhost:4000/api/proxy";
+const PROXY_BASE = "http://localhost:${backendPort}/api/proxy";
 
 export async function sendProxyRequest(state: RequestState): Promise<ProxyEnvelope> {
   const enabledHeaders = state.headers
@@ -437,7 +455,7 @@ export async function sendProxyRequest(state: RequestState): Promise<ProxyEnvelo
   return json as ProxyEnvelope;
 }`,
 
-  "cors-proxy-ui/src/components/HeadersEditor.tsx": `import React from "react";
+    "cors-proxy-ui/src/components/HeadersEditor.tsx": `import React from "react";
 import type { KeyValuePair } from "../types/proxy.types";
 
 interface Props {
@@ -491,7 +509,7 @@ export const KeyValueEditor: React.FC<Props> = ({
   );
 };`,
 
-  "cors-proxy-ui/src/components/BodyEditor.tsx": `import React from "react";
+    "cors-proxy-ui/src/components/BodyEditor.tsx": `import React from "react";
 
 interface Props {
   value: string;
@@ -527,7 +545,7 @@ export const BodyEditor: React.FC<Props> = ({ value, onChange, disabled }) => {
   );
 };`,
 
-  "cors-proxy-ui/src/components/ResponseViewer.tsx": `import React, { useState } from "react";
+    "cors-proxy-ui/src/components/ResponseViewer.tsx": `import React, { useState } from "react";
 import type { ProxyEnvelope } from "../types/proxy.types";
 
 interface Props {
@@ -619,7 +637,7 @@ export const ResponseViewer: React.FC<Props> = ({ response, error, loading }) =>
   );
 };`,
 
-  "cors-proxy-ui/src/components/RequestBuilder.tsx": `import React, { useState } from "react";
+    "cors-proxy-ui/src/components/RequestBuilder.tsx": `import React, { useState } from "react";
 import type { HttpMethod, KeyValuePair, RequestState } from "../types/proxy.types";
 import { KeyValueEditor } from "./HeadersEditor";
 import { BodyEditor } from "./BodyEditor";
@@ -702,7 +720,7 @@ export const RequestBuilder: React.FC<Props> = ({ onSend, loading }) => {
   );
 };`,
 
-  "cors-proxy-ui/src/App.tsx": `import React, { useState } from "react";
+    "cors-proxy-ui/src/App.tsx": `import React, { useState } from "react";
 import { RequestBuilder } from "./components/RequestBuilder";
 import { ResponseViewer } from "./components/ResponseViewer";
 import { sendProxyRequest } from "./utils/proxy";
@@ -752,7 +770,7 @@ export const App: React.FC = () => {
           <span className="logo-text">CORS Proxy</span>
           <span className="logo-sub">Dev Tool</span>
         </div>
-        <a href="http://localhost:4000/api/proxy/health" target="_blank" rel="noreferrer" className="health-link">
+        <a href="http://localhost:${backendPort}/api/proxy/health" target="_blank" rel="noreferrer" className="health-link">
           ● Backend Health
         </a>
       </header>
@@ -789,7 +807,7 @@ export const App: React.FC = () => {
 
 export default App;`,
 
-  "cors-proxy-ui/src/app.css": `*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    "cors-proxy-ui/src/app.css": `*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --bg: #1c1c1e; --surface: #2c2c2e; --surface2: #3a3a3c;
   --border: #48484a; --text: #f5f5f7; --text-muted: #98989d;
@@ -869,21 +887,44 @@ body { background: var(--bg); color: var(--text); font-family: var(--font); font
 .btn-secondary { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); cursor: pointer; padding: 5px 12px; font-size: 12px; }
 .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
 .btn-sm { padding: 3px 8px; font-size: 11px; }`,
+  };
 
-};
+  let created = 0;
+  let skipped = 0;
 
-// ── Write all files ──────────────────────────────────────────────────────────
-let created = 0;
+  for (const [filePath, content] of Object.entries(files)) {
+    const fullPath = path.resolve(__dirname, filePath);
 
-for (const [filePath, content] of Object.entries(files)) {
-  const fullPath = path.resolve(__dirname, filePath);
-  fs.mkdirSync(path.dirname(fullPath), { recursive: true });
-  fs.writeFileSync(fullPath, content, "utf8");
-  console.log(`✅  ${filePath}`);
-  created++;
+    // Non-destructive check
+    if (fs.existsSync(fullPath)) {
+      console.log(`[SKIP] Already exists: ${filePath}`);
+      skipped++;
+      continue;
+    }
+
+    fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+    fs.writeFileSync(fullPath, content.trimStart(), "utf8");
+    console.log(`[CREATED] ${filePath}`);
+    created++;
+  }
+
+  console.log(`\n🎉 Done! ${created} files created, ${skipped} skipped.`);
+
+  if (runInstall.toLowerCase() === "y") {
+    console.log("\n📦 Installing dependencies in cors-proxy...");
+    execSync("npm install", { cwd: path.resolve(__dirname, "cors-proxy"), stdio: "inherit" });
+
+    console.log("\n📦 Installing dependencies in cors-proxy-ui...");
+    execSync("npm install", { cwd: path.resolve(__dirname, "cors-proxy-ui"), stdio: "inherit" });
+    console.log("\n✅ Installations complete.");
+  } else {
+    console.log("\nNext steps:");
+    console.log("  cd cors-proxy     && npm install && npm run dev");
+    console.log("  cd cors-proxy-ui  && npm install && npm run dev\n");
+  }
+
+  // Final step: suggest deleting the script
+  console.log("💡 Tip: If you have committed these files to Git, you can safely delete this setup.js file.");
 }
 
-console.log(`\n🎉  Done! ${created} files created.\n`);
-console.log("Next steps:");
-console.log("  cd cors-proxy     && npm install && npm run dev");
-console.log("  cd cors-proxy-ui  && npm install && npm run dev\n");
+init().catch(console.error);

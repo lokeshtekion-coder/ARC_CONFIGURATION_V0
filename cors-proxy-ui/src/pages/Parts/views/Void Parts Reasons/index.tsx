@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { loadTekionApiSettingsBundle } from "../../../services/tekionApiSettings";
-import type { KeyValuePair } from "../../../types/proxy.types";
-import "./VoidPartsReasonsView.css"; // <- Imported styles here
+import { loadTekionApiSettingsBundle } from "../../../../services/tekionApiSettings";
+import type { KeyValuePair } from "../../../../types/proxy.types";
+import "./VoidPartsReasonsView.css";
 
 const TARGET_REASON_CODE = "Customer Cancelled - with Lost Sale";
 const TARGET_REASON_ID = "23";
-const BASE_URL = "https://preprodapp.tekioncloud.com/api/parts/proxy/u/settings/void-reason";
+const BASE_URL =
+  "https://preprodapp.tekioncloud.com/api/parts/proxy/u/settings/void-reason";
 
 const logger = {
   debug: (...args: unknown[]) => console.debug("[Parts][VoidPartsReasons]", ...args),
@@ -56,9 +57,13 @@ type RunState = "idle" | "loading" | "success" | "error" | "warning";
 
 function getEnabledGlobalHeaders(): Record<string, string> {
   const bundle = loadTekionApiSettingsBundle();
+
   const headers = (bundle.globalHeaders ?? [])
-    .filter((header: KeyValuePair) => header.enabled && header.key.trim() && String(header.value).trim())
-    .reduce<Record<string, string>>((acc, header) => {
+    .filter(
+      (header: KeyValuePair) =>
+        header.enabled && header.key.trim() && String(header.value).trim()
+    )
+    .reduce<Record<string, string>>((acc: Record<string, string>, header: KeyValuePair) => {
       acc[header.key] = String(header.value);
       return acc;
     }, {});
@@ -98,7 +103,9 @@ function buildUpdatePayload(item: VoidReasonRecord): VoidReasonUpdatePayload {
 
 function isValidVoidReasonRecord(value: unknown): value is VoidReasonRecord {
   if (!value || typeof value !== "object") return false;
+
   const record = value as Partial<VoidReasonRecord>;
+
   return (
     (typeof record.id === "string" || typeof record.id === "number") &&
     typeof record.active === "boolean" &&
@@ -111,11 +118,14 @@ function isValidVoidReasonRecord(value: unknown): value is VoidReasonRecord {
 
 function isValidVoidReasonsResponse(value: unknown): value is VoidReasonsResponse {
   if (!value || typeof value !== "object") return false;
+
   const response = value as Partial<VoidReasonsResponse>;
   return Array.isArray(response.data) && response.data.every(isValidVoidReasonRecord);
 }
 
-async function fetchVoidReasons(headers: Record<string, string>): Promise<VoidReasonsResponse> {
+async function fetchVoidReasons(
+  headers: Record<string, string>
+): Promise<VoidReasonsResponse> {
   logger.info("GET request started", {
     url: BASE_URL,
     headerKeys: Object.keys(headers),
@@ -201,7 +211,9 @@ async function updateVoidReason(
 export const VoidPartsReasonsView: React.FC = () => {
   const [rows, setRows] = useState<VoidReasonRecord[]>([]);
   const [runState, setRunState] = useState<RunState>("idle");
-  const [statusText, setStatusText] = useState("Ready to validate and fix Void Parts Reasons");
+  const [statusText, setStatusText] = useState(
+    "Ready"
+  );
   const [errorText, setErrorText] = useState("");
 
   useEffect(() => {
@@ -211,7 +223,6 @@ export const VoidPartsReasonsView: React.FC = () => {
 
   const handleRun = async (): Promise<void> => {
     logger.info("run button clicked");
-
     setRunState("loading");
     setStatusText("Loading void reasons...");
     setErrorText("");
@@ -249,7 +260,9 @@ export const VoidPartsReasonsView: React.FC = () => {
       if (!needsFix(target)) {
         logger.info("target already configured correctly");
         setRunState("success");
-        setStatusText(`Count In Lost Sale is already enabled for "${TARGET_REASON_CODE}"`);
+        setStatusText(
+          `Count In Lost Sale is already enabled for "${TARGET_REASON_CODE}"`
+        );
         return;
       }
 
@@ -265,7 +278,9 @@ export const VoidPartsReasonsView: React.FC = () => {
 
       logger.info("refresh completed after PUT");
       setRunState("success");
-      setStatusText(`Count In Lost Sale has been fixed for "${TARGET_REASON_CODE}"`);
+      setStatusText(
+        `Count In Lost Sale has been fixed for "${TARGET_REASON_CODE}"`
+      );
     } catch (error: unknown) {
       logger.error("run failed", error);
       setRunState("error");
@@ -274,7 +289,6 @@ export const VoidPartsReasonsView: React.FC = () => {
     }
   };
 
-  // Determine which status class to apply based on state
   const getStatusClass = () => {
     if (runState === "error") return "status-error";
     if (runState === "success") return "status-success";
@@ -329,6 +343,7 @@ export const VoidPartsReasonsView: React.FC = () => {
                   <th>Target</th>
                 </tr>
               </thead>
+
               <tbody>
                 {rows.map((row, index) => {
                   const isTarget =
@@ -346,12 +361,20 @@ export const VoidPartsReasonsView: React.FC = () => {
                       <td>{row.type || "—"}</td>
                       <td>{row.active ? "Yes" : "No"}</td>
                       <td>
-                        <span className={`badge ${row.detail?.countInLostSale ? "badge-true" : "badge-false"}`}>
+                        <span
+                          className={`badge ${
+                            row.detail?.countInLostSale ? "badge-true" : "badge-false"
+                          }`}
+                        >
                           {row.detail?.countInLostSale ? "True" : "False"}
                         </span>
                       </td>
                       <td>
-                        {isTarget ? <span className="badge badge-target">Target</span> : "—"}
+                        {isTarget ? (
+                          <span className="badge badge-target">Target</span>
+                        ) : (
+                          "—"
+                        )}
                       </td>
                     </tr>
                   );
@@ -364,3 +387,5 @@ export const VoidPartsReasonsView: React.FC = () => {
     </div>
   );
 };
+
+export default VoidPartsReasonsView;

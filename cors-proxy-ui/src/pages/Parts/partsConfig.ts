@@ -27,12 +27,12 @@ export const PARTS_NAV_ITEMS: PartsNavItem[] = [
   {
     key: "void-parts-reasons",
     label: "Void parts reasons",
-    description: "Manage reasons used for voiding parts transactions",
+    description: "",
   },
   {
     key: "code-setup",
     label: "Code setup",
-    description: "Placeholder for code setup actions",
+    description: "",
   },
   {
     key: "return-reasons",

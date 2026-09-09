@@ -16,10 +16,18 @@ export interface StoreRecord {
   implementation_type: string;
   pre_production_environment_status: string;
   superpod_id: string;
+  product_types?: string;
 }
 
 const STORES_API_URL =
   "https://us-west1-tapapi.tekioncloud.com/tapapi/tap-crm-implementations-backend/public/v1/entity-instance/1";
+
+const log = {
+  info: (...args: unknown[]) => console.info("[tekionStoresApi]", ...args),
+  debug: (...args: unknown[]) => console.debug("[tekionStoresApi]", ...args),
+  warn: (...args: unknown[]) => console.warn("[tekionStoresApi]", ...args),
+  error: (...args: unknown[]) => console.error("[tekionStoresApi]", ...args),
+};
 
 export class ExpiredCaptureTokenError extends Error {
   constructor(message: string) {
@@ -30,6 +38,10 @@ export class ExpiredCaptureTokenError extends Error {
 
 function normalize(value: unknown): string {
   return String(value ?? "").trim();
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 function getUnixStartOfDay(date: Date): number {
@@ -49,19 +61,29 @@ export function getTDaysRange(days: TRange) {
   const toDate = new Date();
   toDate.setDate(fromDate.getDate() + days);
 
-  return {
+  const range = {
     fromDate,
     toDate,
     fromUnix: getUnixStartOfDay(fromDate),
     toUnix: getUnixEndOfDay(toDate),
   };
+
+  log.info("Computed T-range window", {
+    days,
+    fromDateIso: range.fromDate.toISOString(),
+    toDateIso: range.toDate.toISOString(),
+    fromUnix: range.fromUnix,
+    toUnix: range.toUnix,
+  });
+
+  return range;
 }
 
 function normalizeHeaderMap(input: unknown): Record<string, string> {
-  if (!input || typeof input !== "object" || Array.isArray(input)) return {};
+  if (!isRecord(input)) return {};
 
   const out: Record<string, string> = {};
-  for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
+  for (const [key, value] of Object.entries(input)) {
     if (typeof value === "string" && key.trim() && value.trim()) {
       out[key.toLowerCase()] = value.trim();
     }
@@ -78,6 +100,18 @@ function keyValuePairsToHeaderMap(pairs: KeyValuePair[]): Record<string, string>
     out[key] = value;
   }
   return out;
+}
+
+function maskHeadersForLog(headers: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(headers).map(([key, value]) => {
+      const lower = key.toLowerCase();
+      if (lower.includes("token") || lower === "authorization" || lower === "cookie") {
+        return [key, `present(${value.length})`];
+      }
+      return [key, value];
+    })
+  );
 }
 
 function getPreferredStoresCapture(): ArcCustomCapturedApi | null {
@@ -116,18 +150,19 @@ function getPreferredStoresCapture(): ArcCustomCapturedApi | null {
     userProfileFallback ||
     null;
 
-  console.log("[tekionStoresApi] preferred stores custom capture resolution", {
-    selectedStoresApiCaptureId: settings.storesApiCaptureId,
-    selectedStoresCustomCaptureId: settings.storesCustomCaptureId,
-    chosen: preferred
+  log.info("Resolved Stores capture source", {
+    selectedStoresApiCaptureId: settings.storesApiCaptureId || "(none)",
+    selectedStoresCustomCaptureId: settings.storesCustomCaptureId || "(none)",
+    availableCustomCaptureCount: customCaptures.length,
+    chosenCapture: preferred
       ? {
           id: preferred.id,
           label: preferred.label,
           pattern: preferred.pattern,
           matchedUrl: preferred.matchedUrl,
           headerKeys: Object.keys(preferred.headers ?? {}).sort(),
-          expiresAt: preferred.decodedToken?.expiresAt,
-          isExpired: preferred.decodedToken?.isExpired,
+          expiresAt: preferred.decodedToken?.expiresAt ?? "(unknown)",
+          isExpired: preferred.decodedToken?.isExpired ?? "(unknown)",
         }
       : null,
   });
@@ -139,12 +174,18 @@ function buildTekionStoresHeaders(): Record<string, string> {
   const selectedCapture = getPreferredStoresCapture();
 
   if (!selectedCapture) {
+    log.error("No Stores capture found");
     throw new Error(
       'Stores auth headers are missing. Capture either "/tapapi/v2/usermanagement/getuserprofile" or "/entity-instance/1" and then reload the website.'
     );
   }
 
   if (hasExpiredCustomToken(selectedCapture)) {
+    log.warn("Selected Stores capture token is expired", {
+      captureId: selectedCapture.id,
+      label: selectedCapture.label,
+      expiresAt: selectedCapture.decodedToken?.expiresAt,
+    });
     throw new ExpiredCaptureTokenError(
       "Captured Stores token has expired. Please reload the website to capture a fresh token."
     );
@@ -159,32 +200,47 @@ function buildTekionStoresHeaders(): Record<string, string> {
   };
 
   if (!Object.keys(mergedHeaders).length) {
+    log.error("Merged Stores headers are empty");
     throw new Error(
       "Stores auth headers are empty. Please reload the website and recapture Stores headers."
     );
   }
 
   mergedHeaders["content-type"] = "application/json";
-  mergedHeaders["accept"] =
-    mergedHeaders["accept"] || "application/json, text/plain, */*";
+  mergedHeaders.accept =
+    mergedHeaders.accept || "application/json, text/plain, */*";
 
-  console.log("[tekionStoresApi] Built NEW stores headers", {
-    selectedCaptureLabel: selectedCapture.label,
-    selectedCapturePattern: selectedCapture.pattern,
-    selectedCaptureMatchedUrl: selectedCapture.matchedUrl,
-    expiresAt: selectedCapture.decodedToken?.expiresAt,
-    isExpired: selectedCapture.decodedToken?.isExpired,
+  log.info("Built Stores request headers", {
+    captureLabel: selectedCapture.label,
+    capturePattern: selectedCapture.pattern,
+    captureMatchedUrl: selectedCapture.matchedUrl,
     finalHeaderKeys: Object.keys(mergedHeaders).sort(),
+    finalHeadersPreview: maskHeadersForLog(mergedHeaders),
   });
 
   return mergedHeaders;
 }
 
 function mapStore(item: Record<string, unknown>): StoreRecord {
+  const rawTypes = item.product_types ?? item.arc_product_types;
+  let typesArray: string[] = [];
+
+  if (Array.isArray(rawTypes)) {
+    typesArray = rawTypes.map((t) => String(t).trim()).filter(Boolean);
+  } else if (typeof rawTypes === "string") {
+    typesArray = rawTypes
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+  }
+
+  const allowedProducts = ["ARC", "CRM", "Analytics"];
+  const finalTypes = typesArray.filter((t) => allowedProducts.includes(t));
+
   return {
     tekion_id: normalize(item.tekion_id),
     dealer_id: normalize(item.dealer_id),
-    dba_name: normalize(item.dealership_name || item.dba_name),
+    dba_name: normalize(item.work_order_name ?? item.dealership_name ?? item.dba_name),
     launch_date: normalize(item.arc_launch_date ?? item.actual_launch_date ?? item.launch_date),
     implementation_type: normalize(
       item.workorder_consolidated_implementation_types ?? item.arc_implementation_type
@@ -193,34 +249,26 @@ function mapStore(item: Record<string, unknown>): StoreRecord {
     superpod_id: normalize(
       item.workorder_consolidated_super_pod_id ?? item.arc_super_pod_id ?? item.superpod_id
     ),
+    product_types: normalize(finalTypes.join(", ")),
   };
 }
 
 function extractRows(body: unknown): Record<string, unknown>[] {
   if (Array.isArray(body)) {
-    return body.filter(
-      (item): item is Record<string, unknown> =>
-        Boolean(item) && typeof item === "object" && !Array.isArray(item)
-    );
+    return body.filter((item): item is Record<string, unknown> => isRecord(item));
   }
 
-  if (body && typeof body === "object" && !Array.isArray(body)) {
-    const record = body as Record<string, unknown>;
-    if (Array.isArray(record.data)) {
-      return record.data.filter(
-        (item): item is Record<string, unknown> =>
-          Boolean(item) && typeof item === "object" && !Array.isArray(item)
-      );
-    }
+  if (isRecord(body) && Array.isArray(body.data)) {
+    return body.data.filter((item): item is Record<string, unknown> => isRecord(item));
   }
 
   return [];
 }
 
 function buildStoresPayload(days: TRange): Record<string, unknown> {
-  const { fromUnix, toUnix } = getTDaysRange(days);
+  const { fromUnix, toUnix, fromDate, toDate } = getTDaysRange(days);
 
-  return {
+  const payload = {
     selected_filters: [
       {
         type: "parent_implementation_tm_sync_status_tracking_id",
@@ -230,37 +278,19 @@ function buildStoresPayload(days: TRange): Record<string, unknown> {
       {
         type: "product_types",
         operator: "IN",
-        values: ["ARC"],
+        values: ["ARC", "CRM", "Analytics"],
       },
       {
         type: "actual_launch_date",
         operator: "BTW",
         values: [fromUnix, toUnix],
       },
-      {
-        type: "launch_date",
-        operator: "BTW",
-        values: [fromUnix, toUnix],
-      },
-      {
-        type: "implementation_region_name",
-        operator: "IN",
-        values: [
-          "Canada",
-          "Enterprise",
-          "Mid Market",
-          "Mid Market 2",
-          "United Kingdom",
-          "USA East",
-          "USA West and Central",
-        ],
-      },
     ],
     search_field: "all",
     search_text: "",
     page_info: {
       start: 0,
-      rows: 200,
+      rows: 1000,
     },
     sort: [
       {
@@ -273,10 +303,21 @@ function buildStoresPayload(days: TRange): Record<string, unknown> {
       },
     ],
   };
+
+  log.info("Built Stores payload", {
+    days,
+    fromDateIso: fromDate.toISOString(),
+    toDateIso: toDate.toISOString(),
+    fromUnix,
+    toUnix,
+    payload,
+  });
+
+  return payload;
 }
 
 export async function fetchStores(days: TRange): Promise<StoreRecord[]> {
-  console.log("[tekionStoresApi] fetchStores called with NEW API range:", days);
+  log.info(`📡 Fetching live store data from Tekion (T-${days} days window)...`);
 
   const payload = buildStoresPayload(days);
   const headers = buildTekionStoresHeaders();
@@ -289,12 +330,25 @@ export async function fetchStores(days: TRange): Promise<StoreRecord[]> {
     timeout: 60000,
   };
 
-  const res = await fetch("http://localhost:4000/api/proxy", {
+  log.info("Sending Stores proxy request", {
+    proxyUrl: "/api/proxy",
+    upstreamUrl: STORES_API_URL,
+    method: requestBody.method,
+    headerKeys: Object.keys(headers).sort(),
+    payload,
+  });
+
+  const res = await fetch("/api/proxy", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(requestBody),
+  });
+
+  log.info("Received proxy HTTP response", {
+    responseStatus: res.status,
+    responseStatusText: res.statusText,
   });
 
   const rawText = await res.text();
@@ -303,8 +357,18 @@ export async function fetchStores(days: TRange): Promise<StoreRecord[]> {
   try {
     proxyData = rawText ? (JSON.parse(rawText) as Record<string, unknown>) : {};
   } catch {
+    log.error("Failed to parse proxy wrapper JSON", {
+      rawTextPreview: rawText.substring(0, 500),
+    });
     throw new Error(`Proxy returned non-JSON wrapper response: ${rawText.substring(0, 300)}`);
   }
+
+  log.info("Parsed proxy wrapper", {
+    upstreamStatus: proxyData.status,
+    upstreamStatusText: proxyData.statusText,
+    upstreamHeaderKeys: isRecord(proxyData.headers) ? Object.keys(proxyData.headers) : [],
+    bodyType: typeof proxyData.body,
+  });
 
   const upstreamStatus =
     typeof proxyData.status === "number" ? proxyData.status : res.status;
@@ -314,6 +378,12 @@ export async function fetchStores(days: TRange): Promise<StoreRecord[]> {
       typeof proxyData.body === "string"
         ? proxyData.body
         : JSON.stringify(proxyData.body ?? "");
+
+    log.error("Stores upstream request failed", {
+      upstreamStatus,
+      upstreamStatusText: String(proxyData.statusText ?? ""),
+      upstreamBodyText,
+    });
 
     if (
       upstreamStatus === 401 &&
@@ -331,18 +401,69 @@ export async function fetchStores(days: TRange): Promise<StoreRecord[]> {
     );
   }
 
-  let upstreamBody: unknown = proxyData.body ?? proxyData;
+  let upstreamBodyParsedUnknown: unknown = proxyData.body ?? proxyData;
 
-  if (typeof upstreamBody === "string") {
+  if (typeof upstreamBodyParsedUnknown === "string") {
     try {
-      upstreamBody = JSON.parse(upstreamBody);
+      upstreamBodyParsedUnknown = JSON.parse(upstreamBodyParsedUnknown);
     } catch {
-      // leave as-is
+      const preview = String(upstreamBodyParsedUnknown).substring(0, 300);
+      log.warn("Upstream body is plain string, not JSON", { preview });
     }
   }
 
-  const rows = extractRows(upstreamBody);
-  return rows
-    .map(mapStore)
-    .filter((item) => item.tekion_id && item.dealer_id);
+  if (isRecord(upstreamBodyParsedUnknown)) {
+    log.info("Parsed Stores upstream body summary", {
+      bodyType: "object",
+      bodyKeys: Object.keys(upstreamBodyParsedUnknown),
+      count: upstreamBodyParsedUnknown.Count,
+      dataLength: Array.isArray(upstreamBodyParsedUnknown.data)
+        ? upstreamBodyParsedUnknown.data.length
+        : undefined,
+    });
+  } else if (Array.isArray(upstreamBodyParsedUnknown)) {
+    log.info("Parsed Stores upstream body summary", {
+      bodyType: "array",
+      bodyKeys: [],
+      count: undefined,
+      dataLength: upstreamBodyParsedUnknown.length,
+    });
+  } else {
+    log.info("Parsed Stores upstream body summary", {
+      bodyType: typeof upstreamBodyParsedUnknown,
+      bodyKeys: [],
+      count: undefined,
+      dataLength: undefined,
+    });
+  }
+
+  const rows = extractRows(upstreamBodyParsedUnknown);
+
+  log.info("Extracted raw store rows", {
+    rawRowCount: rows.length,
+  });
+
+  const mappedRows = rows.map(mapStore);
+
+  const invalidRows = mappedRows.filter(
+    (item) => !item.tekion_id || !item.dealer_id
+  );
+
+  const mapped = mappedRows.filter(
+    (item) => item.tekion_id && item.dealer_id
+  );
+
+  log.info("Mapped and filtered store rows", {
+    rawCount: rows.length,
+    mappedCount: mapped.length,
+    droppedCount: invalidRows.length,
+    droppedReasons: {
+      missingTekionId: invalidRows.filter((item) => !item.tekion_id).length,
+      missingDealerId: invalidRows.filter((item) => !item.dealer_id).length,
+    },
+    droppedSamples: invalidRows.slice(0, 5),
+    sample: mapped.slice(0, 5),
+  });
+
+  return mapped;
 }
