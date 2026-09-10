@@ -1,3 +1,4 @@
+///Users/tlreddy/Desktop/ARC_CONFIGURATION_V0/cors-proxy-ui/src/services/tekionApiSettings.ts
 import type { KeyValuePair } from "../types/proxy.types";
 
 export interface TekionApiSettings extends Record<string, string> {

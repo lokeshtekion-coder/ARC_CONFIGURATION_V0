@@ -26,6 +26,7 @@ import {
   ArcTekionProfile,
   ArcCustomCapturedApi,
 } from "../services/extensionBridge";
+import { useArcRules } from "../hooks/useArcRules";
 import { JwtDebugger } from "../components/JwtDebugger";
 import { GlobalHeadersPanel } from "../components/GlobalHeadersPanel";
 import { SelectableHeaderMap } from "../components/SelectableHeaderMap";
@@ -633,6 +634,116 @@ const CustomCaptureCard: React.FC<{
   );
 };
 
+const WatchRulesManager: React.FC = () => {
+  const { rules, addRule, removeRule } = useArcRules();
+  const [pattern, setPattern] = useState("");
+  const [label, setLabel] = useState("");
+  const [matchMode, setMatchMode] = useState<"includes" | "exact">("includes");
+  const [expiryHours, setExpiryHours] = useState(48);
+
+  const handleAdd = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pattern.trim()) return;
+
+    addRule({
+      pattern: pattern.trim(),
+      label: label.trim() || pattern.trim(),
+      matchMode,
+      expiryHours,
+    });
+
+    setPattern("");
+    setLabel("");
+    setExpiryHours(48);
+  };
+
+  return (
+    <div className="section-card" style={{ padding: 18 }}>
+      <div style={{ marginBottom: 14 }}>
+        <h3 style={{ margin: "0 0 6px 0", fontSize: 18 }}>Target API Watch Rules</h3>
+        <p style={{ margin: 0, color: "#94a3b8", fontSize: 13 }}>
+          Add patterns for the ARC extension to watch and automatically capture auth headers.
+        </p>
+      </div>
+
+      <form onSubmit={handleAdd} style={{ display: "grid", gap: 12, marginBottom: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <input
+            className="st-input"
+            placeholder="URL Pattern or path (e.g. /public/v1/dealers)"
+            value={pattern}
+            onChange={(e) => setPattern(e.target.value)}
+          />
+          <input
+            className="st-input"
+            placeholder="Label (e.g. Stores Dealer Profile)"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+          />
+        </div>
+
+        <div style={{ display: "flex", gap: 10 }}>
+          <select
+            className="st-input"
+            value={matchMode}
+            onChange={(e) => setMatchMode(e.target.value as "includes" | "exact")}
+            style={{ width: 160 }}
+          >
+            <option value="includes">Match: Contains</option>
+            <option value="exact">Match: Exact URL</option>
+          </select>
+
+          <input
+            className="st-input"
+            type="number"
+            min={1}
+            value={expiryHours}
+            onChange={(e) => setExpiryHours(Number(e.target.value))}
+            placeholder="Expiry (hours)"
+            style={{ width: 140 }}
+          />
+
+          <button type="submit" className="btn-postman" style={{ flex: 1 }}>
+            + Add Watch Rule
+          </button>
+        </div>
+      </form>
+
+      <div style={{ display: "grid", gap: 8 }}>
+        {rules.length === 0 ? (
+          <div style={{ color: "#64748b", fontSize: 13, fontStyle: "italic" }}>
+            No custom rules active. Added rules will immediately sync to the Chrome extension.
+          </div>
+        ) : (
+          rules.map((rule) => (
+            <div
+              key={rule.id}
+              className="compact-card"
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+            >
+              <div>
+                <div style={{ color: "#f8fafc", fontWeight: 700, fontSize: 14 }}>{rule.label}</div>
+                <div style={{ color: "#94a3b8", fontSize: 12, fontFamily: "monospace" }}>{rule.pattern}</div>
+                <div style={{ color: "#64748b", fontSize: 11, marginTop: 4 }}>
+                  Mode: {rule.matchMode} • Expiry: {rule.expiryHours}h
+                </div>
+              </div>
+              <button
+                type="button"
+                className="btn-cancel-bulk"
+                onClick={() => removeRule(rule.id)}
+                style={{ padding: "6px 12px", fontSize: 12 }}
+              >
+                Remove
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+};
+
 export const Settings: React.FC<Props> = ({ onBack }) => {
   const [activeTab, setActiveTab] = useState<TabKey>("tokens");
   const [tokens, setTokens] = useState<Record<TokenFieldKey, string>>(buildEmptyTokens());
@@ -1048,6 +1159,9 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
 
             {activeTab === "extension" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+
+                <WatchRulesManager />
+
                 <div className="section-card" style={{ padding: 18 }}>
                   <div style={{ marginBottom: 14 }}>
                     <h3 style={{ margin: "0 0 6px 0", fontSize: 18 }}>Custom API Captures</h3>

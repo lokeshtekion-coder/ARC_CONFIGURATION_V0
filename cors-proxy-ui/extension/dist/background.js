@@ -489,11 +489,6 @@ function mergeCustomCapture(current, rule, url, normalizedHeaders) {
         matchedUrl: url,
         rawHeaderKeys: Object.keys(normalizedHeaders).sort(),
         filteredHeaderKeys: Object.keys(filteredHeaders).sort(),
-        hasOrigin: Boolean(filteredHeaders["origin"]),
-        hasReferer: Boolean(filteredHeaders["referer"]),
-        hasUserAgent: Boolean(filteredHeaders["user-agent"]),
-        hasAcceptLanguage: Boolean(filteredHeaders["accept-language"]),
-        hasTapDuoToken: Boolean(filteredHeaders["tap-duo-api-token"]),
     });
     return {
         ...current,
@@ -544,8 +539,6 @@ async function handleBeforeSendHeaders(details) {
             console.log("[ARC BG] matched custom rule", {
                 ruleId: customRule.id,
                 label: customRule.label,
-                pattern: customRule.pattern,
-                matchMode: customRule.matchMode,
                 url: details.url,
             });
             next = mergeCustomCapture(current, customRule, details.url, normalizedHeaders);
@@ -584,8 +577,21 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message?.type === "ARC_GET_LATEST_CAPTURE") {
         void cleanupExpiredCustomCapturesAndSync().then(async () => {
             const state = await loadStoredState();
-            console.log("[ARC BG] latest capture requested", state);
             sendResponse({ payload: state });
+        });
+        return true; // Keep channel open for async response
+    }
+    if (message?.type === "ARC_GET_CUSTOM_RULES") {
+        chrome.storage.local.get([CUSTOM_RULES_STORAGE_KEY], (result) => {
+            const rules = normalizeRuleList(result[CUSTOM_RULES_STORAGE_KEY]);
+            sendResponse({ payload: rules });
+        });
+        return true;
+    }
+    if (message?.type === "ARC_SAVE_CUSTOM_RULES") {
+        const rules = normalizeRuleList(message.payload);
+        chrome.storage.local.set({ [CUSTOM_RULES_STORAGE_KEY]: rules }, () => {
+            sendResponse({ success: true });
         });
         return true;
     }

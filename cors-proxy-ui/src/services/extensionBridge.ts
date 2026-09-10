@@ -1,7 +1,11 @@
 import { saveTekionApiSettings } from "./tekionApiSettings";
 
-const PAGE_SYNC_EVENT = "ARC_EXTENSION_SYNC_CAPTURE";
-const PAGE_REQUEST_EVENT = "ARC_EXTENSION_BRIDGE_REQUEST_LATEST";
+export const PAGE_SYNC_EVENT = "ARC_EXTENSION_SYNC_CAPTURE";
+export const PAGE_SYNC_RULES_EVENT = "ARC_EXTENSION_SYNC_RULES";
+export const PAGE_REQUEST_EVENT = "ARC_EXTENSION_BRIDGE_REQUEST_LATEST";
+export const PAGE_GET_RULES_EVENT = "ARC_EXTENSION_BRIDGE_GET_RULES";
+export const PAGE_SAVE_RULES_EVENT = "ARC_EXTENSION_BRIDGE_SAVE_RULES";
+
 const DEFAULT_CUSTOM_EXPIRY_HOURS = 48;
 const LOCAL_CAPTURE_STORAGE_KEY = "arc-extension-latest-capture";
 
@@ -40,6 +44,15 @@ export interface ArcTekionProfile {
     isExpired?: boolean;
   };
   bootstrapHeaders?: Record<string, string>;
+}
+
+export interface ArcCustomWatchRule {
+  id: string;
+  label: string;
+  pattern: string;
+  matchMode: "includes" | "exact";
+  expiryHours: number;
+  createdAt: string;
 }
 
 export interface ArcCustomCapturedApi {
@@ -436,6 +449,29 @@ export function subscribeToExtensionCapture(
 
     const result = syncExtensionCaptureToSettings(capture);
     onSync(result);
+  };
+
+  window.addEventListener("message", handler);
+  return () => window.removeEventListener("message", handler);
+}
+
+export function requestCustomRulesFromExtension(): void {
+  window.postMessage({ type: PAGE_GET_RULES_EVENT }, window.location.origin);
+}
+
+export function saveCustomRulesToExtension(rules: ArcCustomWatchRule[]): void {
+  window.postMessage({ type: PAGE_SAVE_RULES_EVENT, payload: rules }, window.location.origin);
+}
+
+export function subscribeToExtensionRules(
+  onSync: (rules: ArcCustomWatchRule[]) => void
+): () => void {
+  const handler = (event: MessageEvent) => {
+    if (event.source !== window || event.origin !== window.location.origin) return;
+    if (event.data?.type !== PAGE_SYNC_RULES_EVENT) return;
+
+    const rules = Array.isArray(event.data.payload) ? event.data.payload : [];
+    onSync(rules);
   };
 
   window.addEventListener("message", handler);

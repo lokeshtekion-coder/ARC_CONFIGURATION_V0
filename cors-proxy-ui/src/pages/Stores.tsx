@@ -1,3 +1,4 @@
+///Users/tlreddy/Desktop/ARC_CONFIGURATION_V0/cors-proxy-ui/src/pages/Stores.tsx
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   fetchStores,

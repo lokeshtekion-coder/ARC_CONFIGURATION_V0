@@ -17,7 +17,8 @@ import { ManufacturerView } from "./views/ManufacturerView";
 import { DealerConfigView } from "./views/DealerConfigView";
 import { PartsSettingsView } from "./views/PartsSettingsView";
 import { UserResetView } from "./views/User Setup";
-import { RaiseOemIdRequestView } from "./views/RaiseOemIdRequestView";
+import { RaiseOemIdRequestView } from "./views/OEM ID/RaiseOemIdRequestView";
+
 
 interface Props {
   onBack: () => void;

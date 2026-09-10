@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────
 //  tekionAuth.ts  —  Tekion token  (localStorage persistence)
 // ─────────────────────────────────────────────────────────────
-
+///Users/tlreddy/Desktop/ARC_CONFIGURATION_V0/cors-proxy-ui/src/services/tekionAuth.ts
 export interface TekionToken {
   token:     string;
   expiresAt: string;

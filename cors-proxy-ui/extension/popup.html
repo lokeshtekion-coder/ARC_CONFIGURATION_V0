@@ -1,119 +1,105 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ARC Helper</title>
-    <link rel="stylesheet" href="./popup.css" />
-  </head>
-  <body>
-    <div class="app-shell">
-      <div class="bg-orb orb-1"></div>
-      <div class="bg-orb orb-2"></div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ARC Helper</title>
+  <link rel="stylesheet" href="./popup.css" />
+</head>
+<body>
+<div class="app-shell">
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
 
-      <header class="hero">
-        <div class="brand-row">
-          <div class="brand-badge">A</div>
-          <div>
-            <h1>ARC Helper</h1>
-            <p class="subtitle">Chrome Extension Status</p>
-          </div>
-        </div>
-        <div class="version-chip" id="versionChip">v--</div>
-      </header>
-
-      <main class="content">
-        <section class="card status-card">
-          <div class="card-header">
-            <span class="card-title">Connection Status</span>
-            <span class="pulse" id="pulseDot"></span>
-          </div>
-
-          <div class="status-grid">
-            <div class="status-item">
-              <div class="label">Extension</div>
-              <div class="value ok" id="extensionStatus">Loaded</div>
-            </div>
-
-            <div class="status-item">
-              <div class="label">ARC App</div>
-              <div class="value" id="appStatus">Checking...</div>
-            </div>
-
-            <div class="status-item full">
-              <div class="label">Detected URL</div>
-              <div class="value mono small" id="detectedUrl">—</div>
-            </div>
-
-            <div class="status-item full">
-              <div class="label">Last Checked</div>
-              <div class="value small" id="lastChecked">—</div>
-            </div>
-          </div>
-        </section>
-
-        <section class="card info-card">
-          <div class="card-header">
-            <span class="card-title">Watch Custom API</span>
-          </div>
-
-          <div style="display: grid; gap: 10px;">
-            <input
-              id="customUrlInput"
-              type="text"
-              placeholder="Enter full URL or partial endpoint path"
-              class="popup-input"
-            />
-
-            <div style="display: grid; grid-template-columns: 1fr 120px; gap: 8px;">
-              <select id="customMatchMode" class="popup-input">
-                <option value="includes">Match: Contains</option>
-                <option value="exact">Match: Exact URL</option>
-              </select>
-
-              <input
-                id="customExpiryInput"
-                type="number"
-                min="1"
-                step="1"
-                value="48"
-                placeholder="Expiry hours"
-                class="popup-input"
-              />
-            </div>
-
-            <input
-              id="customLabelInput"
-              type="text"
-              placeholder="Optional label, e.g. Approval Tenants API"
-              class="popup-input"
-            />
-
-            <button class="btn btn-primary" id="addUrlBtn">Add Watched API</button>
-
-            <div>
-              <div class="label" style="margin-bottom: 8px;">Watched APIs</div>
-              <div id="watchedUrlsList" style="display: grid; gap: 8px;"></div>
-            </div>
-          </div>
-        </section>
-
-        <section class="card info-card">
-          <div class="card-header">
-            <span class="card-title">About</span>
-          </div>
-          <p class="info-text">
-            This popup shows whether your local ARC app is open and whether the extension is active.
-          </p>
-        </section>
-
-        <div class="actions">
-          <button class="btn btn-primary" id="openAppBtn">Open ARC App</button>
-          <button class="btn btn-secondary" id="refreshBtn">Refresh Status</button>
-        </div>
-      </main>
+  <header class="hero">
+    <div class="brand-row">
+      <!-- Custom Vector Arc Logo -->
+      <div class="brand-badge">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-svg">
+          <path d="M6 24C6 14.0589 14.0589 6 24 6" stroke="url(#arc-grad-1)" stroke-width="3.5" stroke-linecap="round"/>
+          <path d="M11 25C11 17.268 17.268 11 25 11" stroke="url(#arc-grad-2)" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="3 3"/>
+          <circle cx="24" cy="6" r="2.5" fill="#60a5fa" />
+          <circle cx="25" cy="11" r="2" fill="#a78bfa" />
+          <defs>
+            <linearGradient id="arc-grad-1" x1="6" y1="24" x2="24" y2="6" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#3b82f6"/>
+              <stop offset="1" stop-color="#60a5fa"/>
+            </linearGradient>
+            <linearGradient id="arc-grad-2" x1="11" y1="25" x2="25" y2="11" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#8b5cf6"/>
+              <stop offset="1" stop-color="#c084fc"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
+      <div>
+        <h1>ARC Helper</h1>
+        <p class="subtitle">Proxy & Token Gateway</p>
+      </div>
     </div>
+    <div class="version-chip" id="versionChip">v--</div>
+  </header>
 
-    <script type="module" src="./dist/popup.js"></script>
-  </body>
+  <main class="content">
+    <!-- Collapsible Connection Status -->
+    <section class="card status-card">
+      <details id="statusDetails" open>
+        <summary class="summary-header">
+          <div class="summary-left">
+            <span class="pulse" id="pulseDot"></span>
+            <span class="summary-title" id="summaryTitle">Checking...</span>
+          </div>
+          <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+          </svg>
+        </summary>
+
+        <div class="status-grid">
+          <div class="status-item">
+            <div class="label">Extension</div>
+            <div class="value ok" id="extensionStatus">Active</div>
+          </div>
+
+          <div class="status-item">
+            <div class="label">ARC App</div>
+            <div class="value" id="appStatus">Checking...</div>
+          </div>
+
+          <div class="status-item full">
+            <div class="label">Detected Target</div>
+            <div class="value mono small" id="detectedUrl">—</div>
+          </div>
+
+          <div class="status-item full">
+            <div class="label">Last Verified</div>
+            <div class="value small" id="lastChecked">—</div>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- Managed Watch Rules Summary -->
+    <section class="card rules-card">
+      <div class="rules-header">
+        <div class="rules-title-group">
+          <span class="card-title">Watched Endpoints</span>
+          <span class="rules-count-badge" id="rulesCountBadge">0 active</span>
+        </div>
+        <span class="remote-badge">Managed by Web App</span>
+      </div>
+      <p class="info-text">
+        Custom endpoint watching is managed via the ARC web application.
+      </p>
+      <div id="quickRulesList" class="quick-rules-list"></div>
+    </section>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="openAppBtn">Launch ARC Web</button>
+      <button class="btn btn-secondary" id="refreshBtn">Re-check</button>
+    </div>
+  </main>
+</div>
+
+<script type="module" src="./dist/popup.js"></script>
+</body>
 </html>

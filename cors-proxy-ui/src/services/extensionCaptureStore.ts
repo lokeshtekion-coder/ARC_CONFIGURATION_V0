@@ -1,3 +1,4 @@
+///Users/tlreddy/Desktop/ARC_CONFIGURATION_V0/cors-proxy-ui/src/services/extensionCaptureStore.ts
 export interface HeaderMap {
   [key: string]: string;
 }

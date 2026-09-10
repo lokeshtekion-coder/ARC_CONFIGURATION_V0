@@ -1,3 +1,4 @@
+///Users/tlreddy/Desktop/ARC_CONFIGURATION_V0/cors-proxy-ui/extension/src/types.ts
 export interface HeaderMap {
   [key: string]: string;
 }
