@@ -32,7 +32,7 @@
 #root {
   height:   100vh;
   overflow: hidden;
-  
+
 }
 
 /* ─── Home Shell Fix ─────────────────────────────────────────── */
@@ -2555,4 +2555,512 @@ body {
 .stores-copy-btn-left {
   display: block;
   width: 100%;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL TOP NAVIGATION — persistent across every view
+   Append this block to app.css (uses the existing --bg / --surface /
+   --border / --accent / --text tokens already defined there).
+═══════════════════════════════════════════════════════════════ */
+
+.app-shell {
+  display:        flex;
+  flex-direction: column;
+  height:         100vh;
+  overflow:       hidden;
+  background:     var(--bg);
+}
+
+.app-shell-content {
+  flex:      1;
+  overflow:  hidden;
+  min-height: 0;
+}
+
+.gtn-bar {
+  display:         flex;
+  align-items:     center;
+  gap:             28px;
+  height:          52px;
+  flex-shrink:     0;
+  padding:         0 20px;
+  background:      var(--surface);
+  border-bottom:   1px solid var(--border);
+}
+
+.gtn-logo {
+  display:       flex;
+  align-items:   center;
+  gap:           8px;
+  background:    none;
+  border:        none;
+  cursor:        pointer;
+  color:         var(--text);
+  padding:       6px 4px;
+}
+
+.gtn-logo-icon {
+  font-size: 17px;
+  color:     var(--accent);
+}
+
+.gtn-logo-text {
+  font-size:      14px;
+  font-weight:    700;
+  letter-spacing: -.2px;
+}
+
+.gtn-links {
+  display:     flex;
+  align-items: center;
+  gap:         2px;
+  flex:        1;
+  overflow-x:  auto;
+}
+
+.gtn-link {
+  display:       flex;
+  align-items:   center;
+  gap:           6px;
+  background:    none;
+  border:        none;
+  border-radius: 8px;
+  color:         var(--text-muted);
+  font-size:     13px;
+  font-weight:   500;
+  padding:       8px 12px;
+  cursor:        pointer;
+  white-space:   nowrap;
+  transition:    background .15s, color .15s;
+}
+
+.gtn-link:hover {
+  background: var(--surface2);
+  color:      var(--text);
+}
+
+.gtn-link-active {
+  background: rgba(10, 132, 255, 0.15);
+  color:      var(--accent) !important;
+  font-weight: 600;
+}
+
+.gtn-link-icon {
+  font-size: 13px;
+}
+
+.gtn-settings {
+  flex-shrink:   0;
+  background:    none;
+  border:        1px solid var(--border);
+  border-radius: 8px;
+  padding:       7px 10px;
+  cursor:        pointer;
+  font-size:     14px;
+  color:         var(--text-muted);
+  transition:    border-color .15s, color .15s;
+}
+
+.gtn-settings:hover {
+  border-color: var(--accent);
+  color:        var(--accent);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Home no longer renders its own sidebar (GlobalTopNav replaced
+   it), so its root just needs to fill the remaining height —
+   the old `.home-shell` flex-row wrapper is no longer used.
+───────────────────────────────────────────────────────────── */
+
+.home-main--full {
+  width:  100%;
+  height: 100%;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   GLOBAL TOP NAVIGATION — persistent across every view
+   Append this block to app.css (uses the existing --bg / --surface /
+   --border / --accent / --text tokens already defined there).
+═══════════════════════════════════════════════════════════════ */
+
+.app-shell {
+  display:        flex;
+  flex-direction: column;
+  height:         100vh;
+  overflow:       hidden;
+  background:     var(--bg);
+}
+
+.app-shell-content {
+  flex:      1;
+  overflow:  hidden;
+  min-height: 0;
+}
+
+.gtn-bar {
+  display:         flex;
+  align-items:     center;
+  gap:             28px;
+  height:          52px;
+  flex-shrink:     0;
+  padding:         0 20px;
+  background:      var(--surface);
+  border-bottom:   1px solid var(--border);
+}
+
+.gtn-logo {
+  display:       flex;
+  align-items:   center;
+  gap:           8px;
+  background:    none;
+  border:        none;
+  cursor:        pointer;
+  color:         var(--text);
+  padding:       6px 4px;
+}
+
+.gtn-logo-icon {
+  font-size: 17px;
+  color:     var(--accent);
+}
+
+.gtn-logo-text {
+  font-size:      14px;
+  font-weight:    700;
+  letter-spacing: -.2px;
+}
+
+.gtn-links {
+  display:     flex;
+  align-items: center;
+  gap:         2px;
+  flex:        1;
+  overflow-x:  auto;
+}
+
+.gtn-link {
+  display:       flex;
+  align-items:   center;
+  gap:           6px;
+  background:    none;
+  border:        none;
+  border-radius: 8px;
+  color:         var(--text-muted);
+  font-size:     13px;
+  font-weight:   500;
+  padding:       8px 12px;
+  cursor:        pointer;
+  white-space:   nowrap;
+  transition:    background .15s, color .15s;
+}
+
+.gtn-link:hover {
+  background: var(--surface2);
+  color:      var(--text);
+}
+
+.gtn-link-active {
+  background: rgba(10, 132, 255, 0.15);
+  color:      var(--accent) !important;
+  font-weight: 600;
+}
+
+.gtn-link-icon {
+  font-size: 13px;
+}
+
+.gtn-settings {
+  flex-shrink:   0;
+  background:    none;
+  border:        1px solid var(--border);
+  border-radius: 8px;
+  padding:       7px 10px;
+  cursor:        pointer;
+  font-size:     14px;
+  color:         var(--text-muted);
+  transition:    border-color .15s, color .15s;
+}
+
+.gtn-settings:hover {
+  border-color: var(--accent);
+  color:        var(--accent);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Home no longer renders its own sidebar (GlobalTopNav replaced
+   it), so its root just needs to fill the remaining height —
+   the old `.home-shell` flex-row wrapper is no longer used.
+───────────────────────────────────────────────────────────── */
+
+.home-main--full {
+  width:  100%;
+  height: 100%;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Breathing room at the end of scroll for every routed page.
+   Most pages (Parts, Service, Accounting, etc.) render their
+   own internal `overflow-y: auto` container that stops right at
+   the last row, so the final item sits flush against the
+   viewport edge with no bottom margin. This adds trailing pad to
+   any such container without having to touch each page file.
+   Covers the *-content / *-body / *-panel naming pattern already
+   used across BlueprintDecoder, BootstrapExtractor, Stores, etc.
+───────────────────────────────────────────────────────────── */
+
+.app-shell-content [class*="-content"],
+.app-shell-content [class*="-body"],
+.app-shell-content [class*="-output-panel"] {
+  padding-bottom: 32px !important;
+  box-sizing: border-box;
+}
+/* =========================================================
+   HOME PAGE ONLY — isolated styles
+   Keeps all other pages unchanged
+========================================================= */
+
+.arc-home-page {
+  height: 100%;
+  overflow-y: auto;
+  background:
+    radial-gradient(circle at top right, rgba(59, 130, 246, 0.08), transparent 22%),
+    radial-gradient(circle at top left, rgba(139, 92, 246, 0.07), transparent 18%);
+}
+
+.arc-home-wrap {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 28px 24px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.arc-home-hero-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 28px;
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.18);
+}
+
+.arc-home-hero-copy {
+  max-width: 780px;
+}
+
+.arc-home-kicker {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #bfdbfe;
+  background: rgba(59, 130, 246, 0.12);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  margin-bottom: 14px;
+}
+
+.arc-home-title {
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.arc-home-subtitle {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--text-muted);
+}
+
+.arc-home-hero-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.arc-home-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.arc-home-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.arc-home-section-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.arc-home-section-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.arc-home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+  gap: 16px;
+}
+
+.arc-home-grid-compact {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.arc-home-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 180px;
+  padding: 18px;
+  border-radius: 18px;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+  border: 1px solid rgba(255,255,255,0.08);
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.arc-home-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255,255,255,0.14);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+  box-shadow: 0 18px 42px rgba(0,0,0,0.22);
+}
+
+.arc-home-card-compact {
+  min-height: 160px;
+}
+
+.arc-home-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.arc-home-card-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.arc-home-card-arrow {
+  font-size: 18px;
+  color: var(--text-muted);
+}
+
+.arc-home-card-title {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.arc-home-card-subtitle {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+  .arc-home-wrap {
+    padding: 20px 16px 30px;
+  }
+
+  .arc-home-hero-panel {
+    padding: 22px;
+  }
+}
+
+
+/* Home card size tightening */
+.arc-home-grid-small {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.arc-home-card-small {
+  min-height: 112px;
+  padding: 14px;
+  gap: 10px;
+  border-radius: 14px;
+}
+
+.arc-home-card-small .arc-home-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 18px;
+}
+
+.arc-home-card-small .arc-home-card-title {
+  font-size: 15px;
+}
+
+.arc-home-card-small .arc-home-card-arrow {
+  font-size: 16px;
+}
+
+.arc-home-card-compact {
+  min-height: 104px;
+}
+
+.arc-home-hero-panel {
+  padding: 22px;
+}
+
+.arc-home-title {
+  margin-bottom: 0;
+}
+
+.arc-home-wrap {
+  gap: 22px;
+}
+
+@media (max-width: 900px) {
+  .arc-home-grid-small {
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  }
+
+  .arc-home-card-small {
+    min-height: 96px;
+    padding: 12px;
+  }
 }

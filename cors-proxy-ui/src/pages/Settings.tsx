@@ -32,23 +32,23 @@ import { GlobalHeadersPanel } from "../components/GlobalHeadersPanel";
 import { SelectableHeaderMap } from "../components/SelectableHeaderMap";
 import type { KeyValuePair } from "../types/proxy.types";
 
-const logger = {
-  debug: (...args: unknown[]) => console.debug("[Settings]", ...args),
-  info: (...args: unknown[]) => console.info("[Settings]", ...args),
-  warn: (...args: unknown[]) => console.warn("[Settings]", ...args),
-  error: (...args: unknown[]) => console.error("[Settings]", ...args),
-};
-
 const MAX_PROFILE_AGE_MS = 48 * 60 * 60 * 1000;
 
 interface Props {
   onBack: () => void;
 }
 
-type TabKey = "tokens" | "profiles" | "headers" | "extension";
+type TabKey = "tokens" | "profiles" | "headers" | "extension" | "slack";
 type TokenAuthType = "header" | "bearer";
 type MessageType = "success" | "warning" | "error";
 type TokenFieldKey = "tapDuoApiToken" | "graphApiToken";
+
+interface ExtendedArcCaptureState extends ArcLatestCaptureState {
+  slackToken?: string;
+  slackDCookie?: string;
+  lastSlackSourceUrl?: string;
+  lastSlackCaptureAt?: string;
+}
 
 interface UiMessage {
   type: MessageType;
@@ -120,7 +120,7 @@ const TOKEN_FIELDS: TokenFieldConfig[] = [
     key: "graphApiToken",
     icon: "☁️",
     title: "Microsoft Graph API Token",
-    label: "GRAPH api token",
+    label: "GRAPH API Token",
     placeholder: "Paste Microsoft Graph bearer token here",
     rows: 8,
     authType: "bearer",
@@ -635,7 +635,7 @@ const CustomCaptureCard: React.FC<{
 };
 
 const WatchRulesManager: React.FC = () => {
-  const { rules, addRule, removeRule } = useArcRules();
+  const { rules, isExtensionConnected, addRule, removeRule } = useArcRules();
   const [pattern, setPattern] = useState("");
   const [label, setLabel] = useState("");
   const [matchMode, setMatchMode] = useState<"includes" | "exact">("includes");
@@ -659,18 +659,32 @@ const WatchRulesManager: React.FC = () => {
 
   return (
     <div className="section-card" style={{ padding: 18 }}>
-      <div style={{ marginBottom: 14 }}>
-        <h3 style={{ margin: "0 0 6px 0", fontSize: 18 }}>Target API Watch Rules</h3>
-        <p style={{ margin: 0, color: "#94a3b8", fontSize: 13 }}>
-          Add patterns for the ARC extension to watch and automatically capture auth headers.
-        </p>
+      <div style={{ marginBottom: 14, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+        <div>
+          <h3 style={{ margin: "0 0 6px 0", fontSize: 18 }}>Target API Watch Rules</h3>
+          <p style={{ margin: 0, color: "#94a3b8", fontSize: 13 }}>
+            Add patterns for the ARC extension to watch and automatically capture auth headers.
+          </p>
+        </div>
+        <span
+          className="ui-pill"
+          style={{
+            background: isExtensionConnected ? "rgba(34, 197, 94, 0.15)" : "rgba(245, 158, 11, 0.15)",
+            border: `1px solid ${isExtensionConnected ? "rgba(34, 197, 94, 0.3)" : "rgba(245, 158, 11, 0.3)"}`,
+            color: isExtensionConnected ? "#86efac" : "#fde68a",
+            fontWeight: 700,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {isExtensionConnected ? "● Extension Connected" : "◐ Waiting For Extension"}
+        </span>
       </div>
 
       <form onSubmit={handleAdd} style={{ display: "grid", gap: 12, marginBottom: 20 }}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <input
             className="st-input"
-            placeholder="URL Pattern or path (e.g. /public/v1/dealers)"
+            placeholder="URL pattern or path (e.g. /public/v1/dealers)"
             value={pattern}
             onChange={(e) => setPattern(e.target.value)}
           />
@@ -750,10 +764,13 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
   const [savedAtByKey, setSavedAtByKey] = useState<Record<string, string>>({});
   const [hiddenByKey, setHiddenByKey] = useState<Record<TokenFieldKey, boolean>>(buildHiddenMap());
   const [message, setMessage] = useState<UiMessage | null>(null);
-  const [latestCapture, setLatestCapture] = useState<ArcLatestCaptureState | null>(null);
+  const [latestCapture, setLatestCapture] = useState<ExtendedArcCaptureState | null>(null);
   const [globalHeaders, setGlobalHeaders] = useState<KeyValuePair[]>([]);
   const [storesCustomCaptureId, setStoresCustomCaptureId] = useState("");
   const [storesApiCaptureId, setStoresApiCaptureId] = useState("");
+
+  const [hideSlackToken, setHideSlackToken] = useState(true);
+  const [hideSlackCookie, setHideSlackCookie] = useState(true);
 
   const [savedTokensSnapshot, setSavedTokensSnapshot] = useState<Record<TokenFieldKey, string>>(buildEmptyTokens());
   const [savedGlobalHeadersSnapshot, setSavedGlobalHeadersSnapshot] = useState<KeyValuePair[]>([]);
@@ -829,7 +846,7 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
           graphApiToken: bundle.values.graphApiToken ?? "",
         };
         const nextGlobalHeaders = bundle.globalHeaders;
-        const nextCapture = loadLatestExtensionCapture();
+        const nextCapture = loadLatestExtensionCapture() as ExtendedArcCaptureState;
 
         setSavedAtByKey(bundle.savedAtByKey);
         setLatestCapture(nextCapture);
@@ -984,14 +1001,6 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
     setGlobalHeaders(pairs);
   }, []);
 
-  const handleClearGlobalHeaders = useCallback(() => {
-    clearGlobalHeaders();
-    setGlobalHeaders([]);
-    setSelectedDealerProfileId(null);
-    clearSelectedDealerProfileId();
-    showMessage("success", "Global headers cleared");
-  }, [showMessage]);
-
   const applySelectedHeadersToGlobal = useCallback(
     (pairs: KeyValuePair[], sourceLabel: string) => {
       setGlobalHeaders(pairs);
@@ -1020,6 +1029,40 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
       </button>
     );
   };
+
+  const slackToken = latestCapture?.slackToken ?? "";
+  const slackDCookie = latestCapture?.slackDCookie ?? "";
+  const lastSlackCaptureAt = latestCapture?.lastSlackCaptureAt;
+  const lastSlackSourceUrl = latestCapture?.lastSlackSourceUrl;
+  const hasSlackToken = Boolean(slackToken);
+  const hasSlackCookie = Boolean(slackDCookie);
+  const isSlackActive = hasSlackToken && hasSlackCookie;
+  const isSlackPartial = !isSlackActive && (hasSlackToken || hasSlackCookie);
+
+  const copySlackCurlTemplate = useCallback(
+    (endpoint: "conversations.open" | "chat.postMessage") => {
+      const curlSnippet =
+        endpoint === "conversations.open"
+          ? `curl --url 'https://tekion.enterprise.slack.com/api/conversations.open' \\
+  -H 'accept: */*' \\
+  -b 'd=${encodeURIComponent(slackDCookie)}' \\
+  -F 'token=${slackToken}' \\
+  -F 'users=U0694AQFMGQ' \\
+  -F '_x_sonic=true' \\
+  -F '_x_app_name=client'`
+          : `curl --url 'https://tekion.enterprise.slack.com/api/chat.postMessage' \\
+  -H 'accept: */*' \\
+  -b 'd=${encodeURIComponent(slackDCookie)}' \\
+  -F 'token=${slackToken}' \\
+  -F 'channel=D0694BGT61W' \\
+  -F 'text=Hello from ARC integration' \\
+  -F '_x_sonic=true' \\
+  -F '_x_app_name=client'`;
+
+      handleCopy(curlSnippet, `curl (${endpoint})`);
+    },
+    [slackDCookie, slackToken, handleCopy]
+  );
 
   return (
     <div className="settings-layout">
@@ -1058,6 +1101,7 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
         </div>
 
         {renderSidebarButton("tokens", "🔐 API Tokens", tokensAreDirty)}
+        {renderSidebarButton("slack", "💬 Slack Session")}
         {renderSidebarButton("profiles", "🏬 Dealer Profiles")}
         {renderSidebarButton("headers", "📮 Global Headers", headersAreDirty)}
         {renderSidebarButton("extension", "🔄 Extension Data")}
@@ -1104,6 +1148,7 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
               </div>
             )}
 
+            {/* TAB: TOKENS */}
             {activeTab === "tokens" && (
               <section>
                 <div style={{ marginBottom: 20 }}>
@@ -1131,8 +1176,182 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
               </section>
             )}
 
+            {/* TAB: SLACK SESSION */}
+            {activeTab === "slack" && (
+              <section className="section-card">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14, flexWrap: "wrap", marginBottom: 18 }}>
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <h2 style={{ fontSize: 22, margin: 0 }}>Tekion Slack Workspace Session</h2>
+                      <span
+                        className="ui-pill"
+                        style={{
+                          background: isSlackActive
+                            ? "rgba(34, 197, 94, 0.15)"
+                            : isSlackPartial
+                            ? "rgba(245, 158, 11, 0.15)"
+                            : "rgba(239, 68, 68, 0.15)",
+                          border: `1px solid ${
+                            isSlackActive
+                              ? "rgba(34, 197, 94, 0.3)"
+                              : isSlackPartial
+                              ? "rgba(245, 158, 11, 0.3)"
+                              : "rgba(239, 68, 68, 0.3)"
+                          }`,
+                          color: isSlackActive ? "#86efac" : isSlackPartial ? "#fde68a" : "#fca5a5",
+
+                          fontWeight: 700,
+                        }}
+                      >
+                        {isSlackActive ? "● Active & Synced" : isSlackPartial ? "◐ Partially Detected" : "○ Not Detected"}
+                      </span>
+                    </div>
+                    <p style={{ color: "#94a3b8", margin: "6px 0 0", fontSize: 13 }}>
+                      Credentials are automatically intercepted by the ARC Helper background script whenever Slack reloads or calls an API.
+                    </p>
+                  </div>
+
+                  <button
+                    className="btn-secondary btn-sm"
+                    type="button"
+                    onClick={() => requestLatestCaptureFromExtension()}
+                  >
+                    🔄 Re-Sync From Extension
+                  </button>
+                </div>
+
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 20 }}>
+                  <span className="ui-pill">
+                    <span style={{ color: "#94a3b8" }}>Last Captured</span>
+                    <span style={{ color: "#e2e8f0", fontWeight: 600 }}>{formatSavedAt(lastSlackCaptureAt)}</span>
+                  </span>
+                  {lastSlackSourceUrl && (
+                    <span className="ui-pill">
+                      <span style={{ color: "#94a3b8" }}>Source</span>
+                      <code className="st-req-url">{lastSlackSourceUrl}</code>
+                    </span>
+                  )}
+                </div>
+
+                <div style={{ display: "grid", gap: 18 }}>
+                  {/* Slack Token (xoxc) */}
+                  <div className="compact-card" style={{ display: "grid", gap: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ fontWeight: 700, color: "#f8fafc", fontSize: 14 }}>
+                        Slack Client Token (<code>token</code> / <code>xoxc-...</code>)
+                      </div>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          className="btn-secondary btn-sm"
+                          type="button"
+                          onClick={() => setHideSlackToken((prev) => !prev)}
+                        >
+                          {hideSlackToken ? "👁 Show" : "🙈 Hide"}
+                        </button>
+                        <button
+                          className="btn-secondary btn-sm"
+                          type="button"
+                          onClick={() => handleCopy(slackToken, "Slack Token")}
+                          disabled={!slackToken}
+                        >
+                          📋 Copy Token
+                        </button>
+                      </div>
+                    </div>
+                    <SecretTextArea
+                      value={slackToken}
+                      hidden={hideSlackToken}
+                      rows={3}
+                      placeholder="No Slack xoxc token detected yet. Open or reload your Slack tab."
+                      onChange={() => {}}
+                    />
+                  </div>
+
+                  {/* Slack d Cookie */}
+                  <div className="compact-card" style={{ display: "grid", gap: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div style={{ fontWeight: 700, color: "#f8fafc", fontSize: 14 }}>
+                        Slack Session Cookie (<code>Cookie: d=...</code> / <code>xoxd-...</code>)
+                      </div>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          className="btn-secondary btn-sm"
+                          type="button"
+                          onClick={() => setHideSlackCookie((prev) => !prev)}
+                        >
+                          {hideSlackCookie ? "👁 Show" : "🙈 Hide"}
+                        </button>
+                        <button
+                          className="btn-secondary btn-sm"
+                          type="button"
+                          onClick={() => handleCopy(slackDCookie, "Slack 'd' Cookie Value")}
+                          disabled={!slackDCookie}
+                        >
+                          📋 Copy Value
+                        </button>
+                        <button
+                          className="btn-secondary btn-sm"
+                          type="button"
+                          onClick={() => handleCopy(`Cookie: d=${encodeURIComponent(slackDCookie)}`, "Full Cookie Header")}
+                          disabled={!slackDCookie}
+                        >
+                          📋 Copy Header
+                        </button>
+                      </div>
+                    </div>
+                    <SecretTextArea
+                      value={slackDCookie}
+                      hidden={hideSlackCookie}
+                      rows={3}
+                      placeholder="No Slack 'd' cookie detected yet. Open or reload your Slack tab."
+                      onChange={() => {}}
+                    />
+                  </div>
+
+                  {/* Quick Code & curl Templates */}
+                  <div className="compact-card" style={{ display: "grid", gap: 10 }}>
+                    <div style={{ fontWeight: 700, color: "#f8fafc", fontSize: 14 }}>
+                      Quick Automation Templates (1-Click Copy)
+                    </div>
+                    <p style={{ margin: 0, color: "#94a3b8", fontSize: 12 }}>
+                      Templates pre-populate with the captured session credentials for instant terminal testing:
+                    </p>
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 4 }}>
+                      <button
+                        className="btn-secondary btn-sm"
+                        type="button"
+                        onClick={() => copySlackCurlTemplate("conversations.open")}
+                        disabled={!isSlackActive}
+                      >
+                        📋 Copy curl: conversations.open (Get DM Channel)
+                      </button>
+                      <button
+                        className="btn-secondary btn-sm"
+                        type="button"
+                        onClick={() => copySlackCurlTemplate("chat.postMessage")}
+                        disabled={!isSlackActive}
+                      >
+                        📋 Copy curl: chat.postMessage (Send DM)
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            )}
+
+            {/* TAB: DEALER PROFILES */}
             {activeTab === "profiles" && (
               <section className="section-card">
+                <div style={{ marginBottom: 16 }}>
+                  <input
+                    className="st-input"
+                    type="text"
+                    placeholder="Search dealer ID, tenant name, or site ID..."
+                    value={dealerSearchQuery}
+                    onChange={(e) => setDealerSearchQuery(e.target.value)}
+                    style={{ width: "100%" }}
+                  />
+                </div>
                 <div style={{ display: "grid", gap: 16 }}>
                   {filteredProfiles.map((profile) => (
                     <DealerProfileCard
@@ -1142,10 +1361,16 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
                       onSelect={handleSelectDealerProfile}
                     />
                   ))}
+                  {filteredProfiles.length === 0 && (
+                    <div style={{ color: "#94a3b8", textAlign: "center", padding: 20 }}>
+                      No dealer profiles match your search.
+                    </div>
+                  )}
                 </div>
               </section>
             )}
 
+            {/* TAB: GLOBAL HEADERS */}
             {activeTab === "headers" && (
               <section className="section-card">
                 <GlobalHeadersPanel
@@ -1157,9 +1382,9 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
               </section>
             )}
 
+            {/* TAB: EXTENSION DATA */}
             {activeTab === "extension" && (
               <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
-
                 <WatchRulesManager />
 
                 <div className="section-card" style={{ padding: 18 }}>

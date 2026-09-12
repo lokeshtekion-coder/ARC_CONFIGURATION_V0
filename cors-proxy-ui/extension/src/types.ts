@@ -1,4 +1,3 @@
-///Users/tlreddy/Desktop/ARC_CONFIGURATION_V0/cors-proxy-ui/extension/src/types.ts
 export interface HeaderMap {
   [key: string]: string;
 }
@@ -41,6 +40,11 @@ export interface CustomCapturedApi {
 export interface ArcCaptureState {
   graphApiToken?: string;
   tapDuoApiToken?: string;
+
+  slackToken?: string;
+  slackDCookie?: string;
+  lastSlackSourceUrl?: string;
+  lastSlackCaptureAt?: string;
 
   graphHeaders?: HeaderMap;
   tekionImplementationHeaders?: HeaderMap;

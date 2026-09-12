@@ -205,12 +205,111 @@ function getValidationReason(
   if (state === "not-found") {
     return `${kind} value from selected profile was not found in API response.`;
   }
-  return `${
-    kind === "tenant"
-      ? "Waiting to call tenants API."
-      : "Waiting to call dealers API."
-  }`;
+  return kind === "tenant"
+    ? "Waiting to call tenants API."
+    : "Waiting to call dealers API.";
 }
+
+const InfoIcon: React.FC<{ text: React.ReactNode }> = ({ text }) => {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div
+      style={{ position: "relative", display: "inline-flex", alignItems: "center" }}
+      onMouseEnter={() => setVisible(true)}
+      onMouseLeave={() => setVisible(false)}
+      onFocus={() => setVisible(true)}
+      onBlur={() => setVisible(false)}
+    >
+      <button
+        type="button"
+        aria-label="More info"
+        style={{
+          width: 18,
+          height: 18,
+          borderRadius: 999,
+          border: "1px solid rgba(255,255,255,0.12)",
+          background: "rgba(255,255,255,0.04)",
+          color: "#94a3b8",
+          fontSize: 11,
+          fontWeight: 800,
+          cursor: "help",
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 0,
+        }}
+      >
+        i
+      </button>
+
+      {visible ? (
+        <div
+          role="tooltip"
+          style={{
+            position: "absolute",
+            top: "calc(100% + 8px)",
+            left: 0,
+            zIndex: 20,
+            width: 300,
+            maxWidth: "min(300px, 80vw)",
+            padding: "10px 12px",
+            borderRadius: 12,
+            border: "1px solid rgba(255,255,255,0.10)",
+            background: "#0f172a",
+            color: "#cbd5e1",
+            fontSize: 12,
+            lineHeight: 1.6,
+            boxShadow: "0 18px 40px rgba(0,0,0,0.32)",
+            whiteSpace: "normal",
+          }}
+        >
+          {text}
+        </div>
+      ) : null}
+    </div>
+  );
+};
+
+const CompactStepCard: React.FC<{
+  step: string;
+  title: string;
+  info?: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ step, title, info, children }) => (
+  <div
+    style={{
+      borderRadius: 16,
+      border: "1px solid rgba(255,255,255,0.08)",
+      background: "rgba(255,255,255,0.03)",
+      padding: 16,
+      display: "grid",
+      gap: 12,
+      minWidth: 0,
+    }}
+  >
+    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 800,
+          letterSpacing: "0.06em",
+          textTransform: "uppercase",
+          color: "#93c5fd",
+          background: "rgba(59,130,246,0.12)",
+          border: "1px solid rgba(59,130,246,0.20)",
+          borderRadius: 999,
+          padding: "4px 8px",
+        }}
+      >
+        {step}
+      </span>
+      <span style={{ fontSize: 15, fontWeight: 800, color: "#f8fafc" }}>{title}</span>
+      {info ? <InfoIcon text={info} /> : null}
+    </div>
+    {children}
+  </div>
+);
 
 export const RaiseOemIdRequestView: React.FC = () => {
   const [runState, setRunState] = useState<RunState>("idle");
@@ -340,34 +439,6 @@ export const RaiseOemIdRequestView: React.FC = () => {
     );
   }, [resolvedTenantId, resolvedDealerId, parsedOemDealerCodes.length]);
 
-  useEffect(() => {
-    logger.group("validation snapshot");
-    logger.debug("preferredTenantId", preferredTenantId);
-    logger.debug("preferredDealerId", preferredDealerId);
-    logger.debug("selectedTenantId", selectedTenantId);
-    logger.debug("selectedDealerId", selectedDealerId);
-    logger.debug("resolvedTenantId", resolvedTenantId);
-    logger.debug("resolvedDealerId", resolvedDealerId);
-    logger.debug("tenants loaded", tenants.length);
-    logger.debug("dealers loaded", dealers.length);
-    logger.debug("tenantValidationState", tenantValidationState);
-    logger.debug("dealerValidationState", dealerValidationState);
-    logger.debug("canPreviewPayload", canPreviewPayload);
-    logger.groupEnd();
-  }, [
-    preferredTenantId,
-    preferredDealerId,
-    selectedTenantId,
-    selectedDealerId,
-    resolvedTenantId,
-    resolvedDealerId,
-    tenants.length,
-    dealers.length,
-    tenantValidationState,
-    dealerValidationState,
-    canPreviewPayload,
-  ]);
-
   const loadTenants = async (): Promise<TenantInfo[]> => {
     logger.group("loadTenants start");
     setIsLoadingTenants(true);
@@ -422,7 +493,7 @@ export const RaiseOemIdRequestView: React.FC = () => {
         } else {
           setTenantValidationState("not-found");
           setAutoSelectionMessage(
-            `Selected dealer profile tenant "${preferredTenantId}" was not found in Step 2 tenant results.`
+            `Selected dealer profile tenant "${preferredTenantId}" was not found in tenants results.`
           );
           setRunState("warning");
           setStatusText(
@@ -714,28 +785,26 @@ export const RaiseOemIdRequestView: React.FC = () => {
   };
 
   return (
-    <div style={{ display: "grid", gap: 16 }}>
+    <div style={{ display: "grid", gap: 14 }}>
       <div
         style={{
           borderRadius: 18,
           border: "1px solid rgba(255,255,255,0.08)",
           background: "rgba(255,255,255,0.03)",
           padding: 18,
+          display: "grid",
+          gap: 12,
         }}
       >
-        <div style={{ color: "#f8fafc", fontSize: 22, fontWeight: 800, marginBottom: 6 }}>
+        <div style={{ color: "#f8fafc", fontSize: 22, fontWeight: 800 }}>
           Raise OEM ID Request
         </div>
-        <div style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.7 }}>
-          Uses PRODTechMOTORS API headers for authentication and selected dealer profile values for
-          tenant/dealer validation.
-        </div>
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <Pill label="Header Source" value={headerInfo.source} />
           <Pill label="Header Count" value={String(headerInfo.headerCount)} />
-          <Pill label="Selected Profile Tenant" value={preferredTenantId || "Not selected"} />
-          <Pill label="Selected Profile Dealer" value={preferredDealerId || "Not selected"} />
+          <Pill label="Profile Tenant" value={preferredTenantId || "Not selected"} />
+          <Pill label="Profile Dealer" value={preferredDealerId || "Not selected"} />
           <Pill label="Resolved Tenant" value={resolvedTenantId || "Pending"} />
           <Pill label="Resolved Dealer" value={resolvedDealerId || "Pending"} />
           <Pill label="OEM Codes" value={String(parsedOemDealerCodes.length)} />
@@ -744,7 +813,6 @@ export const RaiseOemIdRequestView: React.FC = () => {
         {autoSelectionMessage ? (
           <div
             style={{
-              marginTop: 12,
               borderRadius: 12,
               border: "1px solid rgba(59,130,246,0.22)",
               background: "rgba(59,130,246,0.10)",
@@ -761,54 +829,77 @@ export const RaiseOemIdRequestView: React.FC = () => {
 
       <StatusBox runState={runState} statusText={statusText} errorText={errorText} />
 
-      <SectionCard title="Step 1 - Capture / Refresh Headers">
-        <div style={{ color: "#cbd5e1", fontSize: 13, lineHeight: 1.7 }}>
-          Trigger this API in browser:
-          <br />
-          <code>https://app.tekioncloud.com/api/userservice/u/employee/profile</code>
-          <br />
-          These headers are used for authentication/session while selected profile tenant/dealer are
-          used for validation.
-        </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gap: 14,
+          alignItems: "start",
+        }}
+      >
+        <CompactStepCard
+          step="Step 1"
+          title="Capture Headers"
+          info={
+            <>
+              Trigger this API in browser:
+              <br />
+              <code>https://app.tekioncloud.com/api/userservice/u/employee/profile</code>
+              <br />
+              <br />
+              These headers are used for authentication/session.
+              Selected profile tenant/dealer values are used for validation.
+            </>
+          }
+        >
+          <MiniInfoRow label="Source" value={headerInfo.source} />
+          <MiniInfoRow label="Headers" value={String(headerInfo.headerCount)} />
+          <MiniInfoRow label="Profile Tenant" value={preferredTenantId || "Not selected"} />
+          <MiniInfoRow label="Profile Dealer" value={preferredDealerId || "Not selected"} />
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button
-            className="btn-secondary btn-sm"
-            type="button"
-            onClick={() => {
-              requestLatestCaptureFromExtension();
-              setCaptureVersion((prev) => prev + 1);
-            }}
-          >
-            Refresh Captured Headers
-          </button>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
+            <button
+              className="btn-secondary btn-sm"
+              type="button"
+              onClick={() => {
+                requestLatestCaptureFromExtension();
+                setCaptureVersion((prev) => prev + 1);
+              }}
+            >
+              Refresh Headers
+            </button>
 
-          <button
-            className="btn-postman"
-            type="button"
-            disabled={isAutoResolving || headerInfo.headerCount === 0 || !preferredTenantId || !preferredDealerId}
-            onClick={() => {
-              void autoResolveTenantAndDealer();
-            }}
-          >
-            {isAutoResolving ? "Auto Validating..." : "Auto Validate Tenant + Dealer"}
-          </button>
-        </div>
-      </SectionCard>
+            <button
+              className="btn-postman"
+              type="button"
+              disabled={
+                isAutoResolving ||
+                headerInfo.headerCount === 0 ||
+                !preferredTenantId ||
+                !preferredDealerId
+              }
+              onClick={() => {
+                void autoResolveTenantAndDealer();
+              }}
+            >
+              {isAutoResolving ? "Validating..." : "Auto Validate"}
+            </button>
+          </div>
+        </CompactStepCard>
 
-      <SectionCard title="Step 2 - Load Tenants">
-        <div style={{ color: "#94a3b8", fontSize: 12, lineHeight: 1.6 }}>
-          Validate selected profile tenant against 1st API response. If found, it gets auto-selected.
-        </div>
+        <CompactStepCard
+          step="Step 2"
+          title="Load Tenants"
+          info="Validate the selected profile tenant against the tenants API response. If matched, it is auto-selected."
+        >
+          <ValidationRow
+            label="Target Tenant"
+            value={preferredTenantId || "Not selected"}
+            state={tenantValidationState}
+            reason={getValidationReason(preferredTenantId, tenantValidationState, "tenant")}
+            compact
+          />
 
-        <ValidationRow
-          label="Selected profile tenant target"
-          value={preferredTenantId || "Not selected"}
-          state={tenantValidationState}
-          reason={getValidationReason(preferredTenantId, tenantValidationState, "tenant")}
-        />
-
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button
             className="btn-postman"
             type="button"
@@ -819,49 +910,48 @@ export const RaiseOemIdRequestView: React.FC = () => {
           >
             {isLoadingTenants ? "Loading..." : "Load Tenants"}
           </button>
-        </div>
 
-        {tenants.length > 0 ? (
-          <div>
-            <div style={labelStyle}>Tenant</div>
-            <select
-              className="st-input"
-              value={selectedTenantId}
-              onChange={(e) => {
-                setSelectedTenantId(e.target.value);
-                setSelectedDealerId("");
-                setDealers([]);
-                setDealerValidationState("idle");
-              }}
-              style={inputStyle}
-            >
-              <option value="">Select tenant</option>
-              {tenants.map((tenant, index) => {
-                const tenantId = normalize(tenant.tenantId);
-                return (
-                  <option key={`${tenantId}-${index}`} value={tenantId}>
-                    {tenantId} {tenant.active ? "✅" : "❌"}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-        ) : null}
-      </SectionCard>
+          {tenants.length > 0 ? (
+            <div>
+              <div style={labelStyle}>Tenant</div>
+              <select
+                className="st-input"
+                value={selectedTenantId}
+                onChange={(e) => {
+                  setSelectedTenantId(e.target.value);
+                  setSelectedDealerId("");
+                  setDealers([]);
+                  setDealerValidationState("idle");
+                }}
+                style={inputStyle}
+              >
+                <option value="">Select tenant</option>
+                {tenants.map((tenant, index) => {
+                  const tenantId = normalize(tenant.tenantId);
+                  return (
+                    <option key={`${tenantId}-${index}`} value={tenantId}>
+                      {tenantId} {tenant.active ? "✅" : "❌"}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          ) : null}
+        </CompactStepCard>
 
-      <SectionCard title="Step 3 - Load Dealers for Selected Tenant">
-        <div style={{ color: "#94a3b8", fontSize: 12, lineHeight: 1.6 }}>
-          Validate selected profile dealer against 2nd API response. If found, it gets auto-selected.
-        </div>
+        <CompactStepCard
+          step="Step 3"
+          title="Load Dealers"
+          info="Validate the selected profile dealer against the dealer list returned for the resolved tenant."
+        >
+          <ValidationRow
+            label="Target Dealer"
+            value={preferredDealerId || "Not selected"}
+            state={dealerValidationState}
+            reason={getValidationReason(preferredDealerId, dealerValidationState, "dealer")}
+            compact
+          />
 
-        <ValidationRow
-          label="Selected profile dealer target"
-          value={preferredDealerId || "Not selected"}
-          state={dealerValidationState}
-          reason={getValidationReason(preferredDealerId, dealerValidationState, "dealer")}
-        />
-
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button
             className="btn-postman"
             type="button"
@@ -872,43 +962,44 @@ export const RaiseOemIdRequestView: React.FC = () => {
           >
             {isLoadingDealers ? "Loading..." : "Load Dealers"}
           </button>
-        </div>
 
-        {dealers.length > 0 ? (
-          <div>
-            <div style={labelStyle}>Dealer</div>
-            <select
-              className="st-input"
-              value={selectedDealerId}
-              onChange={(e) => {
-                setSelectedDealerId(e.target.value);
-              }}
-              style={inputStyle}
-            >
-              <option value="">Select dealer</option>
-              {dealers.map((dealer, index) => {
-                const dealerId = normalize(dealer.dealerId);
-                const displayName = normalize(dealer.displayName || dealer.dealerName) || dealerId;
-                return (
-                  <option key={`${dealerId}-${index}`} value={dealerId}>
-                    {dealerId} - {displayName} {dealer.active ? "✅" : "❌"}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
-        ) : null}
-      </SectionCard>
+          {dealers.length > 0 ? (
+            <div>
+              <div style={labelStyle}>Dealer</div>
+              <select
+                className="st-input"
+                value={selectedDealerId}
+                onChange={(e) => {
+                  setSelectedDealerId(e.target.value);
+                }}
+                style={inputStyle}
+              >
+                <option value="">Select dealer</option>
+                {dealers.map((dealer, index) => {
+                  const dealerId = normalize(dealer.dealerId);
+                  const displayName = normalize(dealer.displayName || dealer.dealerName) || dealerId;
+                  return (
+                    <option key={`${dealerId}-${index}`} value={dealerId}>
+                      {dealerId} - {displayName} {dealer.active ? "✅" : "❌"}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          ) : null}
+        </CompactStepCard>
+      </div>
 
-      <SectionCard title="Step 4 - Enter OEM Dealer Codes">
-        <div style={labelStyle}>OEM Dealer Codes</div>
+      <SectionCard
+        title="Step 4 · Enter OEM Dealer Codes"
+      >
         <textarea
           className="st-input"
           value={oemDealerCodesInput}
           onChange={(e) => {
             setOemDealerCodesInput(e.target.value);
           }}
-          placeholder={"34125\n34126\n34127\nor comma separated"}
+          placeholder={"Multiple ID's will be comma separated"}
           rows={8}
           style={{
             ...inputStyle,
@@ -916,12 +1007,12 @@ export const RaiseOemIdRequestView: React.FC = () => {
             resize: "vertical",
           }}
         />
-        <div style={{ color: "#94a3b8", fontSize: 12 }}>
-          Supports one code per line or comma-separated values.
-        </div>
       </SectionCard>
 
-      <SectionCard title="Step 5 - Raise Request">
+      <SectionCard
+        title="Step 5 · Preview / Raise Request"
+        info="Preview becomes available after tenant and dealer are resolved and at least one OEM code is entered."
+      >
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           <button
             className="btn-postman"
@@ -945,9 +1036,8 @@ export const RaiseOemIdRequestView: React.FC = () => {
         </div>
 
         <div style={{ color: canPreviewPayload ? "#86efac" : "#94a3b8", fontSize: 12 }}>
-          Preview readiness:{" "}
           {canPreviewPayload
-            ? "Ready ✅"
+            ? "Ready for preview/submission ✅"
             : "Waiting for validated tenant, validated dealer, and OEM codes"}
         </div>
       </SectionCard>
@@ -988,7 +1078,7 @@ export const RaiseOemIdRequestView: React.FC = () => {
               <tbody>
                 {dealers.map((dealer, index) => {
                   const dealerId = normalize(dealer.dealerId);
-                  const isMatched = preferredDealerId && dealerId === preferredDealerId;
+                  const isMatched = Boolean(preferredDealerId && dealerId === preferredDealerId);
 
                   return (
                     <tr
@@ -1130,10 +1220,26 @@ const Pill: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   </span>
 );
 
+const MiniInfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      gap: 12,
+      fontSize: 12,
+      lineHeight: 1.5,
+    }}
+  >
+    <span style={{ color: "#94a3b8" }}>{label}</span>
+    <span style={{ color: "#f8fafc", fontWeight: 700, textAlign: "right" }}>{value}</span>
+  </div>
+);
+
 const SectionCard: React.FC<{
   title: string;
+  info?: React.ReactNode;
   children: React.ReactNode;
-}> = ({ title, children }) => (
+}> = ({ title, info, children }) => (
   <div
     style={{
       borderRadius: 18,
@@ -1144,14 +1250,9 @@ const SectionCard: React.FC<{
       gap: 12,
     }}
   >
-    <div
-      style={{
-        fontSize: 18,
-        fontWeight: 800,
-        color: "#f8fafc",
-      }}
-    >
-      {title}
+    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+      <div style={{ fontSize: 16, fontWeight: 800, color: "#f8fafc" }}>{title}</div>
+      {info ? <InfoIcon text={info} /> : null}
     </div>
     {children}
   </div>
@@ -1214,7 +1315,8 @@ const ValidationRow: React.FC<{
   value: string;
   state: ValidationState;
   reason: string;
-}> = ({ label, value, state, reason }) => {
+  compact?: boolean;
+}> = ({ label, value, state, reason, compact = false }) => {
   const isMatched = state === "matched";
   const isNotFound = state === "not-found";
   const isLoading = state === "loading";
@@ -1223,24 +1325,20 @@ const ValidationRow: React.FC<{
     <div
       style={{
         display: "grid",
-        gap: 8,
-        padding: "10px 12px",
+        gap: compact ? 6 : 8,
+        padding: compact ? "8px 10px" : "10px 12px",
         borderRadius: 12,
         border: "1px solid rgba(255,255,255,0.08)",
         background: "rgba(255,255,255,0.02)",
       }}
     >
-      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
-        <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700 }}>
-          {label}:
-        </div>
-
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+        <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700 }}>{label}:</div>
         <div
           style={{
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: 800,
             color: isMatched ? "#86efac" : isNotFound ? "#fca5a5" : isLoading ? "#93c5fd" : "#f8fafc",
-            textShadow: isMatched ? "0 0 10px rgba(34,197,94,0.28)" : "none",
           }}
         >
           {value}

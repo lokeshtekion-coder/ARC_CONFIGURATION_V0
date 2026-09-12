@@ -12,7 +12,7 @@ export function useArcRules() {
 
   useEffect(() => {
     const unsubscribe = subscribeToExtensionRules((incomingRules) => {
-      setRules(incomingRules);
+      setRules(incomingRules || []);
       setIsExtensionConnected(true);
     });
 
@@ -21,6 +21,7 @@ export function useArcRules() {
   }, []);
 
   const saveRules = useCallback((newRules: ArcCustomWatchRule[]) => {
+    console.log("[React] Sending rules to extension bridge...", newRules);
     setRules(newRules);
     saveCustomRulesToExtension(newRules);
   }, []);

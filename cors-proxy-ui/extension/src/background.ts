@@ -9,6 +9,7 @@ const LOCALHOST_APP_MATCHES = [
 
 const REQUEST_FILTER: chrome.webRequest.RequestFilter = {
   urls: ["<all_urls>"],
+  types: ["xmlhttprequest"],
 };
 
 const GRAPH_ALLOWED_INITIATORS = new Set<string>([
@@ -39,16 +40,36 @@ const DROP_CUSTOM_CAPTURE_HEADERS = new Set<string>([
 ]);
 
 type HeaderMap = Record<string, string>;
+
 type CaptureKind =
   | "graph"
   | "tekionImplementation"
   | "tekionBootstrap"
-  | "tekionProdTechMotors";
+  | "tekionProdTechMotors"
+  | "slackPermissionsInfo";
 
 type RequestHeaderDetails = {
+  requestId: string;
   url: string;
   initiator?: string;
   requestHeaders?: chrome.webRequest.HttpHeader[];
+};
+
+type RequestBodyChunk = {
+  bytes?: ArrayBuffer;
+};
+
+type RequestBodyShape = {
+  raw?: RequestBodyChunk[];
+  formData?: Record<string, string[]>;
+};
+
+type RequestBodyCaptureDetails = {
+  requestId: string;
+  url: string;
+  method: string;
+  type: string;
+  requestBody?: RequestBodyShape;
 };
 
 interface ArcDecodedTokenInfo {
@@ -103,6 +124,10 @@ interface ArcCustomCapturedApi {
 interface ArcLatestCaptureState {
   graphApiToken?: string;
   tapDuoApiToken?: string;
+  slackToken?: string;
+  slackDCookie?: string;
+  lastSlackSourceUrl?: string;
+  lastSlackCaptureAt?: string;
   graphHeaders?: HeaderMap;
   tekionImplementationHeaders?: HeaderMap;
   tekionBootstrapHeaders?: HeaderMap;
@@ -119,11 +144,31 @@ interface ArcLatestCaptureState {
   customCaptures?: Record<string, ArcCustomCapturedApi>;
 }
 
+interface PendingSlackRequest {
+  url: string;
+  bodyText: string;
+  createdAt: number;
+}
+
 let cachedCustomRules: ArcCustomWatchRule[] = [];
+const pendingSlackRequests = new Map<string, PendingSlackRequest>();
+
+function log(...args: unknown[]) {
+  console.log("[ARC BG]", ...args);
+}
 
 function parseUrl(raw: string): URL | null {
   try {
     return new URL(raw);
+  } catch {
+    return null;
+  }
+}
+
+function getOrigin(value?: string): string | null {
+  if (!value) return null;
+  try {
+    return new URL(value).origin;
   } catch {
     return null;
   }
@@ -149,12 +194,70 @@ function extractBearerToken(authHeader?: string): string {
   return value.replace(/^bearer\s+/i, "").trim();
 }
 
-function getOrigin(value?: string): string | null {
-  if (!value) return null;
+function filterTekionHeaders(headers: HeaderMap): HeaderMap {
+  const out: HeaderMap = {};
+  for (const [key, value] of Object.entries(headers)) {
+    const lower = key.toLowerCase();
+    if (!value.trim()) continue;
+    if (DROP_TEKION_HEADERS.has(lower)) continue;
+    if (lower.startsWith("sec-")) continue;
+    out[lower] = value;
+  }
+  return out;
+}
+
+function filterCustomCaptureHeaders(headers: HeaderMap): HeaderMap {
+  const out: HeaderMap = {};
+  for (const [key, value] of Object.entries(headers)) {
+    const lower = key.toLowerCase();
+    if (!value.trim()) continue;
+    if (DROP_CUSTOM_CAPTURE_HEADERS.has(lower)) continue;
+    if (lower.startsWith("sec-")) continue;
+    out[lower] = value;
+  }
+  return out;
+}
+
+function sortHeaderMap(input?: HeaderMap): HeaderMap | undefined {
+  if (!input) return undefined;
+  const out: HeaderMap = {};
+  for (const key of Object.keys(input).sort()) out[key] = input[key];
+  return out;
+}
+
+function normalizeString(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed || undefined;
+}
+
+function decodeJwt(token?: string): ArcDecodedTokenInfo | undefined {
+  if (!token) return undefined;
   try {
-    return new URL(value).origin;
+    const parts = token.split(".");
+    if (parts.length !== 3) return undefined;
+
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64 + "=".repeat((4 - (base64.length % 4 || 4)) % 4);
+    const payload = JSON.parse(atob(padded)) as Record<string, unknown>;
+
+    const exp = typeof payload.exp === "number" ? payload.exp : undefined;
+    const iat = typeof payload.iat === "number" ? payload.iat : undefined;
+
+    return {
+      email: typeof payload.email === "string" ? payload.email : undefined,
+      originalTenantId:
+        typeof payload.originalTenantId === "string"
+          ? payload.originalTenantId
+          : undefined,
+      exp,
+      iat,
+      expiresAt: exp ? new Date(exp * 1000).toISOString() : undefined,
+      issuedAt: iat ? new Date(iat * 1000).toISOString() : undefined,
+      isExpired: typeof exp === "number" ? Date.now() >= exp * 1000 : undefined,
+    };
   } catch {
-    return null;
+    return undefined;
   }
 }
 
@@ -201,6 +304,15 @@ function isTekionProdTechMotorsProfileRequest(rawUrl: string): boolean {
   );
 }
 
+function isSlackPermissionsInfoRequest(rawUrl: string): boolean {
+  const url = parseUrl(rawUrl);
+  return Boolean(
+    url &&
+      url.origin === "https://edgeapi.slack.com" &&
+      /\/permissions\/info$/i.test(url.pathname)
+  );
+}
+
 function detectCaptureKind(details: RequestHeaderDetails): CaptureKind | null {
   if (isGraphPhotoRequest(details.url)) {
     return isAllowedGraphInitiator(details) ? "graph" : null;
@@ -208,71 +320,8 @@ function detectCaptureKind(details: RequestHeaderDetails): CaptureKind | null {
   if (isTekionImplementationRequest(details.url)) return "tekionImplementation";
   if (isTekionBootstrapRequest(details.url)) return "tekionBootstrap";
   if (isTekionProdTechMotorsProfileRequest(details.url)) return "tekionProdTechMotors";
+  if (isSlackPermissionsInfoRequest(details.url)) return "slackPermissionsInfo";
   return null;
-}
-
-function filterTekionHeaders(headers: HeaderMap): HeaderMap {
-  const out: HeaderMap = {};
-  for (const [key, value] of Object.entries(headers)) {
-    const lower = key.toLowerCase();
-    if (!value.trim()) continue;
-    if (DROP_TEKION_HEADERS.has(lower)) continue;
-    if (lower.startsWith("sec-")) continue;
-    out[lower] = value;
-  }
-  return out;
-}
-
-function filterCustomCaptureHeaders(headers: HeaderMap): HeaderMap {
-  const out: HeaderMap = {};
-  for (const [key, value] of Object.entries(headers)) {
-    const lower = key.toLowerCase();
-    if (!value.trim()) continue;
-    if (DROP_CUSTOM_CAPTURE_HEADERS.has(lower)) continue;
-    if (lower.startsWith("sec-")) continue;
-    out[lower] = value;
-  }
-  return out;
-}
-
-function sortHeaderMap(input?: HeaderMap): HeaderMap | undefined {
-  if (!input) return undefined;
-  const out: HeaderMap = {};
-  for (const key of Object.keys(input).sort()) out[key] = input[key];
-  return out;
-}
-
-function normalizeString(value: unknown): string | undefined {
-  if (typeof value !== "string") return undefined;
-  const trimmed = value.trim();
-  return trimmed || undefined;
-}
-
-function decodeJwt(token?: string): ArcDecodedTokenInfo | undefined {
-  if (!token) return undefined;
-  try {
-    const parts = token.split(".");
-    if (parts.length !== 3) return undefined;
-    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64 + "=".repeat((4 - (base64.length % 4 || 4)) % 4);
-    const payload = JSON.parse(atob(padded)) as Record<string, unknown>;
-    const exp = typeof payload.exp === "number" ? payload.exp : undefined;
-    const iat = typeof payload.iat === "number" ? payload.iat : undefined;
-    return {
-      email: typeof payload.email === "string" ? payload.email : undefined,
-      originalTenantId:
-        typeof payload.originalTenantId === "string"
-          ? payload.originalTenantId
-          : undefined,
-      exp,
-      iat,
-      expiresAt: exp ? new Date(exp * 1000).toISOString() : undefined,
-      issuedAt: iat ? new Date(iat * 1000).toISOString() : undefined,
-      isExpired: typeof exp === "number" ? Date.now() >= exp * 1000 : undefined,
-    };
-  } catch {
-    return undefined;
-  }
 }
 
 function buildProfileKey(
@@ -289,12 +338,10 @@ function buildProfileKey(
 
 function normalizeProfiles(input: unknown): ArcTekionProfile[] {
   if (!Array.isArray(input)) return [];
-
   const out: ArcTekionProfile[] = [];
 
   for (const item of input) {
     if (!item || typeof item !== "object") continue;
-
     const raw = item as Record<string, unknown>;
 
     if (
@@ -305,7 +352,7 @@ function normalizeProfiles(input: unknown): ArcTekionProfile[] {
       continue;
     }
 
-    const profile: ArcTekionProfile = {
+    out.push({
       id: raw.id,
       profileKey: raw.profileKey,
       capturedAt: raw.capturedAt,
@@ -326,9 +373,7 @@ function normalizeProfiles(input: unknown): ArcTekionProfile[] {
         raw.bootstrapHeaders && typeof raw.bootstrapHeaders === "object"
           ? { ...(raw.bootstrapHeaders as HeaderMap) }
           : {},
-    };
-
-    out.push(profile);
+    });
   }
 
   return out;
@@ -366,7 +411,9 @@ function upsertTekionProfile(
   };
 
   const profiles = normalizeProfiles(current.tekionProfiles);
-  const existingIndex = profiles.findIndex((profile) => profile.profileKey === profileKey);
+  const existingIndex = profiles.findIndex(
+    (profile) => profile.profileKey === profileKey
+  );
 
   if (existingIndex >= 0) {
     profiles[existingIndex] = {
@@ -381,11 +428,10 @@ function upsertTekionProfile(
     profiles.unshift(nextProfile);
   }
 
-  profiles.sort((a, b) => {
-    const at = new Date(a.capturedAt).getTime();
-    const bt = new Date(b.capturedAt).getTime();
-    return bt - at;
-  });
+  profiles.sort(
+    (a, b) =>
+      new Date(b.capturedAt).getTime() - new Date(a.capturedAt).getTime()
+  );
 
   return profiles;
 }
@@ -402,7 +448,6 @@ function pruneExpiredCustomCaptures(
   if (!captures) return undefined;
 
   const next: Record<string, ArcCustomCapturedApi> = {};
-
   for (const [key, value] of Object.entries(captures)) {
     const expiryHours =
       typeof value.expiryHours === "number" && value.expiryHours > 0
@@ -423,6 +468,10 @@ function comparableSnapshot(state: ArcLatestCaptureState): string {
   return JSON.stringify({
     graphApiToken: state.graphApiToken ?? "",
     tapDuoApiToken: state.tapDuoApiToken ?? "",
+    slackToken: state.slackToken ?? "",
+    slackDCookie: state.slackDCookie ?? "",
+    lastSlackSourceUrl: state.lastSlackSourceUrl ?? "",
+    lastSlackCaptureAt: state.lastSlackCaptureAt ?? "",
     graphHeaders: sortHeaderMap(state.graphHeaders) ?? {},
     tekionImplementationHeaders: sortHeaderMap(state.tekionImplementationHeaders) ?? {},
     tekionBootstrapHeaders: sortHeaderMap(state.tekionBootstrapHeaders) ?? {},
@@ -474,6 +523,22 @@ function setStorageValue(key: string, value: unknown): Promise<void> {
   });
 }
 
+async function loadStoredState(): Promise<ArcLatestCaptureState> {
+  const state =
+    (await getStorageValue<ArcLatestCaptureState>(STORAGE_KEY)) ?? {};
+  return {
+    ...state,
+    customCaptures: pruneExpiredCustomCaptures(state.customCaptures),
+  };
+}
+
+async function persistState(state: ArcLatestCaptureState): Promise<void> {
+  await setStorageValue(STORAGE_KEY, {
+    ...state,
+    customCaptures: pruneExpiredCustomCaptures(state.customCaptures),
+  });
+}
+
 function queryLocalhostTabs(): Promise<chrome.tabs.Tab[]> {
   return new Promise((resolve) => {
     chrome.tabs.query({ url: LOCALHOST_APP_MATCHES }, (tabs) => {
@@ -488,37 +553,91 @@ function sendMessageToTab(tabId: number, message: unknown): Promise<void> {
   });
 }
 
-async function loadStoredState(): Promise<ArcLatestCaptureState> {
-  const state = (await getStorageValue<ArcLatestCaptureState>(STORAGE_KEY)) ?? {};
-  return {
-    ...state,
-    customCaptures: pruneExpiredCustomCaptures(state.customCaptures),
-  };
-}
-
-async function persistState(state: ArcLatestCaptureState): Promise<void> {
-  await setStorageValue(STORAGE_KEY, {
-    ...state,
-    customCaptures: pruneExpiredCustomCaptures(state.customCaptures),
-  });
-}
-
-async function pushStateToLocalhostTabs(state: ArcLatestCaptureState): Promise<void> {
+async function pushStateToLocalhostTabs(
+  state: ArcLatestCaptureState
+): Promise<void> {
   const tabs = await queryLocalhostTabs();
   const message = { type: "ARC_PUSH_CAPTURE", payload: state };
 
   await Promise.allSettled(
     tabs
-      .filter((tab): tab is chrome.tabs.Tab & { id: number } => typeof tab.id === "number")
+      .filter(
+        (tab): tab is chrome.tabs.Tab & { id: number } =>
+          typeof tab.id === "number"
+      )
       .map((tab) => sendMessageToTab(tab.id, message))
   );
+}
+
+function extractCookieValue(cookieHeader: string | undefined, key: string): string {
+  if (!cookieHeader) return "";
+  const parts = cookieHeader.split(";");
+  for (const part of parts) {
+    const [rawKey, ...rest] = part.split("=");
+    if (rawKey?.trim() === key) {
+      return rest.join("=").trim();
+    }
+  }
+  return "";
+}
+
+function parseSlackBodyToken(bodyText: string): string {
+  if (!bodyText.trim()) return "";
+
+  try {
+    const parsed = JSON.parse(bodyText) as Record<string, unknown>;
+    if (typeof parsed.token === "string" && parsed.token.trim()) {
+      return parsed.token.trim();
+    }
+    if (
+      typeof parsed.enterprise_token === "string" &&
+      parsed.enterprise_token.trim()
+    ) {
+      return parsed.enterprise_token.trim();
+    }
+  } catch {}
+
+  try {
+    const params = new URLSearchParams(bodyText);
+    const token = params.get("token")?.trim();
+    if (token) return token;
+    const enterpriseToken = params.get("enterprise_token")?.trim();
+    if (enterpriseToken) return enterpriseToken;
+  } catch {}
+
+  return "";
+}
+
+function decodeRequestBodyToText(requestBody?: RequestBodyShape): string {
+  if (!requestBody) return "";
+
+  if (requestBody.raw && requestBody.raw.length > 0) {
+    const decoder = new TextDecoder("utf-8");
+    return requestBody.raw
+      .map((chunk: RequestBodyChunk) =>
+        chunk.bytes ? decoder.decode(new Uint8Array(chunk.bytes)) : ""
+      )
+      .join("");
+  }
+
+  if (requestBody.formData) {
+    const params = new URLSearchParams();
+    for (const key of Object.keys(requestBody.formData)) {
+      const values = requestBody.formData[key] ?? [];
+      values.forEach((value: string) => params.append(key, value));
+    }
+    return params.toString();
+  }
+
+  return "";
 }
 
 function mergeCapture(
   current: ArcLatestCaptureState,
   kind: CaptureKind,
   url: string,
-  normalizedHeaders: HeaderMap
+  normalizedHeaders: HeaderMap,
+  slackBodyText?: string
 ): ArcLatestCaptureState | null {
   const now = new Date().toISOString();
   const next: ArcLatestCaptureState = { ...current };
@@ -526,11 +645,23 @@ function mergeCapture(
   if (kind === "graph") {
     const token = extractBearerToken(normalizedHeaders["authorization"]);
     if (!token) return null;
-
     next.graphApiToken = token;
     next.graphHeaders = { authorization: `Bearer ${token}` };
     next.lastGraphSourceUrl = url;
     next.lastGraphCaptureAt = now;
+    return next;
+  }
+
+  if (kind === "slackPermissionsInfo") {
+    const token = parseSlackBodyToken(slackBodyText ?? "");
+    const dCookie = extractCookieValue(normalizedHeaders["cookie"], "d");
+
+    if (!token && !dCookie) return null;
+
+    if (token) next.slackToken = token;
+    if (dCookie) next.slackDCookie = dCookie;
+    next.lastSlackSourceUrl = url;
+    next.lastSlackCaptureAt = now;
     return next;
   }
 
@@ -558,67 +689,10 @@ function mergeCapture(
 
   if (kind === "tekionProdTechMotors") {
     if (Object.keys(filteredTekionHeaders).length === 0) return null;
-    console.log("[ARC BG] PRODTechMOTORS profile request detected", {
-      url,
-      headerKeys: Object.keys(filteredTekionHeaders).sort(),
-      dealerId: filteredTekionHeaders["dealerid"],
-      tenantName: filteredTekionHeaders["tenantname"],
-    });
     next.tekionProdTechMotorsHeaders = filteredTekionHeaders;
     next.lastTekionProdTechMotorsSourceUrl = url;
     next.lastTekionProdTechMotorsCaptureAt = now;
     return next;
-  }
-
-  return null;
-}
-
-function normalizeRuleList(input: unknown): ArcCustomWatchRule[] {
-  if (!Array.isArray(input)) return [];
-  return input
-    .filter((item) => item && typeof item === "object")
-    .map((item) => {
-      const raw = item as Record<string, unknown>;
-      const id = normalizeString(raw.id);
-      const pattern = normalizeString(raw.pattern);
-      const matchMode = raw.matchMode === "exact" ? "exact" : "includes";
-      const label = normalizeString(raw.label) || pattern || "";
-      const expiryHoursRaw =
-        typeof raw.expiryHours === "number"
-          ? raw.expiryHours
-          : Number.parseInt(String(raw.expiryHours ?? ""), 10);
-      const expiryHours =
-        Number.isFinite(expiryHoursRaw) && expiryHoursRaw > 0
-          ? expiryHoursRaw
-          : DEFAULT_CUSTOM_EXPIRY_HOURS;
-      const createdAt = normalizeString(raw.createdAt) || new Date().toISOString();
-
-      if (!id || !pattern) return null;
-
-      return {
-        id,
-        label,
-        pattern,
-        matchMode,
-        expiryHours,
-        createdAt,
-      } satisfies ArcCustomWatchRule;
-    })
-    .filter((item): item is ArcCustomWatchRule => Boolean(item));
-}
-
-function matchCustomRule(url: string): ArcCustomWatchRule | null {
-  const normalizedUrl = url.trim().toLowerCase();
-
-  for (const rule of cachedCustomRules) {
-    const pattern = rule.pattern.trim().toLowerCase();
-    if (!pattern) continue;
-
-    if (rule.matchMode === "exact") {
-      if (normalizedUrl === pattern) return rule;
-    } else {
-      if (normalizedUrl.includes(pattern)) return rule;
-    }
   }
 
   return null;
@@ -637,19 +711,9 @@ function mergeCustomCapture(
     normalizeString(normalizedHeaders["tap-duo-api-token"]) ||
     undefined;
 
-  if (Object.keys(filteredHeaders).length === 0 && !authToken) {
-    return null;
-  }
+  if (Object.keys(filteredHeaders).length === 0 && !authToken) return null;
 
   const now = new Date().toISOString();
-
-  console.log("[ARC BG] storing custom capture headers", {
-    ruleId: rule.id,
-    label: rule.label,
-    matchedUrl: url,
-    rawHeaderKeys: Object.keys(normalizedHeaders).sort(),
-    filteredHeaderKeys: Object.keys(filteredHeaders).sort(),
-  });
 
   return {
     ...current,
@@ -671,76 +735,155 @@ function mergeCustomCapture(
   };
 }
 
+function normalizeRuleList(input: unknown): ArcCustomWatchRule[] {
+  if (!Array.isArray(input)) return [];
+  return input
+    .filter((item) => item && typeof item === "object")
+    .map((item) => {
+      const raw = item as Record<string, unknown>;
+      const id = normalizeString(raw.id);
+      const pattern = normalizeString(raw.pattern);
+      const matchMode = raw.matchMode === "exact" ? "exact" : "includes";
+      const label = normalizeString(raw.label) || pattern || "";
+      const expiryHoursRaw =
+        typeof raw.expiryHours === "number"
+          ? raw.expiryHours
+          : Number.parseInt(String(raw.expiryHours ?? ""), 10);
+      const expiryHours =
+        Number.isFinite(expiryHoursRaw) && expiryHoursRaw > 0
+          ? expiryHoursRaw
+          : DEFAULT_CUSTOM_EXPIRY_HOURS;
+      const createdAt =
+        normalizeString(raw.createdAt) || new Date().toISOString();
+
+      if (!id || !pattern) return null;
+
+      return {
+        id,
+        label,
+        pattern,
+        matchMode,
+        expiryHours,
+        createdAt,
+      } satisfies ArcCustomWatchRule;
+    })
+    .filter((item): item is ArcCustomWatchRule => Boolean(item));
+}
+
+function matchCustomRule(url: string): ArcCustomWatchRule | null {
+  const normalizedUrl = url.trim().toLowerCase();
+  for (const rule of cachedCustomRules) {
+    const pattern = rule.pattern.trim().toLowerCase();
+    if (!pattern) continue;
+    if (rule.matchMode === "exact") {
+      if (normalizedUrl === pattern) return rule;
+    } else {
+      if (normalizedUrl.includes(pattern)) return rule;
+    }
+  }
+  return null;
+}
+
 async function cleanupExpiredCustomCapturesAndSync(): Promise<void> {
   const current = await loadStoredState();
   const next: ArcLatestCaptureState = {
     ...current,
     customCaptures: pruneExpiredCustomCaptures(current.customCaptures),
   };
-
   if (comparableSnapshot(current) !== comparableSnapshot(next)) {
     await persistState(next);
     await pushStateToLocalhostTabs(next);
   }
 }
 
-async function handleBeforeSendHeaders(details: RequestHeaderDetails): Promise<void> {
-  const normalizedHeaders = normalizeHeaders(details.requestHeaders);
-  const current = await loadStoredState();
-  const kind = detectCaptureKind(details);
-  let next: ArcLatestCaptureState | null = null;
-
-  if (kind) {
-    console.log("[ARC BG] matched known request", {
-      kind,
-      url: details.url,
-      initiator: details.initiator,
-    });
-    next = mergeCapture(current, kind, details.url, normalizedHeaders);
-  } else {
-    const customRule = matchCustomRule(details.url);
-    if (customRule) {
-      console.log("[ARC BG] matched custom rule", {
-        ruleId: customRule.id,
-        label: customRule.label,
-        url: details.url,
-      });
-      next = mergeCustomCapture(current, customRule, details.url, normalizedHeaders);
-    }
-  }
-
-  if (!next) return;
-
-  const before = comparableSnapshot(current);
-  const after = comparableSnapshot(next);
-
-  await persistState(next);
-
-  if (before !== after) {
-    console.log("[ARC BG] state changed, pushing to localhost tabs");
-    await pushStateToLocalhostTabs(next);
-  } else {
-    console.log("[ARC BG] state unchanged");
-  }
-}
-
 chrome.storage.local.get([CUSTOM_RULES_STORAGE_KEY], (result) => {
   cachedCustomRules = normalizeRuleList(result[CUSTOM_RULES_STORAGE_KEY]);
-  console.log("[ARC BG] custom watch rules initialized", cachedCustomRules);
 });
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName !== "local") return;
-
   if (changes[CUSTOM_RULES_STORAGE_KEY]) {
-    cachedCustomRules = normalizeRuleList(changes[CUSTOM_RULES_STORAGE_KEY].newValue);
-    console.log("[ARC BG] custom watch rules updated", cachedCustomRules);
+    cachedCustomRules = normalizeRuleList(
+      changes[CUSTOM_RULES_STORAGE_KEY].newValue
+    );
   }
 });
 
+chrome.webRequest.onBeforeRequest.addListener(
+  (details) => {
+    const typed = details as unknown as RequestBodyCaptureDetails;
+
+    if (!isSlackPermissionsInfoRequest(typed.url)) {
+      return undefined;
+    }
+
+    const bodyText = decodeRequestBodyToText(typed.requestBody);
+    pendingSlackRequests.set(typed.requestId, {
+      url: typed.url,
+      bodyText,
+      createdAt: Date.now(),
+    });
+
+    log("captured slack request body", {
+      url: typed.url,
+      hasBody: Boolean(bodyText),
+      preview: bodyText.slice(0, 200),
+    });
+
+    return undefined;
+  },
+  { urls: ["https://edgeapi.slack.com/*"], types: ["xmlhttprequest"] },
+  ["requestBody"]
+);
+
 chrome.webRequest.onBeforeSendHeaders.addListener(
   (details) => {
-    void handleBeforeSendHeaders(details as RequestHeaderDetails);
+    void (async () => {
+      const current = await loadStoredState();
+      const kind = detectCaptureKind(details as RequestHeaderDetails);
+      const normalizedHeaders = normalizeHeaders(details.requestHeaders);
+
+      let next: ArcLatestCaptureState | null = null;
+
+      if (kind === "slackPermissionsInfo") {
+        const pendingSlack = pendingSlackRequests.get(details.requestId);
+        if (pendingSlack) {
+          pendingSlackRequests.delete(details.requestId);
+        }
+
+        next = mergeCapture(
+          current,
+          kind,
+          details.url,
+          normalizedHeaders,
+          pendingSlack?.bodyText
+        );
+      } else if (kind) {
+        log("matched known request", { kind, url: details.url });
+        next = mergeCapture(current, kind, details.url, normalizedHeaders);
+      } else {
+        const customRule = matchCustomRule(details.url);
+        if (customRule) {
+          next = mergeCustomCapture(
+            current,
+            customRule,
+            details.url,
+            normalizedHeaders
+          );
+        }
+      }
+
+      if (!next) return;
+
+      const before = comparableSnapshot(current);
+      const after = comparableSnapshot(next);
+
+      await persistState(next);
+
+      if (before !== after) {
+        await pushStateToLocalhostTabs(next);
+      }
+    })();
     return undefined;
   },
   REQUEST_FILTER,
@@ -749,11 +892,12 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "ARC_GET_LATEST_CAPTURE") {
-    void cleanupExpiredCustomCapturesAndSync().then(async () => {
+    void (async () => {
+      await cleanupExpiredCustomCapturesAndSync();
       const state = await loadStoredState();
       sendResponse({ payload: state });
-    });
-    return true; // Keep channel open for async response
+    })();
+    return true;
   }
 
   if (message?.type === "ARC_GET_CUSTOM_RULES") {
@@ -765,6 +909,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   }
 
   if (message?.type === "ARC_SAVE_CUSTOM_RULES") {
+    if (!Array.isArray(message.payload)) {
+      sendResponse({ success: false, error: "Payload must be an array" });
+      return true;
+    }
     const rules = normalizeRuleList(message.payload);
     chrome.storage.local.set({ [CUSTOM_RULES_STORAGE_KEY]: rules }, () => {
       sendResponse({ success: true });
@@ -775,14 +923,20 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   return false;
 });
 
-chrome.alarms.create("arc-custom-capture-cleanup", {
-  periodInMinutes: 60,
-});
-
+chrome.alarms.create("arc-custom-capture-cleanup", { periodInMinutes: 60 });
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "arc-custom-capture-cleanup") {
     void cleanupExpiredCustomCapturesAndSync();
   }
 });
+
+setInterval(() => {
+  const cutoff = Date.now() - 60_000;
+  for (const [requestId, pending] of pendingSlackRequests.entries()) {
+    if (pending.createdAt < cutoff) {
+      pendingSlackRequests.delete(requestId);
+    }
+  }
+}, 60_000);
 
 export {};

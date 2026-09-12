@@ -1,4 +1,3 @@
-///Users/tlreddy/Desktop/ARC_CONFIGURATION_V0/cors-proxy-ui/src/services/extensionCaptureStore.ts
 export interface HeaderMap {
   [key: string]: string;
 }
@@ -6,6 +5,9 @@ export interface HeaderMap {
 export interface ArcBrowserCaptureState {
   graphApiToken?: string;
   tapDuoApiToken?: string;
+
+  slackToken?: string;
+  slackDCookie?: string;
 
   graphHeaders?: HeaderMap;
   tekionImplementationHeaders?: HeaderMap;
@@ -16,11 +18,13 @@ export interface ArcBrowserCaptureState {
   lastTekionImplementationSourceUrl?: string;
   lastTekionBootstrapSourceUrl?: string;
   lastTekionProdTechMotorsSourceUrl?: string;
+  lastSlackSourceUrl?: string;
 
   lastGraphCaptureAt?: string;
   lastTekionImplementationCaptureAt?: string;
   lastTekionBootstrapCaptureAt?: string;
   lastTekionProdTechMotorsCaptureAt?: string;
+  lastSlackCaptureAt?: string;
 }
 
 const STORAGE_KEY = "arc-extension-browser-capture";
@@ -54,6 +58,9 @@ function normalizeCaptureState(input: unknown): ArcBrowserCaptureState {
     graphApiToken: normalizeString(raw.graphApiToken),
     tapDuoApiToken: normalizeString(raw.tapDuoApiToken),
 
+    slackToken: normalizeString(raw.slackToken),
+    slackDCookie: normalizeString(raw.slackDCookie),
+
     graphHeaders: normalizeHeaderMap(raw.graphHeaders),
     tekionImplementationHeaders: normalizeHeaderMap(raw.tekionImplementationHeaders),
     tekionBootstrapHeaders: normalizeHeaderMap(raw.tekionBootstrapHeaders),
@@ -63,11 +70,13 @@ function normalizeCaptureState(input: unknown): ArcBrowserCaptureState {
     lastTekionImplementationSourceUrl: normalizeString(raw.lastTekionImplementationSourceUrl),
     lastTekionBootstrapSourceUrl: normalizeString(raw.lastTekionBootstrapSourceUrl),
     lastTekionProdTechMotorsSourceUrl: normalizeString(raw.lastTekionProdTechMotorsSourceUrl),
+    lastSlackSourceUrl: normalizeString(raw.lastSlackSourceUrl),
 
     lastGraphCaptureAt: normalizeString(raw.lastGraphCaptureAt),
     lastTekionImplementationCaptureAt: normalizeString(raw.lastTekionImplementationCaptureAt),
     lastTekionBootstrapCaptureAt: normalizeString(raw.lastTekionBootstrapCaptureAt),
     lastTekionProdTechMotorsCaptureAt: normalizeString(raw.lastTekionProdTechMotorsCaptureAt),
+    lastSlackCaptureAt: normalizeString(raw.lastSlackCaptureAt),
   };
 }
 

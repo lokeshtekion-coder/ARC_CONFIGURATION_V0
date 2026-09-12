@@ -15,7 +15,7 @@ import { DefaultPricingView } from "./views/DefaultPricingView";
 import { WarehouseManagementView } from "./views/WarehouseManagementView";
 import { ManufacturerView } from "./views/ManufacturerView";
 import { DealerConfigView } from "./views/DealerConfigView";
-import { PartsSettingsView } from "./views/PartsSettingsView";
+import PartsSettingsView from "./views/Parts_Settings_PDFs";
 import { UserResetView } from "./views/User Setup";
 import { RaiseOemIdRequestView } from "./views/OEM ID/RaiseOemIdRequestView";
 
@@ -36,7 +36,7 @@ const PAGE_STYLE: React.CSSProperties = {
 
 const CONTAINER_STYLE: React.CSSProperties = {
   maxWidth: 1400,
-  margin: "0 auto",
+  margin: "1 auto",
   display: "grid",
   gap: 16,
 };
@@ -45,7 +45,7 @@ const HEADER_STYLE: React.CSSProperties = {
   display: "flex",
   justifyContent: "space-between",
   alignItems: "center",
-  gap: 12,
+  gap: 16,
   flexWrap: "wrap",
 };
 
@@ -60,17 +60,17 @@ const SIDEBAR_STYLE: React.CSSProperties = {
   borderRadius: 18,
   border: "1px solid rgba(255,255,255,0.08)",
   background: "rgba(255,255,255,0.03)",
-  padding: 10,
+  padding: 13,
   position: "sticky",
   top: 10,
-  maxHeight: "calc(100vh - 80px)",
+  maxHeight: "calc(100vh - 190px)",
   overflowY: "auto",
 };
 
 const CONTENT_STYLE: React.CSSProperties = {
   minWidth: 0,
   display: "grid",
-  gap: 16,
+  gap: 1,
 };
 
 const TITLE_ROW_STYLE: React.CSSProperties = {
@@ -86,7 +86,7 @@ const DEALER_PILL_STYLE: React.CSSProperties = {
   alignItems: "center",
   gap: 8,
   padding: "6px 10px",
-  borderRadius: 999,
+  borderRadius: 888,
   border: "1px solid rgba(255,255,255,0.08)",
   background: "rgba(255,255,255,0.04)",
   color: "#cbd5e1",
@@ -238,7 +238,6 @@ export const Parts: React.FC<Props> = ({ onBack }) => {
                 overflowWrap: "anywhere",
               }}
             >
-              Parts auto-configuration workspace
             </div>
 
             <div
@@ -272,11 +271,10 @@ export const Parts: React.FC<Props> = ({ onBack }) => {
               style={{
                 color: "#f8fafc",
                 fontSize: 14,
-                fontWeight: 800,
+                fontWeight: 100,
                 marginBottom: 10,
               }}
             >
-              Parts Modules
             </div>
 
             <div style={{ display: "grid", gap: 6 }}>
@@ -364,7 +362,6 @@ export const Parts: React.FC<Props> = ({ onBack }) => {
                       overflowWrap: "anywhere",
                     }}
                   >
-                    {activeItem.description}
                   </div>
                 </div>
 
@@ -415,7 +412,7 @@ export const Parts: React.FC<Props> = ({ onBack }) => {
 
       <style>
         {`
-          @media (max-width: 980px) {
+          @media (max-width: 1080px) {
             .parts-responsive-grid {
               grid-template-columns: 1fr !important;
             }

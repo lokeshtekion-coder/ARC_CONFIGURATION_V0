@@ -17,6 +17,22 @@ export interface StoreRecord {
   pre_production_environment_status: string;
   superpod_id: string;
   product_types?: string;
+
+  workorder_consolidated_pdl?: string;
+  dealer_pdl?: string;
+  arc_pdl?: string;
+
+  project_implementation_tm_sync_status_tracking_id?: string;
+  implementation_tm_sync_status_tracking_id?: string;
+  base_entity_instance_id?: string;
+
+  project_engagement_manager_1781169293313734451?: string;
+  fixed_ops_track_lead_1773369946675032982?: string;
+  conversion_track_lead_1773369950325147526?: string;
+  accounting_track_lead_1773369945455468395?: string;
+
+  tenant_code?: string;
+  tenant_id?: string;
 }
 
 const STORES_API_URL =
@@ -93,12 +109,14 @@ function normalizeHeaderMap(input: unknown): Record<string, string> {
 
 function keyValuePairsToHeaderMap(pairs: KeyValuePair[]): Record<string, string> {
   const out: Record<string, string> = {};
+
   for (const pair of pairs) {
     const key = normalize(pair.key).toLowerCase();
     const value = normalize(pair.value);
     if (!pair.enabled || !key || !value) continue;
     out[key] = value;
   }
+
   return out;
 }
 
@@ -186,6 +204,7 @@ function buildTekionStoresHeaders(): Record<string, string> {
       label: selectedCapture.label,
       expiresAt: selectedCapture.decodedToken?.expiresAt,
     });
+
     throw new ExpiredCaptureTokenError(
       "Captured Stores token has expired. Please reload the website to capture a fresh token."
     );
@@ -207,8 +226,7 @@ function buildTekionStoresHeaders(): Record<string, string> {
   }
 
   mergedHeaders["content-type"] = "application/json";
-  mergedHeaders.accept =
-    mergedHeaders.accept || "application/json, text/plain, */*";
+  mergedHeaders.accept = mergedHeaders.accept || "application/json, text/plain, */*";
 
   log.info("Built Stores request headers", {
     captureLabel: selectedCapture.label,
@@ -223,8 +241,8 @@ function buildTekionStoresHeaders(): Record<string, string> {
 
 function mapStore(item: Record<string, unknown>): StoreRecord {
   const rawTypes = item.product_types ?? item.arc_product_types;
-  let typesArray: string[] = [];
 
+  let typesArray: string[] = [];
   if (Array.isArray(rawTypes)) {
     typesArray = rawTypes.map((t) => String(t).trim()).filter(Boolean);
   } else if (typeof rawTypes === "string") {
@@ -250,6 +268,34 @@ function mapStore(item: Record<string, unknown>): StoreRecord {
       item.workorder_consolidated_super_pod_id ?? item.arc_super_pod_id ?? item.superpod_id
     ),
     product_types: normalize(finalTypes.join(", ")),
+
+    workorder_consolidated_pdl: normalize(item.workorder_consolidated_pdl),
+    dealer_pdl: normalize(item.dealer_pdl),
+    arc_pdl: normalize(item.arc_pdl),
+
+    project_implementation_tm_sync_status_tracking_id: normalize(
+      item.project_implementation_tm_sync_status_tracking_id
+    ),
+    implementation_tm_sync_status_tracking_id: normalize(
+      item.implementation_tm_sync_status_tracking_id
+    ),
+    base_entity_instance_id: normalize(item.base_entity_instance_id),
+
+    project_engagement_manager_1781169293313734451: normalize(
+      item.project_engagement_manager_1781169293313734451
+    ),
+    fixed_ops_track_lead_1773369946675032982: normalize(
+      item.fixed_ops_track_lead_1773369946675032982
+    ),
+    conversion_track_lead_1773369950325147526: normalize(
+      item.conversion_track_lead_1773369950325147526
+    ),
+    accounting_track_lead_1773369945455468395: normalize(
+      item.accounting_track_lead_1773369945455468395
+    ),
+
+    tenant_code: normalize(item.tenant_code),
+    tenant_id: normalize(item.tenant_id),
   };
 }
 
@@ -385,10 +431,7 @@ export async function fetchStores(days: TRange): Promise<StoreRecord[]> {
       upstreamBodyText,
     });
 
-    if (
-      upstreamStatus === 401 &&
-      upstreamBodyText.toLowerCase().includes("invalid token")
-    ) {
+    if (upstreamStatus === 401 && upstreamBodyText.toLowerCase().includes("invalid token")) {
       throw new ExpiredCaptureTokenError(
         "Captured Stores token is invalid or expired. Please reload the website to capture a fresh token."
       );
@@ -445,13 +488,8 @@ export async function fetchStores(days: TRange): Promise<StoreRecord[]> {
 
   const mappedRows = rows.map(mapStore);
 
-  const invalidRows = mappedRows.filter(
-    (item) => !item.tekion_id || !item.dealer_id
-  );
-
-  const mapped = mappedRows.filter(
-    (item) => item.tekion_id && item.dealer_id
-  );
+  const invalidRows = mappedRows.filter((item) => !item.tekion_id || !item.dealer_id);
+  const mapped = mappedRows.filter((item) => item.tekion_id && item.dealer_id);
 
   log.info("Mapped and filtered store rows", {
     rawCount: rows.length,

@@ -1,4 +1,3 @@
-///Users/tlreddy/Desktop/ARC_CONFIGURATION_V0/cors-proxy-ui/src/pages/Stores.tsx
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   fetchStores,
@@ -16,6 +15,12 @@ import type {
 import { fetchStoreOnboardingStatuses } from "../services/storeOnboardingStatusApi";
 import { exportStoresToExcel } from "../services/storesExcelExport";
 import { syncStoresToGraphWorkbook } from "../services/storesGraphSync";
+import {
+  buildStoreSlackDraftContext,
+  getSlackSession,
+  sendSlackMessage,
+  type SlackRecipientCandidate,
+} from "../services/storeSlackHelper";
 
 interface Props {
   onBack: () => void;
@@ -84,7 +89,6 @@ function getTLabel(
   const today = new Date();
   const startToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   const launchDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-
   const diffMs = launchDay.getTime() - startToday.getTime();
   const diffDays = Math.round(diffMs / 86400000);
 
@@ -198,6 +202,54 @@ function getStatusVisual(status: OnboardingStatus) {
 function isPod2(superpodId?: string): boolean {
   const normalized = (superpodId || "").trim().toLowerCase();
   return normalized === "2" || normalized === "pod 2" || normalized === "pod-2";
+}
+
+function copyText(value: string): void {
+  void navigator.clipboard.writeText(value || "");
+}
+
+function uniqueNonEmpty(values: Array<string | undefined>): string[] {
+  return Array.from(
+    new Set(values.map((value) => String(value ?? "").trim()).filter(Boolean))
+  );
+}
+
+function buildDealerPopupRows(row: StoreRecord): Array<{ label: string; value: string }> {
+  const podLeadValues = uniqueNonEmpty([
+    row.workorder_consolidated_pdl,
+    row.dealer_pdl,
+    row.arc_pdl,
+  ]);
+
+  const trackingIdValues = uniqueNonEmpty([
+    row.project_implementation_tm_sync_status_tracking_id,
+    row.implementation_tm_sync_status_tracking_id,
+    row.base_entity_instance_id,
+  ]);
+
+  return [
+    { label: "Dealer ID", value: row.dealer_id || "—" },
+    { label: "Tenant Code", value: row.tenant_code || "—" },
+    { label: "Tenant ID", value: row.tenant_id || "—" },
+    { label: "Pod Lead", value: podLeadValues.length ? podLeadValues.join(" / ") : "—" },
+    { label: "Tracking ID", value: trackingIdValues.length ? trackingIdValues.join(" / ") : "—" },
+    {
+      label: "PEM",
+      value: row.project_engagement_manager_1781169293313734451 || "—",
+    },
+    {
+      label: "Fixed Ops POD",
+      value: row.fixed_ops_track_lead_1773369946675032982 || "—",
+    },
+    {
+      label: "Conversion",
+      value: row.conversion_track_lead_1773369950325147526 || "—",
+    },
+    {
+      label: "Variable Ops POD",
+      value: row.accounting_track_lead_1773369945455468395 || "—",
+    },
+  ];
 }
 
 const StatusChip: React.FC<{
@@ -330,9 +382,449 @@ function withOnboardingStatuses(
   });
 }
 
-function copyText(value: string): void {
-  void navigator.clipboard.writeText(value || "");
-}
+const SlackRecipientRow: React.FC<{
+  candidate: SlackRecipientCandidate;
+  checked: boolean;
+  onToggle: () => void;
+}> = ({ candidate, checked, onToggle }) => {
+  return (
+    <label
+      style={{
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 10,
+        padding: "10px 12px",
+        borderRadius: 12,
+        border: "1px solid rgba(255,255,255,0.08)",
+        background: "rgba(255,255,255,0.03)",
+        cursor: candidate.matchedUser?.userId ? "pointer" : "default",
+        opacity: candidate.matchedUser?.userId ? 1 : 0.7,
+      }}
+    >
+      <input
+        type="checkbox"
+        checked={checked}
+        disabled={!candidate.matchedUser?.userId}
+        onChange={onToggle}
+        style={{ marginTop: 2 }}
+      />
+
+      <div style={{ display: "grid", gap: 4, minWidth: 0 }}>
+        <div style={{ color: "#f8fafc", fontSize: 13, fontWeight: 700 }}>
+          {candidate.label}
+        </div>
+
+        <div style={{ color: "#cbd5e1", fontSize: 12 }}>
+          {candidate.matchedUser?.fullName || "No Slack match found"}
+        </div>
+
+        <div style={{ color: "#94a3b8", fontSize: 12, wordBreak: "break-word" }}>
+          Email: {candidate.normalizedEmail || "—"}
+        </div>
+
+        <div style={{ color: "#94a3b8", fontSize: 12 }}>
+          User ID: {candidate.matchedUser?.userId || "—"}
+        </div>
+      </div>
+    </label>
+  );
+};
+
+const DealerMetaModal: React.FC<{
+  row: StoreRecord | null;
+  onClose: () => void;
+  onToast: (message: string) => void;
+}> = ({ row, onClose, onToast }) => {
+  const draftContext = useMemo(() => {
+    return row ? buildStoreSlackDraftContext(row) : null;
+  }, [row]);
+
+  const slackSession = useMemo(() => getSlackSession(), [row]);
+
+  const [selectedRecipientKeys, setSelectedRecipientKeys] = useState<string[]>([]);
+  const [messageText, setMessageText] = useState("");
+  const [sendingKey, setSendingKey] = useState("");
+  const [sendError, setSendError] = useState("");
+  const [sendSuccess, setSendSuccess] = useState("");
+
+  useEffect(() => {
+    if (!draftContext) {
+      setSelectedRecipientKeys([]);
+      setMessageText("");
+      return;
+    }
+
+    setSelectedRecipientKeys(draftContext.defaultSelectedRecipientKeys);
+    setMessageText(draftContext.draftMessage);
+    setSendingKey("");
+    setSendError("");
+    setSendSuccess("");
+
+    logger.info("Dealer modal initialized", {
+      dealerId: row?.dealer_id,
+      recipientCount: draftContext.recipients.length,
+      defaultSelectedRecipientKeys: draftContext.defaultSelectedRecipientKeys,
+      hasSlackToken: Boolean(slackSession.slackToken),
+      hasSlackDCookie: Boolean(slackSession.slackDCookie),
+      lastSlackSourceUrl: slackSession.lastSlackSourceUrl,
+    });
+  }, [draftContext, row, slackSession.slackToken, slackSession.slackDCookie, slackSession.lastSlackSourceUrl]);
+
+  if (!row || !draftContext) return null;
+
+  const popupRows = buildDealerPopupRows(row);
+
+  const selectedRecipients = draftContext.recipients.filter(
+    (recipient) =>
+      selectedRecipientKeys.includes(recipient.key) && recipient.matchedUser?.userId
+  );
+
+  const handleToggleRecipient = (key: string) => {
+    setSelectedRecipientKeys((prev) =>
+      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]
+    );
+  };
+
+  const handleSend = async (recipient: SlackRecipientCandidate) => {
+    if (!recipient.matchedUser?.userId) return;
+
+    setSendingKey(recipient.key);
+    setSendError("");
+    setSendSuccess("");
+
+    logger.info("Attempting Slack send", {
+      dealerId: row.dealer_id,
+      dealership: row.dba_name,
+      recipientLabel: recipient.label,
+      recipientName: recipient.matchedUser.fullName,
+      recipientEmail: recipient.matchedUser.email,
+      recipientUserId: recipient.matchedUser.userId,
+      messageLength: messageText.length,
+      messagePreview: messageText.slice(0, 300),
+    });
+
+    try {
+      const result = await sendSlackMessage({
+        userId: recipient.matchedUser.userId,
+        email: recipient.matchedUser.email,
+        fullName: recipient.matchedUser.fullName,
+        text: messageText,
+      });
+
+      logger.info("Slack send succeeded", {
+        dealerId: row.dealer_id,
+        recipientUserId: recipient.matchedUser.userId,
+        result,
+      });
+
+      setSendSuccess(
+        `Message sent to ${recipient.matchedUser.fullName} via channel ${result.channelId}`
+      );
+      onToast(`✅ Slack message sent to ${recipient.matchedUser.fullName}`);
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Failed to send Slack message";
+
+      logger.error("Slack send failed", {
+        dealerId: row.dealer_id,
+        recipientUserId: recipient.matchedUser.userId,
+        error,
+        message,
+      });
+
+      setSendError(message);
+      onToast(`❌ ${message}`);
+    } finally {
+      setSendingKey("");
+    }
+  };
+
+  const hasSlackSession = Boolean(slackSession.slackToken && slackSession.slackDCookie);
+
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.62)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 20,
+        zIndex: 9999,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 1180,
+          maxHeight: "86vh",
+          overflow: "auto",
+          background: "#151922",
+          border: "1px solid rgba(255,255,255,0.10)",
+          borderRadius: 18,
+          boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
+          padding: 20,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            gap: 16,
+            marginBottom: 16,
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#fff" }}>
+              Dealer Details + Slack Draft
+            </div>
+            <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 4 }}>
+              {row.dba_name || "—"}
+            </div>
+          </div>
+
+          <button className="btn-secondary btn-sm" onClick={onClose}>
+            ✕ Close
+          </button>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(320px, 420px) minmax(0, 1fr)",
+            gap: 18,
+            alignItems: "start",
+          }}
+        >
+          <div style={{ display: "grid", gap: 16 }}>
+            <div
+              style={{
+                display: "grid",
+                gap: 10,
+                padding: 16,
+                borderRadius: 16,
+                background: "#11151d",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <div style={{ color: "#f8fafc", fontSize: 15, fontWeight: 800 }}>
+                Dealer Data
+              </div>
+
+              {popupRows.map((item) => (
+                <div
+                  key={item.label}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "140px 1fr",
+                    gap: 12,
+                    padding: "10px 12px",
+                    borderRadius: 12,
+                    background: "#0f1115",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <div style={{ color: "#9ca3af", fontSize: 12, fontWeight: 700 }}>
+                    {item.label}
+                  </div>
+                  <div
+                    style={{
+                      color: "#f3f4f6",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {item.value || "—"}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gap: 10,
+                padding: 16,
+                borderRadius: 16,
+                background: "#11151d",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <div style={{ color: "#f8fafc", fontSize: 15, fontWeight: 800 }}>
+                Slack Recipients
+              </div>
+
+              {draftContext.recipients.map((recipient) => (
+                <SlackRecipientRow
+                  key={recipient.key}
+                  candidate={recipient}
+                  checked={selectedRecipientKeys.includes(recipient.key)}
+                  onToggle={() => handleToggleRecipient(recipient.key)}
+                />
+              ))}
+
+              <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                Slack session detected: {hasSlackSession ? "Yes" : "No"}
+              </div>
+
+              {slackSession.lastSlackSourceUrl ? (
+                <div style={{ color: "#94a3b8", fontSize: 12, wordBreak: "break-word" }}>
+                  Source: {slackSession.lastSlackSourceUrl}
+                </div>
+              ) : null}
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gap: 16 }}>
+            <div
+              style={{
+                display: "grid",
+                gap: 12,
+                padding: 16,
+                borderRadius: 16,
+                background: "#11151d",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <div style={{ color: "#f8fafc", fontSize: 15, fontWeight: 800 }}>
+                Message Preview / Editor
+              </div>
+
+              <textarea
+                className="stores-input"
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
+                rows={12}
+                style={{
+                  width: "100%",
+                  minHeight: 260,
+                  resize: "vertical",
+                  borderRadius: 12,
+                  padding: 12,
+                  background: "#0b0f15",
+                  color: "#f8fafc",
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  boxSizing: "border-box",
+                  lineHeight: 1.6,
+                }}
+              />
+
+              <div
+                style={{
+                  borderRadius: 12,
+                  padding: 12,
+                  background: "#0b0f15",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  color: "#e5e7eb",
+                  whiteSpace: "pre-wrap",
+                  lineHeight: 1.6,
+                  fontSize: 13,
+                }}
+              >
+                {messageText || "No message draft available."}
+              </div>
+
+              {sendError ? (
+                <div
+                  style={{
+                    color: "#fecaca",
+                    background: "rgba(239,68,68,0.12)",
+                    border: "1px solid rgba(239,68,68,0.25)",
+                    borderRadius: 12,
+                    padding: "10px 12px",
+                    fontSize: 13,
+                  }}
+                >
+                  {sendError}
+                </div>
+              ) : null}
+
+              {sendSuccess ? (
+                <div
+                  style={{
+                    color: "#bbf7d0",
+                    background: "rgba(34,197,94,0.12)",
+                    border: "1px solid rgba(34,197,94,0.25)",
+                    borderRadius: 12,
+                    padding: "10px 12px",
+                    fontSize: 13,
+                  }}
+                >
+                  {sendSuccess}
+                </div>
+              ) : null}
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gap: 12,
+                padding: 16,
+                borderRadius: 16,
+                background: "#11151d",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <div style={{ color: "#f8fafc", fontSize: 15, fontWeight: 800 }}>
+                Send To Selected People
+              </div>
+
+              {selectedRecipients.length === 0 ? (
+                <div style={{ color: "#94a3b8", fontSize: 13 }}>
+                  No valid Slack recipients selected.
+                </div>
+              ) : (
+                <div style={{ display: "grid", gap: 10 }}>
+                  {selectedRecipients.map((recipient) => (
+                    <div
+                      key={recipient.key}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: 12,
+                        flexWrap: "wrap",
+                        padding: "10px 12px",
+                        borderRadius: 12,
+                        background: "#0f1115",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                      }}
+                    >
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ color: "#f8fafc", fontSize: 13, fontWeight: 700 }}>
+                          {recipient.label}: {recipient.matchedUser?.fullName}
+                        </div>
+                        <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                          {recipient.matchedUser?.email} • {recipient.matchedUser?.userId}
+                        </div>
+                      </div>
+
+                      <button
+                        className="btn-postman"
+                        type="button"
+                        disabled={!hasSlackSession || sendingKey === recipient.key}
+                        onClick={() => {
+                          void handleSend(recipient);
+                        }}
+                      >
+                        {sendingKey === recipient.key ? "Sending..." : "Send"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const Stores: React.FC<Props> = ({ onBack }) => {
   const [records, setRecords] = useState<StoreRecord[]>([]);
@@ -349,9 +841,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
   const [implementationType, setImplementationType] = useState("");
   const [productType, setProductType] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
+  const [activeDealerPopup, setActiveDealerPopup] = useState<StoreRecord | null>(null);
 
   const presetRange = useMemo(() => getTDaysRange(range), [range]);
-
   const [fromDate, setFromDate] = useState(toInputDate(presetRange.fromDate));
   const [toDate, setToDate] = useState(toInputDate(presetRange.toDate));
 
@@ -404,20 +896,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         const existingDbStores = await getStores();
         const existingMap = new Map(existingDbStores.map((s) => [s.tekion_id, s]));
 
-        const duplicateTekionIds = rawStores
-          .map((store) => store.tekion_id)
-          .filter(Boolean)
-          .filter((tekionId, index, arr) => arr.indexOf(tekionId) !== index);
-
-        logger.info("Fetched stores before dedupe", {
-          fetchedCount: rawStores.length,
-          duplicateTekionIdCount: duplicateTekionIds.length,
-          duplicateTekionIdSamples: duplicateTekionIds.slice(0, 10),
-        });
-
         const uniqueStores = Array.from(
           new Map<string, StoreRecord>(
-            (rawStores as StoreRecord[]).map((store) => {
+            rawStores.map((store) => {
               const existing = existingMap.get(store.tekion_id);
               return [
                 store.tekion_id,
@@ -425,6 +906,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                   ...store,
                   configuration_status: existing?.configuration_status || "TO DO",
                   testing_status: existing?.testing_status || "TO DO",
+                  blueprint_statuses: existing?.blueprint_statuses,
+                  signoff_statuses: existing?.signoff_statuses,
+                  onboarding_status_fetched_at: existing?.onboarding_status_fetched_at,
                 },
               ];
             })
@@ -499,7 +983,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
     try {
       await saveStores(updatedRecords);
-    } catch (err) {
+    } catch (err: unknown) {
       logger.error("Failed to save custom status to IndexedDB", err);
     }
   };
@@ -629,6 +1113,22 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     setFromDate(toInputDate(presetRange.fromDate));
     setToDate(toInputDate(presetRange.toDate));
   };
+
+  const handleDealerClick = useCallback(
+    (row: StoreRecord) => {
+      logger.info("Dealer ID clicked", {
+        dealerId: row.dealer_id,
+        tekionId: row.tekion_id,
+        dealership: row.dba_name,
+        launchDate: row.launch_date,
+      });
+
+      copyText(row.dealer_id);
+      setActiveDealerPopup(row);
+      showActionMessage(`✅ Copied Dealer ID ${row.dealer_id}`);
+    },
+    [showActionMessage]
+  );
 
   return (
     <div className="stores-shell">
@@ -901,7 +1401,12 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                         </td>
 
                         <td>
-                          <button type="button" className="stores-copy-btn" onClick={() => copyText(row.dealer_id)}>
+                          <button
+                            type="button"
+                            className="stores-copy-btn"
+                            onClick={() => handleDealerClick(row)}
+                            title="Copy Dealer ID and open dealer details"
+                          >
                             {row.dealer_id}
                           </button>
                         </td>
@@ -1006,6 +1511,12 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           </div>
         </section>
       </div>
+
+      <DealerMetaModal
+        row={activeDealerPopup}
+        onClose={() => setActiveDealerPopup(null)}
+        onToast={showActionMessage}
+      />
     </div>
   );
 };

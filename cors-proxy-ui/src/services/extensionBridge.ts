@@ -1,13 +1,14 @@
 import { saveTekionApiSettings } from "./tekionApiSettings";
 
 export const PAGE_SYNC_EVENT = "ARC_EXTENSION_SYNC_CAPTURE";
-export const PAGE_SYNC_RULES_EVENT = "ARC_EXTENSION_SYNC_RULES";
 export const PAGE_REQUEST_EVENT = "ARC_EXTENSION_BRIDGE_REQUEST_LATEST";
 export const PAGE_GET_RULES_EVENT = "ARC_EXTENSION_BRIDGE_GET_RULES";
 export const PAGE_SAVE_RULES_EVENT = "ARC_EXTENSION_BRIDGE_SAVE_RULES";
+export const PAGE_SYNC_RULES_EVENT = "ARC_EXTENSION_SYNC_RULES";
 
 const DEFAULT_CUSTOM_EXPIRY_HOURS = 48;
 const LOCAL_CAPTURE_STORAGE_KEY = "arc-extension-latest-capture";
+const BROWSER_CAPTURE_STORAGE_KEY = "arc-extension-browser-capture";
 
 export interface ArcDecodedTokenInfo {
   exp?: number;
@@ -72,10 +73,17 @@ export interface ArcCustomCapturedApi {
 export interface ArcLatestCaptureState {
   graphApiToken?: string;
   tapDuoApiToken?: string;
+
+  slackToken?: string;
+  slackDCookie?: string;
+  lastSlackSourceUrl?: string;
+  lastSlackCaptureAt?: string;
+
   graphHeaders?: Record<string, string>;
   tekionImplementationHeaders?: Record<string, string>;
   tekionBootstrapHeaders?: Record<string, string>;
   tekionProdTechMotorsHeaders?: Record<string, string>;
+
   lastGraphSourceUrl?: string;
   lastGraphCaptureAt?: string;
   lastTekionImplementationSourceUrl?: string;
@@ -84,6 +92,7 @@ export interface ArcLatestCaptureState {
   lastTekionBootstrapCaptureAt?: string;
   lastTekionProdTechMotorsSourceUrl?: string;
   lastTekionProdTechMotorsCaptureAt?: string;
+
   tekionProfiles?: ArcTekionProfile[];
   customCaptures?: Record<string, ArcCustomCapturedApi>;
 }
@@ -93,13 +102,37 @@ export interface ArcBridgeSyncResult {
   capture: ArcLatestCaptureState;
 }
 
+export interface HeaderMap {
+  [key: string]: string;
+}
+
+export interface ArcBrowserCaptureState {
+  graphApiToken?: string;
+  tapDuoApiToken?: string;
+  slackToken?: string;
+  slackDCookie?: string;
+  graphHeaders?: HeaderMap;
+  tekionImplementationHeaders?: HeaderMap;
+  tekionBootstrapHeaders?: HeaderMap;
+  tekionProdTechMotorsHeaders?: HeaderMap;
+  lastGraphSourceUrl?: string;
+  lastTekionImplementationSourceUrl?: string;
+  lastTekionBootstrapSourceUrl?: string;
+  lastTekionProdTechMotorsSourceUrl?: string;
+  lastSlackSourceUrl?: string;
+  lastGraphCaptureAt?: string;
+  lastTekionImplementationCaptureAt?: string;
+  lastTekionBootstrapCaptureAt?: string;
+  lastTekionProdTechMotorsCaptureAt?: string;
+  lastSlackCaptureAt?: string;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 function normalizeStringMap(input: unknown): Record<string, string> | undefined {
   if (!isRecord(input)) return undefined;
-
   const out: Record<string, string> = {};
   for (const [key, value] of Object.entries(input)) {
     if (typeof value === "string" && value.trim()) {
@@ -199,7 +232,8 @@ function normalizeTekionProfiles(input: unknown): ArcTekionProfile[] | undefined
         tenantName: typeof item.tenantName === "string" ? item.tenantName : undefined,
         tekSiteId: typeof item.tekSiteId === "string" ? item.tekSiteId : undefined,
         roleId: typeof item.roleId === "string" ? item.roleId : undefined,
-        applicationId: typeof item.applicationId === "string" ? item.applicationId : undefined,
+        applicationId:
+          typeof item.applicationId === "string" ? item.applicationId : undefined,
         clientId: typeof item.clientId === "string" ? item.clientId : undefined,
         locale: typeof item.locale === "string" ? item.locale : undefined,
         token: typeof item.token === "string" ? item.token : undefined,
@@ -265,7 +299,6 @@ function normalizeCustomCaptures(
       Number.isFinite(expiryHoursRaw) && expiryHoursRaw > 0
         ? expiryHoursRaw
         : DEFAULT_CUSTOM_EXPIRY_HOURS;
-
     const matchedUrl = typeof value.matchedUrl === "string" ? value.matchedUrl : "";
     const capturedAt = typeof value.capturedAt === "string" ? value.capturedAt : "";
     const lastSeenAt =
@@ -276,34 +309,48 @@ function normalizeCustomCaptures(
 
     const tokenFromValue = typeof value.token === "string" ? value.token.trim() : "";
     const token = tokenFromValue || extractTokenFromHeaders(headers);
-    const decodedToken =
-      isRecord(value.decodedToken)
-        ? {
-            exp: typeof value.decodedToken.exp === "number" ? value.decodedToken.exp : undefined,
-            iat: typeof value.decodedToken.iat === "number" ? value.decodedToken.iat : undefined,
-            expiresAt:
-              typeof value.decodedToken.expiresAt === "string"
-                ? value.decodedToken.expiresAt
-                : undefined,
-            issuedAt:
-              typeof value.decodedToken.issuedAt === "string"
-                ? value.decodedToken.issuedAt
-                : undefined,
-            isExpired:
-              typeof value.decodedToken.isExpired === "boolean"
-                ? value.decodedToken.isExpired
-                : undefined,
-            sub: typeof value.decodedToken.sub === "string" ? value.decodedToken.sub : undefined,
-            email:
-              typeof value.decodedToken.email === "string"
-                ? value.decodedToken.email
-                : undefined,
-            aud: typeof value.decodedToken.aud === "string" ? value.decodedToken.aud : undefined,
-            iss: typeof value.decodedToken.iss === "string" ? value.decodedToken.iss : undefined,
-          }
-        : token
-        ? decodeJwt(token)
-        : undefined;
+    const decodedToken = isRecord(value.decodedToken)
+      ? {
+          exp:
+            typeof value.decodedToken.exp === "number"
+              ? value.decodedToken.exp
+              : undefined,
+          iat:
+            typeof value.decodedToken.iat === "number"
+              ? value.decodedToken.iat
+              : undefined,
+          expiresAt:
+            typeof value.decodedToken.expiresAt === "string"
+              ? value.decodedToken.expiresAt
+              : undefined,
+          issuedAt:
+            typeof value.decodedToken.issuedAt === "string"
+              ? value.decodedToken.issuedAt
+              : undefined,
+          isExpired:
+            typeof value.decodedToken.isExpired === "boolean"
+              ? value.decodedToken.isExpired
+              : undefined,
+          sub:
+            typeof value.decodedToken.sub === "string"
+              ? value.decodedToken.sub
+              : undefined,
+          email:
+            typeof value.decodedToken.email === "string"
+              ? value.decodedToken.email
+              : undefined,
+          aud:
+            typeof value.decodedToken.aud === "string"
+              ? value.decodedToken.aud
+              : undefined,
+          iss:
+            typeof value.decodedToken.iss === "string"
+              ? value.decodedToken.iss
+              : undefined,
+        }
+      : token
+      ? decodeJwt(token)
+      : undefined;
 
     if (
       isCustomCaptureExpired({
@@ -347,13 +394,33 @@ function normalizeCapture(input: unknown): ArcLatestCaptureState | null {
     out.tapDuoApiToken = input.tapDuoApiToken.trim();
   }
 
+  if (typeof input.slackToken === "string" && input.slackToken.trim()) {
+    out.slackToken = input.slackToken.trim();
+  }
+
+  if (typeof input.slackDCookie === "string" && input.slackDCookie.trim()) {
+    out.slackDCookie = input.slackDCookie.trim();
+  }
+
+  if (typeof input.lastSlackSourceUrl === "string" && input.lastSlackSourceUrl.trim()) {
+    out.lastSlackSourceUrl = input.lastSlackSourceUrl.trim();
+  }
+
+  if (typeof input.lastSlackCaptureAt === "string" && input.lastSlackCaptureAt.trim()) {
+    out.lastSlackCaptureAt = input.lastSlackCaptureAt.trim();
+  }
+
   out.graphHeaders = normalizeStringMap(input.graphHeaders);
   out.tekionImplementationHeaders = normalizeStringMap(input.tekionImplementationHeaders);
   out.tekionBootstrapHeaders = normalizeStringMap(input.tekionBootstrapHeaders);
   out.tekionProdTechMotorsHeaders = normalizeStringMap(input.tekionProdTechMotorsHeaders);
 
-  if (typeof input.lastGraphSourceUrl === "string") out.lastGraphSourceUrl = input.lastGraphSourceUrl;
-  if (typeof input.lastGraphCaptureAt === "string") out.lastGraphCaptureAt = input.lastGraphCaptureAt;
+  if (typeof input.lastGraphSourceUrl === "string") {
+    out.lastGraphSourceUrl = input.lastGraphSourceUrl;
+  }
+  if (typeof input.lastGraphCaptureAt === "string") {
+    out.lastGraphCaptureAt = input.lastGraphCaptureAt;
+  }
   if (typeof input.lastTekionImplementationSourceUrl === "string") {
     out.lastTekionImplementationSourceUrl = input.lastTekionImplementationSourceUrl;
   }
@@ -388,6 +455,7 @@ export function loadLatestExtensionCapture(): ArcLatestCaptureState | null {
     if (normalized) {
       localStorage.setItem(LOCAL_CAPTURE_STORAGE_KEY, JSON.stringify(normalized));
     }
+
     return normalized;
   } catch {
     return null;
@@ -425,10 +493,13 @@ export function syncExtensionCaptureToSettings(
   }
 
   saveLatestExtensionCapture(capture);
+
   return { savedKeys, capture };
 }
 
-export function hasExpiredCustomToken(capture: ArcCustomCapturedApi | null | undefined): boolean {
+export function hasExpiredCustomToken(
+  capture: ArcCustomCapturedApi | null | undefined
+): boolean {
   return capture?.decodedToken?.isExpired === true;
 }
 
@@ -469,11 +540,77 @@ export function subscribeToExtensionRules(
   const handler = (event: MessageEvent) => {
     if (event.source !== window || event.origin !== window.location.origin) return;
     if (event.data?.type !== PAGE_SYNC_RULES_EVENT) return;
-
     const rules = Array.isArray(event.data.payload) ? event.data.payload : [];
     onSync(rules);
   };
 
   window.addEventListener("message", handler);
   return () => window.removeEventListener("message", handler);
+}
+
+function normalizeHeaderMap(input: unknown): HeaderMap | undefined {
+  if (!input || typeof input !== "object") return undefined;
+
+  const out: HeaderMap = {};
+  for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
+    if (typeof value === "string") {
+      out[key] = value;
+    }
+  }
+  return out;
+}
+
+function normalizeBrowserCaptureState(input: unknown): ArcBrowserCaptureState {
+  if (!input || typeof input !== "object") {
+    return {};
+  }
+
+  const raw = input as Record<string, unknown>;
+  const normalizeString = (value: unknown): string | undefined =>
+    typeof value === "string" ? value : undefined;
+
+  return {
+    graphApiToken: normalizeString(raw.graphApiToken),
+    tapDuoApiToken: normalizeString(raw.tapDuoApiToken),
+    slackToken: normalizeString(raw.slackToken),
+    slackDCookie: normalizeString(raw.slackDCookie),
+    graphHeaders: normalizeHeaderMap(raw.graphHeaders),
+    tekionImplementationHeaders: normalizeHeaderMap(raw.tekionImplementationHeaders),
+    tekionBootstrapHeaders: normalizeHeaderMap(raw.tekionBootstrapHeaders),
+    tekionProdTechMotorsHeaders: normalizeHeaderMap(raw.tekionProdTechMotorsHeaders),
+    lastGraphSourceUrl: normalizeString(raw.lastGraphSourceUrl),
+    lastTekionImplementationSourceUrl: normalizeString(raw.lastTekionImplementationSourceUrl),
+    lastTekionBootstrapSourceUrl: normalizeString(raw.lastTekionBootstrapSourceUrl),
+    lastTekionProdTechMotorsSourceUrl: normalizeString(raw.lastTekionProdTechMotorsSourceUrl),
+    lastSlackSourceUrl: normalizeString(raw.lastSlackSourceUrl),
+    lastGraphCaptureAt: normalizeString(raw.lastGraphCaptureAt),
+    lastTekionImplementationCaptureAt: normalizeString(raw.lastTekionImplementationCaptureAt),
+    lastTekionBootstrapCaptureAt: normalizeString(raw.lastTekionBootstrapCaptureAt),
+    lastTekionProdTechMotorsCaptureAt: normalizeString(raw.lastTekionProdTechMotorsCaptureAt),
+    lastSlackCaptureAt: normalizeString(raw.lastSlackCaptureAt),
+  };
+}
+
+export function loadArcBrowserCapture(): ArcBrowserCaptureState {
+  try {
+    const raw = localStorage.getItem(BROWSER_CAPTURE_STORAGE_KEY);
+    if (!raw) return {};
+    return normalizeBrowserCaptureState(JSON.parse(raw));
+  } catch {
+    return {};
+  }
+}
+
+export function saveArcBrowserCapture(
+  next: Partial<ArcBrowserCaptureState>
+): ArcBrowserCaptureState {
+  const current = loadArcBrowserCapture();
+  const normalizedNext = normalizeBrowserCaptureState(next);
+  const merged: ArcBrowserCaptureState = {
+    ...current,
+    ...normalizedNext,
+  };
+
+  localStorage.setItem(BROWSER_CAPTURE_STORAGE_KEY, JSON.stringify(merged));
+  return merged;
 }

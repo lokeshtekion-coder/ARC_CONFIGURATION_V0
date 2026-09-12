@@ -7,6 +7,7 @@ const LOCALHOST_APP_MATCHES = [
 ];
 const REQUEST_FILTER = {
     urls: ["<all_urls>"],
+    types: ["xmlhttprequest"],
 };
 const GRAPH_ALLOWED_INITIATORS = new Set([
     "https://webshell.suite.office.com",
@@ -33,9 +34,23 @@ const DROP_CUSTOM_CAPTURE_HEADERS = new Set([
     "host",
 ]);
 let cachedCustomRules = [];
+const pendingSlackRequests = new Map();
+function log(...args) {
+    console.log("[ARC BG]", ...args);
+}
 function parseUrl(raw) {
     try {
         return new URL(raw);
+    }
+    catch {
+        return null;
+    }
+}
+function getOrigin(value) {
+    if (!value)
+        return null;
+    try {
+        return new URL(value).origin;
     }
     catch {
         return null;
@@ -59,56 +74,6 @@ function extractBearerToken(authHeader) {
     if (!/^bearer\s+/i.test(value))
         return "";
     return value.replace(/^bearer\s+/i, "").trim();
-}
-function getOrigin(value) {
-    if (!value)
-        return null;
-    try {
-        return new URL(value).origin;
-    }
-    catch {
-        return null;
-    }
-}
-function isAllowedGraphInitiator(details) {
-    const origin = getOrigin(details.initiator);
-    return origin ? GRAPH_ALLOWED_INITIATORS.has(origin) : false;
-}
-function isGraphPhotoRequest(rawUrl) {
-    const url = parseUrl(rawUrl);
-    return Boolean(url &&
-        url.origin === "https://graph.microsoft.com" &&
-        url.pathname === "/v1.0/users/tlreddy@tekion.com/photo/$value");
-}
-function isTekionImplementationRequest(rawUrl) {
-    const url = parseUrl(rawUrl);
-    return Boolean(url &&
-        url.origin === "https://us-west1-tapapi.tekioncloud.com" &&
-        url.pathname.startsWith("/tapapi/tap-crm-implementations-backend/public/v1/implementation-dealer-st"));
-}
-function isTekionBootstrapRequest(rawUrl) {
-    const url = parseUrl(rawUrl);
-    return Boolean(url &&
-        url.origin === "https://preprodapp.tekioncloud.com" &&
-        url.pathname === "/api/accounting/u/configurable/bootstrap");
-}
-function isTekionProdTechMotorsProfileRequest(rawUrl) {
-    const url = parseUrl(rawUrl);
-    return Boolean(url &&
-        url.origin === "https://app.tekioncloud.com" &&
-        url.pathname === "/api/userservice/u/employee/profile");
-}
-function detectCaptureKind(details) {
-    if (isGraphPhotoRequest(details.url)) {
-        return isAllowedGraphInitiator(details) ? "graph" : null;
-    }
-    if (isTekionImplementationRequest(details.url))
-        return "tekionImplementation";
-    if (isTekionBootstrapRequest(details.url))
-        return "tekionBootstrap";
-    if (isTekionProdTechMotorsProfileRequest(details.url))
-        return "tekionProdTechMotors";
-    return null;
 }
 function filterTekionHeaders(headers) {
     const out = {};
@@ -180,6 +145,54 @@ function decodeJwt(token) {
         return undefined;
     }
 }
+function isAllowedGraphInitiator(details) {
+    const origin = getOrigin(details.initiator);
+    return origin ? GRAPH_ALLOWED_INITIATORS.has(origin) : false;
+}
+function isGraphPhotoRequest(rawUrl) {
+    const url = parseUrl(rawUrl);
+    return Boolean(url &&
+        url.origin === "https://graph.microsoft.com" &&
+        url.pathname === "/v1.0/users/tlreddy@tekion.com/photo/$value");
+}
+function isTekionImplementationRequest(rawUrl) {
+    const url = parseUrl(rawUrl);
+    return Boolean(url &&
+        url.origin === "https://us-west1-tapapi.tekioncloud.com" &&
+        url.pathname.startsWith("/tapapi/tap-crm-implementations-backend/public/v1/implementation-dealer-st"));
+}
+function isTekionBootstrapRequest(rawUrl) {
+    const url = parseUrl(rawUrl);
+    return Boolean(url &&
+        url.origin === "https://preprodapp.tekioncloud.com" &&
+        url.pathname === "/api/accounting/u/configurable/bootstrap");
+}
+function isTekionProdTechMotorsProfileRequest(rawUrl) {
+    const url = parseUrl(rawUrl);
+    return Boolean(url &&
+        url.origin === "https://app.tekioncloud.com" &&
+        url.pathname === "/api/userservice/u/employee/profile");
+}
+function isSlackPermissionsInfoRequest(rawUrl) {
+    const url = parseUrl(rawUrl);
+    return Boolean(url &&
+        url.origin === "https://edgeapi.slack.com" &&
+        /\/permissions\/info$/i.test(url.pathname));
+}
+function detectCaptureKind(details) {
+    if (isGraphPhotoRequest(details.url)) {
+        return isAllowedGraphInitiator(details) ? "graph" : null;
+    }
+    if (isTekionImplementationRequest(details.url))
+        return "tekionImplementation";
+    if (isTekionBootstrapRequest(details.url))
+        return "tekionBootstrap";
+    if (isTekionProdTechMotorsProfileRequest(details.url))
+        return "tekionProdTechMotors";
+    if (isSlackPermissionsInfoRequest(details.url))
+        return "slackPermissionsInfo";
+    return null;
+}
 function buildProfileKey(headers, decodedToken) {
     return [
         headers["tenantname"] || decodedToken?.originalTenantId || "",
@@ -201,7 +214,7 @@ function normalizeProfiles(input) {
             typeof raw.capturedAt !== "string") {
             continue;
         }
-        const profile = {
+        out.push({
             id: raw.id,
             profileKey: raw.profileKey,
             capturedAt: raw.capturedAt,
@@ -220,8 +233,7 @@ function normalizeProfiles(input) {
             bootstrapHeaders: raw.bootstrapHeaders && typeof raw.bootstrapHeaders === "object"
                 ? { ...raw.bootstrapHeaders }
                 : {},
-        };
-        out.push(profile);
+        });
     }
     return out;
 }
@@ -263,11 +275,7 @@ function upsertTekionProfile(current, headers, sourceUrl, capturedAt) {
     else {
         profiles.unshift(nextProfile);
     }
-    profiles.sort((a, b) => {
-        const at = new Date(a.capturedAt).getTime();
-        const bt = new Date(b.capturedAt).getTime();
-        return bt - at;
-    });
+    profiles.sort((a, b) => new Date(b.capturedAt).getTime() - new Date(a.capturedAt).getTime());
     return profiles;
 }
 function isExpired(capturedAt, expiryHours) {
@@ -295,6 +303,10 @@ function comparableSnapshot(state) {
     return JSON.stringify({
         graphApiToken: state.graphApiToken ?? "",
         tapDuoApiToken: state.tapDuoApiToken ?? "",
+        slackToken: state.slackToken ?? "",
+        slackDCookie: state.slackDCookie ?? "",
+        lastSlackSourceUrl: state.lastSlackSourceUrl ?? "",
+        lastSlackCaptureAt: state.lastSlackCaptureAt ?? "",
         graphHeaders: sortHeaderMap(state.graphHeaders) ?? {},
         tekionImplementationHeaders: sortHeaderMap(state.tekionImplementationHeaders) ?? {},
         tekionBootstrapHeaders: sortHeaderMap(state.tekionBootstrapHeaders) ?? {},
@@ -341,18 +353,6 @@ function setStorageValue(key, value) {
         });
     });
 }
-function queryLocalhostTabs() {
-    return new Promise((resolve) => {
-        chrome.tabs.query({ url: LOCALHOST_APP_MATCHES }, (tabs) => {
-            resolve(tabs ?? []);
-        });
-    });
-}
-function sendMessageToTab(tabId, message) {
-    return new Promise((resolve) => {
-        chrome.tabs.sendMessage(tabId, message, () => resolve());
-    });
-}
 async function loadStoredState() {
     const state = (await getStorageValue(STORAGE_KEY)) ?? {};
     return {
@@ -366,6 +366,18 @@ async function persistState(state) {
         customCaptures: pruneExpiredCustomCaptures(state.customCaptures),
     });
 }
+function queryLocalhostTabs() {
+    return new Promise((resolve) => {
+        chrome.tabs.query({ url: LOCALHOST_APP_MATCHES }, (tabs) => {
+            resolve(tabs ?? []);
+        });
+    });
+}
+function sendMessageToTab(tabId, message) {
+    return new Promise((resolve) => {
+        chrome.tabs.sendMessage(tabId, message, () => resolve());
+    });
+}
 async function pushStateToLocalhostTabs(state) {
     const tabs = await queryLocalhostTabs();
     const message = { type: "ARC_PUSH_CAPTURE", payload: state };
@@ -373,7 +385,64 @@ async function pushStateToLocalhostTabs(state) {
         .filter((tab) => typeof tab.id === "number")
         .map((tab) => sendMessageToTab(tab.id, message)));
 }
-function mergeCapture(current, kind, url, normalizedHeaders) {
+function extractCookieValue(cookieHeader, key) {
+    if (!cookieHeader)
+        return "";
+    const parts = cookieHeader.split(";");
+    for (const part of parts) {
+        const [rawKey, ...rest] = part.split("=");
+        if (rawKey?.trim() === key) {
+            return rest.join("=").trim();
+        }
+    }
+    return "";
+}
+function parseSlackBodyToken(bodyText) {
+    if (!bodyText.trim())
+        return "";
+    try {
+        const parsed = JSON.parse(bodyText);
+        if (typeof parsed.token === "string" && parsed.token.trim()) {
+            return parsed.token.trim();
+        }
+        if (typeof parsed.enterprise_token === "string" &&
+            parsed.enterprise_token.trim()) {
+            return parsed.enterprise_token.trim();
+        }
+    }
+    catch { }
+    try {
+        const params = new URLSearchParams(bodyText);
+        const token = params.get("token")?.trim();
+        if (token)
+            return token;
+        const enterpriseToken = params.get("enterprise_token")?.trim();
+        if (enterpriseToken)
+            return enterpriseToken;
+    }
+    catch { }
+    return "";
+}
+function decodeRequestBodyToText(requestBody) {
+    if (!requestBody)
+        return "";
+    if (requestBody.raw && requestBody.raw.length > 0) {
+        const decoder = new TextDecoder("utf-8");
+        return requestBody.raw
+            .map((chunk) => chunk.bytes ? decoder.decode(new Uint8Array(chunk.bytes)) : "")
+            .join("");
+    }
+    if (requestBody.formData) {
+        const params = new URLSearchParams();
+        for (const key of Object.keys(requestBody.formData)) {
+            const values = requestBody.formData[key] ?? [];
+            values.forEach((value) => params.append(key, value));
+        }
+        return params.toString();
+    }
+    return "";
+}
+function mergeCapture(current, kind, url, normalizedHeaders, slackBodyText) {
     const now = new Date().toISOString();
     const next = { ...current };
     if (kind === "graph") {
@@ -384,6 +453,19 @@ function mergeCapture(current, kind, url, normalizedHeaders) {
         next.graphHeaders = { authorization: `Bearer ${token}` };
         next.lastGraphSourceUrl = url;
         next.lastGraphCaptureAt = now;
+        return next;
+    }
+    if (kind === "slackPermissionsInfo") {
+        const token = parseSlackBodyToken(slackBodyText ?? "");
+        const dCookie = extractCookieValue(normalizedHeaders["cookie"], "d");
+        if (!token && !dCookie)
+            return null;
+        if (token)
+            next.slackToken = token;
+        if (dCookie)
+            next.slackDCookie = dCookie;
+        next.lastSlackSourceUrl = url;
+        next.lastSlackCaptureAt = now;
         return next;
     }
     const filteredTekionHeaders = filterTekionHeaders(normalizedHeaders);
@@ -412,18 +494,40 @@ function mergeCapture(current, kind, url, normalizedHeaders) {
     if (kind === "tekionProdTechMotors") {
         if (Object.keys(filteredTekionHeaders).length === 0)
             return null;
-        console.log("[ARC BG] PRODTechMOTORS profile request detected", {
-            url,
-            headerKeys: Object.keys(filteredTekionHeaders).sort(),
-            dealerId: filteredTekionHeaders["dealerid"],
-            tenantName: filteredTekionHeaders["tenantname"],
-        });
         next.tekionProdTechMotorsHeaders = filteredTekionHeaders;
         next.lastTekionProdTechMotorsSourceUrl = url;
         next.lastTekionProdTechMotorsCaptureAt = now;
         return next;
     }
     return null;
+}
+function mergeCustomCapture(current, rule, url, normalizedHeaders) {
+    const filteredHeaders = filterCustomCaptureHeaders(normalizedHeaders);
+    const authToken = extractBearerToken(normalizedHeaders["authorization"]) ||
+        normalizeString(normalizedHeaders["tekion-api-token"]) ||
+        normalizeString(normalizedHeaders["tap-duo-api-token"]) ||
+        undefined;
+    if (Object.keys(filteredHeaders).length === 0 && !authToken)
+        return null;
+    const now = new Date().toISOString();
+    return {
+        ...current,
+        customCaptures: {
+            ...(current.customCaptures ?? {}),
+            [rule.id]: {
+                id: rule.id,
+                label: rule.label,
+                pattern: rule.pattern,
+                matchMode: rule.matchMode,
+                expiryHours: rule.expiryHours,
+                matchedUrl: url,
+                capturedAt: current.customCaptures?.[rule.id]?.capturedAt || now,
+                lastSeenAt: now,
+                token: authToken,
+                headers: filteredHeaders,
+            },
+        },
+    };
 }
 function normalizeRuleList(input) {
     if (!Array.isArray(input))
@@ -473,42 +577,6 @@ function matchCustomRule(url) {
     }
     return null;
 }
-function mergeCustomCapture(current, rule, url, normalizedHeaders) {
-    const filteredHeaders = filterCustomCaptureHeaders(normalizedHeaders);
-    const authToken = extractBearerToken(normalizedHeaders["authorization"]) ||
-        normalizeString(normalizedHeaders["tekion-api-token"]) ||
-        normalizeString(normalizedHeaders["tap-duo-api-token"]) ||
-        undefined;
-    if (Object.keys(filteredHeaders).length === 0 && !authToken) {
-        return null;
-    }
-    const now = new Date().toISOString();
-    console.log("[ARC BG] storing custom capture headers", {
-        ruleId: rule.id,
-        label: rule.label,
-        matchedUrl: url,
-        rawHeaderKeys: Object.keys(normalizedHeaders).sort(),
-        filteredHeaderKeys: Object.keys(filteredHeaders).sort(),
-    });
-    return {
-        ...current,
-        customCaptures: {
-            ...(current.customCaptures ?? {}),
-            [rule.id]: {
-                id: rule.id,
-                label: rule.label,
-                pattern: rule.pattern,
-                matchMode: rule.matchMode,
-                expiryHours: rule.expiryHours,
-                matchedUrl: url,
-                capturedAt: current.customCaptures?.[rule.id]?.capturedAt || now,
-                lastSeenAt: now,
-                token: authToken,
-                headers: filteredHeaders,
-            },
-        },
-    };
-}
 async function cleanupExpiredCustomCapturesAndSync() {
     const current = await loadStoredState();
     const next = {
@@ -520,66 +588,76 @@ async function cleanupExpiredCustomCapturesAndSync() {
         await pushStateToLocalhostTabs(next);
     }
 }
-async function handleBeforeSendHeaders(details) {
-    const normalizedHeaders = normalizeHeaders(details.requestHeaders);
-    const current = await loadStoredState();
-    const kind = detectCaptureKind(details);
-    let next = null;
-    if (kind) {
-        console.log("[ARC BG] matched known request", {
-            kind,
-            url: details.url,
-            initiator: details.initiator,
-        });
-        next = mergeCapture(current, kind, details.url, normalizedHeaders);
-    }
-    else {
-        const customRule = matchCustomRule(details.url);
-        if (customRule) {
-            console.log("[ARC BG] matched custom rule", {
-                ruleId: customRule.id,
-                label: customRule.label,
-                url: details.url,
-            });
-            next = mergeCustomCapture(current, customRule, details.url, normalizedHeaders);
-        }
-    }
-    if (!next)
-        return;
-    const before = comparableSnapshot(current);
-    const after = comparableSnapshot(next);
-    await persistState(next);
-    if (before !== after) {
-        console.log("[ARC BG] state changed, pushing to localhost tabs");
-        await pushStateToLocalhostTabs(next);
-    }
-    else {
-        console.log("[ARC BG] state unchanged");
-    }
-}
 chrome.storage.local.get([CUSTOM_RULES_STORAGE_KEY], (result) => {
     cachedCustomRules = normalizeRuleList(result[CUSTOM_RULES_STORAGE_KEY]);
-    console.log("[ARC BG] custom watch rules initialized", cachedCustomRules);
 });
 chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== "local")
         return;
     if (changes[CUSTOM_RULES_STORAGE_KEY]) {
         cachedCustomRules = normalizeRuleList(changes[CUSTOM_RULES_STORAGE_KEY].newValue);
-        console.log("[ARC BG] custom watch rules updated", cachedCustomRules);
     }
 });
+chrome.webRequest.onBeforeRequest.addListener((details) => {
+    const typed = details;
+    if (!isSlackPermissionsInfoRequest(typed.url)) {
+        return undefined;
+    }
+    const bodyText = decodeRequestBodyToText(typed.requestBody);
+    pendingSlackRequests.set(typed.requestId, {
+        url: typed.url,
+        bodyText,
+        createdAt: Date.now(),
+    });
+    log("captured slack request body", {
+        url: typed.url,
+        hasBody: Boolean(bodyText),
+        preview: bodyText.slice(0, 200),
+    });
+    return undefined;
+}, { urls: ["https://edgeapi.slack.com/*"], types: ["xmlhttprequest"] }, ["requestBody"]);
 chrome.webRequest.onBeforeSendHeaders.addListener((details) => {
-    void handleBeforeSendHeaders(details);
+    void (async () => {
+        const current = await loadStoredState();
+        const kind = detectCaptureKind(details);
+        const normalizedHeaders = normalizeHeaders(details.requestHeaders);
+        let next = null;
+        if (kind === "slackPermissionsInfo") {
+            const pendingSlack = pendingSlackRequests.get(details.requestId);
+            if (pendingSlack) {
+                pendingSlackRequests.delete(details.requestId);
+            }
+            next = mergeCapture(current, kind, details.url, normalizedHeaders, pendingSlack?.bodyText);
+        }
+        else if (kind) {
+            log("matched known request", { kind, url: details.url });
+            next = mergeCapture(current, kind, details.url, normalizedHeaders);
+        }
+        else {
+            const customRule = matchCustomRule(details.url);
+            if (customRule) {
+                next = mergeCustomCapture(current, customRule, details.url, normalizedHeaders);
+            }
+        }
+        if (!next)
+            return;
+        const before = comparableSnapshot(current);
+        const after = comparableSnapshot(next);
+        await persistState(next);
+        if (before !== after) {
+            await pushStateToLocalhostTabs(next);
+        }
+    })();
     return undefined;
 }, REQUEST_FILTER, ["requestHeaders", "extraHeaders"]);
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message?.type === "ARC_GET_LATEST_CAPTURE") {
-        void cleanupExpiredCustomCapturesAndSync().then(async () => {
+        void (async () => {
+            await cleanupExpiredCustomCapturesAndSync();
             const state = await loadStoredState();
             sendResponse({ payload: state });
-        });
-        return true; // Keep channel open for async response
+        })();
+        return true;
     }
     if (message?.type === "ARC_GET_CUSTOM_RULES") {
         chrome.storage.local.get([CUSTOM_RULES_STORAGE_KEY], (result) => {
@@ -589,6 +667,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
         return true;
     }
     if (message?.type === "ARC_SAVE_CUSTOM_RULES") {
+        if (!Array.isArray(message.payload)) {
+            sendResponse({ success: false, error: "Payload must be an array" });
+            return true;
+        }
         const rules = normalizeRuleList(message.payload);
         chrome.storage.local.set({ [CUSTOM_RULES_STORAGE_KEY]: rules }, () => {
             sendResponse({ success: true });
@@ -597,12 +679,18 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     }
     return false;
 });
-chrome.alarms.create("arc-custom-capture-cleanup", {
-    periodInMinutes: 60,
-});
+chrome.alarms.create("arc-custom-capture-cleanup", { periodInMinutes: 60 });
 chrome.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name === "arc-custom-capture-cleanup") {
         void cleanupExpiredCustomCapturesAndSync();
     }
 });
+setInterval(() => {
+    const cutoff = Date.now() - 60000;
+    for (const [requestId, pending] of pendingSlackRequests.entries()) {
+        if (pending.createdAt < cutoff) {
+            pendingSlackRequests.delete(requestId);
+        }
+    }
+}, 60000);
 export {};

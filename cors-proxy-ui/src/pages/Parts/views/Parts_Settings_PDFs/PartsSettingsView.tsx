@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { loadTekionApiSettingsBundle } from "../../../services/tekionApiSettings";
-import type { KeyValuePair } from "../../../types/proxy.types";
+import { loadTekionApiSettingsBundle } from "../../../../services/tekionApiSettings";
+import type { KeyValuePair } from "../../../../types/proxy.types";
 
 const MODULE_NAME = "Parts Settings";
 const PDF_CONFIGURATION_URL =
@@ -189,15 +189,18 @@ async function submitPdfConfiguration(
 
   if (!response.ok) {
     const text = await response.text();
+
     logger.error("POST pdf configuration failed", {
       pdfType: payload.pdfType,
       status: response.status,
       body: text,
     });
+
     throw new Error(`HTTP ${response.status}: ${text.substring(0, 300)}`);
   }
 
   const json = await response.json();
+
   logger.debug("POST pdf configuration success response", {
     pdfType: payload.pdfType,
     response: json,
@@ -380,8 +383,8 @@ export const PartsSettingsView: React.FC = () => {
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={titleStyle}>Parts settings</div>
             <div style={subtitleStyle}>
-              Configure Warranty and Return Terms PDF settings for all 9 sales order PDF
-              types using active Global Headers from Settings.
+              Configure Warranty and Return Terms PDF settings for all 9 sales
+              order PDF types using active Global Headers from Settings.
             </div>
           </div>
 
@@ -513,7 +516,9 @@ export const PartsSettingsView: React.FC = () => {
               : statusIdleStyle),
           }}
         >
-          <div style={{ fontWeight: 700, marginBottom: errorText ? 6 : 0 }}>{statusText}</div>
+          <div style={{ fontWeight: 700, marginBottom: errorText ? 6 : 0 }}>
+            {statusText}
+          </div>
           {errorText ? <div>{errorText}</div> : null}
         </div>
       </div>
@@ -544,6 +549,7 @@ export const PartsSettingsView: React.FC = () => {
             <SectionCard title="PDF Types To Be Updated">
               {PDF_TYPES.map((pdfType, index) => {
                 const matched = results.find((item) => item.pdfType === pdfType);
+
                 return (
                   <RowLine
                     key={pdfType}
@@ -568,7 +574,10 @@ export const PartsSettingsView: React.FC = () => {
             </SectionCard>
 
             <SectionCard title="Processed Input Preview">
-              <RowLine left="Warranty Characters" right={String(processedWarrantyText.length)} />
+              <RowLine
+                left="Warranty Characters"
+                right={String(processedWarrantyText.length)}
+              />
               <RowLine
                 left="Return Terms Characters"
                 right={String(processedReturnTermsText.length)}
@@ -618,11 +627,18 @@ export const PartsSettingsView: React.FC = () => {
 
             {results.length === 0 ? (
               <div style={emptyResultsStyle}>
-                No submissions yet. Fill Warranty and/or Return Terms, then click Submit.
+                No submissions yet. Fill Warranty and/or Return Terms, then click
+                Submit.
               </div>
             ) : (
               <div style={{ overflowX: "auto" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 900 }}>
+                <table
+                  style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    minWidth: 900,
+                  }}
+                >
                   <thead>
                     <tr style={{ background: "rgba(255,255,255,0.04)" }}>
                       <th style={thStyle}>#</th>
@@ -1118,7 +1134,6 @@ const RowLine: React.FC<{
       >
         {left}
       </div>
-
       <div
         style={{
           color: rightColor,
@@ -1135,3 +1150,5 @@ const RowLine: React.FC<{
     </div>
   );
 };
+
+export default PartsSettingsView;

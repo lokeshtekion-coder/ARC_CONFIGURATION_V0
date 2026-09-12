@@ -1,9 +1,12 @@
-///Users/tlreddy/Desktop/ARC_CONFIGURATION_V0/cors-proxy-ui/src/services/storesDb.ts
 import type {
   StoreBlueprintStatuses,
   StoreSignoffStatuses,
 } from "./storeOnboardingStatusApi";
-import { ensureStoreExists, getArcConfigDbMeta, openArcConfigDb } from "./arcConfigDb";
+import {
+  ensureStoreExists,
+  getArcConfigDbMeta,
+  openArcConfigDb,
+} from "./arcConfigDb";
 
 export type CustomPhaseStatus = "TO DO" | "WIP" | "Completed";
 
@@ -16,13 +19,29 @@ export interface StoreRecord {
   pre_production_environment_status: string;
   superpod_id: string;
   product_types?: string;
+
   blueprint_statuses?: StoreBlueprintStatuses;
   signoff_statuses?: StoreSignoffStatuses;
   onboarding_status_fetched_at?: string;
 
-  // Custom Manual Trackers
   configuration_status?: CustomPhaseStatus;
   testing_status?: CustomPhaseStatus;
+
+  workorder_consolidated_pdl?: string;
+  dealer_pdl?: string;
+  arc_pdl?: string;
+
+  project_implementation_tm_sync_status_tracking_id?: string;
+  implementation_tm_sync_status_tracking_id?: string;
+  base_entity_instance_id?: string;
+
+  project_engagement_manager_1781169293313734451?: string;
+  fixed_ops_track_lead_1773369946675032982?: string;
+  conversion_track_lead_1773369950325147526?: string;
+  accounting_track_lead_1773369945455468395?: string;
+
+  tenant_code?: string;
+  tenant_id?: string;
 }
 
 const { STORES_STORE: STORE_NAME } = getArcConfigDbMeta();
@@ -36,8 +55,8 @@ export async function saveStores(records: StoreRecord[]): Promise<void> {
     const tx = db.transaction(STORE_NAME, "readwrite");
     const store = tx.objectStore(STORE_NAME);
 
-    // Clear old data and write the new list
     store.clear();
+
     for (const record of records) {
       store.put(record);
     }
@@ -65,7 +84,7 @@ export async function saveStores(records: StoreRecord[]): Promise<void> {
 export async function getStores(): Promise<StoreRecord[]> {
   const db = await openArcConfigDb();
 
-  return new Promise((resolve, reject) => {
+  return new Promise<StoreRecord[]>((resolve, reject) => {
     ensureStoreExists(db, STORE_NAME);
 
     const tx = db.transaction(STORE_NAME, "readonly");
