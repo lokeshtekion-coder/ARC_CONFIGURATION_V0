@@ -199,13 +199,41 @@ function getStatusVisual(status: OnboardingStatus) {
   };
 }
 
-function isPod2(superpodId?: string): boolean {
-  const normalized = (superpodId || "").trim().toLowerCase();
-  return normalized === "2" || normalized === "pod 2" || normalized === "pod-2";
-}
-
-function copyText(value: string): void {
-  void navigator.clipboard.writeText(value || "");
+function getPodStyle(superpodId?: string) {
+  const norm = (superpodId || "").trim().toLowerCase();
+  if (norm === "2" || norm === "pod 2" || norm === "pod-2") {
+    return {
+      bg: "rgba(59, 130, 246, 0.16)",
+      color: "#60a5fa",
+      border: "rgba(59, 130, 246, 0.30)",
+    };
+  }
+  if (norm === "1" || norm === "pod 1" || norm === "pod-1") {
+    return {
+      bg: "rgba(168, 85, 247, 0.16)",
+      color: "#c084fc",
+      border: "rgba(168, 85, 247, 0.30)",
+    };
+  }
+  if (norm === "3" || norm === "pod 3" || norm === "pod-3") {
+    return {
+      bg: "rgba(236, 72, 153, 0.16)",
+      color: "#f472b6",
+      border: "rgba(236, 72, 153, 0.30)",
+    };
+  }
+  if (norm === "4" || norm === "pod 4" || norm === "pod-4") {
+    return {
+      bg: "rgba(168, 85, 247, 0.16)",
+      color: "#34d399",
+      border: "rgba(16, 185, 129, 0.30)",
+    };
+  }
+  return {
+    bg: "rgba(148, 163, 184, 0.12)",
+    color: "#cbd5e1",
+    border: "rgba(148, 163, 184, 0.22)",
+  };
 }
 
 function uniqueNonEmpty(values: Array<string | undefined>): string[] {
@@ -265,20 +293,23 @@ const StatusChip: React.FC<{
       style={{
         display: "inline-flex",
         alignItems: "center",
-        gap: 6,
-        padding: "4px 8px",
-        borderRadius: 999,
+        justifyContent: "center",
+        gap: 3,
+        padding: "3px 6px",
+        borderRadius: 6,
         background: visual.background,
         color: visual.color,
         border: `1px solid ${visual.border}`,
-        fontSize: 11,
+        fontSize: 10,
         fontWeight: 700,
         lineHeight: 1,
         whiteSpace: "nowrap",
+        userSelect: "none",
+        cursor: "default",
       }}
     >
       <span>{short}</span>
-      <span>{visual.symbol}</span>
+      <span style={{ fontSize: 9 }}>{visual.symbol}</span>
     </span>
   );
 };
@@ -290,7 +321,7 @@ const StatusChipGroup: React.FC<{
     status: OnboardingStatus;
   }>;
 }> = ({ items }) => (
-  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", minWidth: 180 }}>
+  <div style={{ display: "inline-flex", gap: 4, flexWrap: "nowrap", alignItems: "center" }}>
     {items.map((item) => (
       <StatusChip
         key={item.fullName}
@@ -328,34 +359,51 @@ const CustomStatusSelect: React.FC<{
   const style = colors[currentVal];
 
   return (
-    <select
-      value={currentVal}
-      onChange={(e) => onChange(e.target.value as CustomPhaseStatus)}
-      style={{
-        background: style.bg,
-        color: style.text,
-        border: `1px solid ${style.border}`,
-        borderRadius: 999,
-        padding: "4px 8px",
-        fontSize: 11,
-        fontWeight: 700,
-        cursor: "pointer",
-        outline: "none",
-        appearance: "none",
-        textAlign: "center",
-        minWidth: "85px",
-      }}
-    >
-      <option value="TO DO" style={{ background: "#1c1c1e", color: "#fff" }}>
-        TO DO
-      </option>
-      <option value="WIP" style={{ background: "#1c1c1e", color: "#fff" }}>
-        WIP
-      </option>
-      <option value="Completed" style={{ background: "#1c1c1e", color: "#fff" }}>
-        Completed
-      </option>
-    </select>
+    <div style={{ position: "relative", display: "inline-block", width: 115, minWidth: 115 }}>
+      <select
+        value={currentVal}
+        onChange={(e) => onChange(e.target.value as CustomPhaseStatus)}
+        style={{
+          width: "100%",
+          minWidth: 115,
+          background: style.bg,
+          color: style.text,
+          border: `1px solid ${style.border}`,
+          borderRadius: 8,
+          padding: "5px 24px 5px 10px",
+          fontSize: 11,
+          fontWeight: 700,
+          cursor: "pointer",
+          outline: "none",
+          appearance: "none",
+          textAlign: "left",
+          whiteSpace: "nowrap",
+        }}
+      >
+        <option value="TO DO" style={{ background: "#1c1c1e", color: "#fff" }}>
+          TO DO
+        </option>
+        <option value="WIP" style={{ background: "#1c1c1e", color: "#fff" }}>
+          WIP
+        </option>
+        <option value="Completed" style={{ background: "#1c1c1e", color: "#fff" }}>
+          Completed
+        </option>
+      </select>
+      <span
+        style={{
+          position: "absolute",
+          right: 9,
+          top: "50%",
+          transform: "translateY(-50%)",
+          pointerEvents: "none",
+          fontSize: 8,
+          color: style.text,
+        }}
+      >
+        ▼
+      </span>
+    </div>
   );
 };
 
@@ -387,43 +435,42 @@ const SlackRecipientRow: React.FC<{
   checked: boolean;
   onToggle: () => void;
 }> = ({ candidate, checked, onToggle }) => {
+  const isAvailable = Boolean(candidate.matchedUser?.userId);
+
   return (
     <label
       style={{
         display: "flex",
-        alignItems: "flex-start",
+        alignItems: "center",
         gap: 10,
-        padding: "10px 12px",
-        borderRadius: 12,
-        border: "1px solid rgba(255,255,255,0.08)",
-        background: "rgba(255,255,255,0.03)",
-        cursor: candidate.matchedUser?.userId ? "pointer" : "default",
-        opacity: candidate.matchedUser?.userId ? 1 : 0.7,
+        padding: "8px 10px",
+        borderRadius: 8,
+        border: `1px solid ${checked ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.06)"}`,
+        background: checked ? "rgba(59,130,246,0.08)" : "rgba(255,255,255,0.02)",
+        cursor: isAvailable ? "pointer" : "not-allowed",
+        opacity: isAvailable ? 1 : 0.5,
+        transition: "all 0.15s ease",
       }}
     >
       <input
         type="checkbox"
         checked={checked}
-        disabled={!candidate.matchedUser?.userId}
+        disabled={!isAvailable}
         onChange={onToggle}
-        style={{ marginTop: 2 }}
+        style={{ cursor: isAvailable ? "pointer" : "default" }}
       />
 
-      <div style={{ display: "grid", gap: 4, minWidth: 0 }}>
-        <div style={{ color: "#f8fafc", fontSize: 13, fontWeight: 700 }}>
-          {candidate.label}
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ color: "#f8fafc", fontSize: 12, fontWeight: 700 }}>
+            {candidate.label}
+          </span>
+          <span style={{ color: "#94a3b8", fontSize: 11 }}>
+            ({candidate.matchedUser?.fullName || "Not found"})
+          </span>
         </div>
-
-        <div style={{ color: "#cbd5e1", fontSize: 12 }}>
-          {candidate.matchedUser?.fullName || "No Slack match found"}
-        </div>
-
-        <div style={{ color: "#94a3b8", fontSize: 12, wordBreak: "break-word" }}>
-          Email: {candidate.normalizedEmail || "—"}
-        </div>
-
-        <div style={{ color: "#94a3b8", fontSize: 12 }}>
-          User ID: {candidate.matchedUser?.userId || "—"}
+        <div style={{ color: "#64748b", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {candidate.normalizedEmail || candidate.matchedUser?.userId || "No ID"}
         </div>
       </div>
     </label>
@@ -444,8 +491,8 @@ const DealerMetaModal: React.FC<{
   const [selectedRecipientKeys, setSelectedRecipientKeys] = useState<string[]>([]);
   const [messageText, setMessageText] = useState("");
   const [sendingKey, setSendingKey] = useState("");
-  const [sendError, setSendError] = useState("");
-  const [sendSuccess, setSendSuccess] = useState("");
+  const [isSendingAll, setIsSendingAll] = useState(false);
+  const [editorMode, setEditorMode] = useState<"edit" | "preview">("edit");
 
   useEffect(() => {
     if (!draftContext) {
@@ -457,18 +504,8 @@ const DealerMetaModal: React.FC<{
     setSelectedRecipientKeys(draftContext.defaultSelectedRecipientKeys);
     setMessageText(draftContext.draftMessage);
     setSendingKey("");
-    setSendError("");
-    setSendSuccess("");
-
-    logger.info("Dealer modal initialized", {
-      dealerId: row?.dealer_id,
-      recipientCount: draftContext.recipients.length,
-      defaultSelectedRecipientKeys: draftContext.defaultSelectedRecipientKeys,
-      hasSlackToken: Boolean(slackSession.slackToken),
-      hasSlackDCookie: Boolean(slackSession.slackDCookie),
-      lastSlackSourceUrl: slackSession.lastSlackSourceUrl,
-    });
-  }, [draftContext, row, slackSession.slackToken, slackSession.slackDCookie, slackSession.lastSlackSourceUrl]);
+    setEditorMode("edit");
+  }, [draftContext]);
 
   if (!row || !draftContext) return null;
 
@@ -485,57 +522,57 @@ const DealerMetaModal: React.FC<{
     );
   };
 
-  const handleSend = async (recipient: SlackRecipientCandidate) => {
+  const handleSendSingle = async (recipient: SlackRecipientCandidate) => {
     if (!recipient.matchedUser?.userId) return;
 
     setSendingKey(recipient.key);
-    setSendError("");
-    setSendSuccess("");
-
-    logger.info("Attempting Slack send", {
-      dealerId: row.dealer_id,
-      dealership: row.dba_name,
-      recipientLabel: recipient.label,
-      recipientName: recipient.matchedUser.fullName,
-      recipientEmail: recipient.matchedUser.email,
-      recipientUserId: recipient.matchedUser.userId,
-      messageLength: messageText.length,
-      messagePreview: messageText.slice(0, 300),
-    });
 
     try {
-      const result = await sendSlackMessage({
+      await sendSlackMessage({
         userId: recipient.matchedUser.userId,
         email: recipient.matchedUser.email,
         fullName: recipient.matchedUser.fullName,
         text: messageText,
       });
 
-      logger.info("Slack send succeeded", {
-        dealerId: row.dealer_id,
-        recipientUserId: recipient.matchedUser.userId,
-        result,
-      });
-
-      setSendSuccess(
-        `Message sent to ${recipient.matchedUser.fullName} via channel ${result.channelId}`
-      );
-      onToast(`✅ Slack message sent to ${recipient.matchedUser.fullName}`);
+      onToast(`✅ Sent to ${recipient.matchedUser.fullName}`);
     } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Failed to send Slack message";
-
-      logger.error("Slack send failed", {
-        dealerId: row.dealer_id,
-        recipientUserId: recipient.matchedUser.userId,
-        error,
-        message,
-      });
-
-      setSendError(message);
+      const message = error instanceof Error ? error.message : "Failed to send";
       onToast(`❌ ${message}`);
     } finally {
       setSendingKey("");
+    }
+  };
+
+  const handleSendAll = async () => {
+    if (selectedRecipients.length === 0) return;
+
+    setIsSendingAll(true);
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const recipient of selectedRecipients) {
+      if (!recipient.matchedUser?.userId) continue;
+
+      try {
+        await sendSlackMessage({
+          userId: recipient.matchedUser.userId,
+          email: recipient.matchedUser.email,
+          fullName: recipient.matchedUser.fullName,
+          text: messageText,
+        });
+        successCount++;
+      } catch (err: unknown) {
+        failCount++;
+        logger.error("Failed batch Slack send", err);
+      }
+    }
+
+    setIsSendingAll(false);
+    if (failCount === 0) {
+      onToast(`✅ Successfully dispatched message to ${successCount} recipient(s)`);
+    } else {
+      onToast(`⚠ Sent ${successCount}, failed ${failCount}`);
     }
   };
 
@@ -547,11 +584,12 @@ const DealerMetaModal: React.FC<{
       style={{
         position: "fixed",
         inset: 0,
-        background: "rgba(0,0,0,0.62)",
+        background: "rgba(0,0,0,0.7)",
+        backdropFilter: "blur(4px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: 20,
+        padding: 24,
         zIndex: 9999,
       }}
     >
@@ -559,265 +597,280 @@ const DealerMetaModal: React.FC<{
         onClick={(e) => e.stopPropagation()}
         style={{
           width: "100%",
-          maxWidth: 1180,
-          maxHeight: "86vh",
-          overflow: "auto",
+          maxWidth: 1040,
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
           background: "#151922",
-          border: "1px solid rgba(255,255,255,0.10)",
-          borderRadius: 18,
-          boxShadow: "0 20px 60px rgba(0,0,0,0.4)",
-          padding: 20,
+          border: "1px solid rgba(255,255,255,0.12)",
+          borderRadius: 16,
+          boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
+          overflow: "hidden",
         }}
       >
+        {/* Modal Top Header */}
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 16,
-            marginBottom: 16,
+            alignItems: "center",
+            padding: "16px 20px",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+            background: "#11151d",
           }}
         >
           <div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "#fff" }}>
-              Dealer Details + Slack Draft
+            <div style={{ fontSize: 17, fontWeight: 800, color: "#fff" }}>
+              {row.dba_name || "Store Details"}
             </div>
-            <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 4 }}>
-              {row.dba_name || "—"}
+            <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>
+              Dealer ID: <span style={{ color: "#f8fafc", fontWeight: 700 }}>{row.dealer_id}</span> • Tekion ID: {row.tekion_id}
             </div>
           </div>
 
-          <button className="btn-secondary btn-sm" onClick={onClose}>
+          <button
+            className="btn-secondary btn-sm"
+            onClick={onClose}
+            style={{ padding: "4px 10px", fontSize: 12 }}
+          >
             ✕ Close
           </button>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "minmax(320px, 420px) minmax(0, 1fr)",
-            gap: 18,
-            alignItems: "start",
-          }}
-        >
-          <div style={{ display: "grid", gap: 16 }}>
-            <div
-              style={{
-                display: "grid",
-                gap: 10,
-                padding: 16,
-                borderRadius: 16,
-                background: "#11151d",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <div style={{ color: "#f8fafc", fontSize: 15, fontWeight: 800 }}>
-                Dealer Data
-              </div>
-
-              {popupRows.map((item) => (
+        {/* Modal Content Scroll Area */}
+        <div style={{ overflowY: "auto", padding: 20, display: "grid", gap: 16 }}>
+          {/* Metadata Compact Card */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: 10,
+              padding: 12,
+              borderRadius: 12,
+              background: "#0d1117",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            {popupRows.map((item) => (
+              <div key={item.label}>
+                <div style={{ color: "#64748b", fontSize: 11, fontWeight: 700 }}>
+                  {item.label}
+                </div>
                 <div
-                  key={item.label}
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "140px 1fr",
-                    gap: 12,
-                    padding: "10px 12px",
-                    borderRadius: 12,
-                    background: "#0f1115",
-                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "#f1f5f9",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    marginTop: 2,
+                    wordBreak: "break-word",
                   }}
                 >
-                  <div style={{ color: "#9ca3af", fontSize: 12, fontWeight: 700 }}>
-                    {item.label}
-                  </div>
-                  <div
-                    style={{
-                      color: "#f3f4f6",
-                      fontSize: 13,
-                      fontWeight: 600,
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    {item.value || "—"}
-                  </div>
+                  {item.value || "—"}
                 </div>
-              ))}
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gap: 10,
-                padding: 16,
-                borderRadius: 16,
-                background: "#11151d",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <div style={{ color: "#f8fafc", fontSize: 15, fontWeight: 800 }}>
-                Slack Recipients
               </div>
-
-              {draftContext.recipients.map((recipient) => (
-                <SlackRecipientRow
-                  key={recipient.key}
-                  candidate={recipient}
-                  checked={selectedRecipientKeys.includes(recipient.key)}
-                  onToggle={() => handleToggleRecipient(recipient.key)}
-                />
-              ))}
-
-              <div style={{ color: "#94a3b8", fontSize: 12 }}>
-                Slack session detected: {hasSlackSession ? "Yes" : "No"}
-              </div>
-
-              {slackSession.lastSlackSourceUrl ? (
-                <div style={{ color: "#94a3b8", fontSize: 12, wordBreak: "break-word" }}>
-                  Source: {slackSession.lastSlackSourceUrl}
-                </div>
-              ) : null}
-            </div>
+            ))}
           </div>
 
-          <div style={{ display: "grid", gap: 16 }}>
+          {/* Two-Column Editor & Recipient Layout */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(280px, 340px) minmax(0, 1fr)",
+              gap: 16,
+              alignItems: "start",
+            }}
+          >
+            {/* Left Column: Recipients */}
             <div
               style={{
                 display: "grid",
-                gap: 12,
-                padding: 16,
-                borderRadius: 16,
+                gap: 10,
+                padding: 14,
+                borderRadius: 12,
                 background: "#11151d",
                 border: "1px solid rgba(255,255,255,0.08)",
               }}
             >
-              <div style={{ color: "#f8fafc", fontSize: 15, fontWeight: 800 }}>
-                Message Preview / Editor
-              </div>
-
-              <textarea
-                className="stores-input"
-                value={messageText}
-                onChange={(e) => setMessageText(e.target.value)}
-                rows={12}
-                style={{
-                  width: "100%",
-                  minHeight: 260,
-                  resize: "vertical",
-                  borderRadius: 12,
-                  padding: 12,
-                  background: "#0b0f15",
-                  color: "#f8fafc",
-                  border: "1px solid rgba(255,255,255,0.10)",
-                  boxSizing: "border-box",
-                  lineHeight: 1.6,
-                }}
-              />
-
-              <div
-                style={{
-                  borderRadius: 12,
-                  padding: 12,
-                  background: "#0b0f15",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  color: "#e5e7eb",
-                  whiteSpace: "pre-wrap",
-                  lineHeight: 1.6,
-                  fontSize: 13,
-                }}
-              >
-                {messageText || "No message draft available."}
-              </div>
-
-              {sendError ? (
-                <div
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ color: "#f8fafc", fontSize: 13, fontWeight: 800 }}>
+                  Recipients ({selectedRecipients.length})
+                </span>
+                <span
                   style={{
-                    color: "#fecaca",
-                    background: "rgba(239,68,68,0.12)",
-                    border: "1px solid rgba(239,68,68,0.25)",
-                    borderRadius: 12,
-                    padding: "10px 12px",
-                    fontSize: 13,
+                    fontSize: 11,
+                    padding: "2px 8px",
+                    borderRadius: 999,
+                    background: hasSlackSession ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
+                    color: hasSlackSession ? "#4ade80" : "#f87171",
+                    fontWeight: 700,
                   }}
                 >
-                  {sendError}
-                </div>
-              ) : null}
-
-              {sendSuccess ? (
-                <div
-                  style={{
-                    color: "#bbf7d0",
-                    background: "rgba(34,197,94,0.12)",
-                    border: "1px solid rgba(34,197,94,0.25)",
-                    borderRadius: 12,
-                    padding: "10px 12px",
-                    fontSize: 13,
-                  }}
-                >
-                  {sendSuccess}
-                </div>
-              ) : null}
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gap: 12,
-                padding: 16,
-                borderRadius: 16,
-                background: "#11151d",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <div style={{ color: "#f8fafc", fontSize: 15, fontWeight: 800 }}>
-                Send To Selected People
+                  {hasSlackSession ? "Session Active" : "No Session"}
+                </span>
               </div>
 
-              {selectedRecipients.length === 0 ? (
-                <div style={{ color: "#94a3b8", fontSize: 13 }}>
-                  No valid Slack recipients selected.
-                </div>
-              ) : (
-                <div style={{ display: "grid", gap: 10 }}>
-                  {selectedRecipients.map((recipient) => (
+              <div style={{ display: "grid", gap: 6 }}>
+                {draftContext.recipients.map((recipient) => (
+                  <SlackRecipientRow
+                    key={recipient.key}
+                    candidate={recipient}
+                    checked={selectedRecipientKeys.includes(recipient.key)}
+                    onToggle={() => handleToggleRecipient(recipient.key)}
+                  />
+                ))}
+              </div>
+
+              <div style={{ paddingTop: 6, borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: 11, color: "#64748b" }}>
+                Individual Dispatches:
+                <div style={{ display: "grid", gap: 4, marginTop: 6 }}>
+                  {selectedRecipients.map((rec) => (
                     <div
-                      key={recipient.key}
+                      key={rec.key}
                       style={{
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "center",
-                        gap: 12,
-                        flexWrap: "wrap",
-                        padding: "10px 12px",
-                        borderRadius: 12,
-                        background: "#0f1115",
-                        border: "1px solid rgba(255,255,255,0.08)",
+                        fontSize: 11,
+                        color: "#94a3b8",
                       }}
                     >
-                      <div style={{ minWidth: 0 }}>
-                        <div style={{ color: "#f8fafc", fontSize: 13, fontWeight: 700 }}>
-                          {recipient.label}: {recipient.matchedUser?.fullName}
-                        </div>
-                        <div style={{ color: "#94a3b8", fontSize: 12 }}>
-                          {recipient.matchedUser?.email} • {recipient.matchedUser?.userId}
-                        </div>
-                      </div>
-
+                      <span style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", maxWidth: 160 }}>
+                        {rec.matchedUser?.fullName}
+                      </span>
                       <button
-                        className="btn-postman"
                         type="button"
-                        disabled={!hasSlackSession || sendingKey === recipient.key}
-                        onClick={() => {
-                          void handleSend(recipient);
-                        }}
+                        className="btn-secondary btn-sm"
+                        disabled={!hasSlackSession || sendingKey === rec.key || isSendingAll}
+                        onClick={() => void handleSendSingle(rec)}
+                        style={{ padding: "2px 8px", fontSize: 10 }}
                       >
-                        {sendingKey === recipient.key ? "Sending..." : "Send"}
+                        {sendingKey === rec.key ? "..." : "Send"}
                       </button>
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+
+            {/* Right Column: Message Composer */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+                padding: 14,
+                borderRadius: 12,
+                background: "#11151d",
+                border: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ color: "#f8fafc", fontSize: 13, fontWeight: 800 }}>
+                  Slack Message Draft
+                </span>
+
+                {/* Segmented Write/Preview Control */}
+                <div
+                  style={{
+                    display: "inline-flex",
+                    background: "#0b0f15",
+                    padding: 2,
+                    borderRadius: 6,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setEditorMode("edit")}
+                    style={{
+                      background: editorMode === "edit" ? "#1e293b" : "transparent",
+                      color: editorMode === "edit" ? "#f8fafc" : "#94a3b8",
+                      border: "none",
+                      borderRadius: 4,
+                      padding: "3px 10px",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditorMode("preview")}
+                    style={{
+                      background: editorMode === "preview" ? "#1e293b" : "transparent",
+                      color: editorMode === "preview" ? "#f8fafc" : "#94a3b8",
+                      border: "none",
+                      borderRadius: 4,
+                      padding: "3px 10px",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Preview
+                  </button>
+                </div>
+              </div>
+
+              {editorMode === "edit" ? (
+                <textarea
+                  className="stores-input"
+                  value={messageText}
+                  onChange={(e) => setMessageText(e.target.value)}
+                  style={{
+                    width: "100%",
+                    minHeight: 220,
+                    resize: "vertical",
+                    borderRadius: 8,
+                    padding: 12,
+                    background: "#0b0f15",
+                    color: "#f8fafc",
+                    border: "1px solid rgba(255,255,255,0.10)",
+                    boxSizing: "border-box",
+                    lineHeight: 1.5,
+                    fontSize: 12,
+                    fontFamily: "monospace",
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    minHeight: 220,
+                    borderRadius: 8,
+                    padding: 12,
+                    background: "#0b0f15",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "#e2e8f0",
+                    whiteSpace: "pre-wrap",
+                    lineHeight: 1.5,
+                    fontSize: 12,
+                  }}
+                >
+                  {messageText || "Empty draft."}
+                </div>
               )}
+
+              {/* Primary Batch Send Action */}
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 4 }}>
+                <button
+                  type="button"
+                  className="btn-postman"
+                  disabled={!hasSlackSession || selectedRecipients.length === 0 || isSendingAll}
+                  onClick={() => void handleSendAll()}
+                  style={{
+                    padding: "8px 18px",
+                    fontWeight: 800,
+                    fontSize: 12,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
+                  {isSendingAll ? "⏳ Dispatched..." : `Send to Selected (${selectedRecipients.length})`}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -832,8 +885,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
   const [syncingExcel, setSyncingExcel] = useState(false);
   const [error, setError] = useState("");
   const [tokenExpiredMessage, setTokenExpiredMessage] = useState("");
-  const [actionMessage, setActionMessage] = useState("");
+  const [toastMessage, setToastMessage] = useState("");
   const [filtersCollapsed, setFiltersCollapsed] = useState(false);
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
   const [range, setRange] = useState<TRange>(90);
   const [search, setSearch] = useState("");
@@ -857,9 +911,15 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     [fromDate, toDate]
   );
 
-  const showActionMessage = useCallback((msg: string) => {
-    setActionMessage(msg);
-    window.setTimeout(() => setActionMessage(""), 3000);
+  const showToast = useCallback((msg: string) => {
+    setToastMessage(msg);
+    window.setTimeout(() => setToastMessage(""), 3500);
+  }, []);
+
+  const handleCopy = useCallback((text: string, keyIdentifier: string) => {
+    void navigator.clipboard.writeText(text || "");
+    setCopiedKey(keyIdentifier);
+    window.setTimeout(() => setCopiedKey(null), 1200);
   }, []);
 
   const loadStatusesForStores = useCallback(async (stores: StoreRecord[]) => {
@@ -888,7 +948,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       setLoadingStores(true);
       setError("");
       setTokenExpiredMessage("");
-      setActionMessage("");
 
       try {
         const rawStores = await fetchStores(range);
@@ -915,12 +974,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           ).values()
         );
 
-        logger.info("Prepared unique stores for save", {
-          uniqueStoresCount: uniqueStores.length,
-        });
-
         setRecords(uniqueStores);
         await saveStores(uniqueStores);
+        showToast(`✅ Refreshed ${uniqueStores.length} stores`);
 
         if (forceStatusRefresh) {
           void loadStatusesForStores(uniqueStores);
@@ -938,7 +994,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         setLoadingStores(false);
       }
     },
-    [range, loadStatusesForStores]
+    [range, loadStatusesForStores, showToast]
   );
 
   const handleLoadIndexedDb = useCallback(async () => {
@@ -949,12 +1005,8 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         new Map<string, StoreRecord>(rawData.map((store) => [store.tekion_id, store])).values()
       );
 
-      logger.info("Loaded stores from IndexedDB", {
-        indexedDbCount: rawData.length,
-        uniqueCount: uniqueData.length,
-      });
-
       setRecords(uniqueData);
+      showToast(`Loaded ${uniqueData.length} stores from local cache`);
 
       if (shouldAutoFetchStatuses(uniqueData)) {
         if (uniqueData.length > 0) {
@@ -964,7 +1016,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load IndexedDB data");
     }
-  }, [loadStatusesForStores]);
+  }, [loadStatusesForStores, showToast]);
 
   useEffect(() => {
     void handleLoadIndexedDb();
@@ -1073,20 +1125,21 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     a.download = `stores-t${range}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    showToast(`Exported JSON (${filtered.length} stores)`);
   };
 
   const handleExportExcel = () => {
     try {
       exportStoresToExcel(filtered, `stores-t${range}`);
-      showActionMessage(`✅ Excel exported (${filtered.length} rows)`);
+      showToast(`✅ Excel exported (${filtered.length} rows)`);
     } catch (err: unknown) {
-      showActionMessage(`❌ ${err instanceof Error ? err.message : "Excel export failed"}`);
+      showToast(`❌ ${err instanceof Error ? err.message : "Excel export failed"}`);
     }
   };
 
   const handleSyncExcel = async () => {
     if (records.length === 0) {
-      showActionMessage("❌ No loaded records available to sync");
+      showToast("❌ No records available to sync");
       return;
     }
 
@@ -1094,11 +1147,11 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
     try {
       const result = await syncStoresToGraphWorkbook(records);
-      showActionMessage(
-        `✅ Synced ${result.rowCount} stores to ${result.sheetCount} month sheets and colored ${result.formattedCellCount} status cells in ${result.workbookPath}`
+      showToast(
+        `✅ Synced ${result.rowCount} stores (${result.sheetCount} sheets)`
       );
     } catch (err: unknown) {
-      showActionMessage(`❌ ${err instanceof Error ? err.message : "Graph sync failed"}`);
+      showToast(`❌ ${err instanceof Error ? err.message : "Graph sync failed"}`);
     } finally {
       setSyncingExcel(false);
     }
@@ -1114,102 +1167,139 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     setToDate(toInputDate(presetRange.toDate));
   };
 
-  const handleDealerClick = useCallback(
-    (row: StoreRecord) => {
-      logger.info("Dealer ID clicked", {
-        dealerId: row.dealer_id,
-        tekionId: row.tekion_id,
-        dealership: row.dba_name,
-        launchDate: row.launch_date,
-      });
-
-      copyText(row.dealer_id);
-      setActiveDealerPopup(row);
-      showActionMessage(`✅ Copied Dealer ID ${row.dealer_id}`);
-    },
-    [showActionMessage]
-  );
-
   return (
     <div className="stores-shell">
+      {/* Top Bar Navigation */}
       <div className="stores-topbar">
         <div className="stores-topbar-left">
           <button className="btn-secondary btn-sm" onClick={onBack}>
             ← Back
           </button>
           <div>
-            <div className="stores-page-title">🏬 Stores</div>
-            <div className="stores-page-subtitle">Uses new entity-instance ARC stores API</div>
+            <div className="stores-page-title">🏬 Store Onboarding Tracker</div>
+            <div className="stores-page-subtitle">
+              Manage blueprints, operational sign-offs, and go-live readiness
+            </div>
           </div>
         </div>
 
-        <div className="stores-topbar-right">
-          <button className="btn-secondary btn-sm" onClick={() => void handleLoadIndexedDb()}>
-            Load IndexedDB
+        <div className="stores-topbar-right" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <button className="btn-secondary btn-sm" onClick={() => void handleLoadIndexedDb()} title="Reload from IndexedDB">
+            Cache
           </button>
-          <button className="btn-secondary btn-sm" onClick={exportJson}>
-            ⬇ Export JSON
-          </button>
-          <button className="btn-secondary btn-sm" onClick={handleExportExcel}>
-            ⬇ Export Excel
-          </button>
+
+          <div style={{ display: "inline-flex", borderRadius: 6, overflow: "hidden", border: "1px solid rgba(255,255,255,0.12)" }}>
+            <button
+              className="btn-secondary btn-sm"
+              onClick={handleExportExcel}
+              style={{ borderRadius: 0, border: "none", borderRight: "1px solid rgba(255,255,255,0.12)" }}
+            >
+              Export Excel
+            </button>
+            <button
+              className="btn-secondary btn-sm"
+              onClick={exportJson}
+              style={{ borderRadius: 0, border: "none" }}
+            >
+              JSON
+            </button>
+          </div>
+
           <button
             className="btn-secondary btn-sm"
             onClick={() => void handleSyncExcel()}
             disabled={syncingExcel || Boolean(tokenExpiredMessage)}
           >
-            {syncingExcel ? "⏳ Syncing Excel..." : "☁ Sync Excel"}
+            {syncingExcel ? "⏳ Syncing..." : "☁ Sync Excel"}
           </button>
-          <button className="btn-postman" onClick={() => void handleFetch(true)} disabled={loadingStores}>
+
+          <button
+            className="btn-postman"
+            onClick={() => void handleFetch(true)}
+            disabled={loadingStores}
+            style={{ fontWeight: 800 }}
+          >
             {loadingStores ? "⏳ Fetching..." : "🔄 Refresh"}
           </button>
         </div>
       </div>
 
+      {/* Floating Toast Notification (Zero CLS) */}
+      {toastMessage && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 24,
+            right: 24,
+            zIndex: 10000,
+            background: "#1e293b",
+            color: "#f8fafc",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: 8,
+            padding: "10px 18px",
+            boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
+            fontSize: 13,
+            fontWeight: 700,
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          {toastMessage}
+        </div>
+      )}
+
+      {/* Token Expiration Banner */}
       {tokenExpiredMessage && (
-        <div className="bx-error" style={{ marginBottom: 12 }}>
-          ⚠ {tokenExpiredMessage}
-          <div style={{ marginTop: 8 }}>
-            <a
-              href={tapWorkordersUrl}
-              target="_blank"
-              rel="noreferrer"
-              style={{
-                color: "#93c5fd",
-                textDecoration: "underline",
-                fontWeight: 700,
-              }}
-            >
-              Open TAP Workorders to recapture Stores APIs
-            </a>
-          </div>
-        </div>
-      )}
-
-      {actionMessage && (
-        <div style={{ marginBottom: 12 }}>
-          <div
-            className={actionMessage.startsWith("✅") ? "glv-save-ok" : "bx-error"}
-            style={{ display: "inline-block" }}
+        <div className="bx-error" style={{ marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span>⚠ {tokenExpiredMessage}</span>
+          <a
+            href={tapWorkordersUrl}
+            target="_blank"
+            rel="noreferrer"
+            style={{
+              color: "#93c5fd",
+              textDecoration: "underline",
+              fontWeight: 700,
+              fontSize: 12,
+            }}
           >
-            {actionMessage}
-          </div>
+            Open TAP to recapture API ↗
+          </a>
         </div>
       )}
 
+      {/* Main Grid Layout */}
       <div
         className="stores-layout"
         style={{
           display: "grid",
-          gridTemplateColumns: filtersCollapsed ? "1fr" : "320px minmax(0, 1fr)",
+          gridTemplateColumns: filtersCollapsed ? "1fr" : "300px minmax(0, 1fr)",
           gap: 16,
           alignItems: "start",
         }}
       >
+        {/* Sidebar Filters */}
         {!filtersCollapsed && (
           <aside className="stores-sidebar" style={{ minWidth: 0 }}>
-            <div className="stores-panel">
-              <div className="stores-panel-title">Filters</div>
+            <div className="stores-panel" style={{ display: "grid", gap: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span className="stores-panel-title" style={{ margin: 0 }}>Filters</span>
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#94a3b8",
+                    fontSize: 11,
+                    cursor: "pointer",
+                    textDecoration: "underline",
+                  }}
+                >
+                  Reset all
+                </button>
+              </div>
 
               <div className="stores-field">
                 <label className="stores-label">Search</label>
@@ -1217,18 +1307,20 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                   className="stores-input"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="tekion_id, dealer_id, dealership"
+                  placeholder="ID, Dealer, or Store Name..."
                 />
               </div>
 
               <div className="stores-field">
-                <label className="stores-label">T Range Presets</label>
-                <div className="stores-range-grid">
+                <label className="stores-label">T-Range Presets</label>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 4 }}>
                   {[7, 30, 60, 90].map((days) => (
                     <button
                       key={days}
+                      type="button"
                       className={range === days ? "btn-postman" : "btn-secondary btn-sm"}
                       onClick={() => setRange(days as TRange)}
+                      style={{ padding: "4px 0", fontSize: 11, textAlign: "center" }}
                     >
                       T-{days}
                     </button>
@@ -1237,19 +1329,21 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
               </div>
 
               <div className="stores-field">
-                <label className="stores-label">Date Window</label>
-                <div className="stores-date-grid">
+                <label className="stores-label">Launch Window</label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
                   <input
                     type="date"
                     className="stores-input"
                     value={fromDate}
                     onChange={(e) => setFromDate(e.target.value)}
+                    style={{ fontSize: 11, padding: "4px 6px" }}
                   />
                   <input
                     type="date"
                     className="stores-input"
                     value={toDate}
                     onChange={(e) => setToDate(e.target.value)}
+                    style={{ fontSize: 11, padding: "4px 6px" }}
                   />
                 </div>
               </div>
@@ -1287,7 +1381,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
               </div>
 
               <div className="stores-field">
-                <label className="stores-label">IMP Type</label>
+                <label className="stores-label">Implementation Type</label>
                 <select
                   className="stores-input"
                   value={implementationType}
@@ -1318,69 +1412,213 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                 </select>
               </div>
 
-              <div className="stores-actions">
-                <button className="btn-postman" onClick={() => void handleFetch(true)} disabled={loadingStores}>
-                  {loadingStores ? "⏳ Fetching..." : "Refresh Data"}
-                </button>
-                <button className="btn-secondary btn-sm" onClick={clearFilters}>
-                  Clear Filters
-                </button>
-              </div>
-
               {error && <div className="bx-error">❌ {error}</div>}
             </div>
           </aside>
         )}
 
+        {/* Content Table Card */}
         <section className="stores-content" style={{ minWidth: 0 }}>
           <div className="stores-table-card">
-            <div className="stores-table-header" style={{ display: "flex", justifyContent: "space-between" }}>
-              <div>
-                <div className="stores-panel-title" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            {/* Table Header Controls */}
+            <div
+              className="stores-table-header"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "12px 16px",
+                borderBottom: "1px solid rgba(255,255,255,0.08)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 14, fontWeight: 800, color: "#f8fafc" }}>
+                  Store Records
+                </span>
+                <span style={{ fontSize: 12, color: "#94a3b8" }}>
+                  Showing <strong style={{ color: "#f8fafc" }}>{filtered.length}</strong> of {records.length} stores
+                </span>
+
+                {/* Quick Access Badges (TAP, Slack, Neon PROD, Outlook, Neon PRE-PROD) */}
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginLeft: 4 }}>
+                  {/* TAP Workorders Official Asset */}
                   <a
                     href={tapWorkordersUrl}
                     target="_blank"
                     rel="noreferrer"
-                    title="Open TAP Workorders page for this date range so extension can capture Stores APIs"
+                    title="Open TAP Workorders"
                     style={{
-                      color: "#93c5fd",
-                      textDecoration: "underline",
-                      fontWeight: 700,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 28,
+                      height: 28,
+                      borderRadius: 6,
+                      background: "rgba(255, 255, 255, 0.05)",
+                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                      transition: "all 0.15s ease",
                     }}
                   >
-                    Store Records
+                    <img
+                      src="https://com-tekioncloud-tap-assets.s3.us-west-1.amazonaws.com/assets/common/toc-logo.svg"
+                      alt="TAP Workorders"
+                      style={{ width: 17, height: 17, objectFit: "contain", display: "block" }}
+                    />
                   </a>
-                </div>
 
-                <div className="stores-table-subtitle">
-                  {filtered.length} shown · {records.length} total
+                  {/* Slack Brandfetch Dark Theme SVG */}
+                  <a
+                    href="https://app.slack.com/client/E08DG6QMMDG"
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open Slack Workspace"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 28,
+                      height: 28,
+                      borderRadius: 6,
+                      background: "rgba(255, 255, 255, 0.05)",
+                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    <img
+                      src="https://cdn.brandfetch.io/idJ_HhtG0Z/theme/dark/symbol.svg?c=1dxbfHSJFAPEGdCLU4o5B"
+                      alt="Slack"
+                      style={{ width: 17, height: 17, objectFit: "contain", display: "block" }}
+                    />
+                  </a>
+
+                  {/* PROD Neon Link */}
+                  {/* PROD Link (Muted) */}
+                  <a
+                    href="https://app.tekioncloud.com/internal/approval-management/dashboard/requests"
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open Production Approval Management"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: 28,
+                      padding: "0 9px",
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "0.5px",
+                      textDecoration: "none",
+                      color: "#4ade80",
+                      background: "rgba(74, 222, 128, 0.08)",
+                      border: "1px solid rgba(74, 222, 128, 0.25)",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    PROD
+                  </a>
+
+                  {/* Outlook Brandfetch Dark Theme SVG */}
+                  <a
+                    href="http://outlook.office365.com/mail/inbox"
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open Outlook Inbox"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 28,
+                      height: 28,
+                      borderRadius: 6,
+                      background: "rgba(255, 255, 255, 0.05)",
+                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    <img
+                      src="https://cdn.brandfetch.io/idgdw68PEO/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B"
+                      alt="Outlook"
+                      style={{ width: 17, height: 17, objectFit: "contain", display: "block" }}
+                    />
+                  </a>
+
+                  {/* PRE-PROD Link (Muted) */}
+                  <a
+                    href="https://preprodapp.tekioncloud.com/accounting/chartOfAccounts/list"
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open Pre-Prod Chart of Accounts"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: 28,
+                      padding: "0 9px",
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "0.5px",
+                      textDecoration: "none",
+                      color: "#38bdf8",
+                      background: "rgba(56, 189, 248, 0.08)",
+                      border: "1px solid rgba(56, 189, 248, 0.25)",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    PRE-PROD
+                  </a>
                 </div>
               </div>
 
               <button
                 className="btn-secondary btn-sm"
                 onClick={() => setFiltersCollapsed((prev) => !prev)}
+                style={{ fontSize: 11 }}
               >
                 {filtersCollapsed ? "☰ Show Filters" : "✕ Hide Filters"}
               </button>
             </div>
 
-            <div className="stores-table-wrap stores-table-wrap-tall">
-              <table className="stores-table">
+            {/* Scroll Container with Sticky Header */}
+            <div className="stores-table-wrap stores-table-wrap-tall" style={{ maxHeight: "calc(100vh - 180px)", overflow: "auto" }}>
+              <table className="stores-table" style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0 }}>
                 <thead>
-                  <tr>
-                    <th>Tekion ID</th>
-                    <th>Dealer ID</th>
-                    <th>Dealership</th>
-                    <th>Go Live</th>
-                    <th>IMP Type</th>
-                    <th>Products</th>
-                    <th>Pre-Prod</th>
-                    <th>POD</th>
-                    <th>Blueprint</th>
-                    <th>Configuration</th>
-                    <th>Sign_Off</th>
-                    <th>Testing</th>
+                  <tr style={{ position: "sticky", top: 0, zIndex: 10, background: "#11151d", boxShadow: "0 1px 0 rgba(255,255,255,0.1)" }}>
+                    <th style={{ padding: "10px 8px", width: 95 }}>Tekion ID</th>
+                    <th style={{ padding: "10px 8px", width: 140 }}>Dealer ID</th>
+
+                    {/* Dealership absorbs all extra horizontal space */}
+                    <th style={{ padding: "10px 10px", width: "100%", minWidth: 260, textAlign: "left" }}>
+                      Dealership
+                    </th>
+
+                    {/* Go Live locked width */}
+                    <th style={{ padding: "10px 4px 10px 6px", width: 110, maxWidth: 110, whiteSpace: "nowrap" }}>
+                      Go Live
+                    </th>
+
+                    {/* IMP Type locked width */}
+                    <th style={{ padding: "10px 6px 10px 4px", width: 80, maxWidth: 80, whiteSpace: "nowrap" }}>
+                      IMP Type
+                    </th>
+
+                    <th style={{ padding: "10px 8px", width: 95 }}>Products</th>
+                    <th style={{ padding: "10px 8px", width: 85 }}>Pre-Prod</th>
+                    <th style={{ padding: "10px 8px", width: 65, textAlign: "center" }}>POD</th>
+                    <th style={{ padding: "10px 8px" }}>Blueprint</th>
+
+                    {/* Configuration fixed comfortable width */}
+                    <th style={{ padding: "10px 12px", width: 130, minWidth: 130, whiteSpace: "nowrap", textAlign: "center" }}>
+                      Configuration
+                    </th>
+
+                    <th style={{ padding: "10px 8px" }}>Sign_Off</th>
+
+                    {/* Testing fixed comfortable width */}
+                    <th style={{ padding: "10px 12px", width: 130, minWidth: 130, whiteSpace: "nowrap", textAlign: "center" }}>
+                      Testing
+                    </th>
                   </tr>
                 </thead>
 
@@ -1389,96 +1627,153 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     const tLabel = getTLabel(row.launch_date);
                     const blueprint = row.blueprint_statuses;
                     const signoff = row.signoff_statuses;
-                    const pod2 = isPod2(row.superpod_id);
+                    const podStyle = getPodStyle(row.superpod_id);
                     const cleanedImp = cleanImpType(row.implementation_type);
 
                     return (
-                      <tr key={row.tekion_id}>
-                        <td>
-                          <button type="button" className="stores-copy-btn" onClick={() => copyText(row.tekion_id)}>
-                            {row.tekion_id}
-                          </button>
-                        </td>
-
-                        <td>
+                      <tr key={row.tekion_id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                        {/* Tekion ID */}
+                        <td style={{ width: 95, whiteSpace: "nowrap", padding: "8px" }}>
                           <button
                             type="button"
                             className="stores-copy-btn"
-                            onClick={() => handleDealerClick(row)}
-                            title="Copy Dealer ID and open dealer details"
+                            onClick={() => handleCopy(row.tekion_id, `tek-${row.tekion_id}`)}
+                            title="Click to copy Tekion ID"
+                            style={{ fontSize: 12 }}
                           >
-                            {row.dealer_id}
+                            {copiedKey === `tek-${row.tekion_id}` ? "Copied!" : row.tekion_id}
                           </button>
                         </td>
 
-                        <td>
-                          <button type="button" className="stores-copy-btn" onClick={() => copyText(row.dba_name)}>
-                            {row.dba_name}
-                          </button>
+                        {/* Dealer ID with Slack Trigger */}
+                        <td style={{ width: 140, whiteSpace: "nowrap", padding: "8px" }}>
+                          <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            <button
+                              type="button"
+                              className="stores-copy-btn"
+                              onClick={() => handleCopy(row.dealer_id, `dlr-${row.tekion_id}`)}
+                              title="Click to copy Dealer ID"
+                              style={{ fontWeight: 700, fontSize: 12 }}
+                            >
+                              {copiedKey === `dlr-${row.tekion_id}` ? "Copied!" : row.dealer_id}
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => setActiveDealerPopup(row)}
+                              title="Open details and draft Slack message"
+                              style={{
+                                background: "rgba(59,130,246,0.12)",
+                                color: "#60a5fa",
+                                border: "1px solid rgba(59,130,246,0.25)",
+                                borderRadius: 6,
+                                padding: "2px 6px",
+                                fontSize: 10,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                              }}
+                            >
+                              💬 Slack
+                            </button>
+                          </div>
                         </td>
 
-                        <td>
+                        {/* Dealership */}
+                        <td style={{ width: "100%", minWidth: 260, padding: "8px 10px" }}>
                           <button
                             type="button"
-                            className="stores-copy-btn stores-copy-btn-left"
-                            onClick={() => copyText(formatLaunchDate(row.launch_date))}
+                            className="stores-copy-btn"
+                            onClick={() => handleCopy(row.dba_name, `dba-${row.tekion_id}`)}
+                            title={`Click to copy: ${row.dba_name}`}
+                            style={{
+                              textAlign: "left",
+                              fontSize: 12,
+                              fontWeight: 600,
+                              lineHeight: 1.35,
+                              whiteSpace: "normal",
+                              wordBreak: "break-word",
+                              display: "inline-block",
+                              maxWidth: "100%",
+                            }}
                           >
-                            <div className="stores-date-cell">
-                              <div className="stores-date-main">{formatLaunchDate(row.launch_date)}</div>
-                              <div className={`stores-date-sub stores-date-${tLabel.tone}`}>{tLabel.label}</div>
-                            </div>
+                            {copiedKey === `dba-${row.tekion_id}` ? (
+                              <span style={{ color: "#4ade80", fontWeight: 700 }}>Copied!</span>
+                            ) : (
+                              row.dba_name || "—"
+                            )}
                           </button>
                         </td>
 
-                        <td>{cleanedImp || "—"}</td>
-                        <td style={{ fontSize: 11, maxWidth: 120, whiteSpace: "normal" }}>
+                        {/* Go Live */}
+                        <td style={{ width: 110, maxWidth: 110, whiteSpace: "nowrap", padding: "8px 4px 8px 6px" }}>
+                          <div className="stores-date-cell" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                            <div className="stores-date-main" style={{ fontSize: 11, fontWeight: 700 }}>
+                              {formatLaunchDate(row.launch_date)}
+                            </div>
+                            <div className={`stores-date-sub stores-date-${tLabel.tone}`} style={{ fontSize: 10, alignSelf: "flex-start" }}>
+                              {tLabel.label}
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* IMP Type */}
+                        <td style={{ width: 80, maxWidth: 80, whiteSpace: "nowrap", fontSize: 11, color: "#cbd5e1", padding: "8px 6px 8px 4px" }}>
+                          {cleanedImp || "—"}
+                        </td>
+
+                        {/* Products */}
+                        <td style={{ width: 95, fontSize: 11, whiteSpace: "normal", padding: "8px" }}>
                           {row.product_types || "—"}
                         </td>
-                        <td>{row.pre_production_environment_status || "—"}</td>
 
-                        <td>
+                        {/* Pre-production */}
+                        <td style={{ width: 85, fontSize: 11, whiteSpace: "nowrap", padding: "8px" }}>
+                          {row.pre_production_environment_status || "—"}
+                        </td>
+
+                        {/* Superpod */}
+                        <td style={{ width: 65, textAlign: "center", padding: "8px" }}>
                           <span
                             style={{
                               display: "inline-flex",
                               alignItems: "center",
-                              padding: "4px 10px",
+                              padding: "2px 8px",
                               borderRadius: 999,
-                              fontSize: 12,
+                              fontSize: 11,
                               fontWeight: 700,
-                              border: "1px solid",
-                              background: pod2
-                                ? "rgba(59, 130, 246, 0.16)"
-                                : "rgba(148, 163, 184, 0.12)",
-                              color: pod2 ? "#60a5fa" : "#cbd5e1",
-                              borderColor: pod2
-                                ? "rgba(59, 130, 246, 0.30)"
-                                : "rgba(148, 163, 184, 0.22)",
+                              background: podStyle.bg,
+                              color: podStyle.color,
+                              border: `1px solid ${podStyle.border}`,
+                              whiteSpace: "nowrap",
                             }}
                           >
                             {row.superpod_id || "—"}
                           </span>
                         </td>
 
-                        <td>
+                        {/* Blueprint Status Chips */}
+                        <td style={{ padding: "8px" }}>
                           <StatusChipGroup
                             items={[
-                              { short: "P", fullName: "Blueprint - Conquest - Parts", status: blueprint?.parts ?? "UNKNOWN" },
-                              { short: "S", fullName: "Blueprint - Conquest - Service", status: blueprint?.service ?? "UNKNOWN" },
-                              { short: "A", fullName: "Blueprint - Conquest - Accounting", status: blueprint?.accounting ?? "UNKNOWN" },
-                              { short: "C", fullName: "Blueprint - Conquest - CRM", status: blueprint?.crm ?? "UNKNOWN" },
+                              { short: "P", fullName: "Blueprint - Parts", status: blueprint?.parts ?? "UNKNOWN" },
+                              { short: "S", fullName: "Blueprint - Service", status: blueprint?.service ?? "UNKNOWN" },
+                              { short: "A", fullName: "Blueprint - Accounting", status: blueprint?.accounting ?? "UNKNOWN" },
+                              { short: "C", fullName: "Blueprint - CRM", status: blueprint?.crm ?? "UNKNOWN" },
                               { short: "AN", fullName: "Blueprint - Analytics", status: blueprint?.analytics ?? "UNKNOWN" },
                             ]}
                           />
                         </td>
 
-                        <td style={{ textAlign: "center" }}>
+                        {/* Configuration Dropdown */}
+                        <td style={{ width: 130, minWidth: 130, whiteSpace: "nowrap", textAlign: "center", padding: "8px 12px" }}>
                           <CustomStatusSelect
                             value={row.configuration_status}
                             onChange={(val) => void updateCustomStatus(row.tekion_id, "configuration_status", val)}
                           />
                         </td>
 
-                        <td>
+                        {/* Operational Sign-Off Status Chips */}
+                        <td style={{ padding: "8px" }}>
                           <StatusChipGroup
                             items={[
                               { short: "P", fullName: "Parts Operational Sign-Off", status: signoff?.parts ?? "UNKNOWN" },
@@ -1488,7 +1783,8 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                           />
                         </td>
 
-                        <td style={{ textAlign: "center" }}>
+                        {/* Testing Dropdown */}
+                        <td style={{ width: 130, minWidth: 130, whiteSpace: "nowrap", textAlign: "center", padding: "8px 12px" }}>
                           <CustomStatusSelect
                             value={row.testing_status}
                             onChange={(val) => void updateCustomStatus(row.tekion_id, "testing_status", val)}
@@ -1501,10 +1797,14 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
               </table>
 
               {!loadingStores && filtered.length === 0 && (
-                <div className="stores-empty">
-                  <div className="stores-empty-icon">🏬</div>
-                  <div className="stores-empty-title">No records found</div>
-                  <div className="stores-empty-sub">Try changing filters or refresh data</div>
+                <div className="stores-empty" style={{ padding: 40, textAlign: "center" }}>
+                  <div className="stores-empty-icon" style={{ fontSize: 32 }}>🏬</div>
+                  <div className="stores-empty-title" style={{ fontSize: 16, fontWeight: 700, marginTop: 8 }}>
+                    No records found
+                  </div>
+                  <div className="stores-empty-sub" style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>
+                    Try clearing filters or adjusting your date window
+                  </div>
                 </div>
               )}
             </div>
@@ -1512,10 +1812,11 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         </section>
       </div>
 
+      {/* Slack & Dealer Info Modal */}
       <DealerMetaModal
         row={activeDealerPopup}
         onClose={() => setActiveDealerPopup(null)}
-        onToast={showActionMessage}
+        onToast={showToast}
       />
     </div>
   );
