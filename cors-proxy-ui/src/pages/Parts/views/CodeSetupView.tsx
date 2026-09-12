@@ -3,7 +3,6 @@ import { loadTekionApiSettingsBundle } from "../../../services/tekionApiSettings
 import type { KeyValuePair } from "../../../types/proxy.types";
 import "./CodeSetupView.css";
 
-const MODULE_NAME = "Code Setup";
 const BASE_URL = "https://preprodapp.tekioncloud.com/api/parts/proxy/u/settings/priority-code";
 const STORAGE_KEY_REQUIRED_CODES = "parts_code_setup_required_codes_v1";
 
@@ -122,51 +121,23 @@ function getEnabledGlobalHeaders(): Record<string, string> {
       return acc;
     }, {});
 
-  logger.info("loaded global headers from settings", {
-    count: Object.keys(headers).length,
-    keys: Object.keys(headers),
-  });
-
   return headers;
 }
 
 async function fetchPriorityCodes(headers: Record<string, string>): Promise<PriorityCodeListResponse> {
-  logger.info("GET priority codes started", {
-    url: BASE_URL,
-    headerKeys: Object.keys(headers),
-  });
-
   const response = await fetch(BASE_URL, {
     method: "GET",
     headers,
   });
 
-  logger.info("GET priority codes response", {
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText,
-  });
-
   if (!response.ok) {
-    const text = await response.text();
-    logger.error("GET priority codes failed", {
-      status: response.status,
-      body: text,
-    });
     throw new Error(`GET priority-code failed with status ${response.status}`);
   }
 
   const json: unknown = await response.json();
-  logger.debug("GET priority codes raw json", json);
-
   if (!isPriorityCodeListResponse(json)) {
-    logger.error("Invalid GET priority-code response shape", json);
     throw new Error("Invalid priority-code GET response structure");
   }
-
-  logger.info("GET priority codes validated", {
-    rowCount: json.data.length,
-  });
 
   return json;
 }
@@ -175,8 +146,6 @@ function validatePriorityCodes(
   records: PriorityCodeRecord[],
   requiredList: { code: string; description: string }[]
 ): ValidationSummary {
-  logger.info("validating priority codes", { rowCount: records.length });
-
   const requiredMap = new Map(
     requiredList.map((item) => [normalizeCode(item.code), item.description])
   );
@@ -204,36 +173,22 @@ function validatePriorityCodes(
       description: required.description,
     }));
 
-  const summary: ValidationSummary = {
+  return {
     existingRecords: records,
     validRecords,
     invalidRecords,
     missingRequiredCodes,
   };
-
-  logger.info("validation summary", {
-    total: summary.existingRecords.length,
-    valid: summary.validRecords.length,
-    invalid: summary.invalidRecords.length,
-    missing: summary.missingRequiredCodes.length,
-    invalidCodes: summary.invalidRecords.map((record) => getRecordCode(record)),
-    missingCodes: summary.missingRequiredCodes.map((record) => record.code),
-  });
-
-  return summary;
 }
 
 function buildDeletePayload(record: PriorityCodeRecord): DeletePriorityCodePayload {
-  const payload: DeletePriorityCodePayload = {
+  return {
     id: normalizeText(record.id),
     priorityCode: getRecordCode(record),
     description: getRecordDescription(record),
     isDefault: getRecordIsDefault(record),
     deleted: true,
   };
-
-  logger.debug("built delete payload", payload);
-  return payload;
 }
 
 async function deletePriorityCode(
@@ -244,13 +199,6 @@ async function deletePriorityCode(
   const url = `${BASE_URL}/${id}`;
   const payload = buildDeletePayload(record);
 
-  logger.info("PUT delete priority code started", {
-    url,
-    id,
-    code: getRecordCode(record),
-    payload,
-  });
-
   const response = await fetch(url, {
     method: "PUT",
     headers: {
@@ -260,38 +208,15 @@ async function deletePriorityCode(
     body: JSON.stringify(payload),
   });
 
-  logger.info("PUT delete priority code response", {
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText,
-    id,
-    code: getRecordCode(record),
-  });
-
   if (!response.ok) {
-    const text = await response.text();
-    logger.error("PUT delete priority code failed", {
-      status: response.status,
-      body: text,
-      id,
-      code: getRecordCode(record),
-    });
     throw new Error(`Failed deleting invalid code ${getRecordCode(record)}. HTTP ${response.status}`);
   }
-
-  const json: unknown = await response.json();
-  logger.debug("PUT delete priority code response json", json);
 }
 
 async function createPriorityCode(
   payload: CreatePriorityCodePayload,
   headers: Record<string, string>
 ): Promise<void> {
-  logger.info("POST create priority code started", {
-    url: BASE_URL,
-    payload,
-  });
-
   const response = await fetch(BASE_URL, {
     method: "POST",
     headers: {
@@ -301,25 +226,9 @@ async function createPriorityCode(
     body: JSON.stringify(payload),
   });
 
-  logger.info("POST create priority code response", {
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText,
-    payload,
-  });
-
   if (!response.ok) {
-    const text = await response.text();
-    logger.error("POST create priority code failed", {
-      status: response.status,
-      body: text,
-      payload,
-    });
     throw new Error(`Failed creating missing code ${payload.code}. HTTP ${response.status}`);
   }
-
-  const json: unknown = await response.json();
-  logger.debug("POST create priority code response json", json);
 }
 
 export const CodeSetupView: React.FC = () => {
@@ -327,11 +236,9 @@ export const CodeSetupView: React.FC = () => {
   const [runState, setRunState] = useState<RunState>("idle");
   const [statusText, setStatusText] = useState("Ready to validate priority codes");
   const [errorText, setErrorText] = useState("");
-  const [lastRunAt, setLastRunAt] = useState("");
   const [isAutoFixing, setIsAutoFixing] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
 
-  // Dynamic state for Included List
   const [requiredCodes, setRequiredCodes] = useState<{ code: string; description: string }[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY_REQUIRED_CODES);
@@ -346,12 +253,6 @@ export const CodeSetupView: React.FC = () => {
   const [newDescInput, setNewDescInput] = useState("");
 
   useEffect(() => {
-    logger.info("component mounted");
-    return () => logger.info("component unmounted");
-  }, []);
-
-  // Sync Included List to LocalStorage
-  useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY_REQUIRED_CODES, JSON.stringify(requiredCodes));
     } catch (error) {
@@ -360,25 +261,19 @@ export const CodeSetupView: React.FC = () => {
   }, [requiredCodes]);
 
   const validation = useMemo(() => {
-    const result = validatePriorityCodes(rows, requiredCodes);
-    logger.debug("validation memo recalculated", result);
-    return result;
+    return validatePriorityCodes(rows, requiredCodes);
   }, [rows, requiredCodes]);
 
   const allRequiredPresent = validation.missingRequiredCodes.length === 0;
   const hasInvalidCodes = validation.invalidRecords.length > 0;
 
   const refreshData = async (headers: Record<string, string>): Promise<PriorityCodeRecord[]> => {
-    logger.info("refreshing latest priority-code data");
     const response = await fetchPriorityCodes(headers);
     setRows(response.data);
-    setLastRunAt(new Date().toLocaleString());
     return response.data;
   };
 
   const handleRunValidation = async (): Promise<void> => {
-    logger.info("GET clicked for validation");
-
     setRunState("loading");
     setStatusText("Loading and validating priority codes...");
     setErrorText("");
@@ -387,7 +282,6 @@ export const CodeSetupView: React.FC = () => {
       const headers = getEnabledGlobalHeaders();
 
       if (Object.keys(headers).length === 0) {
-        logger.warn("global headers missing before validation");
         setRunState("error");
         setStatusText("Global headers are missing");
         setErrorText(
@@ -402,45 +296,24 @@ export const CodeSetupView: React.FC = () => {
       if (summary.invalidRecords.length === 0 && summary.missingRequiredCodes.length === 0) {
         setRunState("success");
         setStatusText("All included priority codes are present and valid");
-        logger.info("validation passed fully");
-        return;
-      }
-
-      if (summary.invalidRecords.length > 0 && summary.missingRequiredCodes.length > 0) {
-        setRunState("warning");
-        setStatusText(
-          `Found ${summary.invalidRecords.length} invalid code(s) and ${summary.missingRequiredCodes.length} missing included code(s)`
-        );
-        logger.warn("validation found invalid and missing codes");
-        return;
-      }
-
-      if (summary.invalidRecords.length > 0) {
-        setRunState("warning");
-        setStatusText(`Found ${summary.invalidRecords.length} invalid code(s)`);
-        logger.warn("validation found invalid codes only");
         return;
       }
 
       setRunState("warning");
-      setStatusText(`Found ${summary.missingRequiredCodes.length} missing included code(s)`);
-      logger.warn("validation found missing included codes only");
+      setStatusText(
+        `Found ${summary.invalidRecords.length} invalid code(s) and ${summary.missingRequiredCodes.length} missing included code(s)`
+      );
     } catch (error: unknown) {
-      logger.error("validation failed", error);
       setRunState("error");
       setStatusText("Validation failed");
       setErrorText(error instanceof Error ? error.message : String(error));
-      setLastRunAt(new Date().toLocaleString());
     }
   };
 
   const handleAutoFix = async (): Promise<void> => {
-    logger.info("Auto Fix clicked - initiating fetch and analyze");
-
     const headers = getEnabledGlobalHeaders();
 
     if (Object.keys(headers).length === 0) {
-      logger.warn("global headers missing before auto fix");
       setRunState("error");
       setStatusText("Global headers are missing");
       setErrorText(
@@ -451,30 +324,25 @@ export const CodeSetupView: React.FC = () => {
 
     setIsAutoFixing(true);
     setRunState("loading");
-    setStatusText("Fetching and analyzing latest data before Auto Fix...");
+    setStatusText("Analyzing data before Auto Fix...");
     setErrorText("");
 
     try {
-      // 1. Fetch the absolute latest state before making any decisions
       const latestRows = await refreshData(headers);
       const latestValidation = validatePriorityCodes(latestRows, requiredCodes);
 
-      // If everything is already perfect, no need to auto fix
       if (latestValidation.invalidRecords.length === 0 && latestValidation.missingRequiredCodes.length === 0) {
         setRunState("success");
         setStatusText("All included priority codes are already present and valid. No fixes needed.");
-        logger.info("auto fix skipped, data already valid");
         setIsAutoFixing(false);
         return;
       }
 
-      // Yield execution slightly so React can render the "Fetching and analyzing…" state
       await new Promise((resolve) => setTimeout(resolve, 100));
 
-      // 2. Prompt user based on the fresh data
       const confirmed = window.confirm(
         [
-          "Analysis Complete. Auto Fix will do the following:",
+          "Analysis Complete. Auto Fix will perform the following:",
           latestValidation.invalidRecords.length > 0
             ? `• Delete ${latestValidation.invalidRecords.length} invalid code(s)`
             : "• No invalid codes to delete",
@@ -487,7 +355,6 @@ export const CodeSetupView: React.FC = () => {
       );
 
       if (!confirmed) {
-        logger.info("user cancelled auto fix after analysis");
         setRunState("idle");
         setStatusText("Auto Fix cancelled by user.");
         setIsAutoFixing(false);
@@ -496,28 +363,18 @@ export const CodeSetupView: React.FC = () => {
 
       setStatusText("Running auto fix for priority codes...");
 
-      // 3. Execute Deletions
       for (const record of latestValidation.invalidRecords) {
-        logger.info("deleting invalid priority code", {
-          id: record.id,
-          code: getRecordCode(record),
-          description: getRecordDescription(record),
-        });
         await deletePriorityCode(record, headers);
       }
 
-      // 4. Execute Creations
       for (const missing of latestValidation.missingRequiredCodes) {
         const payload: CreatePriorityCodePayload = {
           code: missing.code,
           description: missing.description,
         };
-
-        logger.info("creating missing priority code", payload);
         await createPriorityCode(payload, headers);
       }
 
-      // 5. Final verification fetch
       const refreshedRows = await refreshData(headers);
       const refreshedValidation = validatePriorityCodes(refreshedRows, requiredCodes);
 
@@ -527,7 +384,6 @@ export const CodeSetupView: React.FC = () => {
       ) {
         setRunState("success");
         setStatusText("Auto Fix completed successfully. Included priority codes are now correct.");
-        logger.info("auto fix completed successfully");
         return;
       }
 
@@ -535,13 +391,10 @@ export const CodeSetupView: React.FC = () => {
       setStatusText(
         `Auto Fix completed, but still found ${refreshedValidation.invalidRecords.length} invalid and ${refreshedValidation.missingRequiredCodes.length} missing code(s)`
       );
-      logger.warn("auto fix completed but validation still not clean", refreshedValidation);
     } catch (error: unknown) {
-      logger.error("auto fix failed", error);
       setRunState("error");
       setStatusText("Auto Fix failed");
       setErrorText(error instanceof Error ? error.message : String(error));
-      setLastRunAt(new Date().toLocaleString());
     } finally {
       setIsAutoFixing(false);
     }
@@ -586,27 +439,26 @@ export const CodeSetupView: React.FC = () => {
 
   return (
     <div className="csv-container">
+      {/* Top Header Card */}
       <div className="csv-header-card">
         <div className="csv-header-row">
-          <div style={{ minWidth: 0 }}>
-            <div className="csv-title-group">
-              <div className="csv-title">Code setup</div>
-              <div className="csv-info-wrapper">
-                <button
-                  type="button"
-                  onClick={() => setShowInfo((prev) => !prev)}
-                  className={`csv-info-btn ${showInfo ? "active" : ""}`}
-                  title="Show Info"
-                >
-                  i
-                </button>
-                {showInfo && (
-                  <div className="csv-info-tooltip">
-                    Validates priority codes, removes invalid ones, and creates missing included
-                    codes using the active Global Headers from Settings.
-                  </div>
-                )}
-              </div>
+          <div className="csv-title-group">
+            <div className="csv-title">Code setup</div>
+            <div className="csv-info-wrapper">
+              <button
+                type="button"
+                onClick={() => setShowInfo((prev) => !prev)}
+                className={`csv-info-btn ${showInfo ? "active" : ""}`}
+                title="Show Info"
+              >
+                i
+              </button>
+              {showInfo && (
+                <div className="csv-info-tooltip">
+                  Validates priority codes, removes invalid ones, and creates missing included
+                  codes using active Global Headers from Settings.
+                </div>
+              )}
             </div>
           </div>
 
@@ -614,9 +466,7 @@ export const CodeSetupView: React.FC = () => {
             <button
               className="btn-postman"
               type="button"
-              onClick={() => {
-                void handleRunValidation();
-              }}
+              onClick={() => void handleRunValidation()}
               disabled={runState === "loading" || isAutoFixing}
             >
               {runState === "loading" && !isAutoFixing ? "Running..." : "GET"}
@@ -625,9 +475,7 @@ export const CodeSetupView: React.FC = () => {
             <button
               className="btn-secondary btn-sm"
               type="button"
-              onClick={() => {
-                void handleAutoFix();
-              }}
+              onClick={() => void handleAutoFix()}
               disabled={
                 isAutoFixing ||
                 runState === "loading" ||
@@ -641,28 +489,17 @@ export const CodeSetupView: React.FC = () => {
           </div>
         </div>
 
-        <div className="csv-stats-row">
-          <Pill label="Module" value={MODULE_NAME} />
-          <Pill label="Rows Loaded" value={String(rows.length)} />
-          <Pill label="Valid" value={String(validation.validRecords.length)} />
-          <Pill label="Invalid" value={String(validation.invalidRecords.length)} />
-          <Pill label="Missing" value={String(validation.missingRequiredCodes.length)} />
-          {lastRunAt ? <Pill label="Last Run" value={lastRunAt} /> : null}
-        </div>
-
         <div className={`csv-status-box ${getStatusBannerClass()}`}>
-          <div
-            className="csv-status-title"
-            style={{ marginBottom: errorText ? 6 : 0 }}
-          >
+          <div className="csv-status-title" style={{ marginBottom: errorText ? 6 : 0 }}>
             {statusText}
           </div>
           {errorText ? <div>{errorText}</div> : null}
         </div>
       </div>
 
+      {/* Grid for Configuration & Errors */}
       <div className="csv-grid">
-        <SectionCard title="Included List">
+        <SectionCard title="Included List" count={requiredCodes.length}>
           <div className="csv-input-group">
             <input
               className="st-input csv-input"
@@ -689,7 +526,7 @@ export const CodeSetupView: React.FC = () => {
           {requiredCodes.length === 0 ? (
             <EmptyText text="No included priority codes configured." />
           ) : (
-            requiredCodes.map((item, index) => {
+            requiredCodes.map((item) => {
               const exists = rows.some((row) => getRecordCode(row) === normalizeCode(item.code));
               return (
                 <RowLine
@@ -704,7 +541,7 @@ export const CodeSetupView: React.FC = () => {
                       >
                         ×
                       </button>
-                      {index + 1}. {item.code} — {item.description}
+                      {item.code} — {item.description}
                     </>
                   }
                   right={exists ? "✓ Valid" : "Missing"}
@@ -725,30 +562,15 @@ export const CodeSetupView: React.FC = () => {
           </div>
         </SectionCard>
 
-        <SectionCard title="Missing Included Codes">
-          {validation.missingRequiredCodes.length === 0 ? (
-            <EmptyText text="No missing included codes" />
-          ) : (
-            validation.missingRequiredCodes.map((item) => (
-              <RowLine
-                key={item.code}
-                left={`${item.code} — ${item.description}`}
-                right="Missing"
-                rightColor="#fca5a5"
-              />
-            ))
-          )}
-        </SectionCard>
-
-        <SectionCard title="Invalid Existing Codes">
+        <SectionCard title="Invalid Existing Codes" count={validation.invalidRecords.length}>
           {validation.invalidRecords.length === 0 ? (
-            <EmptyText text="No invalid existing codes" />
+            <EmptyText text="No invalid existing codes found." />
           ) : (
             validation.invalidRecords.map((item, index) => (
               <RowLine
                 key={`${item.id ?? "no-id"}-${index}`}
                 left={`${getRecordCode(item) || "—"} — ${getRecordDescription(item) || "—"}`}
-                right={normalizeText(item.id) || "No ID"}
+                right={`ID: ${normalizeText(item.id) || "None"}`}
                 rightColor="#fde68a"
               />
             ))
@@ -756,7 +578,8 @@ export const CodeSetupView: React.FC = () => {
         </SectionCard>
       </div>
 
-      <SectionCard title="Existing Priority Codes">
+      {/* Main Existing Codes Table */}
+      <SectionCard title="Existing Priority Codes on Server" count={rows.length}>
         {rows.length === 0 ? (
           <div className="csv-empty-table-state">No data loaded yet. Click GET.</div>
         ) : (
@@ -829,19 +652,11 @@ export const CodeSetupView: React.FC = () => {
   );
 };
 
-const Pill: React.FC<{ label: string; value: string }> = ({ label, value }) => {
-  return (
-    <span className="csv-pill">
-      {label}
-      <b className="csv-pill-bold">{value}</b>
-    </span>
-  );
-};
-
 const SectionCard: React.FC<{
   title: string;
+  count?: number;
   children: React.ReactNode;
-}> = ({ title, children }) => {
+}> = ({ title, count, children }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
   return (
@@ -851,7 +666,9 @@ const SectionCard: React.FC<{
         className="csv-section-header"
         style={{ marginBottom: isExpanded ? 12 : 0 }}
       >
-        <div className="csv-section-title">{title}</div>
+        <div className="csv-section-title">
+          {title} {count !== undefined && <span className="csv-count-badge">({count})</span>}
+        </div>
         <button
           type="button"
           className="csv-section-toggle"
@@ -883,3 +700,5 @@ const RowLine: React.FC<{
 const EmptyText: React.FC<{ text: string }> = ({ text }) => {
   return <div className="csv-empty-text">{text}</div>;
 };
+
+export default CodeSetupView;

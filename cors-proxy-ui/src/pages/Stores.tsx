@@ -1,11 +1,18 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
+// @ts-ignore - raw import for Vite/bundler
+import slackCsvText from "./DATA/Slack.csv?raw";
 import {
   fetchStores,
   getTDaysRange,
   ExpiredCaptureTokenError,
 } from "../services/tekionStoresApi";
 import type { TRange } from "../services/tekionStoresApi";
-import { getStores, saveStores } from "../services/storesDb";
+import {
+  getStores,
+  saveStores,
+  getStoredStatusVault,
+  saveStatusToVault,
+} from "../services/storesDb";
 import type { StoreRecord, CustomPhaseStatus } from "../services/storesDb";
 import type {
   OnboardingStatus,
@@ -20,6 +27,7 @@ import {
   getSlackSession,
   sendSlackMessage,
   type SlackRecipientCandidate,
+  type SlackDirectoryUser,
 } from "../services/storeSlackHelper";
 
 interface Props {
@@ -32,6 +40,65 @@ const logger = {
   warn: (...args: unknown[]) => console.warn("[Stores]", ...args),
   error: (...args: unknown[]) => console.error("[Stores]", ...args),
 };
+
+function parseCsvLine(line: string): string[] {
+  const result: string[] = [];
+  let current = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === "," && !inQuotes) {
+      result.push(current.trim().replace(/^"|"$/g, ""));
+      current = "";
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim().replace(/^"|"$/g, ""));
+  return result;
+}
+
+function parseSlackCsv(csvContent?: string): Map<string, SlackDirectoryUser> {
+  const map = new Map<string, SlackDirectoryUser>();
+  if (!csvContent || typeof csvContent !== "string") return map;
+
+  const lines = csvContent.split(/\r?\n/);
+  if (lines.length < 2) return map;
+
+  const headers = parseCsvLine(lines[0]).map((h) => h.toLowerCase().trim());
+  let userIdIdx = headers.findIndex((h) => h === "user id" || h === "id");
+  let nameIdx = headers.findIndex((h) => h === "full name" || h === "name");
+  let emailIdx = headers.findIndex((h) => h === "email");
+  let jobTitleIdx = headers.findIndex((h) => h === "job title" || h === "title");
+
+  if (userIdIdx === -1) userIdIdx = 0;
+  if (nameIdx === -1) nameIdx = 1;
+  if (emailIdx === -1) emailIdx = 2;
+  if (jobTitleIdx === -1) jobTitleIdx = 3;
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    const cols = parseCsvLine(line);
+    if (cols.length > Math.max(userIdIdx, nameIdx, emailIdx)) {
+      const userId = cols[userIdIdx] || "";
+      const fullName = cols[nameIdx] || "";
+      const email = (cols[emailIdx] || "").toLowerCase();
+      const jobTitle = cols[jobTitleIdx] || "";
+      if (email) {
+        map.set(email, { userId, fullName, email, jobTitle });
+      }
+    }
+  }
+  return map;
+}
+
+const STATIC_SLACK_MAP = parseSlackCsv(
+  typeof slackCsvText === "string" ? slackCsvText : ""
+);
 
 function cleanImpType(value?: string): string {
   if (!value) return "";
@@ -226,7 +293,7 @@ function getPodStyle(superpodId?: string) {
     return {
       bg: "rgba(168, 85, 247, 0.16)",
       color: "#34d399",
-      border: "rgba(16, 185, 129, 0.30)",
+      border: "rgba(168, 85, 247, 0.30)",
     };
   }
   return {
@@ -242,40 +309,107 @@ function uniqueNonEmpty(values: Array<string | undefined>): string[] {
   );
 }
 
-function buildDealerPopupRows(row: StoreRecord): Array<{ label: string; value: string }> {
-  const podLeadValues = uniqueNonEmpty([
-    row.workorder_consolidated_pdl,
-    row.dealer_pdl,
-    row.arc_pdl,
-  ]);
-
+function buildDealerPopupRows(
+  row: StoreRecord
+): Array<{ label: string; value: React.ReactNode }> {
   const trackingIdValues = uniqueNonEmpty([
     row.project_implementation_tm_sync_status_tracking_id,
     row.implementation_tm_sync_status_tracking_id,
     row.base_entity_instance_id,
   ]);
 
+  const trackingLinks =
+    trackingIdValues.length > 0 ? (
+      <div style={{ display: "inline-flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+        {trackingIdValues.map((id, index) => (
+          <a
+            key={id}
+            href={`https://tap.tekioncloud.com/workorders/details/${encodeURIComponent(id)}?tab=tasks`}
+            target="_blank"
+            rel="noreferrer"
+            title={`Open tasks for tracking ID: ${id}`}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              color: "#38bdf8",
+              background: "rgba(56, 189, 248, 0.1)",
+              border: "1px solid rgba(56, 189, 248, 0.25)",
+              borderRadius: 6,
+              padding: "2px 8px",
+              fontSize: 11,
+              fontWeight: 700,
+              textDecoration: "none",
+              transition: "all 0.15s ease",
+            }}
+          >
+            Open Tasks{trackingIdValues.length > 1 ? ` ${index + 1}` : ""} ↗
+          </a>
+        ))}
+      </div>
+    ) : (
+      "—"
+    );
+
+  const token = `${row.tenant_code || ""}_${row.tenant_id || ""}_${row.dealer_id || ""}`;
+  const preprodSchedulingUrl = `https://preprod-conscheduling.tekioncloud.com/consumer-scheduling/sign-in/phone?accessToken=${encodeURIComponent(token)}`;
+  const prodSchedulingUrl = `https://conscheduling.tekioncloud.com/consumer-scheduling/sign-in/phone?accessToken=${encodeURIComponent(token)}`;
+
   return [
-    { label: "Dealer ID", value: row.dealer_id || "—" },
     { label: "Tenant Code", value: row.tenant_code || "—" },
     { label: "Tenant ID", value: row.tenant_id || "—" },
-    { label: "Pod Lead", value: podLeadValues.length ? podLeadValues.join(" / ") : "—" },
-    { label: "Tracking ID", value: trackingIdValues.length ? trackingIdValues.join(" / ") : "—" },
+    { label: "Tracking ID", value: trackingLinks },
     {
-      label: "PEM",
-      value: row.project_engagement_manager_1781169293313734451 || "—",
+      label: "Consumer Scheduling (Pre-Prod)",
+      value: (
+        <a
+          href={preprodSchedulingUrl}
+          target="_blank"
+          rel="noreferrer"
+          title="Open Pre-Prod Consumer Scheduling"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            color: "#00f0ff",
+            background: "rgba(0, 240, 255, 0.08)",
+            border: "1px solid rgba(0, 240, 255, 0.3)",
+            borderRadius: 6,
+            padding: "2px 8px",
+            fontSize: 11,
+            fontWeight: 700,
+            textDecoration: "none",
+          }}
+        >
+          Open Pre-Prod Scheduling ↗
+        </a>
+      ),
     },
     {
-      label: "Fixed Ops POD",
-      value: row.fixed_ops_track_lead_1773369946675032982 || "—",
-    },
-    {
-      label: "Conversion",
-      value: row.conversion_track_lead_1773369950325147526 || "—",
-    },
-    {
-      label: "Variable Ops POD",
-      value: row.accounting_track_lead_1773369945455468395 || "—",
+      label: "Consumer Scheduling (Prod)",
+      value: (
+        <a
+          href={prodSchedulingUrl}
+          target="_blank"
+          rel="noreferrer"
+          title="Open Production Consumer Scheduling"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 4,
+            color: "#4ade80",
+            background: "rgba(74, 222, 128, 0.08)",
+            border: "1px solid rgba(74, 222, 128, 0.3)",
+            borderRadius: 6,
+            padding: "2px 8px",
+            fontSize: 11,
+            fontWeight: 700,
+            textDecoration: "none",
+          }}
+        >
+          Open Prod Scheduling ↗
+        </a>
+      ),
     },
   ];
 }
@@ -359,18 +493,18 @@ const CustomStatusSelect: React.FC<{
   const style = colors[currentVal];
 
   return (
-    <div style={{ position: "relative", display: "inline-block", width: 115, minWidth: 115 }}>
+    <div style={{ position: "relative", display: "inline-block", width: 110, minWidth: 110 }}>
       <select
         value={currentVal}
         onChange={(e) => onChange(e.target.value as CustomPhaseStatus)}
         style={{
           width: "100%",
-          minWidth: 115,
+          minWidth: 110,
           background: style.bg,
           color: style.text,
           border: `1px solid ${style.border}`,
           borderRadius: 8,
-          padding: "5px 24px 5px 10px",
+          padding: "5px 22px 5px 8px",
           fontSize: 11,
           fontWeight: 700,
           cursor: "pointer",
@@ -393,7 +527,7 @@ const CustomStatusSelect: React.FC<{
       <span
         style={{
           position: "absolute",
-          right: 9,
+          right: 8,
           top: "50%",
           transform: "translateY(-50%)",
           pointerEvents: "none",
@@ -493,6 +627,84 @@ const DealerMetaModal: React.FC<{
   const [sendingKey, setSendingKey] = useState("");
   const [isSendingAll, setIsSendingAll] = useState(false);
   const [editorMode, setEditorMode] = useState<"edit" | "preview">("edit");
+  const [slackEmailMap, setSlackEmailMap] = useState<Map<string, SlackDirectoryUser>>(STATIC_SLACK_MAP);
+
+  useEffect(() => {
+    const merged = new Map(slackEmailMap);
+
+    if (draftContext?.recipients) {
+      for (const r of draftContext.recipients) {
+        if (r.normalizedEmail && r.matchedUser) {
+          merged.set(r.normalizedEmail.toLowerCase(), {
+            userId: r.matchedUser.userId,
+            fullName: r.matchedUser.fullName,
+            email: r.matchedUser.email || r.normalizedEmail,
+            jobTitle: r.matchedUser.jobTitle || "",
+          });
+        }
+      }
+    }
+
+    if (merged.size === 0) {
+      fetch("/src/pages/DATA/Slack.csv")
+        .then((res) => (res.ok ? res.text() : ""))
+        .then((text) => {
+          if (text) {
+            const fetchedMap = parseSlackCsv(text);
+            if (draftContext?.recipients) {
+              for (const r of draftContext.recipients) {
+                if (r.normalizedEmail && r.matchedUser) {
+                  fetchedMap.set(r.normalizedEmail.toLowerCase(), {
+                    userId: r.matchedUser.userId,
+                    fullName: r.matchedUser.fullName,
+                    email: r.matchedUser.email || r.normalizedEmail,
+                    jobTitle: r.matchedUser.jobTitle || "",
+                  });
+                }
+              }
+            }
+            setSlackEmailMap(fetchedMap);
+          }
+        })
+        .catch(() => {});
+    } else {
+      setSlackEmailMap(merged);
+    }
+  }, [draftContext]);
+
+  const allRecipients = useMemo(() => {
+    if (!draftContext) return [];
+    const recipients = [...draftContext.recipients];
+
+    const hasConversion = recipients.some(
+      (r) =>
+        r.key.toLowerCase().includes("conversion") ||
+        r.label.toLowerCase().includes("conversion")
+    );
+
+    if (!hasConversion && row?.conversion_track_lead_1773369950325147526) {
+      const raw = row.conversion_track_lead_1773369950325147526.trim();
+      const email = raw.toLowerCase().replace(/^[<"]+|[>"]+$/g, "");
+      const matched = slackEmailMap.get(email);
+
+      recipients.push({
+        key: "conversion_track_lead",
+        label: "Conversion",
+        rawValue: raw,
+        normalizedEmail: email,
+        matchedUser: matched
+          ? {
+              userId: matched.userId,
+              fullName: matched.fullName,
+              email: matched.email,
+              jobTitle: matched.jobTitle || "",
+            }
+          : undefined,
+      });
+    }
+
+    return recipients;
+  }, [draftContext, row, slackEmailMap]);
 
   useEffect(() => {
     if (!draftContext) {
@@ -507,11 +719,13 @@ const DealerMetaModal: React.FC<{
     setEditorMode("edit");
   }, [draftContext]);
 
+  const popupRows = useMemo(() => {
+    return row ? buildDealerPopupRows(row) : [];
+  }, [row]);
+
   if (!row || !draftContext) return null;
 
-  const popupRows = buildDealerPopupRows(row);
-
-  const selectedRecipients = draftContext.recipients.filter(
+  const selectedRecipients = allRecipients.filter(
     (recipient) =>
       selectedRecipientKeys.includes(recipient.key) && recipient.matchedUser?.userId
   );
@@ -665,7 +879,7 @@ const DealerMetaModal: React.FC<{
                     wordBreak: "break-word",
                   }}
                 >
-                  {item.value || "—"}
+                  {item.value ?? "—"}
                 </div>
               </div>
             ))}
@@ -710,7 +924,7 @@ const DealerMetaModal: React.FC<{
               </div>
 
               <div style={{ display: "grid", gap: 6 }}>
-                {draftContext.recipients.map((recipient) => (
+                {allRecipients.map((recipient) => (
                   <SlackRecipientRow
                     key={recipient.key}
                     candidate={recipient}
@@ -954,17 +1168,31 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
         const existingDbStores = await getStores();
         const existingMap = new Map(existingDbStores.map((s) => [s.tekion_id, s]));
+        const vault = getStoredStatusVault();
 
         const uniqueStores = Array.from(
           new Map<string, StoreRecord>(
             rawStores.map((store) => {
               const existing = existingMap.get(store.tekion_id);
+              const override = vault[store.tekion_id];
+
               return [
                 store.tekion_id,
                 {
                   ...store,
-                  configuration_status: existing?.configuration_status || "TO DO",
-                  testing_status: existing?.testing_status || "TO DO",
+                  fixed_ops_status:
+                    override?.fixed_ops_status ||
+                    existing?.fixed_ops_status ||
+                    existing?.configuration_status ||
+                    "TO DO",
+                  variable_ops_status:
+                    override?.variable_ops_status ||
+                    existing?.variable_ops_status ||
+                    "TO DO",
+                  testing_status:
+                    override?.testing_status ||
+                    existing?.testing_status ||
+                    "TO DO",
                   blueprint_statuses: existing?.blueprint_statuses,
                   signoff_statuses: existing?.signoff_statuses,
                   onboarding_status_fetched_at: existing?.onboarding_status_fetched_at,
@@ -1000,9 +1228,33 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
   const handleLoadIndexedDb = useCallback(async () => {
     try {
       const rawData = await getStores();
+      const vault = getStoredStatusVault();
 
       const uniqueData = Array.from(
-        new Map<string, StoreRecord>(rawData.map((store) => [store.tekion_id, store])).values()
+        new Map<string, StoreRecord>(
+          rawData.map((store) => {
+            const override = vault[store.tekion_id];
+            return [
+              store.tekion_id,
+              {
+                ...store,
+                fixed_ops_status:
+                  override?.fixed_ops_status ||
+                  store.fixed_ops_status ||
+                  store.configuration_status ||
+                  "TO DO",
+                variable_ops_status:
+                  override?.variable_ops_status ||
+                  store.variable_ops_status ||
+                  "TO DO",
+                testing_status:
+                  override?.testing_status ||
+                  store.testing_status ||
+                  "TO DO",
+              },
+            ];
+          })
+        ).values()
       );
 
       setRecords(uniqueData);
@@ -1024,14 +1276,15 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
   const updateCustomStatus = async (
     tekion_id: string,
-    field: "configuration_status" | "testing_status",
+    field: "fixed_ops_status" | "variable_ops_status" | "testing_status",
     value: CustomPhaseStatus
   ) => {
     const updatedRecords = records.map((r) =>
       r.tekion_id === tekion_id ? { ...r, [field]: value } : r
     );
-
     setRecords(updatedRecords);
+
+    saveStatusToVault(tekion_id, field, value);
 
     try {
       await saveStores(updatedRecords);
@@ -1439,9 +1692,8 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                   Showing <strong style={{ color: "#f8fafc" }}>{filtered.length}</strong> of {records.length} stores
                 </span>
 
-                {/* Quick Access Badges (TAP, Slack, Neon PROD, Outlook, Neon PRE-PROD) */}
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginLeft: 4 }}>
-                  {/* TAP Workorders Official Asset */}
+                {/* Quick Access Badges */}
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginLeft: 4, flexWrap: "wrap" }}>
                   <a
                     href={tapWorkordersUrl}
                     target="_blank"
@@ -1466,7 +1718,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     />
                   </a>
 
-                  {/* Slack Brandfetch Dark Theme SVG */}
                   <a
                     href="https://app.slack.com/client/E08DG6QMMDG"
                     target="_blank"
@@ -1491,8 +1742,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     />
                   </a>
 
-                  {/* PROD Neon Link */}
-                  {/* PROD Link (Muted) */}
                   <a
                     href="https://app.tekioncloud.com/internal/approval-management/dashboard/requests"
                     target="_blank"
@@ -1518,7 +1767,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     PROD
                   </a>
 
-                  {/* Outlook Brandfetch Dark Theme SVG */}
                   <a
                     href="http://outlook.office365.com/mail/inbox"
                     target="_blank"
@@ -1543,7 +1791,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     />
                   </a>
 
-                  {/* PRE-PROD Link (Muted) */}
                   <a
                     href="https://preprodapp.tekioncloud.com/accounting/chartOfAccounts/list"
                     target="_blank"
@@ -1568,6 +1815,56 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                   >
                     PRE-PROD
                   </a>
+
+                  <a
+                    href="https://preprod-map.tekioncloud.com/map/blueprintValidation"
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open PreProd MAP Blueprint Validation"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: 28,
+                      padding: "0 9px",
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "0.5px",
+                      textDecoration: "none",
+                      color: "#c084fc",
+                      background: "rgba(192, 132, 252, 0.08)",
+                      border: "1px solid rgba(192, 132, 252, 0.25)",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    PreProd MAP
+                  </a>
+
+                  <a
+                    href="https://tap.tekioncloud.com/timetracker/employee-view"
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open TAP Time Tracker Employee View"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: 28,
+                      padding: "0 9px",
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "0.5px",
+                      textDecoration: "none",
+                      color: "#fbbf24",
+                      background: "rgba(251, 191, 36, 0.08)",
+                      border: "1px solid rgba(251, 191, 36, 0.25)",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    Time Sheet
+                  </a>
                 </div>
               </div>
 
@@ -1588,17 +1885,14 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     <th style={{ padding: "10px 8px", width: 95 }}>Tekion ID</th>
                     <th style={{ padding: "10px 8px", width: 140 }}>Dealer ID</th>
 
-                    {/* Dealership absorbs all extra horizontal space */}
-                    <th style={{ padding: "10px 10px", width: "100%", minWidth: 260, textAlign: "left" }}>
+                    <th style={{ padding: "10px 10px", width: "100%", minWidth: 240, textAlign: "left" }}>
                       Dealership
                     </th>
 
-                    {/* Go Live locked width */}
                     <th style={{ padding: "10px 4px 10px 6px", width: 110, maxWidth: 110, whiteSpace: "nowrap" }}>
                       Go Live
                     </th>
 
-                    {/* IMP Type locked width */}
                     <th style={{ padding: "10px 6px 10px 4px", width: 80, maxWidth: 80, whiteSpace: "nowrap" }}>
                       IMP Type
                     </th>
@@ -1608,15 +1902,17 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     <th style={{ padding: "10px 8px", width: 65, textAlign: "center" }}>POD</th>
                     <th style={{ padding: "10px 8px" }}>Blueprint</th>
 
-                    {/* Configuration fixed comfortable width */}
-                    <th style={{ padding: "10px 12px", width: 130, minWidth: 130, whiteSpace: "nowrap", textAlign: "center" }}>
-                      Configuration
+                    <th style={{ padding: "10px 8px", width: 120, minWidth: 120, whiteSpace: "nowrap", textAlign: "center" }}>
+                      Fixed Ops
+                    </th>
+
+                    <th style={{ padding: "10px 8px", width: 120, minWidth: 120, whiteSpace: "nowrap", textAlign: "center" }}>
+                      Variable Ops
                     </th>
 
                     <th style={{ padding: "10px 8px" }}>Sign_Off</th>
 
-                    {/* Testing fixed comfortable width */}
-                    <th style={{ padding: "10px 12px", width: 130, minWidth: 130, whiteSpace: "nowrap", textAlign: "center" }}>
+                    <th style={{ padding: "10px 8px", width: 120, minWidth: 120, whiteSpace: "nowrap", textAlign: "center" }}>
                       Testing
                     </th>
                   </tr>
@@ -1679,7 +1975,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                         </td>
 
                         {/* Dealership */}
-                        <td style={{ width: "100%", minWidth: 260, padding: "8px 10px" }}>
+                        <td style={{ width: "100%", minWidth: 240, padding: "8px 10px" }}>
                           <button
                             type="button"
                             className="stores-copy-btn"
@@ -1764,11 +2060,19 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                           />
                         </td>
 
-                        {/* Configuration Dropdown */}
-                        <td style={{ width: 130, minWidth: 130, whiteSpace: "nowrap", textAlign: "center", padding: "8px 12px" }}>
+                        {/* Fixed Ops Status Dropdown */}
+                        <td style={{ width: 120, minWidth: 120, whiteSpace: "nowrap", textAlign: "center", padding: "8px 4px" }}>
                           <CustomStatusSelect
-                            value={row.configuration_status}
-                            onChange={(val) => void updateCustomStatus(row.tekion_id, "configuration_status", val)}
+                            value={row.fixed_ops_status}
+                            onChange={(val) => void updateCustomStatus(row.tekion_id, "fixed_ops_status", val)}
+                          />
+                        </td>
+
+                        {/* Variable Ops Status Dropdown */}
+                        <td style={{ width: 120, minWidth: 120, whiteSpace: "nowrap", textAlign: "center", padding: "8px 4px" }}>
+                          <CustomStatusSelect
+                            value={row.variable_ops_status}
+                            onChange={(val) => void updateCustomStatus(row.tekion_id, "variable_ops_status", val)}
                           />
                         </td>
 
@@ -1783,8 +2087,8 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                           />
                         </td>
 
-                        {/* Testing Dropdown */}
-                        <td style={{ width: 130, minWidth: 130, whiteSpace: "nowrap", textAlign: "center", padding: "8px 12px" }}>
+                        {/* Testing Status Dropdown */}
+                        <td style={{ width: 120, minWidth: 120, whiteSpace: "nowrap", textAlign: "center", padding: "8px 4px" }}>
                           <CustomStatusSelect
                             value={row.testing_status}
                             onChange={(val) => void updateCustomStatus(row.tekion_id, "testing_status", val)}

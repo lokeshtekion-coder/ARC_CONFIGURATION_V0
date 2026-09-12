@@ -8,6 +8,7 @@ export const STORE_EXPORT_HEADERS = [
   "Go Live",
   "T Label",
   "IMP Type",
+  "Products",
   "Pre-Prod",
   "POD",
   "Blueprint Parts",
@@ -20,12 +21,15 @@ export const STORE_EXPORT_HEADERS = [
   "Blueprint CRM Last Released Time",
   "Blueprint Analytics",
   "Blueprint Analytics Last Released Time",
+  "Fixed Ops",
+  "Variable Ops",
   "SignOff Parts",
   "SignOff Parts Last Released Time",
   "SignOff Service",
   "SignOff Service Last Released Time",
   "SignOff Accounting",
   "SignOff Accounting Last Released Time",
+  "Testing",
   "Status Fetched At",
 ] as const;
 
@@ -102,20 +106,16 @@ function formatDateTime(value?: string | number): string {
   let d: Date;
   const strValue = String(value).trim();
 
-  // If the string is purely numbers (like "1780507574801"), parse it as an integer
   if (/^\d+$/.test(strValue)) {
     d = new Date(Number(strValue));
   } else {
-    // Otherwise, treat it as a normal ISO date string
     d = new Date(strValue);
   }
 
-  // Fallback to original string if the date isn't valid
   if (Number.isNaN(d.getTime())) return strValue;
 
   const mm = String(d.getMonth() + 1).padStart(2, "0");
   const dd = String(d.getDate()).padStart(2, "0");
-  // Get the last two digits of the year (e.g., 2026 -> 26)
   const yy = String(d.getFullYear()).slice(-2);
 
   let hours = d.getHours();
@@ -123,7 +123,7 @@ function formatDateTime(value?: string | number): string {
 
   const ampm = hours >= 12 ? "PM" : "AM";
   hours = hours % 12;
-  hours = hours ? hours : 12; // the hour '0' should be '12'
+  hours = hours ? hours : 12;
   const hh = String(hours).padStart(2, "0");
 
   return `${mm}/${dd}/${yy} | ${hh}:${minutes} ${ampm}`;
@@ -149,6 +149,7 @@ export function mapStoreToExcelRow(store: StoreRecord): StoreExcelRow {
     "Go Live": formatLaunchDate(store.launch_date),
     "T Label": getTLabel(store.launch_date),
     "IMP Type": store.implementation_type || "",
+    Products: store.product_types || "—",
     "Pre-Prod": store.pre_production_environment_status || "",
     POD: store.superpod_id || "",
     "Blueprint Parts": toStatusText(store.blueprint_statuses?.parts),
@@ -161,12 +162,15 @@ export function mapStoreToExcelRow(store: StoreRecord): StoreExcelRow {
     "Blueprint CRM Last Released Time": formatDateTime(store.blueprint_statuses?.crm_last_released_time),
     "Blueprint Analytics": toStatusText(store.blueprint_statuses?.analytics),
     "Blueprint Analytics Last Released Time": formatDateTime(store.blueprint_statuses?.analytics_last_released_time),
+    "Fixed Ops": store.fixed_ops_status || store.configuration_status || "TO DO",
+    "Variable Ops": store.variable_ops_status || "TO DO",
     "SignOff Parts": toStatusText(store.signoff_statuses?.parts),
     "SignOff Parts Last Released Time": formatDateTime(store.signoff_statuses?.parts_last_released_time),
     "SignOff Service": toStatusText(store.signoff_statuses?.service),
     "SignOff Service Last Released Time": formatDateTime(store.signoff_statuses?.service_last_released_time),
     "SignOff Accounting": toStatusText(store.signoff_statuses?.accounting),
     "SignOff Accounting Last Released Time": formatDateTime(store.signoff_statuses?.accounting_last_released_time),
+    Testing: store.testing_status || "TO DO",
     "Status Fetched At": formatDateTime(store.onboarding_status_fetched_at),
   };
 }

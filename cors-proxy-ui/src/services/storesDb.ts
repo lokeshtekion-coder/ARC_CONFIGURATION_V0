@@ -24,7 +24,10 @@ export interface StoreRecord {
   signoff_statuses?: StoreSignoffStatuses;
   onboarding_status_fetched_at?: string;
 
-  configuration_status?: CustomPhaseStatus;
+  // Split into Fixed Ops and Variable Ops
+  configuration_status?: CustomPhaseStatus; // Kept for legacy backward compatibility
+  fixed_ops_status?: CustomPhaseStatus;
+  variable_ops_status?: CustomPhaseStatus;
   testing_status?: CustomPhaseStatus;
 
   workorder_consolidated_pdl?: string;
@@ -45,6 +48,44 @@ export interface StoreRecord {
 }
 
 const { STORES_STORE: STORE_NAME } = getArcConfigDbMeta();
+const STATUS_VAULT_KEY = "TEKION_STORES_STATUS_VAULT_V1";
+
+export interface StoreStatusOverride {
+  fixed_ops_status?: CustomPhaseStatus;
+  variable_ops_status?: CustomPhaseStatus;
+  testing_status?: CustomPhaseStatus;
+}
+
+/**
+ * Bulletproof synchronous backup in localStorage.
+ * Survives IndexedDB crashes, drops, or backend API wipes.
+ */
+export function getStoredStatusVault(): Record<string, StoreStatusOverride> {
+  try {
+    const raw = localStorage.getItem(STATUS_VAULT_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    console.error("Failed to read from localStorage status vault", e);
+    return {};
+  }
+}
+
+export function saveStatusToVault(
+  tekion_id: string,
+  field: "fixed_ops_status" | "variable_ops_status" | "testing_status",
+  value: CustomPhaseStatus
+): void {
+  try {
+    const vault = getStoredStatusVault();
+    vault[tekion_id] = {
+      ...vault[tekion_id],
+      [field]: value,
+    };
+    localStorage.setItem(STATUS_VAULT_KEY, JSON.stringify(vault));
+  } catch (e) {
+    console.error("Failed to write to localStorage status vault", e);
+  }
+}
 
 export async function saveStores(records: StoreRecord[]): Promise<void> {
   const db = await openArcConfigDb();

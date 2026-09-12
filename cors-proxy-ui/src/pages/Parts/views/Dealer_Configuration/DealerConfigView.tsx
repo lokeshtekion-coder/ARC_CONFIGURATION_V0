@@ -2,14 +2,14 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   loadTekionApiSettingsBundle,
   getSelectedDealerProfileId,
-} from "../../../services/tekionApiSettings";
+} from "../../../../services/tekionApiSettings";
 import {
   loadLatestExtensionCapture,
   requestLatestCaptureFromExtension,
   subscribeToExtensionCapture,
   type ArcTekionProfile,
-} from "../../../services/extensionBridge";
-import type { KeyValuePair } from "../../../types/proxy.types";
+} from "../../../../services/extensionBridge";
+import type { KeyValuePair } from "../../../../types/proxy.types";
 
 const TENANTS_URL =
   "https://app.tekioncloud.com/api/tekapproval/u/dealer-tenant/tenants";
@@ -24,6 +24,7 @@ const CUSTOMER_NOTIFICATIONS_TEMPLATE_ID =
 
 type RunState = "idle" | "loading" | "success" | "error" | "warning";
 type ValidationState = "idle" | "loading" | "matched" | "not-found";
+type ActionKey = "general" | "customer-notifications" | "dealer-details";
 
 interface TenantInfo {
   tenantId?: string;
@@ -63,8 +64,6 @@ interface DealersResponse {
   status?: string;
   message?: string;
 }
-
-type ActionKey = "customer-notifications";
 
 const logger = {
   info: (...args: unknown[]) =>
@@ -174,8 +173,6 @@ async function proxyPost(
     }),
   });
 
-  logger.debug("proxy http status", response.status);
-
   if (!response.ok) {
     logger.groupEnd();
     throw new Error(`Proxy request failed with HTTP ${response.status}`);
@@ -223,8 +220,6 @@ function buildCustomerNotificationsBodyFormat(
   tenantId: string,
   dealerIds: string[]
 ): string {
-  const dealerIdLines = dealerIds.map((dealerId) => ` "${dealerId}"`).join(",\n");
-
   return `{
  "onlyForDealers": [
   {
@@ -238,204 +233,53 @@ function buildCustomerNotificationsBodyFormat(
  "additionalParams": {
   "moduleName": "SERVICE",
   "types": [
-   {
-    "notificationType": "APPOINTMENT_CONFIRMATION",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "APPOINTMENT_RESCHEDULED",
-    "communicationChannelType": "SERVICE_MAINTENANCE",
-    "override": true
-   },
-   {
-    "notificationType": "APPOINTMENT_REMINDER",
-    "communicationChannelType": "SERVICE_MAINTENANCE",
-    "override": true
-   },
-   {
-    "notificationType": "APPOINTMENT_CANCELLATION",
-    "communicationChannelType": "SERVICE_MAINTENANCE",
-    "override": true
-   },
-   {
-    "notificationType": "APPOINTMENT_CONSUMER_SCHEDULING_OTP",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "APPOINTMENT_CONCIERGE_PICKUP",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "APPOINTMENT_CONFIRMATION_CONCIERGE",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "APPOINTMENT_RESCHEDULE_CONCIERGE",
-    "communicationChannelType": "SERVICE_MAINTENANCE",
-    "override": true
-   },
-   {
-    "notificationType": "APPOINTMENT_REMINDER_CONCIERGE",
-    "communicationChannelType": "SERVICE_MAINTENANCE",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_CREATED",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_INVOICED",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_DRAFT_RO_PAID",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_REVISED_ESTIMATE",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_RECOMMENDATION_SEND_TO_CUSTOMER",
-    "communicationChannelType": "SERVICE_MAINTENANCE",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_CUSTOMER_PAY_CLOSED",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_CONSUMER_PORTAL_OTP",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_MPVI_VIDEO_ATTACHED",
-    "communicationChannelType": "SERVICE_MAINTENANCE",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_SEND_UPLOAD_LINK",
-    "communicationChannelType": "SERVICE_MAINTENANCE",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_SA_RETURNED_KEYS",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_DRAFT_CREATED",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_DRAFT_INVOICED",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_PDF_INVOICE_CUSTOMER",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_PDF_DAMAGES_CUSTOMER",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_PDF_INSPECTIONS_AND_RECOMMENDATIONS_CUSTOMER",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_PDF_SERVICE_BOOKLET_OEM_SERVICE_BOOKLET",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_PDF_VIS_CUSTOMER",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_PDF_ESTIMATE_CUSTOMER",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_PDF_INVOICE_DAY_COLLECTION_REPORT",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_PDF_INVOICE_COLLECTION_SLIP",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "QUOTES_PDF_ESTIMATE",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_PDF_SERVICE_HISTORY_INVOICE_BULK",
-    "communicationChannelType": "SERVICE_MAINTENANCE",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_PDF_SERVICE_HISTORY_RECAP",
-    "communicationChannelType": "CUSTOMER_SATISFACTION",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_PAYMENT_LINK",
-    "communicationChannelType": "SERVICE_MAINTENANCE",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_BULK_DOWNLOAD",
-    "communicationChannelType": "SERVICE_MAINTENANCE",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_PDF_ESIGN",
-    "communicationChannelType": "SERVICE_MAINTENANCE",
-    "override": true
-   },
-   {
-    "notificationType": "CONSUMER_PORTAL_RESEND_LINK",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "CONSUMER_KEYLOUNGE_OTP",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   },
-   {
-    "notificationType": "REPAIR_ORDER_INSPECTIONS_AND_RECOMMENDATIONS_CUSTOMER",
-    "communicationChannelType": "DEALERSHIP_BUSINESS",
-    "override": true
-   }
+   { "notificationType": "APPOINTMENT_CONFIRMATION", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "APPOINTMENT_RESCHEDULED", "communicationChannelType": "SERVICE_MAINTENANCE", "override": true },
+   { "notificationType": "APPOINTMENT_REMINDER", "communicationChannelType": "SERVICE_MAINTENANCE", "override": true },
+   { "notificationType": "APPOINTMENT_CANCELLATION", "communicationChannelType": "SERVICE_MAINTENANCE", "override": true },
+   { "notificationType": "APPOINTMENT_CONSUMER_SCHEDULING_OTP", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "APPOINTMENT_CONCIERGE_PICKUP", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "APPOINTMENT_CONFIRMATION_CONCIERGE", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "APPOINTMENT_RESCHEDULE_CONCIERGE", "communicationChannelType": "SERVICE_MAINTENANCE", "override": true },
+   { "notificationType": "APPOINTMENT_REMINDER_CONCIERGE", "communicationChannelType": "SERVICE_MAINTENANCE", "override": true },
+   { "notificationType": "REPAIR_ORDER_CREATED", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_INVOICED", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_DRAFT_RO_PAID", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_REVISED_ESTIMATE", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_RECOMMENDATION_SEND_TO_CUSTOMER", "communicationChannelType": "SERVICE_MAINTENANCE", "override": true },
+   { "notificationType": "REPAIR_ORDER_CUSTOMER_PAY_CLOSED", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_CONSUMER_PORTAL_OTP", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_MPVI_VIDEO_ATTACHED", "communicationChannelType": "SERVICE_MAINTENANCE", "override": true },
+   { "notificationType": "REPAIR_ORDER_SEND_UPLOAD_LINK", "communicationChannelType": "SERVICE_MAINTENANCE", "override": true },
+   { "notificationType": "REPAIR_ORDER_SA_RETURNED_KEYS", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_DRAFT_CREATED", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_DRAFT_INVOICED", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_PDF_INVOICE_CUSTOMER", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_PDF_DAMAGES_CUSTOMER", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_PDF_INSPECTIONS_AND_RECOMMENDATIONS_CUSTOMER", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_PDF_SERVICE_BOOKLET_OEM_SERVICE_BOOKLET", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_PDF_VIS_CUSTOMER", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_PDF_ESTIMATE_CUSTOMER", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_PDF_INVOICE_DAY_COLLECTION_REPORT", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_PDF_INVOICE_COLLECTION_SLIP", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "QUOTES_PDF_ESTIMATE", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_PDF_SERVICE_HISTORY_INVOICE_BULK", "communicationChannelType": "SERVICE_MAINTENANCE", "override": true },
+   { "notificationType": "REPAIR_ORDER_PDF_SERVICE_HISTORY_RECAP", "communicationChannelType": "CUSTOMER_SATISFACTION", "override": true },
+   { "notificationType": "REPAIR_ORDER_PAYMENT_LINK", "communicationChannelType": "SERVICE_MAINTENANCE", "override": true },
+   { "notificationType": "REPAIR_ORDER_BULK_DOWNLOAD", "communicationChannelType": "SERVICE_MAINTENANCE", "override": true },
+   { "notificationType": "REPAIR_ORDER_PDF_ESIGN", "communicationChannelType": "SERVICE_MAINTENANCE", "override": true },
+   { "notificationType": "CONSUMER_PORTAL_RESEND_LINK", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "CONSUMER_KEYLOUNGE_OTP", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true },
+   { "notificationType": "REPAIR_ORDER_INSPECTIONS_AND_RECOMMENDATIONS_CUSTOMER", "communicationChannelType": "DEALERSHIP_BUSINESS", "override": true }
   ]
  }
 }`;
 }
 
 export const DealerConfigView: React.FC = () => {
-  const [selectedAction, setSelectedAction] =
-    useState<ActionKey>("customer-notifications");
+  const [selectedAction, setSelectedAction] = useState<ActionKey>("customer-notifications");
+  const [showMainInfo, setShowMainInfo] = useState(false);
+  const [showStep1Info, setShowStep1Info] = useState(false);
 
   const [runState, setRunState] = useState<RunState>("idle");
   const [statusText, setStatusText] = useState("Ready");
@@ -475,7 +319,6 @@ export const DealerConfigView: React.FC = () => {
     });
 
     const handleFocus = () => {
-      logger.info("window focus -> refreshing extension capture snapshot");
       setCaptureVersion((prev) => prev + 1);
       requestLatestCaptureFromExtension();
     };
@@ -491,13 +334,6 @@ export const DealerConfigView: React.FC = () => {
 
   const headerInfo = useMemo(() => {
     const { headers, source } = buildHeadersForProdTechMotors();
-
-    logger.group("headerInfo recomputed");
-    logger.debug("source", source);
-    logger.debug("header count", Object.keys(headers).length);
-    logger.debug("header keys", Object.keys(headers).sort());
-    logger.groupEnd();
-
     return {
       headers,
       source,
@@ -506,14 +342,7 @@ export const DealerConfigView: React.FC = () => {
   }, [captureVersion]);
 
   const selectedDealerProfile = useMemo(() => {
-    const profile = loadSelectedDealerProfileFromCapture();
-
-    logger.group("selectedDealerProfile recomputed");
-    logger.debug("selected profile id", getSelectedDealerProfileId());
-    logger.debug("profile", profile);
-    logger.groupEnd();
-
-    return profile;
+    return loadSelectedDealerProfileFromCapture();
   }, [captureVersion]);
 
   const preferredTenantId = useMemo(
@@ -565,41 +394,7 @@ export const DealerConfigView: React.FC = () => {
     return Boolean(resolvedTenantId && resolvedVerifiedDealerId && finalDealerIds.length > 0);
   }, [resolvedTenantId, resolvedVerifiedDealerId, finalDealerIds]);
 
-  useEffect(() => {
-    logger.group("validation snapshot");
-    logger.debug("preferredTenantId", preferredTenantId);
-    logger.debug("preferredDealerId", preferredDealerId);
-    logger.debug("selectedTenantId", selectedTenantId);
-    logger.debug("selectedDealerId", selectedDealerId);
-    logger.debug("selectedAdditionalDealerIds", selectedAdditionalDealerIds);
-    logger.debug("resolvedTenantId", resolvedTenantId);
-    logger.debug("resolvedVerifiedDealerId", resolvedVerifiedDealerId);
-    logger.debug("finalDealerIds", finalDealerIds);
-    logger.debug("tenants loaded", tenants.length);
-    logger.debug("dealers loaded", dealers.length);
-    logger.debug("tenantValidationState", tenantValidationState);
-    logger.debug("dealerValidationState", dealerValidationState);
-    logger.debug("canPreviewPayload", canPreviewPayload);
-    logger.groupEnd();
-  }, [
-    preferredTenantId,
-    preferredDealerId,
-    selectedTenantId,
-    selectedDealerId,
-    selectedAdditionalDealerIds,
-    resolvedTenantId,
-    resolvedVerifiedDealerId,
-    finalDealerIds,
-    tenants.length,
-    dealers.length,
-    tenantValidationState,
-    dealerValidationState,
-    canPreviewPayload,
-  ]);
-
   const loadTenants = async (): Promise<TenantInfo[]> => {
-    logger.group("loadTenants start");
-
     setIsLoadingTenants(true);
     setTenantValidationState(preferredTenantId ? "loading" : "idle");
     setRunState("loading");
@@ -619,10 +414,6 @@ export const DealerConfigView: React.FC = () => {
         );
       }
 
-      logger.debug("using auth header source", headerInfo.source);
-      logger.debug("selected profile tenant target", preferredTenantId);
-      logger.debug("selected profile dealer target", preferredDealerId);
-
       const body = {
         envPod: [{ env: "PREPROD", pod: null }],
         platform: "ARC",
@@ -634,8 +425,6 @@ export const DealerConfigView: React.FC = () => {
         headerInfo.headers
       )) as TenantsResponse;
 
-      logger.debug("tenants response", response);
-
       const tenantInfos =
         response.data?.flatMap((item) => item.tenantInfos ?? []) ?? [];
 
@@ -644,8 +433,6 @@ export const DealerConfigView: React.FC = () => {
       const matchedTenant = preferredTenantId
         ? tenantInfos.find((tenant) => normalize(tenant.tenantId) === preferredTenantId) ?? null
         : null;
-
-      logger.debug("matchedTenant", matchedTenant);
 
       if (preferredTenantId) {
         if (matchedTenant) {
@@ -677,7 +464,6 @@ export const DealerConfigView: React.FC = () => {
 
       return tenantInfos;
     } catch (error: unknown) {
-      logger.error("load tenants failed", error);
       setTenantValidationState(preferredTenantId ? "not-found" : "idle");
       setRunState("error");
       setStatusText("Failed to load tenants");
@@ -685,13 +471,10 @@ export const DealerConfigView: React.FC = () => {
       throw error;
     } finally {
       setIsLoadingTenants(false);
-      logger.groupEnd();
     }
   };
 
   const loadDealers = async (tenantIdOverride?: string): Promise<DealerInfo[]> => {
-    logger.group("loadDealers start");
-
     setIsLoadingDealers(true);
     setDealerValidationState(preferredDealerId ? "loading" : "idle");
     setRunState("loading");
@@ -700,9 +483,6 @@ export const DealerConfigView: React.FC = () => {
 
     try {
       const tenantIdForRequest = normalize(tenantIdOverride) || resolvedTenantId;
-
-      logger.debug("tenantIdForRequest", tenantIdForRequest);
-      logger.debug("selected profile dealer target", preferredDealerId);
 
       if (!tenantIdForRequest) {
         throw new Error("Please select or validate a tenant first.");
@@ -722,8 +502,6 @@ export const DealerConfigView: React.FC = () => {
         headerInfo.headers
       )) as DealersResponse;
 
-      logger.debug("dealers response", response);
-
       const dealerRows = response.data?.PREPROD ?? [];
       setDealers(dealerRows);
       setSelectedDealerId("");
@@ -732,8 +510,6 @@ export const DealerConfigView: React.FC = () => {
       const matchedDealer = preferredDealerId
         ? dealerRows.find((dealer) => normalize(dealer.dealerId) === preferredDealerId) ?? null
         : null;
-
-      logger.debug("matchedDealer", matchedDealer);
 
       if (preferredDealerId) {
         if (matchedDealer) {
@@ -767,7 +543,6 @@ export const DealerConfigView: React.FC = () => {
 
       return dealerRows;
     } catch (error: unknown) {
-      logger.error("load dealers failed", error);
       setDealerValidationState(preferredDealerId ? "not-found" : "idle");
       setRunState("error");
       setStatusText("Failed to load dealers");
@@ -775,13 +550,10 @@ export const DealerConfigView: React.FC = () => {
       throw error;
     } finally {
       setIsLoadingDealers(false);
-      logger.groupEnd();
     }
   };
 
   const autoResolveTenantAndDealer = async (): Promise<void> => {
-    logger.group("autoResolveTenantAndDealer");
-
     setIsAutoResolving(true);
     setErrorText("");
     setShowPayloadPreview(false);
@@ -796,7 +568,6 @@ export const DealerConfigView: React.FC = () => {
       }
 
       const tenantRows = await loadTenants();
-
       const matchedTenant =
         tenantRows.find((tenant) => normalize(tenant.tenantId) === preferredTenantId) ?? null;
 
@@ -807,8 +578,6 @@ export const DealerConfigView: React.FC = () => {
       }
 
       const validatedTenantId = normalize(matchedTenant.tenantId);
-      logger.info("validated tenant from Step 2", validatedTenantId);
-
       const dealerRows = await loadDealers(validatedTenantId);
 
       const matchedDealer =
@@ -821,7 +590,6 @@ export const DealerConfigView: React.FC = () => {
       }
 
       const validatedDealerId = normalize(matchedDealer.dealerId);
-      logger.info("validated dealer from Step 3", validatedDealerId);
 
       setSelectedTenantId(validatedTenantId);
       setSelectedDealerId(validatedDealerId);
@@ -836,13 +604,11 @@ export const DealerConfigView: React.FC = () => {
         `✅ Auto-validated tenant ${validatedTenantId} and verified dealer ${validatedDealerId}. You can now optionally add more dealers from the same tenant and preview/submit.`
       );
     } catch (error: unknown) {
-      logger.error("autoResolveTenantAndDealer failed", error);
       setRunState("error");
       setStatusText("Auto-validation failed");
       setErrorText(error instanceof Error ? error.message : String(error));
     } finally {
       setIsAutoResolving(false);
-      logger.groupEnd();
     }
   };
 
@@ -851,74 +617,45 @@ export const DealerConfigView: React.FC = () => {
     const verifiedDealerId = resolvedVerifiedDealerId;
     const dealerIdsForPayload = finalDealerIds;
 
-    logger.group("buildCustomerNotificationsPayload");
-    logger.debug("tenantIdForPayload", tenantIdForPayload);
-    logger.debug("verifiedDealerId", verifiedDealerId);
-    logger.debug("dealerIdsForPayload", dealerIdsForPayload);
-
     if (!tenantIdForPayload) {
-      logger.groupEnd();
       throw new Error("Preview unavailable: tenant is not selected or validated yet.");
     }
-
     if (!verifiedDealerId) {
-      logger.groupEnd();
       throw new Error("Preview unavailable: verified dealer is not selected or validated yet.");
     }
-
     if (dealerIdsForPayload.length === 0) {
-      logger.groupEnd();
       throw new Error("Preview unavailable: no dealer IDs available for payload.");
     }
 
-    const payload = {
+    return {
       moduleName: "CONTRACT_CENTER",
       actionType: "RESTRICTED_API",
       requestName: "Template update",
       tagId: null,
       releaseType: null,
       labels: {
-        ENV: {
-          value: ["PREPROD"],
-        },
-        TEMPLATE_ID: {
-          value: CUSTOMER_NOTIFICATIONS_TEMPLATE_ID,
-        },
+        ENV: { value: ["PREPROD"] },
+        TEMPLATE_ID: { value: CUSTOMER_NOTIFICATIONS_TEMPLATE_ID },
       },
       platform: "ARC",
       cluster: "ARC_DEFAULT",
       approvalEnvType: "MULTI_ENV",
-      notes: {
-        note: "Dealer Configuration :Customer Notifications",
-      },
+      notes: { note: "Dealer Configuration :Customer Notifications" },
       metaDataByEnv: {
         PREPROD: {
           templateId: CUSTOMER_NOTIFICATIONS_TEMPLATE_ID,
           templateName: "Migrate Notifications Settings ",
           headers: {
-            "Content-Type": {
-              format: "application/json",
-              params: [],
-              required: true,
-            },
-            "tek-sandbox-id": {
-              format: "${tekSandboxId}",
-              params: ["tekSandboxId"],
-              required: false,
-            },
+            "Content-Type": { format: "application/json", params: [], required: true },
+            "tek-sandbox-id": { format: "${tekSandboxId}", params: ["tekSandboxId"], required: false },
           },
-          headerParams: {
-            tekSandboxId: "",
-          },
+          headerParams: { tekSandboxId: "" },
           bodyParams: {},
           preDefinedValuesParams: {},
           url: "/service-communication/r/migrate/notification/settings",
           urlParams: {},
           body: {
-            format: buildCustomerNotificationsBodyFormat(
-              tenantIdForPayload,
-              dealerIdsForPayload
-            ),
+            format: buildCustomerNotificationsBodyFormat(tenantIdForPayload, dealerIdsForPayload),
             params: [],
           },
           tenantDealerKeys: [
@@ -938,15 +675,9 @@ export const DealerConfigView: React.FC = () => {
         },
       },
     };
-
-    logger.debug("payload built successfully", payload);
-    logger.groupEnd();
-    return payload;
   };
 
   const handlePreviewPayload = () => {
-    logger.group("handlePreviewPayload");
-
     try {
       const payload = buildCustomerNotificationsPayload();
       setLastApprovalPayload(payload);
@@ -954,22 +685,16 @@ export const DealerConfigView: React.FC = () => {
       setRunState("success");
       setStatusText("Approval payload preview generated successfully.");
       setErrorText("");
-      logger.info("preview payload generated");
     } catch (error: unknown) {
       setShowPayloadPreview(false);
       setLastApprovalPayload(null);
       setRunState("warning");
       setStatusText("Could not generate preview payload yet.");
       setErrorText(error instanceof Error ? error.message : String(error));
-      logger.warn("preview payload failed", error);
-    } finally {
-      logger.groupEnd();
     }
   };
 
   const submitApprovalRequest = async (): Promise<void> => {
-    logger.group("submitApprovalRequest");
-
     setIsSubmitting(true);
     setRunState("loading");
     setStatusText("Submitting approval request...");
@@ -978,234 +703,259 @@ export const DealerConfigView: React.FC = () => {
     try {
       const payload = buildCustomerNotificationsPayload();
       setLastApprovalPayload(payload);
-
-      const response = await proxyPost(APPROVAL_URL, payload, headerInfo.headers);
-      logger.debug("approval response", response);
-
+      await proxyPost(APPROVAL_URL, payload, headerInfo.headers);
       setRunState("success");
       setStatusText("Approval request submitted successfully.");
       setErrorText("");
     } catch (error: unknown) {
-      logger.error("submit approval request failed", error);
       setRunState("error");
       setStatusText("Failed to submit approval request");
       setErrorText(error instanceof Error ? error.message : String(error));
     } finally {
       setIsSubmitting(false);
-      logger.groupEnd();
     }
   };
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
+      {/* Executive Header Card */}
       <div
         style={{
-          borderRadius: 18,
+          borderRadius: 16,
           border: "1px solid rgba(255,255,255,0.08)",
           background: "rgba(255,255,255,0.03)",
           padding: 18,
+          display: "grid",
+          gap: 12,
         }}
       >
-        <div
-          style={{
-            color: "#f8fafc",
-            fontSize: 22,
-            fontWeight: 800,
-            marginBottom: 6,
-          }}
-        >
-          Dealer Config
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#f8fafc" }}>
+              Dealer Configuration
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowMainInfo((p) => !p)}
+              style={infoButtonStyle}
+              title="Toggle Information"
+            >
+              ℹ️
+            </button>
+          </div>
+
+          <div style={{ display: "flex", gap: 8 }}>
+            <button
+              type="button"
+              className="btn-secondary btn-sm"
+              onClick={() => {
+                requestLatestCaptureFromExtension();
+                setCaptureVersion((p) => p + 1);
+              }}
+            >
+              ⟳ Refresh Headers
+            </button>
+
+            <button
+              type="button"
+              className="btn-postman"
+              disabled={isAutoResolving || headerInfo.headerCount === 0 || !preferredTenantId || !preferredDealerId}
+              onClick={() => void autoResolveTenantAndDealer()}
+            >
+              {isAutoResolving ? "Validating..." : "Auto-Validate Tenant + Dealer"}
+            </button>
+          </div>
         </div>
 
-        <div style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.7 }}>
-          Uses PRODTechMOTORS API headers for authentication and selected dealer profile
-          values for tenant/dealer validation.
+        {showMainInfo && (
+          <div style={infoBoxStyle}>
+            Uses PRODTechMOTORS API headers for authorization session tokens, while validating tenants and dealers against the currently selected profile.
+          </div>
+        )}
+
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <Pill label="Auth Source" value={headerInfo.source} />
+          <Pill label="Headers" value={String(headerInfo.headerCount)} />
+          <Pill label="Target Tenant" value={preferredTenantId || "None"} />
+          <Pill label="Target Dealer" value={preferredDealerId || "None"} />
+          <Pill label="Validated Tenant" value={resolvedTenantId || "Pending"} />
+          <Pill label="Validated Dealer" value={resolvedVerifiedDealerId || "Pending"} />
+          <Pill label="Dealers in Payload" value={String(finalDealerIds.length)} />
         </div>
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
-          <Pill label="Header Source" value={headerInfo.source} />
-          <Pill label="Header Count" value={String(headerInfo.headerCount)} />
-          <Pill label="Selected Profile Tenant" value={preferredTenantId || "Not selected"} />
-          <Pill label="Selected Profile Dealer" value={preferredDealerId || "Not selected"} />
-          <Pill label="Resolved Tenant" value={resolvedTenantId || "Pending"} />
-          <Pill
-            label="Verified Dealer"
-            value={resolvedVerifiedDealerId || "Pending"}
-          />
-          <Pill label="Final Dealer IDs" value={String(finalDealerIds.length)} />
-        </div>
-
-        {autoSelectionMessage ? (
-          <div
-            style={{
-              marginTop: 12,
-              borderRadius: 12,
-              border: "1px solid rgba(59,130,246,0.22)",
-              background: "rgba(59,130,246,0.10)",
-              color: "#bfdbfe",
-              padding: "10px 12px",
-              fontSize: 13,
-              whiteSpace: "pre-wrap",
-            }}
-          >
+        {autoSelectionMessage && (
+          <div style={noticeBoxStyle}>
             {autoSelectionMessage}
           </div>
-        ) : null}
+        )}
+
+        <StatusBox runState={runState} statusText={statusText} errorText={errorText} />
       </div>
 
-      <StatusBox runState={runState} statusText={statusText} errorText={errorText} />
+      {/* Action Toolbar / Config Buttons */}
+      <div
+        style={{
+          borderRadius: 16,
+          border: "1px solid rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.03)",
+          padding: 14,
+          display: "flex",
+          gap: 10,
+          flexWrap: "wrap",
+          alignItems: "center",
+        }}
+      >
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#94a3b8", marginRight: 6 }}>
+          Module:
+        </span>
 
-      <SectionCard title="Button 1 - Customer Notifications">
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button
-            type="button"
-            className={selectedAction === "customer-notifications" ? "btn-postman" : "btn-secondary btn-sm"}
-            onClick={() => setSelectedAction("customer-notifications")}
+        <button
+          type="button"
+          className={selectedAction === "general" ? "btn-postman" : "btn-secondary btn-sm"}
+          onClick={() => setSelectedAction("general")}
+        >
+          General
+        </button>
+
+        <button
+          type="button"
+          className={selectedAction === "customer-notifications" ? "btn-postman" : "btn-secondary btn-sm"}
+          onClick={() => setSelectedAction("customer-notifications")}
+        >
+          Customer Notifications
+        </button>
+
+        <button
+          type="button"
+          className={selectedAction === "dealer-details" ? "btn-postman" : "btn-secondary btn-sm"}
+          onClick={() => setSelectedAction("dealer-details")}
+        >
+          Dealer Details
+        </button>
+      </div>
+
+      {/* General Placeholder */}
+      {selectedAction === "general" && (
+        <SectionCard title="General Configuration">
+          <div style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.6, padding: "8px 0" }}>
+            General configuration parameters for dealership setup will be configured here.
+          </div>
+        </SectionCard>
+      )}
+
+      {/* Dealer Details Placeholder */}
+      {selectedAction === "dealer-details" && (
+        <SectionCard title="Dealer Details Configuration">
+          <div style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.6, padding: "8px 0" }}>
+            Dealer profile management and detailed branch settings will be configured here.
+          </div>
+        </SectionCard>
+      )}
+
+      {/* Customer Notifications Workflow */}
+      {selectedAction === "customer-notifications" && (
+        <div style={{ display: "grid", gap: 16 }}>
+          {/* Step 1 */}
+          <SectionCard
+            title="Step 1: Auth & Headers Verification"
+            infoButton={
+              <button
+                type="button"
+                onClick={() => setShowStep1Info((p) => !p)}
+                style={infoMiniButtonStyle}
+                title="Header instruction"
+              >
+                ℹ️
+              </button>
+            }
           >
-            Customer Notifications
-          </button>
-        </div>
-
-        <div style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.7 }}>
-          Migrates customer notification settings for the validated tenant and selected
-          dealer IDs within that tenant.
-        </div>
-      </SectionCard>
-
-      {selectedAction === "customer-notifications" ? (
-        <>
-          <SectionCard title="Step 1 - Capture / Refresh Headers">
-            <div style={{ color: "#cbd5e1", fontSize: 13, lineHeight: 1.7 }}>
-              Trigger this API in browser:
-              <br />
-              <code>https://app.tekioncloud.com/api/userservice/u/employee/profile</code>
-              <br />
-              These headers are used for authentication/session while selected profile
-              tenant/dealer are used for validation.
-            </div>
-
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button
-                className="btn-secondary btn-sm"
-                type="button"
-                onClick={() => {
-                  logger.info("manual refresh captured headers clicked");
-                  requestLatestCaptureFromExtension();
-                  setCaptureVersion((prev) => prev + 1);
-                }}
-              >
-                Refresh Captured Headers
-              </button>
-
-              <button
-                className="btn-postman"
-                type="button"
-                disabled={
-                  isAutoResolving ||
-                  headerInfo.headerCount === 0 ||
-                  !preferredTenantId ||
-                  !preferredDealerId
-                }
-                onClick={() => {
-                  void autoResolveTenantAndDealer();
-                }}
-              >
-                {isAutoResolving ? "Auto Validating..." : "Auto Validate Tenant + Dealer"}
-              </button>
+            {showStep1Info && (
+              <div style={infoBoxStyle}>
+                Trigger this endpoint in your browser to capture valid session tokens:
+                <br />
+                <code>https://app.tekioncloud.com/api/userservice/u/employee/profile</code>
+              </div>
+            )}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+              <span style={{ fontSize: 13, color: "#cbd5e1" }}>
+                Session Headers: <b>{headerInfo.headerCount} loaded</b> ({headerInfo.source})
+              </span>
             </div>
           </SectionCard>
 
-          <SectionCard title="Step 2 - Load Tenants">
-            <div style={{ color: "#94a3b8", fontSize: 12, lineHeight: 1.6 }}>
-              Validating tenant is mandatory. Selected profile tenant must exist in tenant
-              results.
-            </div>
-
+          {/* Step 2 */}
+          <SectionCard title="Step 2: Tenant Validation">
             <ValidationRow
-              label="Selected profile tenant target"
+              label="Selected Profile Tenant"
               value={preferredTenantId || "Not selected"}
               state={tenantValidationState}
               reason={getValidationReason(preferredTenantId, tenantValidationState, "tenant")}
             />
 
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
               <button
                 className="btn-postman"
                 type="button"
                 disabled={isLoadingTenants}
-                onClick={() => {
-                  void loadTenants();
-                }}
+                onClick={() => void loadTenants()}
               >
                 {isLoadingTenants ? "Loading..." : "Load Tenants"}
               </button>
-            </div>
 
-            {tenants.length > 0 ? (
-              <div>
-                <div style={labelStyle}>Tenant</div>
-                <select
-                  className="st-input"
-                  value={selectedTenantId}
-                  onChange={(e) => {
-                    logger.info("manual tenant selection changed", e.target.value);
-                    setSelectedTenantId(e.target.value);
-                    setSelectedDealerId("");
-                    setSelectedAdditionalDealerIds([]);
-                    setDealers([]);
-                    setDealerValidationState("idle");
-                  }}
-                  style={inputStyle}
-                >
-                  <option value="">Select tenant</option>
-                  {tenants.map((tenant, index) => {
-                    const tenantId = normalize(tenant.tenantId);
-                    return (
-                      <option key={`${tenantId}-${index}`} value={tenantId}>
-                        {tenantId} {tenant.active ? "✅" : "❌"}
+              {tenants.length > 0 && (
+                <div style={{ flex: 1, minWidth: 260 }}>
+                  <select
+                    className="st-input"
+                    value={selectedTenantId}
+                    onChange={(e) => {
+                      setSelectedTenantId(e.target.value);
+                      setSelectedDealerId("");
+                      setSelectedAdditionalDealerIds([]);
+                      setDealers([]);
+                      setDealerValidationState("idle");
+                    }}
+                    style={inputStyle}
+                  >
+                    <option value="">Select Tenant ({tenants.length} available)</option>
+                    {tenants.map((t, idx) => (
+                      <option key={`${t.tenantId}-${idx}`} value={normalize(t.tenantId)}>
+                        {normalize(t.tenantId)} {t.active ? "✓" : "✗"}
                       </option>
-                    );
-                  })}
-                </select>
-              </div>
-            ) : null}
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
           </SectionCard>
 
-          <SectionCard title="Step 3 - Load Dealers for Selected Tenant">
-            <div style={{ color: "#94a3b8", fontSize: 12, lineHeight: 1.6 }}>
-              Validating dealer is mandatory. First validate the selected profile dealer.
-              After that, you may optionally add more dealer IDs from the same tenant.
-            </div>
-
+          {/* Step 3 */}
+          <SectionCard title="Step 3: Dealer Validation & Multi-Store Selection">
             <ValidationRow
-              label="Selected profile dealer target"
+              label="Selected Profile Dealer"
               value={preferredDealerId || "Not selected"}
               state={dealerValidationState}
               reason={getValidationReason(preferredDealerId, dealerValidationState, "dealer")}
             />
 
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 8 }}>
               <button
                 className="btn-postman"
                 type="button"
                 disabled={isLoadingDealers || !resolvedTenantId}
-                onClick={() => {
-                  void loadDealers();
-                }}
+                onClick={() => void loadDealers()}
               >
-                {isLoadingDealers ? "Loading..." : "Load Dealers"}
+                {isLoadingDealers ? "Loading..." : "Load Dealers for Tenant"}
               </button>
             </div>
 
-            {dealers.length > 0 ? (
+            {dealers.length > 0 && (
               <div style={{ display: "grid", gap: 14 }}>
                 <div>
-                  <div style={labelStyle}>Verified Dealer</div>
+                  <div style={labelStyle}>Primary Verified Dealer</div>
                   <select
                     className="st-input"
                     value={selectedDealerId}
                     onChange={(e) => {
-                      logger.info("manual verified dealer selection changed", e.target.value);
                       setSelectedDealerId(e.target.value);
                       setSelectedAdditionalDealerIds((prev) =>
                         prev.filter((id) => id !== e.target.value)
@@ -1214,13 +964,12 @@ export const DealerConfigView: React.FC = () => {
                     style={inputStyle}
                   >
                     <option value="">Select verified dealer</option>
-                    {dealers.map((dealer, index) => {
-                      const dealerId = normalize(dealer.dealerId);
-                      const displayName =
-                        normalize(dealer.displayName || dealer.dealerName) || dealerId;
+                    {dealers.map((d, idx) => {
+                      const id = normalize(d.dealerId);
+                      const name = normalize(d.displayName || d.dealerName) || id;
                       return (
-                        <option key={`${dealerId}-${index}`} value={dealerId}>
-                          {dealerId} - {displayName} {dealer.active ? "✅" : "❌"}
+                        <option key={`${id}-${idx}`} value={id}>
+                          {id} - {name} {d.active ? "✓" : "✗"}
                         </option>
                       );
                     })}
@@ -1231,32 +980,32 @@ export const DealerConfigView: React.FC = () => {
                   <div style={labelStyle}>Additional Dealers Under Same Tenant</div>
                   <div
                     style={{
-                      borderRadius: 12,
+                      borderRadius: 10,
                       border: "1px solid rgba(255,255,255,0.08)",
-                      background: "rgba(255,255,255,0.02)",
-                      padding: 12,
+                      background: "rgba(0,0,0,0.2)",
+                      padding: 10,
                       display: "grid",
-                      gap: 8,
-                      maxHeight: 260,
+                      gap: 6,
+                      maxHeight: 220,
                       overflowY: "auto",
                     }}
                   >
-                    {dealers.map((dealer, index) => {
-                      const dealerId = normalize(dealer.dealerId);
-                      const displayName =
-                        normalize(dealer.displayName || dealer.dealerName) || dealerId;
-                      const disabled = !dealerId || dealerId === resolvedVerifiedDealerId;
-                      const checked = selectedAdditionalDealerIds.includes(dealerId);
+                    {dealers.map((d, idx) => {
+                      const id = normalize(d.dealerId);
+                      const name = normalize(d.displayName || d.dealerName) || id;
+                      const disabled = !id || id === resolvedVerifiedDealerId;
+                      const checked = selectedAdditionalDealerIds.includes(id);
 
                       return (
                         <label
-                          key={`${dealerId}-${index}-extra`}
+                          key={`${id}-${idx}-chk`}
                           style={{
                             display: "flex",
                             alignItems: "center",
-                            gap: 10,
-                            color: disabled ? "#64748b" : "#e2e8f0",
-                            fontSize: 13,
+                            gap: 8,
+                            color: disabled ? "#64748b" : "#cbd5e1",
+                            fontSize: 12,
+                            cursor: disabled ? "default" : "pointer",
                           }}
                         >
                           <input
@@ -1266,18 +1015,18 @@ export const DealerConfigView: React.FC = () => {
                             onChange={(e) => {
                               if (e.target.checked) {
                                 setSelectedAdditionalDealerIds((prev) =>
-                                  Array.from(new Set([...prev, dealerId]))
+                                  Array.from(new Set([...prev, id]))
                                 );
                               } else {
                                 setSelectedAdditionalDealerIds((prev) =>
-                                  prev.filter((id) => id !== dealerId)
+                                  prev.filter((item) => item !== id)
                                 );
                               }
                             }}
                           />
                           <span>
-                            {dealerId} - {displayName} {dealer.active ? "✅" : "❌"}
-                            {dealerId === resolvedVerifiedDealerId ? " (verified dealer)" : ""}
+                            {id} - {name} {d.active ? "✓" : "✗"}
+                            {id === resolvedVerifiedDealerId ? " (Primary)" : ""}
                           </span>
                         </label>
                       );
@@ -1285,25 +1034,24 @@ export const DealerConfigView: React.FC = () => {
                   </div>
                 </div>
 
-                <div style={{ color: "#94a3b8", fontSize: 12, lineHeight: 1.6 }}>
-                  Final payload dealer IDs:{" "}
-                  <span style={{ color: "#f8fafc", fontWeight: 800 }}>
-                    {finalDealerIds.length > 0 ? finalDealerIds.join(", ") : "—"}
-                  </span>
+                <div style={{ fontSize: 12, color: "#94a3b8" }}>
+                  Selected Store IDs:{" "}
+                  <b style={{ color: "#f8fafc" }}>
+                    {finalDealerIds.length > 0 ? finalDealerIds.join(", ") : "None"}
+                  </b>
                 </div>
               </div>
-            ) : null}
+            )}
           </SectionCard>
 
-          <SectionCard title="Step 4 - Raise Request">
+          {/* Step 4 */}
+          <SectionCard title="Step 4: Execute Request">
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <button
                 className="btn-postman"
                 type="button"
-                disabled={isSubmitting}
-                onClick={() => {
-                  void submitApprovalRequest();
-                }}
+                disabled={isSubmitting || !canPreviewPayload}
+                onClick={() => void submitApprovalRequest()}
               >
                 {isSubmitting ? "Submitting..." : "Raise Customer Notifications Request"}
               </button>
@@ -1314,81 +1062,85 @@ export const DealerConfigView: React.FC = () => {
                 onClick={handlePreviewPayload}
                 disabled={!canPreviewPayload}
               >
-                {showPayloadPreview ? "Refresh Preview Payload" : "Preview Payload"}
+                {showPayloadPreview ? "Refresh Preview" : "Preview Payload"}
               </button>
             </div>
 
-            <div style={{ color: canPreviewPayload ? "#86efac" : "#94a3b8", fontSize: 12 }}>
-              Preview readiness:{" "}
-              {canPreviewPayload
-                ? "Ready ✅"
-                : "Waiting for validated tenant, validated dealer, and final dealer list"}
-            </div>
+            {!canPreviewPayload && (
+              <div style={{ color: "#fca5a5", fontSize: 11 }}>
+                * Tenant and verified dealer must be confirmed before submitting.
+              </div>
+            )}
           </SectionCard>
 
-          {showPayloadPreview && lastApprovalPayload ? (
+          {/* JSON Payload Inspection Drawer */}
+          {showPayloadPreview && lastApprovalPayload && (
             <SectionCard title="Approval Payload Preview">
               <pre
                 style={{
                   margin: 0,
                   padding: 12,
-                  borderRadius: 12,
-                  background: "#0f172a",
-                  color: "#e2e8f0",
+                  borderRadius: 10,
+                  background: "#0b0f19",
+                  color: "#86efac",
                   overflow: "auto",
-                  fontSize: 12,
-                  whiteSpace: "pre-wrap",
+                  fontSize: 11,
+                  fontFamily: "monospace",
+                  maxHeight: 320,
                 }}
               >
                 {JSON.stringify(lastApprovalPayload, null, 2)}
               </pre>
             </SectionCard>
-          ) : null}
+          )}
 
-          {dealers.length > 0 ? (
-            <SectionCard title={`Dealer Results (${dealers.length})`}>
-              <div style={{ overflowX: "auto", overflowY: "auto", maxHeight: "420px" }}>
-                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 920 }}>
-                  <thead>
+          {/* Results Table */}
+          {dealers.length > 0 && (
+            <SectionCard title={`Loaded Dealers (${dealers.length})`}>
+              <div style={{ overflowX: "auto", maxHeight: 360 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
+                  <thead style={{ position: "sticky", top: 0, background: "#18181b", zIndex: 1 }}>
                     <tr style={{ background: "rgba(255,255,255,0.04)" }}>
                       <th style={thStyle}>#</th>
                       <th style={thStyle}>Tenant ID</th>
                       <th style={thStyle}>Dealer ID</th>
                       <th style={thStyle}>Display Name</th>
                       <th style={thStyle}>Active</th>
-                      <th style={thStyle}>Verified Match</th>
-                      <th style={thStyle}>Included In Payload</th>
+                      <th style={thStyle}>Status</th>
                     </tr>
                   </thead>
                   <tbody>
                     {dealers.map((dealer, index) => {
-                      const dealerId = normalize(dealer.dealerId);
-                      const isVerifiedMatch =
-                        Boolean(preferredDealerId) && dealerId === preferredDealerId;
-                      const isIncluded = finalDealerIds.includes(dealerId);
+                      const id = normalize(dealer.dealerId);
+                      const isPrimary = id === resolvedVerifiedDealerId;
+                      const isIncluded = finalDealerIds.includes(id);
 
                       return (
                         <tr
-                          key={`${dealer.tenantId}-${dealer.dealerId}-${index}`}
-                          style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}
+                          key={`${dealer.tenantId}-${id}-${index}`}
+                          style={{
+                            borderTop: "1px solid rgba(255,255,255,0.06)",
+                            background: isPrimary
+                              ? "rgba(34,197,94,0.05)"
+                              : isIncluded
+                              ? "rgba(59,130,246,0.05)"
+                              : "transparent",
+                          }}
                         >
                           <td style={tdStyle}>{index + 1}</td>
                           <td style={tdMonoStyle}>{normalize(dealer.tenantId) || "—"}</td>
-                          <td style={tdMonoStyle}>{dealerId || "—"}</td>
+                          <td style={{ ...tdMonoStyle, fontWeight: isPrimary ? 800 : 400, color: isPrimary ? "#86efac" : "#e2e8f0" }}>
+                            {id || "—"}
+                          </td>
                           <td style={tdStyle}>
                             {normalize(dealer.displayName || dealer.dealerName) || "—"}
                           </td>
                           <td style={tdStyle}>{dealer.active ? "Yes" : "No"}</td>
                           <td style={tdStyle}>
-                            {isVerifiedMatch ? (
-                              <span style={validatedBadgeStyle}>✓ Verified</span>
-                            ) : (
-                              <span style={neutralBadgeStyle}>—</span>
-                            )}
-                          </td>
-                          <td style={tdStyle}>
-                            {isIncluded ? (
-                              <span style={validatedBadgeStyle}>✓ Included</span>
+                            {isPrimary ? (
+                              <span style={validatedBadgeStyle}>✓ Primary</span>
+                            ) : isIncluded ? (
+                              <span style={loadingBadgeStyle}>Included</span>
                             ) : (
                               <span style={neutralBadgeStyle}>—</span>
                             )}
@@ -1400,101 +1152,136 @@ export const DealerConfigView: React.FC = () => {
                 </table>
               </div>
             </SectionCard>
-          ) : null}
-        </>
-      ) : null}
+          )}
+        </div>
+      )}
     </div>
   );
 };
 
+const infoButtonStyle: React.CSSProperties = {
+  width: 24,
+  height: 24,
+  borderRadius: 999,
+  background: "rgba(255,255,255,0.06)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  color: "#94a3b8",
+  fontSize: 12,
+  cursor: "pointer",
+  display: "grid",
+  placeItems: "center",
+};
+
+const infoMiniButtonStyle: React.CSSProperties = {
+  width: 20,
+  height: 20,
+  borderRadius: 999,
+  background: "transparent",
+  border: "none",
+  color: "#94a3b8",
+  fontSize: 12,
+  cursor: "pointer",
+};
+
+const infoBoxStyle: React.CSSProperties = {
+  padding: 10,
+  borderRadius: 8,
+  background: "rgba(255,255,255,0.02)",
+  border: "1px solid rgba(255,255,255,0.06)",
+  color: "#94a3b8",
+  fontSize: 12,
+  lineHeight: 1.5,
+};
+
+const noticeBoxStyle: React.CSSProperties = {
+  borderRadius: 10,
+  border: "1px solid rgba(59,130,246,0.22)",
+  background: "rgba(59,130,246,0.10)",
+  color: "#bfdbfe",
+  padding: "8px 12px",
+  fontSize: 12,
+  whiteSpace: "pre-wrap",
+};
+
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  minHeight: 42,
-  borderRadius: 12,
-  padding: "10px 12px",
+  height: 38,
+  borderRadius: 8,
+  padding: "8px 10px",
   fontSize: 13,
   boxSizing: "border-box",
 };
 
 const labelStyle: React.CSSProperties = {
   color: "#94a3b8",
-  fontSize: 12,
+  fontSize: 11,
   fontWeight: 700,
-  marginBottom: 6,
+  marginBottom: 4,
+  textTransform: "uppercase",
 };
 
 const thStyle: React.CSSProperties = {
   textAlign: "left",
-  padding: "12px 10px",
-  color: "#cbd5e1",
-  fontSize: 12,
+  padding: "10px 8px",
+  color: "#94a3b8",
+  fontSize: 11,
   fontWeight: 800,
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
   whiteSpace: "nowrap",
 };
 
 const tdStyle: React.CSSProperties = {
   textAlign: "left",
-  padding: "12px 10px",
+  padding: "8px",
   color: "#e2e8f0",
-  fontSize: 13,
-  verticalAlign: "top",
-  whiteSpace: "pre-wrap",
-  overflowWrap: "anywhere",
+  fontSize: 12,
+  verticalAlign: "middle",
 };
 
 const tdMonoStyle: React.CSSProperties = {
   ...tdStyle,
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+  fontFamily: "ui-monospace, monospace",
 };
 
 const validatedBadgeStyle: React.CSSProperties = {
   display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  padding: "4px 10px",
+  padding: "2px 8px",
   borderRadius: 999,
   color: "#86efac",
-  border: "1px solid rgba(34,197,94,0.35)",
+  border: "1px solid rgba(34,197,94,0.3)",
   background: "rgba(34,197,94,0.12)",
-  boxShadow: "0 0 12px rgba(34,197,94,0.22)",
-  fontSize: 12,
+  fontSize: 10,
   fontWeight: 800,
 };
 
 const neutralBadgeStyle: React.CSSProperties = {
   display: "inline-flex",
-  alignItems: "center",
-  padding: "4px 10px",
+  padding: "2px 8px",
   borderRadius: 999,
-  color: "#94a3b8",
-  border: "1px solid rgba(255,255,255,0.08)",
-  background: "rgba(255,255,255,0.03)",
-  fontSize: 12,
-  fontWeight: 700,
+  color: "#64748b",
+  fontSize: 11,
 };
 
 const loadingBadgeStyle: React.CSSProperties = {
   display: "inline-flex",
-  alignItems: "center",
-  padding: "4px 10px",
+  padding: "2px 8px",
   borderRadius: 999,
   color: "#93c5fd",
-  border: "1px solid rgba(59,130,246,0.30)",
-  background: "rgba(59,130,246,0.10)",
-  fontSize: 12,
+  border: "1px solid rgba(59,130,246,0.3)",
+  background: "rgba(59,130,246,0.12)",
+  fontSize: 10,
   fontWeight: 800,
 };
 
 const invalidBadgeStyle: React.CSSProperties = {
   display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  padding: "4px 10px",
+  padding: "2px 8px",
   borderRadius: 999,
   color: "#fca5a5",
-  border: "1px solid rgba(239,68,68,0.30)",
-  background: "rgba(239,68,68,0.10)",
-  fontSize: 12,
+  border: "1px solid rgba(239,68,68,0.3)",
+  background: "rgba(239,68,68,0.12)",
+  fontSize: 10,
   fontWeight: 800,
 };
 
@@ -1503,41 +1290,37 @@ const Pill: React.FC<{ label: string; value: string }> = ({ label, value }) => (
     style={{
       display: "inline-flex",
       alignItems: "center",
-      gap: 8,
-      padding: "6px 10px",
+      gap: 6,
+      padding: "4px 8px",
       borderRadius: 999,
       border: "1px solid rgba(255,255,255,0.08)",
       background: "rgba(255,255,255,0.03)",
       color: "#cbd5e1",
-      fontSize: 12,
+      fontSize: 11,
     }}
   >
-    {label} <b style={{ color: "#f8fafc" }}>{value}</b>
+    {label}: <b style={{ color: "#f8fafc" }}>{value}</b>
   </span>
 );
 
-const SectionCard: React.FC<{ title: string; children: React.ReactNode }> = ({
-  title,
-  children,
-}) => (
+const SectionCard: React.FC<{
+  title: string;
+  infoButton?: React.ReactNode;
+  children: React.ReactNode;
+}> = ({ title, infoButton, children }) => (
   <div
     style={{
-      borderRadius: 18,
+      borderRadius: 16,
       border: "1px solid rgba(255,255,255,0.08)",
       background: "rgba(255,255,255,0.03)",
-      padding: 18,
+      padding: 16,
       display: "grid",
       gap: 12,
     }}
   >
-    <div
-      style={{
-        fontSize: 18,
-        fontWeight: 800,
-        color: "#f8fafc",
-      }}
-    >
-      {title}
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ fontSize: 14, fontWeight: 800, color: "#f8fafc" }}>{title}</div>
+      {infoButton}
     </div>
     {children}
   </div>
@@ -1547,51 +1330,34 @@ const StatusBox: React.FC<{
   runState: RunState;
   statusText: string;
   errorText: string;
-}> = ({ runState, statusText, errorText }) => (
-  <div
-    style={{
-      borderRadius: 14,
-      padding: "12px 14px",
-      fontSize: 13,
-      lineHeight: 1.6,
-      border:
-        runState === "error"
-          ? "1px solid rgba(239,68,68,0.25)"
-          : runState === "success"
-          ? "1px solid rgba(34,197,94,0.25)"
-          : runState === "warning"
-          ? "1px solid rgba(245,158,11,0.25)"
-          : runState === "loading"
-          ? "1px solid rgba(59,130,246,0.25)"
-          : "1px solid rgba(255,255,255,0.08)",
-      background:
-        runState === "error"
-          ? "rgba(239,68,68,0.10)"
-          : runState === "success"
-          ? "rgba(34,197,94,0.10)"
-          : runState === "warning"
-          ? "rgba(245,158,11,0.10)"
-          : runState === "loading"
-          ? "rgba(59,130,246,0.10)"
-          : "rgba(255,255,255,0.03)",
-      color:
-        runState === "error"
-          ? "#fecaca"
-          : runState === "success"
-          ? "#bbf7d0"
-          : runState === "warning"
-          ? "#fde68a"
-          : runState === "loading"
-          ? "#bfdbfe"
-          : "#cbd5e1",
-      whiteSpace: "pre-wrap",
-      overflowWrap: "anywhere",
-    }}
-  >
-    <div style={{ fontWeight: 700, marginBottom: errorText ? 6 : 0 }}>{statusText}</div>
-    {errorText ? <div>{errorText}</div> : null}
-  </div>
-);
+}> = ({ runState, statusText, errorText }) => {
+  if (runState === "idle" && !errorText) return null;
+
+  const style =
+    runState === "error"
+      ? { border: "rgba(239,68,68,0.25)", bg: "rgba(239,68,68,0.1)", text: "#fecaca" }
+      : runState === "success"
+      ? { border: "rgba(34,197,94,0.25)", bg: "rgba(34,197,94,0.1)", text: "#bbf7d0" }
+      : runState === "warning"
+      ? { border: "rgba(245,158,11,0.25)", bg: "rgba(245,158,11,0.1)", text: "#fde68a" }
+      : { border: "rgba(59,130,246,0.25)", bg: "rgba(59,130,246,0.1)", text: "#bfdbfe" };
+
+  return (
+    <div
+      style={{
+        borderRadius: 10,
+        padding: "10px 12px",
+        fontSize: 12,
+        border: `1px solid ${style.border}`,
+        background: style.bg,
+        color: style.text,
+      }}
+    >
+      <div style={{ fontWeight: 700 }}>{statusText}</div>
+      {errorText && <div style={{ marginTop: 4, whiteSpace: "pre-wrap" }}>{errorText}</div>}
+    </div>
+  );
+};
 
 const ValidationRow: React.FC<{
   label: string;
@@ -1607,18 +1373,18 @@ const ValidationRow: React.FC<{
     <div
       style={{
         display: "grid",
-        gap: 8,
-        padding: "10px 12px",
-        borderRadius: 12,
-        border: "1px solid rgba(255,255,255,0.08)",
+        gap: 4,
+        padding: "8px 10px",
+        borderRadius: 8,
+        border: "1px solid rgba(255,255,255,0.06)",
         background: "rgba(255,255,255,0.02)",
       }}
     >
-      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 10 }}>
-        <div style={{ color: "#94a3b8", fontSize: 12, fontWeight: 700 }}>{label}:</div>
-        <div
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <span style={{ color: "#94a3b8", fontSize: 11, fontWeight: 700 }}>{label}:</span>
+        <span
           style={{
-            fontSize: 14,
+            fontSize: 13,
             fontWeight: 800,
             color: isMatched
               ? "#86efac"
@@ -1627,11 +1393,10 @@ const ValidationRow: React.FC<{
               : isLoading
               ? "#93c5fd"
               : "#f8fafc",
-            textShadow: isMatched ? "0 0 10px rgba(34,197,94,0.28)" : "none",
           }}
         >
           {value}
-        </div>
+        </span>
 
         {isMatched ? (
           <span style={validatedBadgeStyle}>✓ Validated</span>
@@ -1644,7 +1409,7 @@ const ValidationRow: React.FC<{
         )}
       </div>
 
-      <div style={{ color: "#94a3b8", fontSize: 12 }}>{reason}</div>
+      <div style={{ color: "#94a3b8", fontSize: 11 }}>{reason}</div>
     </div>
   );
 };

@@ -13,7 +13,7 @@ import { Adhoc } from "./pages/Adhoc/Adhoc";
 import { TGPT } from "./pages/TGPT/TGPT";
 import "./app.css";
 
-type PageId =
+export type PageId =
   | "home"
   | "blueprint"
   | "bootstrap"
@@ -27,23 +27,27 @@ type PageId =
   | "adhoc"
   | "tgpt";
 
-interface NavItem {
-  id: Exclude<PageId, "home">;
+export interface NavItem {
+  id: Exclude<PageId, "home" | "settings">;
   label: string;
   icon: string;
+  category: "core" | "utility";
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { id: "stores", label: "Stores", icon: "🏬" },
-  { id: "parts", label: "Parts", icon: "🧩" },
-  { id: "service", label: "Service", icon: "🛠️" },
-  { id: "accounting", label: "Accounting", icon: "📒" },
-  { id: "analytics", label: "Analytics", icon: "📊" },
-  { id: "adhoc", label: "Adhoc", icon: "⚡" },
-  { id: "tgpt", label: "TGPT", icon: "🤖" },
-  { id: "blueprint", label: "Blueprint", icon: "🧬" },
-  { id: "bootstrap", label: "Bootstrap", icon: "📦" },
-  { id: "validation", label: "GL Validation", icon: "✅" },
+  // Core Operational Workspaces
+  { id: "stores", label: "Stores", icon: "🏬", category: "core" },
+  { id: "parts", label: "Parts", icon: "🧩", category: "core" },
+  { id: "service", label: "Service", icon: "🛠️", category: "core" },
+  { id: "accounting", label: "Accounting", icon: "📒", category: "core" },
+  { id: "analytics", label: "Analytics", icon: "📊", category: "core" },
+  { id: "adhoc", label: "Adhoc", icon: "⚡", category: "core" },
+  { id: "tgpt", label: "TGPT", icon: "🤖", category: "core" },
+
+  // Utility Tools
+  { id: "blueprint", label: "Blueprint", icon: "🧬", category: "utility" },
+  { id: "bootstrap", label: "Bootstrap", icon: "📦", category: "utility" },
+  { id: "validation", label: "GL Validation", icon: "✅", category: "utility" },
 ];
 
 export default function App() {
@@ -79,17 +83,42 @@ function GlobalTopNav({
   onNavigate: (page: PageId) => void;
   onLogoClick: () => void;
 }) {
+  const coreItems = useMemo(() => items.filter((i) => i.category === "core"), [items]);
+  const utilityItems = useMemo(() => items.filter((i) => i.category === "utility"), [items]);
+
   return (
     <header className="gtn-bar">
-      <button className="gtn-logo" onClick={onLogoClick} aria-label="Go home">
+      {/* Brand & Home Anchor */}
+      <button
+        className={`gtn-logo ${activePage === "home" ? "gtn-logo-active" : ""}`}
+        onClick={onLogoClick}
+        aria-label="Go to Home"
+        title="Home Dashboard"
+      >
         <span className="gtn-logo-mark">ARC</span>
         <div className="gtn-logo-copy">
           <span className="gtn-logo-text">Console</span>
         </div>
       </button>
 
-      <nav className="gtn-links" aria-label="Primary">
-        {items.map((item) => (
+      {/* Structured Navigation with Category Separator */}
+      <nav className="gtn-links" aria-label="Primary Navigation">
+        {coreItems.map((item) => (
+          <button
+            key={item.id}
+            className={`gtn-link ${activePage === item.id ? "gtn-link-active" : ""}`}
+            onClick={() => onNavigate(item.id)}
+            aria-current={activePage === item.id ? "page" : undefined}
+            type="button"
+          >
+            <span className="gtn-link-icon">{item.icon}</span>
+            <span>{item.label}</span>
+          </button>
+        ))}
+
+        <div className="gtn-divider" aria-hidden="true" />
+
+        {utilityItems.map((item) => (
           <button
             key={item.id}
             className={`gtn-link ${activePage === item.id ? "gtn-link-active" : ""}`}
@@ -103,11 +132,12 @@ function GlobalTopNav({
         ))}
       </nav>
 
+      {/* Settings Action */}
       <button
-        className={`gtn-settings ${activePage === "settings" ? "gtn-link-active" : ""}`}
+        className={`gtn-settings ${activePage === "settings" ? "gtn-settings-active" : ""}`}
         onClick={() => onNavigate("settings")}
         aria-label="Settings"
-        title="Settings"
+        title="Settings & Authentication"
         type="button"
       >
         ⚙️

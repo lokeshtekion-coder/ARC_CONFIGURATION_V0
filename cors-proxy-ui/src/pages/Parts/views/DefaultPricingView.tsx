@@ -1,3 +1,5 @@
+// /Users/tlreddy/Desktop/ARC_CONFIGURATION_V0/cors-proxy-ui/src/pages/Parts/views/Default_Parts_Pricing/DefaultPricingView.tsx
+
 import React, { useEffect } from "react";
 import { PartsPlaceholderView } from "../components/PartsPlaceholderView";
 
@@ -14,3 +16,5 @@ export const DefaultPricingView: React.FC = () => {
     />
   );
 };
+
+export default DefaultPricingView;

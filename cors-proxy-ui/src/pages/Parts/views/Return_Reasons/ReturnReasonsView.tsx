@@ -2,21 +2,18 @@ import React, { useEffect, useMemo, useState } from "react";
 import { loadTekionApiSettingsBundle } from "../../../../services/tekionApiSettings";
 import type { KeyValuePair } from "../../../../types/proxy.types";
 
-const MODULE_NAME = "Return Reasons";
 const BASE_URL =
   "https://preprodapp.tekioncloud.com/api/parts/proxy/u/settings/return-reason";
 
-const TARGET_RETURN_REASONS = [
-  {
-    reasonCode: "Customer Return w/ Restocking",
-    description: "Customer Return w/ Restocking",
-    active: true,
-    restocking: true,
-    restockingFee: "SALE_PERCENTAGE_FEE",
-    reviewRequired: false,
-    refundFreight: false,
-  },
-] as const;
+const TARGET_RETURN_REASON = {
+  reasonCode: "Customer Return w/ Restocking",
+  description: "Customer Return w/ Restocking",
+  active: true,
+  restocking: true,
+  restockingFee: "SALE_PERCENTAGE_FEE",
+  reviewRequired: false,
+  refundFreight: false,
+} as const;
 
 const logger = {
   debug: (...args: unknown[]) => console.debug("[Parts][ReturnReasons]", ...args),
@@ -34,7 +31,6 @@ interface ReturnReasonDetail {
   amount?: number | string | null;
   refundFreight?: boolean | null;
   reviewRequired?: boolean | null;
-  languages?: unknown;
 }
 
 interface ReturnReasonRecord {
@@ -44,20 +40,10 @@ interface ReturnReasonRecord {
   detail?: ReturnReasonDetail | null;
   dealerId?: string | null;
   tenantId?: string | null;
-  modifiedTime?: number | null;
-  createdTime?: number | null;
-  siteId?: string | null;
-  deleted?: boolean | null;
-  oldId?: string | null;
 }
 
 interface ReturnReasonListResponse {
   data: ReturnReasonRecord[];
-  status?: string;
-}
-
-interface ReturnReasonSingleResponse {
-  data?: ReturnReasonRecord | null;
   status?: string;
 }
 
@@ -75,12 +61,6 @@ interface ReturnReasonPayload {
   };
 }
 
-interface TargetValidationItem {
-  config: (typeof TARGET_RETURN_REASONS)[number];
-  existing: ReturnReasonRecord | null;
-  exists: boolean;
-}
-
 function normalizeText(value: unknown): string {
   return String(value ?? "").trim();
 }
@@ -91,795 +71,503 @@ function normalizeLower(value: unknown): string {
 
 function parsePositiveInteger(value: string): number | null {
   const trimmed = value.trim();
-  if (!trimmed) return null;
-  if (!/^\d+$/.test(trimmed)) return null;
-
+  if (!trimmed || !/^\d+$/.test(trimmed)) return null;
   const num = Number(trimmed);
-  if (!Number.isFinite(num)) return null;
-  return num;
-}
-
-function isReturnReasonRecord(value: unknown): value is ReturnReasonRecord {
-  return Boolean(value && typeof value === "object" && "id" in (value as Record<string, unknown>));
-}
-
-function isReturnReasonListResponse(value: unknown): value is ReturnReasonListResponse {
-  return Boolean(
-    value &&
-      typeof value === "object" &&
-      Array.isArray((value as ReturnReasonListResponse).data) &&
-      (value as ReturnReasonListResponse).data.every(isReturnReasonRecord)
-  );
+  return Number.isFinite(num) ? num : null;
 }
 
 function getEnabledGlobalHeaders(): Record<string, string> {
   const bundle = loadTekionApiSettingsBundle();
-
-  const headers = (bundle.globalHeaders ?? [])
+  return (bundle.globalHeaders ?? [])
     .filter(
       (header: KeyValuePair) =>
         Boolean(header.enabled) &&
         normalizeText(header.key) &&
         normalizeText(header.value)
     )
-    .reduce<Record<string, string>>((acc: Record<string, string>, header: KeyValuePair) => {
+    .reduce<Record<string, string>>((acc, header) => {
       acc[normalizeText(header.key)] = normalizeText(header.value);
       return acc;
     }, {});
-
-  logger.info("loaded global headers from settings", {
-    count: Object.keys(headers).length,
-    keys: Object.keys(headers),
-  });
-
-  return headers;
 }
 
-async function fetchReturnReasons(
-  headers: Record<string, string>
-): Promise<ReturnReasonListResponse> {
-  logger.info("GET return reasons started", {
-    url: BASE_URL,
-    headerKeys: Object.keys(headers),
-  });
-
-  const response = await fetch(BASE_URL, {
-    method: "GET",
-    headers,
-  });
-
-  logger.info("GET return reasons response", {
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText,
-  });
-
+async function fetchReturnReasons(headers: Record<string, string>): Promise<ReturnReasonRecord[]> {
+  logger.info("GET return reasons started", { url: BASE_URL });
+  const response = await fetch(BASE_URL, { method: "GET", headers });
   if (!response.ok) {
-    const text = await response.text();
-    logger.error("GET return reasons failed", {
-      status: response.status,
-      body: text,
-    });
     throw new Error(`GET return-reason failed with status ${response.status}`);
   }
-
-  const json: unknown = await response.json();
-  logger.debug("GET return reasons raw json", json);
-
-  if (!isReturnReasonListResponse(json)) {
-    logger.error("Invalid GET return reasons response shape", json);
-    throw new Error("Invalid return-reason GET response structure");
-  }
-
-  logger.info("GET return reasons validated", {
-    rowCount: json.data.length,
-  });
-
-  return json;
-}
-
-function findReasonByCode(
-  rows: ReturnReasonRecord[],
-  reasonCode: string
-): ReturnReasonRecord | null {
-  return rows.find((row) => normalizeLower(row.reasonCode) === normalizeLower(reasonCode)) ?? null;
-}
-
-function buildCreatePayload(
-  target: (typeof TARGET_RETURN_REASONS)[number],
-  amount: number
-): ReturnReasonPayload {
-  const payload: ReturnReasonPayload = {
-    active: target.active,
-    reasonCode: target.reasonCode,
-    detail: {
-      description: target.description,
-      restocking: target.restocking,
-      restockingFee: target.restockingFee,
-      reviewRequired: target.reviewRequired,
-      amount: String(amount),
-      refundFreight: target.refundFreight,
-      languages: null,
-    },
-  };
-
-  logger.debug("built create payload", payload);
-  return payload;
-}
-
-function buildUpdatePayload(
-  target: (typeof TARGET_RETURN_REASONS)[number],
-  amount: number
-): ReturnReasonPayload {
-  const payload: ReturnReasonPayload = {
-    active: target.active,
-    reasonCode: target.reasonCode,
-    detail: {
-      description: target.description,
-      restocking: target.restocking,
-      restockingFee: target.restockingFee,
-      reviewRequired: target.reviewRequired,
-      amount,
-      refundFreight: target.refundFreight,
-      languages: null,
-    },
-  };
-
-  logger.debug("built update payload", payload);
-  return payload;
+  const json = (await response.json()) as ReturnReasonListResponse;
+  return Array.isArray(json?.data) ? json.data : [];
 }
 
 async function createReturnReason(
   payload: ReturnReasonPayload,
   headers: Record<string, string>
-): Promise<ReturnReasonSingleResponse> {
-  logger.info("POST create return reason started", {
-    url: BASE_URL,
-    payload,
-  });
-
+): Promise<void> {
+  logger.info("POST create return reason started", { payload });
   const response = await fetch(BASE_URL, {
     method: "POST",
-    headers: {
-      ...headers,
-      "content-type": "application/json",
-    },
+    headers: { ...headers, "content-type": "application/json" },
     body: JSON.stringify(payload),
   });
-
-  logger.info("POST create return reason response", {
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText,
-  });
-
   if (!response.ok) {
-    const text = await response.text();
-    logger.error("POST create return reason failed", {
-      status: response.status,
-      body: text,
-      payload,
-    });
     throw new Error(`POST return-reason failed with status ${response.status}`);
   }
-
-  const json = (await response.json()) as ReturnReasonSingleResponse;
-  logger.debug("POST create return reason json", json);
-  return json;
 }
 
 async function updateReturnReason(
   id: string,
   payload: ReturnReasonPayload,
   headers: Record<string, string>
-): Promise<ReturnReasonSingleResponse> {
-  const url = `${BASE_URL}/${id}`;
-
-  logger.info("PUT update return reason started", {
-    url,
-    id,
-    payload,
-  });
-
-  const response = await fetch(url, {
+): Promise<void> {
+  logger.info("PUT update return reason started", { id, payload });
+  const response = await fetch(`${BASE_URL}/${id}`, {
     method: "PUT",
-    headers: {
-      ...headers,
-      "content-type": "application/json",
-    },
+    headers: { ...headers, "content-type": "application/json" },
     body: JSON.stringify(payload),
   });
-
-  logger.info("PUT update return reason response", {
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText,
-    id,
-  });
-
   if (!response.ok) {
-    const text = await response.text();
-    logger.error("PUT update return reason failed", {
-      status: response.status,
-      body: text,
-      id,
-      payload,
-    });
     throw new Error(`PUT return-reason failed with status ${response.status}`);
   }
-
-  const json = (await response.json()) as ReturnReasonSingleResponse;
-  logger.debug("PUT update return reason json", json);
-  return json;
 }
 
 export const ReturnReasonsView: React.FC = () => {
   const [rows, setRows] = useState<ReturnReasonRecord[]>([]);
   const [runState, setRunState] = useState<RunState>("idle");
-  const [statusText, setStatusText] = useState("Ready to validate return reasons");
+  const [statusText, setStatusText] = useState("Ready to check return reasons");
   const [errorText, setErrorText] = useState("");
-  const [lastRunAt, setLastRunAt] = useState("");
   const [amountInput, setAmountInput] = useState("0");
-  const [selectedReasonCode, setSelectedReasonCode] = useState<string>(
-    TARGET_RETURN_REASONS[0]?.reasonCode ?? ""
-  );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   useEffect(() => {
     logger.info("component mounted");
     return () => logger.info("component unmounted");
   }, []);
 
-  const selectedTarget = useMemo(() => {
-    const found =
-      TARGET_RETURN_REASONS.find(
-        (item) => normalizeLower(item.reasonCode) === normalizeLower(selectedReasonCode)
-      ) ?? TARGET_RETURN_REASONS[0];
-
-    logger.debug("selected target recalculated", found);
-    return found;
-  }, [selectedReasonCode]);
-
-  const validationItems = useMemo<TargetValidationItem[]>(() => {
-    const results = TARGET_RETURN_REASONS.map((config) => {
-      const existing = findReasonByCode(rows, config.reasonCode);
-      return {
-        config,
-        existing,
-        exists: Boolean(existing),
-      };
-    });
-
-    logger.debug("validation items recalculated", results);
-    return results;
+  const matchedRecord = useMemo(() => {
+    return (
+      rows.find(
+        (r) => normalizeLower(r.reasonCode) === normalizeLower(TARGET_RETURN_REASON.reasonCode)
+      ) ?? null
+    );
   }, [rows]);
-
-  const selectedExistingRecord = useMemo(() => {
-    const found = findReasonByCode(rows, selectedTarget.reasonCode);
-    logger.debug("selected existing record recalculated", found);
-    return found;
-  }, [rows, selectedTarget]);
 
   const parsedAmount = useMemo(() => parsePositiveInteger(amountInput), [amountInput]);
 
   const refreshData = async (headers: Record<string, string>): Promise<ReturnReasonRecord[]> => {
-    logger.info("refreshing return reasons");
-    const response = await fetchReturnReasons(headers);
-    setRows(response.data);
-    setLastRunAt(new Date().toLocaleString());
-    return response.data;
+    const data = await fetchReturnReasons(headers);
+    setRows(data);
+    return data;
   };
 
-  const handleValidate = async (): Promise<void> => {
-    logger.info("validate button clicked");
+  const handleFetchAndValidate = async (): Promise<void> => {
     setRunState("loading");
-    setStatusText("Loading and validating return reasons...");
+    setStatusText("Fetching latest return reasons...");
     setErrorText("");
 
     try {
       const headers = getEnabledGlobalHeaders();
-
       if (Object.keys(headers).length === 0) {
-        logger.warn("global headers missing before validation");
         setRunState("error");
-        setStatusText("Global headers are missing");
-        setErrorText(
-          "No active global headers found. Go to Settings, select a dealer profile, and save/apply Global Headers."
-        );
+        setStatusText("Global headers missing");
+        setErrorText("Configure and save active Global Headers in Settings.");
         return;
       }
 
       const latestRows = await refreshData(headers);
-      const found = findReasonByCode(latestRows, selectedTarget.reasonCode);
+      const exists = latestRows.some(
+        (r) => normalizeLower(r.reasonCode) === normalizeLower(TARGET_RETURN_REASON.reasonCode)
+      );
 
-      if (found) {
-        setRunState("success");
-        setStatusText(`"${selectedTarget.reasonCode}" already exists`);
-        logger.info("selected target exists", found);
-        return;
-      }
-
-      setRunState("warning");
-      setStatusText(`"${selectedTarget.reasonCode}" is missing`);
-      logger.warn("selected target missing");
-    } catch (error: unknown) {
-      logger.error("validation failed", error);
+      setRunState(exists ? "success" : "warning");
+      setStatusText(
+        exists
+          ? `✓ "${TARGET_RETURN_REASON.reasonCode}" exists on server`
+          : `⚠ "${TARGET_RETURN_REASON.reasonCode}" is missing from server`
+      );
+    } catch (err: unknown) {
+      logger.error("Fetch failed", err);
       setRunState("error");
       setStatusText("Validation failed");
-      setErrorText(error instanceof Error ? error.message : String(error));
-      setLastRunAt(new Date().toLocaleString());
+      setErrorText(err instanceof Error ? err.message : String(err));
     }
   };
 
-  const handleCreate = async (): Promise<void> => {
-    logger.info("create button clicked", {
-      selectedReasonCode,
-      amountInput,
-    });
-
+  const handleSmartSave = async (): Promise<void> => {
     if (parsedAmount === null) {
-      logger.warn("invalid amount for create", { amountInput });
       setRunState("error");
-      setStatusText("Invalid amount");
-      setErrorText("Please enter a valid positive integer amount.");
+      setStatusText("Invalid restock fee");
+      setErrorText("Please enter a valid non-negative integer percentage.");
       return;
     }
 
     setIsSubmitting(true);
     setRunState("loading");
-    setStatusText(`Creating "${selectedTarget.reasonCode}"...`);
     setErrorText("");
 
     try {
       const headers = getEnabledGlobalHeaders();
-
       if (Object.keys(headers).length === 0) {
-        logger.warn("global headers missing before create");
         setRunState("error");
-        setStatusText("Global headers are missing");
-        setErrorText(
-          "No active global headers found. Go to Settings, select a dealer profile, and save/apply Global Headers."
-        );
+        setStatusText("Global headers missing");
+        setErrorText("Configure and save active Global Headers in Settings.");
         return;
       }
 
-      const existingRows = rows.length > 0 ? rows : await refreshData(headers);
-      const found = findReasonByCode(existingRows, selectedTarget.reasonCode);
+      const currentRows = rows.length > 0 ? rows : await refreshData(headers);
+      const existing = currentRows.find(
+        (r) => normalizeLower(r.reasonCode) === normalizeLower(TARGET_RETURN_REASON.reasonCode)
+      );
 
-      if (found) {
-        logger.warn("create skipped because target already exists", found);
-        setRunState("warning");
-        setStatusText(`"${selectedTarget.reasonCode}" already exists. Use Update instead.`);
-        return;
+      if (existing) {
+        setStatusText(`Updating "${TARGET_RETURN_REASON.reasonCode}"...`);
+        const payload: ReturnReasonPayload = {
+          active: TARGET_RETURN_REASON.active,
+          reasonCode: TARGET_RETURN_REASON.reasonCode,
+          detail: {
+            description: TARGET_RETURN_REASON.description,
+            restocking: TARGET_RETURN_REASON.restocking,
+            restockingFee: TARGET_RETURN_REASON.restockingFee,
+            reviewRequired: TARGET_RETURN_REASON.reviewRequired,
+            amount: parsedAmount,
+            refundFreight: TARGET_RETURN_REASON.refundFreight,
+            languages: null,
+          },
+        };
+        await updateReturnReason(normalizeText(existing.id), payload, headers);
+        setStatusText(`✓ Successfully updated "${TARGET_RETURN_REASON.reasonCode}"`);
+      } else {
+        setStatusText(`Creating "${TARGET_RETURN_REASON.reasonCode}"...`);
+        const payload: ReturnReasonPayload = {
+          active: TARGET_RETURN_REASON.active,
+          reasonCode: TARGET_RETURN_REASON.reasonCode,
+          detail: {
+            description: TARGET_RETURN_REASON.description,
+            restocking: TARGET_RETURN_REASON.restocking,
+            restockingFee: TARGET_RETURN_REASON.restockingFee,
+            reviewRequired: TARGET_RETURN_REASON.reviewRequired,
+            amount: String(parsedAmount),
+            refundFreight: TARGET_RETURN_REASON.refundFreight,
+            languages: null,
+          },
+        };
+        await createReturnReason(payload, headers);
+        setStatusText(`✓ Successfully created "${TARGET_RETURN_REASON.reasonCode}"`);
       }
 
-      const payload = buildCreatePayload(selectedTarget, parsedAmount);
-      await createReturnReason(payload, headers);
       await refreshData(headers);
-
       setRunState("success");
-      setStatusText(`Created "${selectedTarget.reasonCode}" successfully`);
-      logger.info("create completed successfully");
-    } catch (error: unknown) {
-      logger.error("create failed", error);
+    } catch (err: unknown) {
+      logger.error("Save failed", err);
       setRunState("error");
-      setStatusText("Create failed");
-      setErrorText(error instanceof Error ? error.message : String(error));
-      setLastRunAt(new Date().toLocaleString());
+      setStatusText("Save operation failed");
+      setErrorText(err instanceof Error ? err.message : String(err));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleUpdate = async (): Promise<void> => {
-    logger.info("update button clicked", {
-      selectedReasonCode,
-      amountInput,
-    });
-
-    if (parsedAmount === null) {
-      logger.warn("invalid amount for update", { amountInput });
-      setRunState("error");
-      setStatusText("Invalid amount");
-      setErrorText("Please enter a valid positive integer amount.");
-      return;
+  const banner = useMemo(() => {
+    switch (runState) {
+      case "error":
+        return { bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.25)", text: "#fecaca" };
+      case "success":
+        return { bg: "rgba(34,197,94,0.1)", border: "rgba(34,197,94,0.25)", text: "#bbf7d0" };
+      case "warning":
+        return { bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.25)", text: "#fde68a" };
+      default:
+        return { bg: "rgba(255,255,255,0.03)", border: "rgba(255,255,255,0.08)", text: "#cbd5e1" };
     }
-
-    setIsSubmitting(true);
-    setRunState("loading");
-    setStatusText(`Updating "${selectedTarget.reasonCode}"...`);
-    setErrorText("");
-
-    try {
-      const headers = getEnabledGlobalHeaders();
-
-      if (Object.keys(headers).length === 0) {
-        logger.warn("global headers missing before update");
-        setRunState("error");
-        setStatusText("Global headers are missing");
-        setErrorText(
-          "No active global headers found. Go to Settings, select a dealer profile, and save/apply Global Headers."
-        );
-        return;
-      }
-
-      const existingRows = rows.length > 0 ? rows : await refreshData(headers);
-      const found = findReasonByCode(existingRows, selectedTarget.reasonCode);
-
-      if (!found) {
-        logger.warn("update skipped because target does not exist");
-        setRunState("warning");
-        setStatusText(`"${selectedTarget.reasonCode}" does not exist yet. Use Create first.`);
-        return;
-      }
-
-      const id = normalizeText(found.id);
-      const payload = buildUpdatePayload(selectedTarget, parsedAmount);
-
-      await updateReturnReason(id, payload, headers);
-      await refreshData(headers);
-
-      setRunState("success");
-      setStatusText(`Updated "${selectedTarget.reasonCode}" successfully`);
-      logger.info("update completed successfully", { id });
-    } catch (error: unknown) {
-      logger.error("update failed", error);
-      setRunState("error");
-      setStatusText("Update failed");
-      setErrorText(error instanceof Error ? error.message : String(error));
-      setLastRunAt(new Date().toLocaleString());
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  }, [runState]);
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
+      {/* Executive Action Header */}
       <div
         style={{
-          borderRadius: 18,
+          borderRadius: 16,
           border: "1px solid rgba(255,255,255,0.08)",
           background: "rgba(255,255,255,0.03)",
-          padding: 20,
+          padding: 18,
+          display: "grid",
+          gap: 14,
         }}
       >
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 12,
+            alignItems: "center",
             flexWrap: "wrap",
-            marginBottom: 14,
+            gap: 12,
           }}
         >
-          <div style={{ minWidth: 0 }}>
-            <div
-              style={{
-                fontSize: 24,
-                fontWeight: 800,
-                color: "#f8fafc",
-                marginBottom: 6,
-                wordBreak: "break-word",
-              }}
-            >
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#f8fafc" }}>
               Return reasons
             </div>
-
-            <div
+            <button
+              type="button"
+              onClick={() => setShowInfo((p) => !p)}
               style={{
+                width: 20,
+                height: 20,
+                borderRadius: 999,
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.15)",
                 color: "#94a3b8",
-                fontSize: 14,
-                lineHeight: 1.7,
-                whiteSpace: "pre-wrap",
-                overflowWrap: "anywhere",
+                fontSize: 11,
+                cursor: "pointer",
+                fontWeight: 700,
               }}
+              title="Toggle Info"
             >
-              Validates whether configured return reasons exist, and lets you create or update them using active Global Headers from Settings.
-            </div>
+              i
+            </button>
           </div>
 
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <button
               className="btn-postman"
               type="button"
-              onClick={() => {
-                void handleValidate();
-              }}
+              onClick={() => void handleFetchAndValidate()}
               disabled={runState === "loading" || isSubmitting}
             >
-              {runState === "loading" && !isSubmitting ? "Running..." : "Send"}
+              {runState === "loading" && !isSubmitting ? "Running..." : "GET"}
             </button>
 
             <button
               className="btn-secondary btn-sm"
               type="button"
-              onClick={() => {
-                void handleCreate();
-              }}
-              disabled={isSubmitting}
+              onClick={() => void handleSmartSave()}
+              disabled={isSubmitting || runState === "loading"}
             >
-              {isSubmitting ? "Processing..." : "Create"}
-            </button>
-
-            <button
-              className="btn-secondary btn-sm"
-              type="button"
-              onClick={() => {
-                void handleUpdate();
-              }}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Processing..." : "Update"}
+              {isSubmitting
+                ? "Processing..."
+                : matchedRecord
+                ? "Update Target"
+                : "Create Target"}
             </button>
           </div>
+        </div>
+
+        {showInfo && (
+          <div
+            style={{
+              padding: 12,
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              color: "#94a3b8",
+              fontSize: 12,
+              lineHeight: 1.6,
+            }}
+          >
+            Validates whether <code>{TARGET_RETURN_REASON.reasonCode}</code> exists on the server.
+            The action button automatically routes to <b>Update</b> if found or <b>Create</b> if missing.
+          </div>
+        )}
+
+        {/* Compact Form Input Row */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 140px",
+            gap: 12,
+            alignItems: "end",
+          }}
+        >
+          <div>
+            <div style={labelStyle}>Target Preset</div>
+            <div
+              style={{
+                ...inputStyle,
+                display: "flex",
+                alignItems: "center",
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                color: "#e2e8f0",
+                fontWeight: 600,
+              }}
+            >
+              {TARGET_RETURN_REASON.reasonCode}
+            </div>
+          </div>
+
+          <div>
+            <div style={labelStyle}>Restock Fee (%)</div>
+            <input
+              className="st-input"
+              type="text"
+              value={amountInput}
+              onChange={(e) => setAmountInput(e.target.value)}
+              placeholder="0"
+              style={inputStyle}
+            />
+          </div>
+        </div>
+
+        {/* Status Feedback Banner */}
+        <div
+          style={{
+            borderRadius: 12,
+            padding: "10px 14px",
+            fontSize: 13,
+            border: `1px solid ${banner.border}`,
+            background: banner.bg,
+            color: banner.text,
+          }}
+        >
+          <div style={{ fontWeight: 700 }}>{statusText}</div>
+          {errorText && <div style={{ fontSize: 12, marginTop: 4 }}>{errorText}</div>}
+        </div>
+      </div>
+
+      {/* Target Diagnostic Snapshot */}
+      <div
+        style={{
+          borderRadius: 16,
+          border: "1px solid rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.03)",
+          padding: 16,
+          display: "grid",
+          gap: 10,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#f8fafc" }}>
+            Target Configuration Snapshot
+          </div>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              padding: "2px 8px",
+              borderRadius: 999,
+              fontSize: 11,
+              fontWeight: 700,
+              background: matchedRecord ? "rgba(34,197,94,0.12)" : "rgba(245,158,11,0.12)",
+              color: matchedRecord ? "#86efac" : "#fde68a",
+              border: `1px solid ${
+                matchedRecord ? "rgba(34,197,94,0.25)" : "rgba(245,158,11,0.25)"
+              }`,
+            }}
+          >
+            {matchedRecord ? "✓ Configured on Server" : "○ Not on Server"}
+          </span>
         </div>
 
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: 12,
-            marginBottom: 14,
+            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+            gap: 8,
           }}
         >
-          <div>
-            <div style={labelStyle}>Target Return Reason</div>
-            <select
-              className="st-input"
-              value={selectedReasonCode}
-              onChange={(e) => {
-                logger.info("target reason selection changed", { value: e.target.value });
-                setSelectedReasonCode(e.target.value);
-              }}
-              style={inputStyle}
-            >
-              {TARGET_RETURN_REASONS.map((item) => (
-                <option key={item.reasonCode} value={item.reasonCode}>
-                  {item.reasonCode}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <div style={labelStyle}>Amount</div>
-            <input
-              className="st-input"
-              type="text"
-              value={amountInput}
-              onChange={(e) => {
-                logger.debug("amount input changed", { value: e.target.value });
-                setAmountInput(e.target.value);
-              }}
-              placeholder="Enter integer amount"
-              style={inputStyle}
-            />
-          </div>
-
-          <div>
-            <div style={labelStyle}>Reason Code</div>
-            <input
-              className="st-input"
-              value={selectedTarget.reasonCode}
-              readOnly
-              style={{ ...inputStyle, opacity: 0.85 }}
-            />
-          </div>
-
-          <div>
-            <div style={labelStyle}>Description</div>
-            <input
-              className="st-input"
-              value={selectedTarget.description}
-              readOnly
-              style={{ ...inputStyle, opacity: 0.85 }}
-            />
-          </div>
+          <StatMini label="Restocking Active" value="Yes" />
+          <StatMini label="Fee Strategy" value="Percentage of Sale" />
+          <StatMini label="Refund Freight" value="No" />
+          <StatMini label="Configured Fee" value={`${parsedAmount ?? 0}%`} />
+          <StatMini
+            label="Server Record ID"
+            value={matchedRecord ? normalizeText(matchedRecord.id) : "—"}
+          />
         </div>
+      </div>
 
+      {/* Live Server Table */}
+      <div
+        style={{
+          borderRadius: 16,
+          border: "1px solid rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.03)",
+          padding: 16,
+        }}
+      >
         <div
           style={{
             display: "flex",
-            gap: 8,
-            flexWrap: "wrap",
-            marginBottom: 14,
-          }}
-        >
-          <Pill label="Module" value={MODULE_NAME} />
-          <Pill label="Rows Loaded" value={String(rows.length)} />
-          <Pill label="Configured Targets" value={String(TARGET_RETURN_REASONS.length)} />
-          {lastRunAt ? <Pill label="Last Run" value={lastRunAt} /> : null}
-        </div>
-
-        <div
-          style={{
-            borderRadius: 14,
-            padding: "12px 14px",
-            fontSize: 13,
-            lineHeight: 1.6,
-            border:
-              runState === "error"
-                ? "1px solid rgba(239,68,68,0.25)"
-                : runState === "success"
-                ? "1px solid rgba(34,197,94,0.25)"
-                : runState === "warning"
-                ? "1px solid rgba(245,158,11,0.25)"
-                : "1px solid rgba(255,255,255,0.08)",
-            background:
-              runState === "error"
-                ? "rgba(239,68,68,0.10)"
-                : runState === "success"
-                ? "rgba(34,197,94,0.10)"
-                : runState === "warning"
-                ? "rgba(245,158,11,0.10)"
-                : "rgba(255,255,255,0.03)",
-            color:
-              runState === "error"
-                ? "#fecaca"
-                : runState === "success"
-                ? "#bbf7d0"
-                : runState === "warning"
-                ? "#fde68a"
-                : "#cbd5e1",
-            whiteSpace: "pre-wrap",
-            overflowWrap: "anywhere",
-          }}
-        >
-          <div style={{ fontWeight: 700, marginBottom: errorText ? 6 : 0 }}>{statusText}</div>
-          {errorText ? <div>{errorText}</div> : null}
-        </div>
-      </div>
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: 16,
-        }}
-      >
-        <SectionCard title="Configured Validation Targets">
-          {validationItems.map((item) => (
-            <RowLine
-              key={item.config.reasonCode}
-              left={`${item.config.reasonCode} — ${item.config.description}`}
-              right={item.exists ? "Exists" : "Missing"}
-              rightColor={item.exists ? "#86efac" : "#fca5a5"}
-            />
-          ))}
-        </SectionCard>
-
-        <SectionCard title="Selected Target Snapshot">
-          <RowLine left="Reason Code" right={selectedTarget.reasonCode} />
-          <RowLine left="Description" right={selectedTarget.description} />
-          <RowLine left="Restocking" right={String(selectedTarget.restocking)} />
-          <RowLine left="Restocking Fee" right={selectedTarget.restockingFee} />
-          <RowLine left="Refund Freight" right={String(selectedTarget.refundFreight)} />
-          <RowLine left="Review Required" right={String(selectedTarget.reviewRequired)} />
-          <RowLine
-            left="Entered Amount"
-            right={parsedAmount !== null ? String(parsedAmount) : "Invalid"}
-            rightColor={parsedAmount !== null ? "#86efac" : "#fca5a5"}
-          />
-        </SectionCard>
-
-        <SectionCard title="Selected Target Existing Record">
-          {selectedExistingRecord ? (
-            <>
-              <RowLine left="ID" right={normalizeText(selectedExistingRecord.id)} />
-              <RowLine left="Reason Code" right={normalizeText(selectedExistingRecord.reasonCode)} />
-              <RowLine
-                left="Description"
-                right={normalizeText(selectedExistingRecord.detail?.description)}
-              />
-              <RowLine
-                left="Restocking"
-                right={String(Boolean(selectedExistingRecord.detail?.restocking))}
-              />
-              <RowLine
-                left="Restocking Fee"
-                right={normalizeText(selectedExistingRecord.detail?.restockingFee) || "—"}
-              />
-              <RowLine
-                left="Amount"
-                right={normalizeText(selectedExistingRecord.detail?.amount) || "—"}
-              />
-            </>
-          ) : (
-            <EmptyText text="No existing record found for selected target" />
-          )}
-        </SectionCard>
-      </div>
-
-      <div
-        style={{
-          borderRadius: 18,
-          border: "1px solid rgba(255,255,255,0.08)",
-          background: "rgba(255,255,255,0.03)",
-          padding: 18,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 800,
-            color: "#f8fafc",
+            justifyContent: "space-between",
+            alignItems: "center",
             marginBottom: 12,
           }}
         >
-          Existing Return Reasons
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#f8fafc" }}>
+            Existing Return Reasons{" "}
+            {rows.length > 0 && (
+              <span style={{ color: "#94a3b8", fontSize: 12 }}>({rows.length})</span>
+            )}
+          </div>
         </div>
 
         {rows.length === 0 ? (
           <div
             style={{
-              borderRadius: 14,
-              border: "1px dashed rgba(148,163,184,0.30)",
+              borderRadius: 12,
+              border: "1px dashed rgba(255,255,255,0.1)",
               padding: 24,
               color: "#94a3b8",
               textAlign: "center",
+              fontSize: 13,
             }}
           >
-            No data loaded yet. Click Send.
+            No data loaded yet. Click GET.
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
-            <table
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                minWidth: 1150,
-              }}
-            >
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
               <thead>
                 <tr style={{ background: "rgba(255,255,255,0.04)" }}>
                   <th style={thStyle}>#</th>
                   <th style={thStyle}>ID</th>
                   <th style={thStyle}>Reason Code</th>
-                  <th style={thStyle}>Description</th>
-                  <th style={thStyle}>Restocking</th>
-                  <th style={thStyle}>Restocking Fee</th>
+                  <th style={thStyle}>Restock</th>
+                  <th style={thStyle}>Fee Strategy</th>
                   <th style={thStyle}>Amount</th>
-                  <th style={thStyle}>Refund Freight</th>
                   <th style={thStyle}>Active</th>
-                  <th style={thStyle}>Target</th>
+                  <th style={thStyle}>Status</th>
                 </tr>
               </thead>
-
               <tbody>
                 {rows.map((row, index) => {
-                  const isTarget = TARGET_RETURN_REASONS.some(
-                    (target) => normalizeLower(target.reasonCode) === normalizeLower(row.reasonCode)
-                  );
+                  const isTarget =
+                    normalizeLower(TARGET_RETURN_REASON.reasonCode) ===
+                    normalizeLower(row.reasonCode);
 
                   return (
                     <tr
                       key={`${row.id}-${index}`}
                       style={{
-                        borderTop: "1px solid rgba(255,255,255,0.08)",
-                        background: isTarget ? "rgba(59,130,246,0.08)" : "transparent",
+                        borderTop: "1px solid rgba(255,255,255,0.06)",
+                        background: isTarget ? "rgba(59,130,246,0.06)" : "transparent",
                       }}
                     >
                       <td style={tdStyle}>{index + 1}</td>
                       <td style={tdMonoStyle}>{normalizeText(row.id) || "—"}</td>
                       <td style={tdStyle}>{normalizeText(row.reasonCode) || "—"}</td>
-                      <td style={tdStyle}>{normalizeText(row.detail?.description) || "—"}</td>
-                      <td style={tdStyle}>{String(Boolean(row.detail?.restocking))}</td>
+                      <td style={tdStyle}>{row.detail?.restocking ? "Yes" : "No"}</td>
                       <td style={tdStyle}>{normalizeText(row.detail?.restockingFee) || "—"}</td>
                       <td style={tdStyle}>{normalizeText(row.detail?.amount) || "—"}</td>
-                      <td style={tdStyle}>{String(Boolean(row.detail?.refundFreight))}</td>
-                      <td style={tdStyle}>{String(Boolean(row.active))}</td>
+                      <td style={tdStyle}>{row.active ? "Yes" : "No"}</td>
                       <td style={tdStyle}>
                         {isTarget ? (
                           <span
                             style={{
                               display: "inline-flex",
-                              padding: "4px 10px",
+                              padding: "2px 8px",
                               borderRadius: 999,
-                              border: "1px solid rgba(59,130,246,0.25)",
-                              background: "rgba(59,130,246,0.10)",
+                              background: "rgba(59,130,246,0.15)",
                               color: "#93c5fd",
-                              fontSize: 12,
+                              border: "1px solid rgba(59,130,246,0.3)",
+                              fontSize: 11,
                               fontWeight: 700,
                             }}
                           >
@@ -901,155 +589,64 @@ export const ReturnReasonsView: React.FC = () => {
   );
 };
 
+const StatMini: React.FC<{ label: string; value: string }> = ({ label, value }) => (
+  <div
+    style={{
+      padding: "8px 10px",
+      borderRadius: 8,
+      background: "rgba(255,255,255,0.02)",
+      border: "1px solid rgba(255,255,255,0.05)",
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      fontSize: 12,
+    }}
+  >
+    <span style={{ color: "#94a3b8" }}>{label}</span>
+    <strong style={{ color: "#f8fafc" }}>{value}</strong>
+  </div>
+);
+
 const labelStyle: React.CSSProperties = {
   color: "#94a3b8",
-  fontSize: 12,
+  fontSize: 11,
   fontWeight: 700,
-  marginBottom: 6,
+  marginBottom: 4,
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
-  minHeight: 40,
-  borderRadius: 12,
-  padding: "10px 12px",
+  height: 38,
+  borderRadius: 8,
+  padding: "8px 10px",
   fontSize: 13,
   boxSizing: "border-box",
 };
 
 const thStyle: React.CSSProperties = {
   textAlign: "left",
-  padding: "12px 10px",
-  color: "#cbd5e1",
-  fontSize: 12,
+  padding: "10px 8px",
+  color: "#94a3b8",
+  fontSize: 11,
   fontWeight: 800,
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
   whiteSpace: "nowrap",
 };
 
 const tdStyle: React.CSSProperties = {
   textAlign: "left",
-  padding: "12px 10px",
+  padding: "10px 8px",
   color: "#e2e8f0",
-  fontSize: 13,
-  verticalAlign: "top",
-  whiteSpace: "pre-wrap",
-  overflowWrap: "anywhere",
+  fontSize: 12,
+  verticalAlign: "middle",
 };
 
 const tdMonoStyle: React.CSSProperties = {
   ...tdStyle,
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-};
-
-const Pill: React.FC<{ label: string; value: string }> = ({ label, value }) => {
-  return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 8,
-        padding: "6px 10px",
-        borderRadius: 999,
-        border: "1px solid rgba(255,255,255,0.08)",
-        background: "rgba(255,255,255,0.03)",
-        color: "#cbd5e1",
-        fontSize: 12,
-      }}
-    >
-      {label} <b style={{ color: "#f8fafc" }}>{value}</b>
-    </span>
-  );
-};
-
-const SectionCard: React.FC<{
-  title: string;
-  children: React.ReactNode;
-}> = ({ title, children }) => {
-  return (
-    <div
-      style={{
-        borderRadius: 18,
-        border: "1px solid rgba(255,255,255,0.08)",
-        background: "rgba(255,255,255,0.03)",
-        padding: 16,
-        minWidth: 0,
-      }}
-    >
-      <div
-        style={{
-          fontSize: 16,
-          fontWeight: 800,
-          color: "#f8fafc",
-          marginBottom: 12,
-        }}
-      >
-        {title}
-      </div>
-      <div style={{ display: "grid", gap: 8 }}>{children}</div>
-    </div>
-  );
-};
-
-const RowLine: React.FC<{
-  left: string;
-  right: string;
-  rightColor?: string;
-}> = ({ left, right, rightColor = "#cbd5e1" }) => {
-  return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "space-between",
-        gap: 12,
-        alignItems: "flex-start",
-        padding: "10px 12px",
-        borderRadius: 12,
-        border: "1px solid rgba(255,255,255,0.08)",
-        background: "rgba(255,255,255,0.02)",
-        flexWrap: "wrap",
-      }}
-    >
-      <div
-        style={{
-          color: "#e2e8f0",
-          fontSize: 13,
-          lineHeight: 1.5,
-          whiteSpace: "pre-wrap",
-          overflowWrap: "anywhere",
-          maxWidth: "100%",
-        }}
-      >
-        {left}
-      </div>
-      <div
-        style={{
-          color: rightColor,
-          fontSize: 12,
-          fontWeight: 700,
-          whiteSpace: "pre-wrap",
-          overflowWrap: "anywhere",
-          textAlign: "right",
-          maxWidth: "100%",
-        }}
-      >
-        {right}
-      </div>
-    </div>
-  );
-};
-
-const EmptyText: React.FC<{ text: string }> = ({ text }) => {
-  return (
-    <div
-      style={{
-        color: "#94a3b8",
-        fontSize: 13,
-        lineHeight: 1.6,
-      }}
-    >
-      {text}
-    </div>
-  );
+  fontFamily: "ui-monospace, monospace",
 };
 
 export default ReturnReasonsView;

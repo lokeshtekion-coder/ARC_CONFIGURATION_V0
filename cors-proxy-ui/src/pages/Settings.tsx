@@ -33,12 +33,20 @@ import { SelectableHeaderMap } from "../components/SelectableHeaderMap";
 import type { KeyValuePair } from "../types/proxy.types";
 
 const MAX_PROFILE_AGE_MS = 48 * 60 * 60 * 1000;
+const TOC_API_ENDPOINT = "https://us-west1-tapapi.tekioncloud.com/tapapi/v2/usermanagement/getuserprofile";
+
+const logger = {
+  info: (...args: unknown[]) => console.info("[Settings]", ...args),
+  debug: (...args: unknown[]) => console.debug("[Settings]", ...args),
+  warn: (...args: unknown[]) => console.warn("[Settings]", ...args),
+  error: (...args: unknown[]) => console.error("[Settings]", ...args),
+};
 
 interface Props {
   onBack: () => void;
 }
 
-type TabKey = "tokens" | "profiles" | "headers" | "extension" | "slack";
+type TabKey = "toc" | "tokens" | "profiles" | "headers" | "extension" | "slack";
 type TokenAuthType = "header" | "bearer";
 type MessageType = "success" | "warning" | "error";
 type TokenFieldKey = "tapDuoApiToken" | "graphApiToken";
@@ -114,7 +122,7 @@ const TOKEN_FIELDS: TokenFieldConfig[] = [
     authType: "header",
     headerName: "tap-duo-api-token",
     infoText:
-      "Legacy field preserved for older flows. Stores dashboard now uses custom captured request headers instead.",
+      "Legacy field preserved for older flows. Stores dashboard now uses TOC API captured request headers automatically.",
   },
   {
     key: "graphApiToken",
@@ -531,6 +539,7 @@ const CustomCaptureCard: React.FC<{
   capture: ArcCustomCapturedApi;
   isSelectedForStoresProfile: boolean;
   isSelectedForStoresApi: boolean;
+  isTocApi?: boolean;
   onApply: (pairs: KeyValuePair[], sourceLabel: string) => void;
   onSelectForStoresProfile: (captureId: string) => void;
   onSelectForStoresApi: (captureId: string) => void;
@@ -538,6 +547,7 @@ const CustomCaptureCard: React.FC<{
   capture,
   isSelectedForStoresProfile,
   isSelectedForStoresApi,
+  isTocApi,
   onApply,
   onSelectForStoresProfile,
   onSelectForStoresApi,
@@ -545,11 +555,36 @@ const CustomCaptureCard: React.FC<{
   const tokenExpired = capture.decodedToken?.isExpired === true;
 
   return (
-    <div className="compact-card" style={{ display: "grid", gap: 10 }}>
+    <div
+      className="compact-card"
+      style={{
+        display: "grid",
+        gap: 10,
+        border: isTocApi ? "1px solid rgba(56, 189, 248, 0.4)" : undefined,
+        background: isTocApi ? "rgba(56, 189, 248, 0.03)" : undefined,
+      }}
+    >
       <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
         <div>
-          <div style={{ color: "#f8fafc", fontSize: 15, fontWeight: 800 }}>
-            {capture.label}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ color: "#f8fafc", fontSize: 15, fontWeight: 800 }}>
+              {capture.label}
+            </span>
+            {isTocApi && (
+              <span
+                style={{
+                  background: "rgba(56, 189, 248, 0.15)",
+                  color: "#38bdf8",
+                  border: "1px solid rgba(56, 189, 248, 0.3)",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                }}
+              >
+                🎯 TOC API (Default)
+              </span>
+            )}
           </div>
           <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 4 }}>
             {capture.pattern}
@@ -759,7 +794,7 @@ const WatchRulesManager: React.FC = () => {
 };
 
 export const Settings: React.FC<Props> = ({ onBack }) => {
-  const [activeTab, setActiveTab] = useState<TabKey>("tokens");
+  const [activeTab, setActiveTab] = useState<TabKey>("toc");
   const [tokens, setTokens] = useState<Record<TokenFieldKey, string>>(buildEmptyTokens());
   const [savedAtByKey, setSavedAtByKey] = useState<Record<string, string>>({});
   const [hiddenByKey, setHiddenByKey] = useState<Record<TokenFieldKey, boolean>>(buildHiddenMap());
@@ -771,6 +806,7 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
 
   const [hideSlackToken, setHideSlackToken] = useState(true);
   const [hideSlackCookie, setHideSlackCookie] = useState(true);
+  const [showTocDetails, setShowTocDetails] = useState(false);
 
   const [savedTokensSnapshot, setSavedTokensSnapshot] = useState<Record<TokenFieldKey, string>>(buildEmptyTokens());
   const [savedGlobalHeadersSnapshot, setSavedGlobalHeadersSnapshot] = useState<KeyValuePair[]>([]);
@@ -818,6 +854,39 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
       return new Date(b.lastSeenAt).getTime() - new Date(a.lastSeenAt).getTime();
     });
   }, [latestCapture]);
+
+  // Find TOC API (/getuserprofile) capture
+  const tocCapture = useMemo(() => {
+    return (
+      customCaptures.find((c) => {
+        const pattern = (c.pattern || "").toLowerCase();
+        const url = (c.matchedUrl || "").toLowerCase();
+        return (
+          pattern.includes("getuserprofile") ||
+          pattern.includes("usermanagement") ||
+          url.includes("getuserprofile")
+        );
+      }) || null
+    );
+  }, [customCaptures]);
+
+  // Auto-make TOC API the default Stores API & Profile source
+  useEffect(() => {
+    if (tocCapture) {
+      if (storesCustomCaptureId !== tocCapture.id || storesApiCaptureId !== tocCapture.id) {
+        setStoresCustomCaptureId(tocCapture.id);
+        setStoresApiCaptureId(tocCapture.id);
+        saveTekionApiSettings({
+          storesCustomCaptureId: tocCapture.id,
+          storesApiCaptureId: tocCapture.id,
+        });
+        logger.info("Automatically set TOC API as default Stores capture source", {
+          id: tocCapture.id,
+          matchedUrl: tocCapture.matchedUrl,
+        });
+      }
+    }
+  }, [tocCapture, storesCustomCaptureId, storesApiCaptureId]);
 
   const filteredProfiles = useMemo(() => {
     if (!deferredSearchQuery.trim()) return activeProfiles;
@@ -1100,6 +1169,7 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
           Configuration
         </div>
 
+        {renderSidebarButton("toc", "🎯 TOC API (Default)")}
         {renderSidebarButton("tokens", "🔐 API Tokens", tokensAreDirty)}
         {renderSidebarButton("slack", "💬 Slack Session")}
         {renderSidebarButton("profiles", "🏬 Dealer Profiles")}
@@ -1146,6 +1216,171 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
                 Selected Stores token expired at {formatSavedAt(expiredSelectedStoresCapture.decodedToken?.expiresAt)}.
                 Please reload the website to capture a fresh token.
               </div>
+            )}
+
+            {/* TAB: TOC API */}
+            {activeTab === "toc" && (
+              <section className="section-card">
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    gap: 14,
+                    flexWrap: "wrap",
+                    marginBottom: 18,
+                  }}
+                >
+                  <div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <h2 style={{ fontSize: 22, margin: 0 }}>TOC API (Default Profile)</h2>
+                      <span
+                        className="ui-pill"
+                        style={{
+                          background: tocCapture
+                            ? "rgba(34, 197, 94, 0.15)"
+                            : "rgba(245, 158, 11, 0.15)",
+                          border: `1px solid ${
+                            tocCapture
+                              ? "rgba(34, 197, 94, 0.3)"
+                              : "rgba(245, 158, 11, 0.3)"
+                          }`,
+                          color: tocCapture ? "#86efac" : "#fde68a",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {tocCapture ? "● Auto-Selected Default" : "○ Not Captured Yet"}
+                      </span>
+                    </div>
+                    <p style={{ color: "#94a3b8", margin: "6px 0 0", fontSize: 13 }}>
+                      Primary user profile endpoint: <code>{TOC_API_ENDPOINT}</code>
+                    </p>
+                  </div>
+
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      className="btn-secondary btn-sm"
+                      type="button"
+                      onClick={() => requestLatestCaptureFromExtension()}
+                    >
+                      🔄 Re-Sync From Extension
+                    </button>
+                    {tocCapture && (
+                      <button
+                        className="btn-postman btn-sm"
+                        type="button"
+                        onClick={() => setShowTocDetails((prev) => !prev)}
+                      >
+                        {showTocDetails ? "Hide TOC API Data" : "Inspect TOC API Data"}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {tocCapture ? (
+                  <div style={{ display: "grid", gap: 14 }}>
+                    <div
+                      className="compact-card"
+                      style={{
+                        background: "rgba(56, 189, 248, 0.04)",
+                        border: "1px solid rgba(56, 189, 248, 0.25)",
+                        display: "grid",
+                        gap: 10,
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div>
+                          <div style={{ color: "#f8fafc", fontSize: 15, fontWeight: 800 }}>
+                            {tocCapture.label || "TOC User Profile API"}
+                          </div>
+                          <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 2 }}>
+                            {tocCapture.matchedUrl || tocCapture.pattern}
+                          </div>
+                        </div>
+
+                        <button
+                          className="btn-secondary btn-sm"
+                          type="button"
+                          onClick={() => applySelectedHeadersToGlobal(toKeyValuePairs(tocCapture.headers), "TOC API")}
+                        >
+                          Copy All Headers to Global
+                        </button>
+                      </div>
+
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
+                        <span className="ui-pill">
+                          <span style={{ color: "#94a3b8" }}>Captured At</span>
+                          <span style={{ color: "#e2e8f0", fontWeight: 600 }}>{formatSavedAt(tocCapture.capturedAt)}</span>
+                        </span>
+                        <span className="ui-pill">
+                          <span style={{ color: "#94a3b8" }}>Last Seen</span>
+                          <span style={{ color: "#e2e8f0", fontWeight: 600 }}>{formatSavedAt(tocCapture.lastSeenAt)}</span>
+                        </span>
+                        <span className="ui-pill">
+                          <span style={{ color: "#94a3b8" }}>Token Expires</span>
+                          <span
+                            style={{
+                              color: tocCapture.decodedToken?.isExpired ? "#fca5a5" : "#86efac",
+                              fontWeight: 600,
+                            }}
+                          >
+                            {tocCapture.decodedToken?.expiresAt
+                              ? formatSavedAt(tocCapture.decodedToken.expiresAt)
+                              : "Unknown"}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+
+                    {showTocDetails && (
+                      <div style={{ marginTop: 8 }}>
+                        <SelectableHeaderMap
+                          title="TOC API Captured Request Headers"
+                          headers={tocCapture.headers}
+                          capturedAt={tocCapture.capturedAt}
+                          sourceUrl={tocCapture.matchedUrl}
+                          applyButtonLabel="Apply Selected Headers"
+                          onApplySelected={(pairs) => applySelectedHeadersToGlobal(pairs, "TOC API")}
+                        />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div
+                    className="compact-card"
+                    style={{
+                      background: "rgba(245, 158, 11, 0.06)",
+                      border: "1px solid rgba(245, 158, 11, 0.25)",
+                      padding: 20,
+                      display: "grid",
+                      gap: 12,
+                    }}
+                  >
+                    <div style={{ color: "#fde68a", fontSize: 14, fontWeight: 700 }}>
+                      ⚠ TOC API has not been intercepted yet
+                    </div>
+                    <p style={{ color: "#94a3b8", fontSize: 13, margin: 0, lineHeight: 1.6 }}>
+                      To automatically capture this API without manual configuration, simply open or reload
+                      TAP Workorders in another browser tab:
+                    </p>
+                    <div>
+                      <a
+                        href="https://tap.tekioncloud.com/workorders/list"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="btn-postman"
+                        style={{ display: "inline-flex", alignItems: "center", gap: 6, textDecoration: "none" }}
+                      >
+                        Open TAP Workorders ↗
+                      </a>
+                    </div>
+                    <div style={{ color: "#64748b", fontSize: 12 }}>
+                      Once opened, the ARC extension automatically captures <code>/tapapi/v2/usermanagement/getuserprofile</code> and
+                      applies it as the default Stores profile.
+                    </div>
+                  </div>
+                )}
+              </section>
             )}
 
             {/* TAB: TOKENS */}
@@ -1199,7 +1434,6 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
                               : "rgba(239, 68, 68, 0.3)"
                           }`,
                           color: isSlackActive ? "#86efac" : isSlackPartial ? "#fde68a" : "#fca5a5",
-
                           fontWeight: 700,
                         }}
                       >
@@ -1405,6 +1639,10 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
                         <CustomCaptureCard
                           key={capture.id}
                           capture={capture}
+                          isTocApi={
+                            capture.pattern.toLowerCase().includes("getuserprofile") ||
+                            capture.matchedUrl.toLowerCase().includes("getuserprofile")
+                          }
                           isSelectedForStoresProfile={storesCustomCaptureId === capture.id}
                           isSelectedForStoresApi={storesApiCaptureId === capture.id}
                           onApply={applySelectedHeadersToGlobal}

@@ -10,15 +10,12 @@ type BucketKey =
 
 type RunState = "idle" | "loading" | "success" | "warning" | "error";
 
-type AdjustmentType = "INCREASE" | "DECREASE" | string;
-type AdjustmentStatus = "ACTIVE" | "INACTIVE" | string;
-
 interface AdjustmentReasonRecord {
   id?: string;
   reason?: string;
-  type?: AdjustmentType;
+  type?: string;
   glAccountPosting?: boolean | null;
-  status?: AdjustmentStatus;
+  status?: string;
   physicalInventoryReasonType?: string | null;
   [key: string]: unknown;
 }
@@ -136,7 +133,6 @@ function normalizeReason(value: unknown): string {
 
 function loadHeadersFromSettings(): Record<string, string> {
   const bundle = loadTekionApiSettingsBundle();
-
   const headers = (bundle.globalHeaders ?? [])
     .filter((header: KeyValuePair) => header.enabled && header.key.trim())
     .reduce<Record<string, string>>((acc, header) => {
@@ -146,12 +142,6 @@ function loadHeadersFromSettings(): Record<string, string> {
 
   headers.accept = headers.accept || "application/json, text/plain, */*";
   headers["content-type"] = headers["content-type"] || "application/json";
-
-  logger.info("loaded global headers", {
-    count: Object.keys(headers).length,
-    keys: Object.keys(headers),
-  });
-
   return headers;
 }
 
@@ -159,7 +149,6 @@ function loadSavedCustomization(): Record<BucketKey, BucketCustomization> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return DEFAULT_CUSTOMIZATION;
-
     const parsed = JSON.parse(raw) as Partial<Record<BucketKey, BucketCustomization>>;
     return {
       trueIncrease: {
@@ -179,8 +168,7 @@ function loadSavedCustomization(): Record<BucketKey, BucketCustomization> {
         excluded: parsed.falseDecrease?.excluded ?? DEFAULT_CUSTOMIZATION.falseDecrease.excluded,
       },
     };
-  } catch (error) {
-    logger.warn("failed to load saved customization, using defaults", error);
+  } catch {
     return DEFAULT_CUSTOMIZATION;
   }
 }
@@ -188,55 +176,31 @@ function loadSavedCustomization(): Record<BucketKey, BucketCustomization> {
 function saveCustomization(config: Record<BucketKey, BucketCustomization>): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-    logger.info("saved customization to localStorage");
   } catch (error) {
     logger.warn("failed to save customization", error);
   }
 }
 
-async function parseJsonResponse<T>(response: Response): Promise<T> {
-  const text = await response.text();
-  logger.debug("raw response text", text);
-
-  try {
-    return text ? (JSON.parse(text) as T) : ({} as T);
-  } catch (error) {
-    logger.error("failed to parse response json", error);
-    throw new Error(`Non-JSON response received: ${text.slice(0, 300)}`);
-  }
-}
-
 async function fetchAdjustmentReasons(): Promise<AdjustmentReasonRecord[]> {
   const headers = loadHeadersFromSettings();
-
   if (Object.keys(headers).length === 0) {
     throw new Error("No active global headers found. Please configure headers in Settings.");
   }
 
-  logger.info("fetching adjustment reasons", { url: API_URL });
-
-  const response = await fetch(API_URL, {
-    method: "GET",
-    headers,
-  });
-
-  logger.info("adjustment reasons response received", {
-    status: response.status,
-    statusText: response.statusText,
-    ok: response.ok,
-  });
-
-  const json = await parseJsonResponse<AdjustmentReasonsApiResponse>(response);
-  logger.debug("parsed adjustment reasons response", json);
+  const response = await fetch(API_URL, { method: "GET", headers });
+  const text = await response.text();
+  let json: AdjustmentReasonsApiResponse = {};
+  try {
+    json = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error(`Non-JSON response received: ${text.slice(0, 300)}`);
+  }
 
   if (!response.ok) {
     throw new Error(json?.message || `HTTP ${response.status}`);
   }
 
-  const rows = Array.isArray(json.data) ? json.data : [];
-  logger.info("adjustment reasons rows fetched", { count: rows.length });
-
-  return rows;
+  return Array.isArray(json.data) ? json.data : [];
 }
 
 function buildValidationResult(
@@ -316,14 +280,6 @@ function buildValidationResult(
   const hasAllFour = Object.values(buckets).every((bucket) => bucket.hasMatch);
   const isValid = hasAllFour && activeItems.length === 4;
 
-  logger.info("validation summary", {
-    isValid,
-    hasAllFour,
-    activeItems: activeItems.length,
-    duplicateBuckets: duplicateSummary.length,
-    uncategorizedActiveItems: uncategorizedActiveItems.length,
-  });
-
   return {
     isValid,
     totalItems: records.length,
@@ -334,88 +290,20 @@ function buildValidationResult(
   };
 }
 
-function formatBool(value: boolean | null | undefined): string {
-  if (value === true) return "TRUE";
-  if (value === false) return "FALSE";
-  return "—";
-}
-
-function getStatusColors(runState: RunState): React.CSSProperties {
-  if (runState === "error") {
-    return {
-      border: "1px solid rgba(239,68,68,0.25)",
-      background: "rgba(239,68,68,0.10)",
-      color: "#fecaca",
-    };
-  }
-  if (runState === "success") {
-    return {
-      border: "1px solid rgba(34,197,94,0.25)",
-      background: "rgba(34,197,94,0.10)",
-      color: "#bbf7d0",
-    };
-  }
-  if (runState === "warning") {
-    return {
-      border: "1px solid rgba(245,158,11,0.25)",
-      background: "rgba(245,158,11,0.10)",
-      color: "#fde68a",
-    };
-  }
-  return {
-    border: "1px solid rgba(255,255,255,0.08)",
-    background: "rgba(255,255,255,0.03)",
-    color: "#cbd5e1",
-  };
-}
-
-function isRecordAcceptedForBucket(
-  item: AdjustmentReasonRecord,
-  spec: BucketSpec,
-  custom: BucketCustomization
-): boolean {
-  if (item.type !== spec.type) return false;
-  if (Boolean(item.glAccountPosting) !== spec.glPosting) return false;
-
-  const reason = normalize(item.reason);
-  if (!reason) return false;
-
-  const excluded = new Set(custom.excluded.map(normalize));
-  if (excluded.has(reason)) return false;
-
-  const acceptedNames = [spec.expectedReason, ...custom.aliases].map(normalize);
-  return acceptedNames.includes(reason);
-}
-
 async function updateAdjustmentReasonStatus(
   id: string,
   adjustmentStatus: "INACTIVE",
   headers: Record<string, string>
 ): Promise<void> {
   const url = `${API_URL}/${id}`;
-
-  logger.info("sending status update", {
-    url,
-    adjustmentStatus,
-    id,
-  });
-
   const response = await fetch(url, {
     method: "PUT",
     headers,
     body: JSON.stringify({ adjustmentStatus }),
   });
 
-  logger.info("status update response", {
-    id,
-    status: response.status,
-    ok: response.ok,
-  });
-
-  const json = await parseJsonResponse<AdjustmentReasonsApiResponse>(response);
-
   if (!response.ok) {
-    throw new Error(json?.message || `Failed to update record ${id}: HTTP ${response.status}`);
+    throw new Error(`Failed to update record ${id}: HTTP ${response.status}`);
   }
 }
 
@@ -428,57 +316,35 @@ async function createAdjustmentReason(
   },
   headers: Record<string, string>
 ): Promise<void> {
-  logger.info("creating missing adjustment reason", payload);
-
   const response = await fetch(API_URL, {
     method: "POST",
     headers,
     body: JSON.stringify(payload),
   });
 
-  logger.info("create response", {
-    status: response.status,
-    ok: response.ok,
-    payload,
-  });
-
-  const json = await parseJsonResponse<AdjustmentReasonsApiResponse>(response);
-
   if (!response.ok) {
-    throw new Error(json?.message || `Failed to create "${payload.reason}": HTTP ${response.status}`);
+    throw new Error(`Failed to create "${payload.reason}": HTTP ${response.status}`);
   }
 }
 
 export const AdjustmentReasonsView: React.FC = () => {
   const [runState, setRunState] = useState<RunState>("idle");
-  const [statusText, setStatusText] = useState("Ready");
+  const [statusText, setStatusText] = useState("Ready to check adjustment reasons");
   const [errorText, setErrorText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isFixing, setIsFixing] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
 
   const [records, setRecords] = useState<AdjustmentReasonRecord[]>([]);
   const [customization, setCustomization] = useState<Record<BucketKey, BucketCustomization>>(
     () => loadSavedCustomization()
   );
 
-  const [aliasInput, setAliasInput] = useState<Record<BucketKey, string>>({
-    trueIncrease: "",
-    trueDecrease: "",
-    falseIncrease: "",
-    falseDecrease: "",
-  });
-
-  const [excludedInput, setExcludedInput] = useState<Record<BucketKey, string>>({
-    trueIncrease: "",
-    trueDecrease: "",
-    falseIncrease: "",
-    falseDecrease: "",
-  });
-
-  useEffect(() => {
-    logger.info("AdjustmentReasonsView mounted");
-    return () => logger.info("AdjustmentReasonsView unmounted");
-  }, []);
+  const [activeInputBucket, setActiveInputBucket] = useState<{
+    key: BucketKey;
+    field: "alias" | "exclude";
+  } | null>(null);
+  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     saveCustomization(customization);
@@ -490,28 +356,24 @@ export const AdjustmentReasonsView: React.FC = () => {
   );
 
   const handleFetch = useCallback(async () => {
-    logger.info("fetch requested");
-
     setIsLoading(true);
     setRunState("loading");
-    setStatusText("Fetching adjustment reasons...");
+    setStatusText("Fetching latest adjustment reasons...");
     setErrorText("");
 
     try {
       const rows = await fetchAdjustmentReasons();
       setRecords(rows);
-
       const nextValidation = buildValidationResult(rows, customization);
 
       if (nextValidation.isValid) {
         setRunState("success");
-        setStatusText(`Loaded ${rows.length} rows. Adjustment reasons are valid.`);
+        setStatusText(`✓ All 4 required adjustment reasons are present and clean (${rows.length} total rows)`);
       } else {
         setRunState("warning");
-        setStatusText(`Loaded ${rows.length} rows. Validation issues detected.`);
+        setStatusText(`⚠ Validation issues detected: review required buckets (${rows.length} total rows)`);
       }
     } catch (error: unknown) {
-      logger.error("fetch failed", error);
       setRunState("error");
       setStatusText("Failed to fetch adjustment reasons");
       setErrorText(error instanceof Error ? error.message : String(error));
@@ -521,17 +383,14 @@ export const AdjustmentReasonsView: React.FC = () => {
   }, [customization]);
 
   const handleAutoFix = useCallback(async () => {
-    logger.info("auto-fix requested");
-
     setIsFixing(true);
     setRunState("loading");
-    setStatusText("Auto-fix in progress...");
+    setStatusText("Running Auto-Fix...");
     setErrorText("");
 
     try {
       const headers = loadHeadersFromSettings();
       const latestRows = await fetchAdjustmentReasons();
-
       const activeRows = latestRows.filter(
         (item) => normalize(item.status || "ACTIVE") !== "inactive"
       );
@@ -559,9 +418,10 @@ export const AdjustmentReasonsView: React.FC = () => {
           if (item.id) idsToInactivate.add(item.id);
         });
 
-        const accepted = eligible.filter((item) =>
-          isRecordAcceptedForBucket(item, spec, custom)
-        );
+        const accepted = eligible.filter((item) => {
+          const r = normalize(item.reason);
+          return [spec.expectedReason, ...custom.aliases].map(normalize).includes(r) && !excluded.map(x => normalize(x.reason)).includes(r);
+        });
 
         const preferred =
           accepted.find((item) => normalize(item.reason) === normalize(spec.expectedReason)) ||
@@ -572,15 +432,9 @@ export const AdjustmentReasonsView: React.FC = () => {
           if (!item.id) continue;
           if (excluded.some((x) => x.id === item.id)) continue;
           if (preferred && item.id === preferred.id) continue;
-
-          const isAccepted = accepted.some((x) => x.id === item.id);
-          if (isAccepted || !isAccepted) {
-            idsToInactivate.add(item.id);
-          }
+          idsToInactivate.add(item.id);
         }
       }
-
-      logger.info("records to inactivate", { count: idsToInactivate.size, ids: [...idsToInactivate] });
 
       for (const id of idsToInactivate) {
         await updateAdjustmentReasonStatus(id, "INACTIVE", headers);
@@ -593,9 +447,15 @@ export const AdjustmentReasonsView: React.FC = () => {
 
       for (const spec of DEFAULT_BUCKET_SPECS) {
         const custom = customization[spec.key];
-        const hasAcceptedActive = activeAfterInactivate.some((item) =>
-          isRecordAcceptedForBucket(item, spec, custom)
-        );
+        const hasAcceptedActive = activeAfterInactivate.some((item) => {
+          const r = normalize(item.reason);
+          return (
+            item.type === spec.type &&
+            Boolean(item.glAccountPosting) === spec.glPosting &&
+            [spec.expectedReason, ...custom.aliases].map(normalize).includes(r) &&
+            !custom.excluded.map(normalize).includes(r)
+          );
+        });
 
         if (!hasAcceptedActive) {
           await createAdjustmentReason(
@@ -612,18 +472,16 @@ export const AdjustmentReasonsView: React.FC = () => {
 
       const refreshed = await fetchAdjustmentReasons();
       setRecords(refreshed);
-
       const nextValidation = buildValidationResult(refreshed, customization);
 
       if (nextValidation.isValid) {
         setRunState("success");
-        setStatusText("Auto-fix completed successfully. All required adjustment reasons are valid.");
+        setStatusText("✓ Auto-fix completed. All 4 required adjustment reasons are valid.");
       } else {
         setRunState("warning");
-        setStatusText("Auto-fix completed, but validation still shows issues. Please review remaining records.");
+        setStatusText("Auto-fix applied, but some records still require manual review.");
       }
     } catch (error: unknown) {
-      logger.error("auto-fix failed", error);
       setRunState("error");
       setStatusText("Auto-fix failed");
       setErrorText(error instanceof Error ? error.message : String(error));
@@ -632,124 +490,106 @@ export const AdjustmentReasonsView: React.FC = () => {
     }
   }, [customization]);
 
-  const updateCustomization = useCallback(
-    (bucket: BucketKey, next: BucketCustomization) => {
-      setCustomization((prev) => ({
+  const handleAddItem = (bucketKey: BucketKey, field: "alias" | "exclude") => {
+    if (!inputValue.trim()) return;
+    const val = inputValue.trim();
+
+    setCustomization((prev) => {
+      const current = prev[bucketKey];
+      return {
         ...prev,
-        [bucket]: {
-          aliases: [...new Set(next.aliases.map((x) => x.trim()).filter(Boolean))],
-          excluded: [...new Set(next.excluded.map((x) => x.trim()).filter(Boolean))],
+        [bucketKey]: {
+          aliases: field === "alias" ? [...new Set([...current.aliases, val])] : current.aliases,
+          excluded: field === "exclude" ? [...new Set([...current.excluded, val])] : current.excluded,
         },
-      }));
-    },
-    []
-  );
-
-  const addAlias = useCallback(
-    (bucket: BucketKey) => {
-      const value = aliasInput[bucket].trim();
-      if (!value) return;
-
-      const current = customization[bucket];
-      updateCustomization(bucket, {
-        ...current,
-        aliases: [...current.aliases, value],
-      });
-
-      setAliasInput((prev) => ({ ...prev, [bucket]: "" }));
-    },
-    [aliasInput, customization, updateCustomization]
-  );
-
-  const addExcluded = useCallback(
-    (bucket: BucketKey) => {
-      const value = excludedInput[bucket].trim();
-      if (!value) return;
-
-      const current = customization[bucket];
-      updateCustomization(bucket, {
-        ...current,
-        excluded: [...current.excluded, value],
-      });
-
-      setExcludedInput((prev) => ({ ...prev, [bucket]: "" }));
-    },
-    [excludedInput, customization, updateCustomization]
-  );
-
-  const removeAlias = useCallback(
-    (bucket: BucketKey, value: string) => {
-      const current = customization[bucket];
-      updateCustomization(bucket, {
-        ...current,
-        aliases: current.aliases.filter((item) => item !== value),
-      });
-    },
-    [customization, updateCustomization]
-  );
-
-  const removeExcluded = useCallback(
-    (bucket: BucketKey, value: string) => {
-      const current = customization[bucket];
-      updateCustomization(bucket, {
-        ...current,
-        excluded: current.excluded.filter((item) => item !== value),
-      });
-    },
-    [customization, updateCustomization]
-  );
-
-  const resetCustomization = useCallback(() => {
-    setCustomization(DEFAULT_CUSTOMIZATION);
-    setAliasInput({
-      trueIncrease: "",
-      trueDecrease: "",
-      falseIncrease: "",
-      falseDecrease: "",
+      };
     });
-    setExcludedInput({
-      trueIncrease: "",
-      trueDecrease: "",
-      falseIncrease: "",
-      falseDecrease: "",
-    });
-  }, []);
 
-  const statusStyle = getStatusColors(runState);
+    setInputValue("");
+    setActiveInputBucket(null);
+  };
+
+  const removeItem = (bucketKey: BucketKey, field: "alias" | "exclude", val: string) => {
+    setCustomization((prev) => {
+      const current = prev[bucketKey];
+      return {
+        ...prev,
+        [bucketKey]: {
+          aliases: field === "alias" ? current.aliases.filter((x) => x !== val) : current.aliases,
+          excluded: field === "exclude" ? current.excluded.filter((x) => x !== val) : current.excluded,
+        },
+      };
+    });
+  };
+
+  const banner = useMemo(() => {
+    switch (runState) {
+      case "error":
+        return { bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.25)", text: "#fecaca" };
+      case "success":
+        return { bg: "rgba(34,197,94,0.1)", border: "rgba(34,197,94,0.25)", text: "#bbf7d0" };
+      case "warning":
+        return { bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.25)", text: "#fde68a" };
+      default:
+        return { bg: "rgba(255,255,255,0.03)", border: "rgba(255,255,255,0.08)", text: "#cbd5e1" };
+    }
+  }, [runState]);
 
   return (
-    <div style={{ display: "grid", gap: 16, minWidth: 0 }}>
+    <div style={{ display: "grid", gap: 16 }}>
+      {/* Executive Header Card */}
       <div
         style={{
-          borderRadius: 18,
+          borderRadius: 16,
           border: "1px solid rgba(255,255,255,0.08)",
           background: "rgba(255,255,255,0.03)",
-          padding: 20,
+          padding: 18,
+          display: "grid",
+          gap: 14,
         }}
       >
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 12,
+            alignItems: "center",
             flexWrap: "wrap",
-            marginBottom: 12,
+            gap: 12,
           }}
         >
-          <div>
-            <div style={{ color: "#f8fafc", fontSize: 24, fontWeight: 800, marginBottom: 6 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#f8fafc" }}>
               Adjustment Reasons
             </div>
-            <div style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.7 }}>
-              Fetch, validate, exclude, and auto-fix parts adjustment reasons.
-            </div>
+            <button
+              type="button"
+              onClick={() => setShowInfo((p) => !p)}
+              style={{
+                width: 20,
+                height: 20,
+                borderRadius: 999,
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                color: "#94a3b8",
+                fontSize: 11,
+                cursor: "pointer",
+                fontWeight: 700,
+              }}
+              title="Toggle Description"
+            >
+              i
+            </button>
           </div>
 
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button className="btn-secondary btn-sm" type="button" onClick={resetCustomization}>
-              Reset Custom Rules
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <button
+              className="btn-secondary btn-sm"
+              type="button"
+              onClick={() => setCustomization(DEFAULT_CUSTOMIZATION)}
+            >
+              Reset Rules
             </button>
+
             <button
               className="btn-secondary btn-sm"
               type="button"
@@ -758,220 +598,336 @@ export const AdjustmentReasonsView: React.FC = () => {
             >
               {isFixing ? "Fixing..." : "Auto Fix"}
             </button>
+
             <button
               className="btn-postman"
               type="button"
               onClick={() => void handleFetch()}
               disabled={isLoading || isFixing}
             >
-              {isLoading ? "Fetching..." : "Send"}
+              {isLoading ? "Running..." : "GET"}
             </button>
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-          <Pill label="Total Rows" value={String(records.length)} />
-          <Pill label="Active Rows" value={String(validation.activeItems)} />
-          <Pill label="Expected Buckets" value="4" />
-          <Pill label="Result" value={validation.isValid ? "VALID" : "NEEDS FIX"} />
-        </div>
+        {showInfo && (
+          <div
+            style={{
+              padding: 12,
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              color: "#94a3b8",
+              fontSize: 12,
+              lineHeight: 1.6,
+            }}
+          >
+            Validates that exactly 4 adjustment reasons exist across the required permutations
+            (GL Posting True/False × Increase/Decrease). <b>Auto Fix</b> marks excess duplicates
+            or excluded records as INACTIVE and creates any missing baseline codes.
+          </div>
+        )}
 
         <div
           style={{
-            borderRadius: 14,
-            padding: "12px 14px",
+            borderRadius: 12,
+            padding: "10px 14px",
             fontSize: 13,
-            lineHeight: 1.6,
-            whiteSpace: "pre-wrap",
-            overflowWrap: "anywhere",
-            ...statusStyle,
+            border: `1px solid ${banner.border}`,
+            background: banner.bg,
+            color: banner.text,
           }}
         >
-          <div style={{ fontWeight: 700, marginBottom: errorText ? 6 : 0 }}>
-            {statusText}
-          </div>
-          {errorText ? <div>{errorText}</div> : null}
+          <div style={{ fontWeight: 700 }}>{statusText}</div>
+          {errorText && <div style={{ fontSize: 12, marginTop: 4 }}>{errorText}</div>}
         </div>
       </div>
 
-      <SectionCard title="Default Validation Rules + Dynamic Customization">
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-            gap: 16,
-          }}
-        >
+      {/* Row-Based Bucket Validation & Customization Panel */}
+      <div
+        style={{
+          borderRadius: 16,
+          border: "1px solid rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.03)",
+          padding: 16,
+          display: "grid",
+          gap: 12,
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 14, fontWeight: 800, color: "#f8fafc" }}>
+            Required Permutation Rules
+          </span>
+          <span style={{ fontSize: 12, color: "#94a3b8" }}>
+            {Object.values(validation.buckets).filter((b) => b.hasMatch).length} / 4 Configured
+          </span>
+        </div>
+
+        <div style={{ display: "grid", gap: 8 }}>
           {DEFAULT_BUCKET_SPECS.map((spec) => {
-            const bucketCustom = customization[spec.key];
+            const res = validation.buckets[spec.key];
+            const custom = customization[spec.key];
+            const isMatching = res.hasMatch;
+            const isInputActive = activeInputBucket?.key === spec.key;
 
             return (
               <div
                 key={spec.key}
                 style={{
-                  borderRadius: 16,
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  background: "rgba(255,255,255,0.02)",
-                  padding: 16,
+                  borderRadius: 12,
+                  border: `1px solid ${
+                    isMatching ? "rgba(34,197,94,0.22)" : "rgba(245,158,11,0.22)"
+                  }`,
+                  background: isMatching ? "rgba(34,197,94,0.03)" : "rgba(245,158,11,0.03)",
+                  padding: "12px 14px",
                   display: "grid",
-                  gap: 12,
+                  gap: 8,
                 }}
               >
-                <div>
-                  <div style={{ color: "#f8fafc", fontSize: 16, fontWeight: 800, marginBottom: 6 }}>
-                    {spec.label}
-                  </div>
-                  <div style={{ color: "#94a3b8", fontSize: 12 }}>Default priority reason</div>
-                  <div style={{ color: "#e2e8f0", fontSize: 14, fontWeight: 700, marginTop: 4 }}>
-                    {spec.expectedReason}
-                  </div>
-                  <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 6 }}>
-                    Type: {spec.type} · GL Posting: {spec.glPosting ? "TRUE" : "FALSE"}
-                  </div>
-                </div>
+                {/* Top Row: Spec, Status, Preferred Reason, Controls */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: 10,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 14, fontWeight: 800, color: "#f8fafc", minWidth: 140 }}>
+                      {spec.label}
+                    </span>
 
-                <div>
-                  <div style={labelStyle}>Aliases</div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <input
-                      className="st-input"
-                      type="text"
-                      value={aliasInput[spec.key]}
-                      placeholder="Add alias"
-                      onChange={(e) =>
-                        setAliasInput((prev) => ({ ...prev, [spec.key]: e.target.value }))
-                      }
-                      style={{ ...inputStyle, flex: 1 }}
-                    />
-                    <button className="btn-secondary btn-sm" type="button" onClick={() => addAlias(spec.key)}>
-                      Add
+                    <span
+                      style={{
+                        padding: "2px 8px",
+                        borderRadius: 999,
+                        fontSize: 10,
+                        fontWeight: 800,
+                        background: isMatching ? "rgba(34,197,94,0.15)" : "rgba(245,158,11,0.15)",
+                        color: isMatching ? "#86efac" : "#fde68a",
+                        border: `1px solid ${isMatching ? "rgba(34,197,94,0.3)" : "rgba(245,158,11,0.3)"}`,
+                      }}
+                    >
+                      {isMatching ? "✓ Matched" : "Missing"}
+                    </span>
+
+                    <span style={{ fontSize: 12, color: "#94a3b8" }}>
+                      Target: <strong style={{ color: "#f8fafc" }}>{spec.expectedReason}</strong>
+                    </span>
+
+                    {res.preferredItem && res.preferredItem.reason !== spec.expectedReason && (
+                      <span style={{ fontSize: 12, color: "#38bdf8" }}>
+                        (Matched Alias: <strong>{res.preferredItem.reason}</strong>)
+                      </span>
+                    )}
+
+                    {res.eligibleItems.length > 1 && (
+                      <span style={{ fontSize: 11, color: "#fca5a5" }}>
+                        ⚠ {res.eligibleItems.length} active eligible
+                      </span>
+                    )}
+                  </div>
+
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveInputBucket({ key: spec.key, field: "alias" });
+                        setInputValue("");
+                      }}
+                      style={{
+                        background: "rgba(56,189,248,0.08)",
+                        border: "1px solid rgba(56,189,248,0.25)",
+                        borderRadius: 6,
+                        color: "#38bdf8",
+                        fontSize: 11,
+                        padding: "2px 8px",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      + Alias
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveInputBucket({ key: spec.key, field: "exclude" });
+                        setInputValue("");
+                      }}
+                      style={{
+                        background: "rgba(239,68,68,0.08)",
+                        border: "1px solid rgba(239,68,68,0.25)",
+                        borderRadius: 6,
+                        color: "#f87171",
+                        fontSize: 11,
+                        padding: "2px 8px",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      + Exclude
                     </button>
                   </div>
-
-                  <TagList
-                    items={bucketCustom.aliases}
-                    emptyText="No aliases configured"
-                    tone="blue"
-                    onRemove={(value) => removeAlias(spec.key, value)}
-                  />
                 </div>
 
-                <div>
-                  <div style={labelStyle}>Excluded Reasons</div>
-                  <div style={{ display: "flex", gap: 8 }}>
+                {/* Bottom Row: Inline Tags for Aliases and Excluded */}
+                <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center", fontSize: 12 }}>
+                  {custom.aliases.length > 0 && (
+                    <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                      <span style={{ color: "#64748b", fontSize: 11, fontWeight: 700 }}>Aliases:</span>
+                      {custom.aliases.map((alias) => (
+                        <span
+                          key={alias}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 6,
+                            padding: "1px 6px",
+                            borderRadius: 4,
+                            background: "rgba(56,189,248,0.1)",
+                            color: "#7dd3fc",
+                            fontSize: 11,
+                            border: "1px solid rgba(56,189,248,0.2)",
+                          }}
+                        >
+                          {alias}
+                          <span
+                            onClick={() => removeItem(spec.key, "alias", alias)}
+                            style={{ cursor: "pointer", fontWeight: 900 }}
+                          >
+                            ×
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {custom.excluded.length > 0 && (
+                    <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+                      <span style={{ color: "#64748b", fontSize: 11, fontWeight: 700 }}>Excluded:</span>
+                      {custom.excluded.map((exc) => (
+                        <span
+                          key={exc}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 6,
+                            padding: "1px 6px",
+                            borderRadius: 4,
+                            background: "rgba(239,68,68,0.1)",
+                            color: "#fca5a5",
+                            fontSize: 11,
+                            border: "1px solid rgba(239,68,68,0.2)",
+                          }}
+                        >
+                          {exc}
+                          <span
+                            onClick={() => removeItem(spec.key, "exclude", exc)}
+                            style={{ cursor: "pointer", fontWeight: 900 }}
+                          >
+                            ×
+                          </span>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Inline Pop-in Input Bar */}
+                {isInputActive && (
+                  <div style={{ display: "flex", gap: 6, marginTop: 4 }}>
                     <input
-                      className="st-input"
                       type="text"
-                      value={excludedInput[spec.key]}
-                      placeholder="Add excluded reason"
-                      onChange={(e) =>
-                        setExcludedInput((prev) => ({ ...prev, [spec.key]: e.target.value }))
+                      className="st-input"
+                      value={inputValue}
+                      autoFocus
+                      placeholder={
+                        activeInputBucket.field === "alias"
+                          ? `Add alias for ${spec.label}`
+                          : `Add exclusion for ${spec.label}`
                       }
-                      style={{ ...inputStyle, flex: 1 }}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleAddItem(spec.key, activeInputBucket.field);
+                        if (e.key === "Escape") setActiveInputBucket(null);
+                      }}
+                      style={{ height: 32, fontSize: 12, flex: 1 }}
                     />
-                    <button className="btn-secondary btn-sm" type="button" onClick={() => addExcluded(spec.key)}>
-                      Add
+                    <button
+                      className="btn-secondary btn-sm"
+                      type="button"
+                      onClick={() => handleAddItem(spec.key, activeInputBucket.field)}
+                    >
+                      Save
+                    </button>
+                    <button
+                      className="btn-secondary btn-sm"
+                      type="button"
+                      onClick={() => setActiveInputBucket(null)}
+                    >
+                      ✕
                     </button>
                   </div>
-
-                  <TagList
-                    items={bucketCustom.excluded}
-                    emptyText="No excluded reasons configured"
-                    tone="red"
-                    onRemove={(value) => removeExcluded(spec.key, value)}
-                  />
-                </div>
+                )}
               </div>
             );
           })}
         </div>
-      </SectionCard>
+      </div>
 
-      <SectionCard title="Validation Summary">
+      {/* Live Server Table */}
+      <div
+        style={{
+          borderRadius: 16,
+          border: "1px solid rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.03)",
+          padding: 16,
+        }}
+      >
         <div
           style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-            gap: 12,
+            fontSize: 14,
+            fontWeight: 800,
+            color: "#f8fafc",
+            marginBottom: 12,
+            display: "flex",
+            justifyContent: "space-between",
           }}
         >
-          {DEFAULT_BUCKET_SPECS.map((spec) => {
-            const result = validation.buckets[spec.key];
-            return (
-              <div
-                key={spec.key}
-                style={{
-                  borderRadius: 14,
-                  border: result.hasMatch
-                    ? "1px solid rgba(34,197,94,0.25)"
-                    : "1px solid rgba(245,158,11,0.25)",
-                  background: result.hasMatch
-                    ? "rgba(34,197,94,0.08)"
-                    : "rgba(245,158,11,0.08)",
-                  padding: 14,
-                }}
-              >
-                <div style={{ color: "#f8fafc", fontSize: 14, fontWeight: 800, marginBottom: 8 }}>
-                  {spec.label}
-                </div>
-                <RowLine left="Default" right={spec.expectedReason} rightColor="#cbd5e1" />
-                <RowLine left="Eligible Items" right={String(result.eligibleItems.length)} rightColor="#cbd5e1" />
-                <RowLine left="Matched" right={result.hasMatch ? "YES" : "NO"} rightColor={result.hasMatch ? "#86efac" : "#fde68a"} />
-                <RowLine left="Preferred Reason" right={result.preferredItem?.reason || "—"} rightColor="#f8fafc" />
-              </div>
-            );
-          })}
+          <span>Server Records {records.length > 0 && `(${records.length})`}</span>
+          <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 500 }}>
+            Active: {validation.activeItems} / 4 Expected
+          </span>
         </div>
 
-        {validation.duplicateSummary.length > 0 ? (
-          <div style={warningBlockStyle}>
-            <div style={{ fontWeight: 800, marginBottom: 8 }}>⚠️ Duplicate / Excess Active Items</div>
-            <div style={{ display: "grid", gap: 6 }}>
-              {validation.duplicateSummary.map((item) => (
-                <div key={item.bucket}>
-                  <b>{item.bucket}</b>: {item.count} eligible items — {item.reasons.join(", ")}
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null}
-
-        {validation.uncategorizedActiveItems.length > 0 ? (
-          <div style={warningBlockStyle}>
-            <div style={{ fontWeight: 800, marginBottom: 8 }}>⚠️ Uncategorized Active Items</div>
-            <div style={{ display: "grid", gap: 6 }}>
-              {validation.uncategorizedActiveItems.map((item, index) => (
-                <div key={`${item.id || item.reason}-${index}`}>
-                  {item.reason || "Unnamed"} · Type: {item.type || "—"} · GL Posting: {formatBool(item.glAccountPosting)}
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : null}
-      </SectionCard>
-
-      <SectionCard title="Fetched Records">
         {records.length === 0 ? (
-          <EmptyText text="No records loaded yet. Click Send to fetch adjustment reasons." />
-        ) : (
           <div
             style={{
-              overflowX: "auto",
-              borderRadius: 14,
-              border: "1px solid rgba(255,255,255,0.08)",
+              padding: 24,
+              color: "#94a3b8",
+              textAlign: "center",
+              fontSize: 13,
+              borderRadius: 12,
+              border: "1px dashed rgba(255,255,255,0.1)",
             }}
           >
-            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 980 }}>
-              <thead style={{ background: "#1f2937" }}>
-                <tr>
+            No records loaded yet. Click GET.
+          </div>
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 800 }}>
+              <thead>
+                <tr style={{ background: "rgba(255,255,255,0.04)" }}>
                   <th style={thStyle}>#</th>
                   <th style={thStyle}>Reason</th>
                   <th style={thStyle}>Type</th>
                   <th style={thStyle}>GL Posting</th>
                   <th style={thStyle}>Status</th>
                   <th style={thStyle}>Bucket</th>
-                  <th style={thStyle}>Preferred</th>
-                  <th style={thStyle}>Excluded</th>
+                  <th style={thStyle}>Role</th>
                   <th style={thStyle}>ID</th>
                 </tr>
               </thead>
@@ -993,21 +949,26 @@ export const AdjustmentReasonsView: React.FC = () => {
                     <tr
                       key={`${item.id || item.reason || "row"}-${index}`}
                       style={{
-                        borderTop: "1px solid rgba(255,255,255,0.08)",
-                        background: index % 2 === 0 ? "transparent" : "rgba(255,255,255,0.02)",
+                        borderTop: "1px solid rgba(255,255,255,0.06)",
+                        background: isPreferred ? "rgba(34,197,94,0.05)" : "transparent",
                       }}
                     >
                       <td style={tdStyle}>{index + 1}</td>
-                      <td style={tdStyle}>{item.reason || "—"}</td>
+                      <td style={{ ...tdStyle, fontWeight: isPreferred ? 700 : 400 }}>
+                        {item.reason || "—"}
+                      </td>
                       <td style={tdStyle}>{item.type || "—"}</td>
-                      <td style={tdStyle}>{formatBool(item.glAccountPosting)}</td>
+                      <td style={tdStyle}>{item.glAccountPosting ? "TRUE" : "FALSE"}</td>
                       <td style={tdStyle}>{item.status || "—"}</td>
                       <td style={tdStyle}>{bucketEntry?.spec.label || "Uncategorized"}</td>
                       <td style={tdStyle}>
-                        {isPreferred ? <Badge text="YES" tone="green" /> : <Badge text="NO" tone="gray" />}
-                      </td>
-                      <td style={tdStyle}>
-                        {isExcluded ? <Badge text="YES" tone="red" /> : <Badge text="NO" tone="gray" />}
+                        {isPreferred ? (
+                          <span style={badgeGreen}>Preferred</span>
+                        ) : isExcluded ? (
+                          <span style={badgeRed}>Excluded</span>
+                        ) : (
+                          <span style={badgeGray}>Secondary</span>
+                        )}
                       </td>
                       <td style={tdMonoStyle}>{String(item.id ?? "—")}</td>
                     </tr>
@@ -1017,293 +978,65 @@ export const AdjustmentReasonsView: React.FC = () => {
             </table>
           </div>
         )}
-      </SectionCard>
+      </div>
     </div>
   );
 };
 
 const thStyle: React.CSSProperties = {
   textAlign: "left",
-  padding: "12px 10px",
-  color: "#cbd5e1",
-  fontSize: 12,
+  padding: "10px 8px",
+  color: "#94a3b8",
+  fontSize: 11,
   fontWeight: 800,
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
   whiteSpace: "nowrap",
 };
 
 const tdStyle: React.CSSProperties = {
   textAlign: "left",
-  padding: "12px 10px",
+  padding: "10px 8px",
   color: "#e2e8f0",
-  fontSize: 13,
-  verticalAlign: "top",
-  whiteSpace: "pre-wrap",
-  overflowWrap: "anywhere",
+  fontSize: 12,
+  verticalAlign: "middle",
 };
 
 const tdMonoStyle: React.CSSProperties = {
   ...tdStyle,
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+  fontFamily: "ui-monospace, monospace",
 };
 
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  minHeight: 40,
-  borderRadius: 12,
-  padding: "10px 12px",
-  fontSize: 13,
-  boxSizing: "border-box",
+const badgeGreen: React.CSSProperties = {
+  display: "inline-flex",
+  padding: "2px 8px",
+  borderRadius: 999,
+  fontSize: 10,
+  fontWeight: 800,
+  background: "rgba(34,197,94,0.15)",
+  color: "#86efac",
+  border: "1px solid rgba(34,197,94,0.3)",
 };
 
-const labelStyle: React.CSSProperties = {
+const badgeRed: React.CSSProperties = {
+  display: "inline-flex",
+  padding: "2px 8px",
+  borderRadius: 999,
+  fontSize: 10,
+  fontWeight: 800,
+  background: "rgba(239,68,68,0.15)",
+  color: "#fca5a5",
+  border: "1px solid rgba(239,68,68,0.3)",
+};
+
+const badgeGray: React.CSSProperties = {
+  display: "inline-flex",
+  padding: "2px 8px",
+  borderRadius: 999,
+  fontSize: 10,
+  fontWeight: 800,
+  background: "rgba(255,255,255,0.06)",
   color: "#94a3b8",
-  fontSize: 12,
-  fontWeight: 700,
-  marginBottom: 6,
-};
-
-const warningBlockStyle: React.CSSProperties = {
-  background: "rgba(245, 158, 11, 0.10)",
-  border: "1px solid rgba(245, 158, 11, 0.22)",
-  borderLeft: "4px solid #f59e0b",
-  borderRadius: 12,
-  padding: 14,
-  color: "#fde68a",
-};
-
-const Pill: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <span
-    style={{
-      display: "inline-flex",
-      alignItems: "center",
-      gap: 8,
-      padding: "6px 10px",
-      borderRadius: 999,
-      border: "1px solid rgba(255,255,255,0.08)",
-      background: "rgba(255,255,255,0.03)",
-      color: "#cbd5e1",
-      fontSize: 12,
-    }}
-  >
-    {label} <b style={{ color: "#f8fafc" }}>{value}</b>
-  </span>
-);
-
-const SectionCard: React.FC<{ title: string; children: React.ReactNode }> = ({
-  title,
-  children,
-}) => {
-  const [isExpanded, setIsExpanded] = useState(true);
-
-  return (
-    <div
-      style={{
-        borderRadius: 18,
-        border: "1px solid rgba(255,255,255,0.08)",
-        background: "rgba(255,255,255,0.03)",
-        padding: 18,
-        minWidth: 0,
-      }}
-    >
-      <div
-        onClick={() => setIsExpanded(!isExpanded)}
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          cursor: "pointer",
-          marginBottom: isExpanded ? 12 : 0,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 18,
-            fontWeight: 800,
-            color: "#f8fafc",
-          }}
-        >
-          {title}
-        </div>
-        <button
-          type="button"
-          style={{
-            border: "none",
-            background: "transparent",
-            color: "#94a3b8",
-            cursor: "pointer",
-            fontSize: 14,
-            padding: "4px",
-          }}
-          title={isExpanded ? "Collapse section" : "Expand section"}
-        >
-          {isExpanded ? "▲" : "▼"}
-        </button>
-      </div>
-      {isExpanded && (
-        <div
-          style={{
-            display: "grid",
-            gap: 12,
-            maxHeight: "500px",
-            overflowY: "auto",
-            paddingRight: 4,
-          }}
-        >
-          {children}
-        </div>
-      )}
-    </div>
-  );
-};
-
-const EmptyText: React.FC<{ text: string }> = ({ text }) => (
-  <div
-    style={{
-      borderRadius: 14,
-      border: "1px dashed rgba(148,163,184,0.30)",
-      padding: 24,
-      color: "#94a3b8",
-      textAlign: "center",
-    }}
-  >
-    {text}
-  </div>
-);
-
-const RowLine: React.FC<{ left: string; right: string; rightColor?: string }> = ({
-  left,
-  right,
-  rightColor = "#cbd5e1",
-}) => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "space-between",
-      gap: 12,
-      alignItems: "flex-start",
-      padding: "8px 10px",
-      borderRadius: 10,
-      border: "1px solid rgba(255,255,255,0.08)",
-      background: "rgba(255,255,255,0.02)",
-      flexWrap: "wrap",
-    }}
-  >
-    <div style={{ color: "#e2e8f0", fontSize: 12 }}>{left}</div>
-    <div
-      style={{
-        color: rightColor,
-        fontSize: 12,
-        fontWeight: 700,
-        textAlign: "right",
-        whiteSpace: "pre-wrap",
-        overflowWrap: "anywhere",
-      }}
-    >
-      {right}
-    </div>
-  </div>
-);
-
-const Badge: React.FC<{ text: string; tone: "green" | "red" | "gray" }> = ({
-  text,
-  tone,
-}) => {
-  const palette =
-    tone === "green"
-      ? {
-          color: "#86efac",
-          border: "1px solid rgba(34,197,94,0.25)",
-          background: "rgba(34,197,94,0.10)",
-        }
-      : tone === "red"
-      ? {
-          color: "#fca5a5",
-          border: "1px solid rgba(239,68,68,0.25)",
-          background: "rgba(239,68,68,0.10)",
-        }
-      : {
-          color: "#cbd5e1",
-          border: "1px solid rgba(148,163,184,0.20)",
-          background: "rgba(148,163,184,0.08)",
-        };
-
-  return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        padding: "4px 8px",
-        borderRadius: 999,
-        fontSize: 11,
-        fontWeight: 800,
-        ...palette,
-      }}
-    >
-      {text}
-    </span>
-  );
-};
-
-const TagList: React.FC<{
-  items: string[];
-  emptyText: string;
-  tone: "blue" | "red";
-  onRemove: (value: string) => void;
-}> = ({ items, emptyText, tone, onRemove }) => {
-  const palette =
-    tone === "blue"
-      ? {
-          color: "#93c5fd",
-          border: "1px solid rgba(59,130,246,0.25)",
-          background: "rgba(59,130,246,0.10)",
-        }
-      : {
-          color: "#fca5a5",
-          border: "1px solid rgba(239,68,68,0.25)",
-          background: "rgba(239,68,68,0.10)",
-        };
-
-  if (items.length === 0) {
-    return <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 8 }}>{emptyText}</div>;
-  }
-
-  return (
-    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
-      {items.map((item) => (
-        <span
-          key={item}
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "6px 10px",
-            borderRadius: 999,
-            fontSize: 12,
-            fontWeight: 700,
-            ...palette,
-          }}
-        >
-          {item}
-          <button
-            type="button"
-            onClick={() => onRemove(item)}
-            style={{
-              border: "none",
-              background: "transparent",
-              color: "inherit",
-              cursor: "pointer",
-              fontWeight: 900,
-              padding: 0,
-              lineHeight: 1,
-            }}
-            title={`Remove ${item}`}
-          >
-            ×
-          </button>
-        </span>
-      ))}
-    </div>
-  );
 };
 
 export default AdjustmentReasonsView;

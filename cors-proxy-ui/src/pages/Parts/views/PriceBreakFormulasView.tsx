@@ -136,34 +136,40 @@ function validateEndAmounts(values: number[]): { success: true } | { success: fa
 function buildPreviewRows(
   endAmounts: number[],
   values: number[],
-  variableType: VariableType,
-  operator: OperatorType
+  defaultVariableType: VariableType,
+  defaultOperator: OperatorType,
+  existingRows?: PreviewRow[]
 ): PreviewRow[] {
   if (endAmounts.length === 0) return [];
   const rows: PreviewRow[] = [];
   let previousEnd = 0.01;
+
   for (let index = 0; index < endAmounts.length; index += 1) {
     const startAmount = (index === 0 ? 0.01 : previousEnd + 0.01).toFixed(2);
     const endAmount = endAmounts[index].toFixed(2);
-    const value = values[index] ?? 0;
+    const existing = existingRows?.[index];
+
     rows.push({
       startAmount,
       endAmount,
-      variableType,
-      operator,
-      value,
+      variableType: existing ? existing.variableType : defaultVariableType,
+      operator: existing ? existing.operator : defaultOperator,
+      value: existing ? existing.value : (values[index] ?? 0),
     });
     previousEnd = endAmounts[index];
   }
+
   const finalStartAmount = (previousEnd + 0.01).toFixed(2);
-  const finalValue = values[endAmounts.length] ?? 0;
+  const finalExisting = existingRows?.[endAmounts.length];
+
   rows.push({
     startAmount: finalStartAmount,
     endAmount: "999999999.00",
-    variableType,
-    operator,
-    value: finalValue,
+    variableType: finalExisting ? finalExisting.variableType : defaultVariableType,
+    operator: finalExisting ? finalExisting.operator : defaultOperator,
+    value: finalExisting ? finalExisting.value : (values[endAmounts.length] ?? 0),
   });
+
   return rows;
 }
 
@@ -176,12 +182,17 @@ function buildPayload(
     name,
     baseVariableType,
     priceBreaks: previewRows.map((row) => ({
-      startAmount: Number(row.startAmount),
-      endAmount: row.endAmount === "999999999.00" ? "999999999.00" : Number(row.endAmount),
+      startAmount: Number(row.startAmount) || 0,
+      endAmount:
+        row.endAmount === "999999999.00" ||
+        row.endAmount === "999999999" ||
+        row.endAmount === "∞"
+          ? "999999999.00"
+          : Number(row.endAmount) || 0,
       expression: {
         variableType: row.variableType,
         operator: row.operator,
-        value: row.value,
+        value: Number(row.value) || 0,
         valueType: "percentage",
       },
     })),
@@ -235,8 +246,11 @@ export const PriceBreakFormulasView: React.FC = () => {
   const [baseVariableType, setBaseVariableType] = useState<VariableType>("cost");
   const [globalVariableType, setGlobalVariableType] = useState<VariableType>("cost");
   const [globalOperator, setGlobalOperator] = useState<OperatorType>("add");
+
   const [endAmounts, setEndAmounts] = useState<number[]>([]);
   const [values, setValues] = useState<number[]>([]);
+  const [previewRows, setPreviewRows] = useState<PreviewRow[]>([]);
+
   const [popupType, setPopupType] = useState<PopupType>(null);
   const [popupInput, setPopupInput] = useState("");
   const [popupError, setPopupError] = useState("");
@@ -248,53 +262,37 @@ export const PriceBreakFormulasView: React.FC = () => {
 
   useEffect(() => {
     logger.info("component mounted");
-    logger.info("variable types loaded", VARIABLE_TYPES);
-    logger.info("operators loaded", OPERATORS);
     return () => {
       logger.info("component unmounted");
     };
   }, []);
 
-  useEffect(() => {
-    logger.info("formula name changed", { formulaName });
-  }, [formulaName]);
+  // Synchronize outside status pills and cards directly from preview rows
+  const syncOutsideFromRows = (rows: PreviewRow[]) => {
+    const ends: number[] = [];
+    for (let i = 0; i < rows.length; i += 1) {
+      const isLast = i === rows.length - 1;
+      const isInf =
+        rows[i].endAmount === "999999999.00" ||
+        rows[i].endAmount === "999999999" ||
+        rows[i].endAmount === "∞";
 
-  useEffect(() => {
-    logger.info("base variable type changed", { baseVariableType });
-  }, [baseVariableType]);
+      if (!isLast || !isInf) {
+        const parsed = parseFloat(rows[i].endAmount);
+        if (Number.isFinite(parsed) && parsed > 0) {
+          ends.push(parsed);
+        }
+      }
+    }
+    const vals = rows.map((r) => Number(r.value) || 0);
 
-  useEffect(() => {
-    logger.info("global variable type changed", { globalVariableType });
-  }, [globalVariableType]);
-
-  useEffect(() => {
-    logger.info("global operator changed", { globalOperator });
-  }, [globalOperator]);
-
-  useEffect(() => {
-    logger.info("end amounts changed", { endAmounts });
-  }, [endAmounts]);
-
-  useEffect(() => {
-    logger.info("values changed", { values });
-  }, [values]);
-
-  const previewRows = useMemo(() => {
-    const rows = buildPreviewRows(endAmounts, values, globalVariableType, globalOperator);
-    logger.debug("preview rows recalculated", rows);
-    return rows;
-  }, [endAmounts, values, globalVariableType, globalOperator]);
+    setEndAmounts(ends);
+    setValues(vals);
+  };
 
   const isReadyToSubmit = useMemo(() => {
-    const ready = normalizeText(formulaName).length > 0 && endAmounts.length > 0 && values.length > 0;
-    logger.debug("submit readiness recalculated", {
-      ready,
-      formulaName: normalizeText(formulaName),
-      endAmountsCount: endAmounts.length,
-      valuesCount: values.length,
-    });
-    return ready;
-  }, [formulaName, endAmounts.length, values.length]);
+    return normalizeText(formulaName).length > 0 && previewRows.length > 0;
+  }, [formulaName, previewRows.length]);
 
   const popupMeta = useMemo(() => {
     if (popupType === "endAmounts") {
@@ -317,7 +315,7 @@ export const PriceBreakFormulasView: React.FC = () => {
     }
     if (popupType === "preview") {
       return {
-        title: "Price Breaks Preview",
+        title: "Price Breaks Preview & Fine Tuning",
         label: "",
         placeholder: "",
         hint: "",
@@ -359,83 +357,158 @@ export const PriceBreakFormulasView: React.FC = () => {
       popupType,
       popupInput,
     });
-    if (!popupType) {
-      logger.warn("save popup ignored because popupType is null");
-      return;
-    }
+    if (!popupType) return;
+
     if (popupType === "endAmounts") {
       const parsed = parseCommaSeparatedNumbers(popupInput);
       if (!parsed.success) {
-        logger.warn("end amounts parse failed", parsed.error);
         setPopupError(parsed.error);
         return;
       }
       const validation = validateEndAmounts(parsed.values);
       if (!validation.success) {
-        logger.warn("end amounts validation failed", validation.error);
         setPopupError(validation.error);
         return;
       }
       setEndAmounts(parsed.values);
-      if (values.length < parsed.values.length + 1) {
-        const nextValues = [...values];
+
+      let nextValues = [...values];
+      if (nextValues.length < parsed.values.length + 1) {
         while (nextValues.length < parsed.values.length + 1) {
           nextValues.push(0);
         }
-        logger.info("auto-filled values after end amounts save", { nextValues });
         setValues(nextValues);
       }
-      logger.info("end amounts saved successfully", {
-        savedEndAmounts: parsed.values,
-        totalTiers: parsed.values.length + 1,
-      });
+
+      // Rebuild while preserving custom operators and variable types already set in previewRows
+      const rows = buildPreviewRows(
+        parsed.values,
+        nextValues,
+        globalVariableType,
+        globalOperator,
+        previewRows
+      );
+      setPreviewRows(rows);
       closePopup();
       return;
     }
+
     if (popupType === "values") {
       const parsed = parseCommaSeparatedNumbers(popupInput, { allowEmptyAsZero: true });
       if (!parsed.success) {
-        logger.warn("values parse failed", parsed.error);
         setPopupError(parsed.error);
         return;
       }
       setValues(parsed.values);
-      logger.info("values saved successfully", { savedValues: parsed.values });
+
+      // Rebuild while preserving custom operators and variable types
+      const rows = buildPreviewRows(
+        endAmounts,
+        parsed.values,
+        globalVariableType,
+        globalOperator,
+        previewRows
+      );
+      setPreviewRows(rows);
       closePopup();
       return;
     }
-    // "preview" and "info" modals don't have a save action
+  };
+
+  const handleGlobalVariableTypeChange = (type: VariableType) => {
+    setGlobalVariableType(type);
+    setPreviewRows((prev) => prev.map((r) => ({ ...r, variableType: type })));
+  };
+
+  const handleGlobalOperatorChange = (op: OperatorType) => {
+    setGlobalOperator(op);
+    setPreviewRows((prev) => prev.map((r) => ({ ...r, operator: op })));
+  };
+
+  // Updates row-level state, cascades next Start Amount, and preserves mixed operators (Scenario 1, 2, 3)
+  const handleUpdatePreviewRow = (
+    index: number,
+    field: keyof PreviewRow,
+    newValue: any
+  ) => {
+    setPreviewRows((prev) => {
+      const updated = prev.map((r) => ({ ...r }));
+      updated[index] = { ...updated[index], [field]: newValue };
+
+      // When End Amount is updated, advance next row's Start Amount by +0.01
+      if (field === "endAmount" && index + 1 < updated.length) {
+        const valStr = String(newValue).trim();
+        const parsedEnd = parseFloat(valStr);
+
+        if (
+          Number.isFinite(parsedEnd) &&
+          parsedEnd > 0 &&
+          valStr !== "999999999.00" &&
+          valStr !== "999999999" &&
+          valStr !== "∞"
+        ) {
+          const nextStart = (Math.round((parsedEnd + 0.01) * 100) / 100).toFixed(2);
+          updated[index + 1] = {
+            ...updated[index + 1],
+            startAmount: nextStart,
+          };
+        }
+      }
+
+      // Sync outside state without resetting custom operators
+      syncOutsideFromRows(updated);
+      return updated;
+    });
+  };
+
+  const handleAddPreviewRow = () => {
+    setPreviewRows((prev) => {
+      const last = prev[prev.length - 1];
+      let nextStart = "0.01";
+      if (last) {
+        const parsed = parseFloat(last.endAmount);
+        if (!Number.isNaN(parsed) && last.endAmount !== "999999999.00") {
+          nextStart = (Math.round((parsed + 0.01) * 100) / 100).toFixed(2);
+        }
+      }
+      const updated = [
+        ...prev,
+        {
+          startAmount: nextStart,
+          endAmount: "999999999.00",
+          variableType: globalVariableType,
+          operator: globalOperator,
+          value: 0,
+        },
+      ];
+      syncOutsideFromRows(updated);
+      return updated;
+    });
+  };
+
+  const handleDeletePreviewRow = (index: number) => {
+    setPreviewRows((prev) => {
+      const updated = prev.filter((_, i) => i !== index);
+      syncOutsideFromRows(updated);
+      return updated;
+    });
+  };
+
+  const handleResetPreview = () => {
+    const rows = buildPreviewRows(endAmounts, values, globalVariableType, globalOperator);
+    setPreviewRows(rows);
+    syncOutsideFromRows(rows);
   };
 
   const handleSubmit = async (): Promise<void> => {
-    logger.info("submit price formula clicked", {
-      formulaName,
-      baseVariableType,
-      globalVariableType,
-      globalOperator,
-      endAmounts,
-      values,
-    });
-    if (isSubmitting) {
-      logger.warn("submit ignored because request already in progress");
-      return;
-    }
+    if (isSubmitting) return;
     if (!normalizeText(formulaName)) {
-      logger.warn("submit blocked because formula name is missing");
       setRunState("warning");
       setStatusText("Please enter a formula name");
       setErrorText("");
       return;
     }
-    if (endAmounts.length === 0) {
-      logger.warn("submit blocked because end amounts are missing");
-      setRunState("warning");
-      setStatusText("Please configure end amounts first");
-      setErrorText("");
-      return;
-    }
     if (previewRows.length === 0) {
-      logger.warn("submit blocked because preview rows are empty");
       setRunState("warning");
       setStatusText("Please complete price break configuration first");
       setErrorText("");
@@ -445,10 +518,10 @@ export const PriceBreakFormulasView: React.FC = () => {
     setRunState("loading");
     setStatusText(`Creating price formula "${normalizeText(formulaName)}"...`);
     setErrorText("");
+
     try {
       const headers = getEnabledGlobalHeaders();
       if (Object.keys(headers).length === 0) {
-        logger.warn("global headers missing before submit");
         setRunState("error");
         setStatusText("Global headers are missing");
         setErrorText(
@@ -456,19 +529,22 @@ export const PriceBreakFormulasView: React.FC = () => {
         );
         return;
       }
+
+      // Builds the exact payload honoring every row's specific operator (+ or -)
       const payload = buildPayload(normalizeText(formulaName), baseVariableType, previewRows);
       await submitPriceFormula(payload, headers);
+
       setRunState("success");
       setStatusText(`Price formula "${normalizeText(formulaName)}" created successfully`);
       setErrorText("");
       setLastRunAt(new Date().toLocaleString());
-      logger.info("submit succeeded, resetting form");
       setFormulaName("");
       setBaseVariableType("cost");
       setGlobalVariableType("cost");
       setGlobalOperator("add");
       setEndAmounts([]);
       setValues([]);
+      setPreviewRows([]);
       setPopupType(null);
       setPopupInput("");
       setPopupError("");
@@ -571,7 +647,7 @@ export const PriceBreakFormulasView: React.FC = () => {
                 opacity: previewRows.length === 0 ? 0.5 : 1,
               }}
             >
-              Preview
+              Preview ({previewRows.length})
             </button>
             <button
               className="btn-postman"
@@ -662,10 +738,7 @@ export const PriceBreakFormulasView: React.FC = () => {
                     <button
                       key={type}
                       type="button"
-                      onClick={() => {
-                        logger.info("global variable type button clicked", { type });
-                        setGlobalVariableType(type);
-                      }}
+                      onClick={() => handleGlobalVariableTypeChange(type)}
                       style={{
                         padding: "6px 12px",
                         borderRadius: 9999,
@@ -696,10 +769,7 @@ export const PriceBreakFormulasView: React.FC = () => {
                     <button
                       key={operator}
                       type="button"
-                      onClick={() => {
-                        logger.info("global operator button clicked", { operator });
-                        setGlobalOperator(operator);
-                      }}
+                      onClick={() => handleGlobalOperatorChange(operator)}
                       style={{
                         padding: "6px 12px",
                         borderRadius: 9999,
@@ -819,7 +889,7 @@ export const PriceBreakFormulasView: React.FC = () => {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(0,0,0,0.6)",
+            background: "rgba(0,0,0,0.75)",
             backdropFilter: "blur(8px)",
             zIndex: 1000,
             display: "flex",
@@ -836,12 +906,13 @@ export const PriceBreakFormulasView: React.FC = () => {
         >
           <div
             style={{
-              width: "100%",
-              maxWidth: popupType === "preview" ? 840 : 560,
+              width: popupType === "preview" ? "95vw" : "100%",
+              maxWidth: popupType === "preview" ? 1380 : popupType === "info" ? 760 : 640,
+              maxHeight: "94vh",
               borderRadius: 16,
-              border: "1px solid rgba(255,255,255,0.10)",
+              border: "1px solid rgba(255,255,255,0.12)",
               background: "#0F1011",
-              boxShadow: "0 8px 32px rgba(0,0,0,0.4)",
+              boxShadow: "0 12px 40px rgba(0,0,0,0.6)",
               display: "flex",
               flexDirection: "column",
             }}
@@ -852,45 +923,101 @@ export const PriceBreakFormulasView: React.FC = () => {
                 alignItems: "center",
                 justifyContent: "space-between",
                 gap: 12,
-                padding: 16,
+                padding: "16px 20px",
                 borderBottom: "1px solid rgba(255,255,255,0.08)",
               }}
             >
-              <div
-                id="price-break-popup-title"
-                style={{
-                  margin: 0,
-                  color: "#F7F8F8",
-                  fontSize: 18,
-                  fontWeight: 700,
-                }}
-              >
-                {popupMeta.title}
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <div
+                  id="price-break-popup-title"
+                  style={{
+                    margin: 0,
+                    color: "#F7F8F8",
+                    fontSize: 18,
+                    fontWeight: 700,
+                  }}
+                >
+                  {popupMeta.title}
+                </div>
+                {popupType === "preview" && (
+                  <span
+                    style={{
+                      padding: "2px 8px",
+                      borderRadius: 999,
+                      background: "rgba(0,184,204,0.15)",
+                      color: "#67e8f9",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      border: "1px solid rgba(0,184,204,0.3)",
+                    }}
+                  >
+                    {previewRows.length} Tiers
+                  </span>
+                )}
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  logger.info("popup close button clicked");
-                  closePopup();
-                }}
-                style={{
-                  width: 32,
-                  height: 32,
-                  display: "grid",
-                  placeItems: "center",
-                  background: "transparent",
-                  border: "1px solid rgba(255,255,255,0.10)",
-                  borderRadius: 8,
-                  color: "#8A8F98",
-                  fontSize: 18,
-                  cursor: "pointer",
-                }}
-              >
-                ✕
-              </button>
+
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {popupType === "preview" && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={handleResetPreview}
+                      style={{
+                        padding: "4px 10px",
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid rgba(255,255,255,0.15)",
+                        borderRadius: 6,
+                        color: "#cbd5e1",
+                        fontSize: 12,
+                        cursor: "pointer",
+                      }}
+                      title="Reset rows back to initial generator thresholds"
+                    >
+                      Reset
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleAddPreviewRow}
+                      style={{
+                        padding: "4px 10px",
+                        background: "rgba(0,184,204,0.15)",
+                        border: "1px solid rgba(0,184,204,0.3)",
+                        borderRadius: 6,
+                        color: "#67e8f9",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                      }}
+                    >
+                      + Add Tier
+                    </button>
+                  </>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    logger.info("popup close button clicked");
+                    closePopup();
+                  }}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    display: "grid",
+                    placeItems: "center",
+                    background: "transparent",
+                    border: "1px solid rgba(255,255,255,0.10)",
+                    borderRadius: 8,
+                    color: "#8A8F98",
+                    fontSize: 18,
+                    cursor: "pointer",
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
-            <div style={{ padding: 16 }}>
+            <div style={{ padding: 20, overflowY: "auto" }}>
               {(popupType === "endAmounts" || popupType === "values") && (
                 <>
                   <div
@@ -906,7 +1033,7 @@ export const PriceBreakFormulasView: React.FC = () => {
                   </div>
                   <textarea
                     className="st-input"
-                    rows={4}
+                    rows={6}
                     value={popupInput}
                     onChange={(e) => {
                       logger.debug("popup input changed", {
@@ -918,7 +1045,7 @@ export const PriceBreakFormulasView: React.FC = () => {
                     placeholder={popupMeta.placeholder}
                     style={{
                       ...textareaStyle,
-                      minHeight: 120,
+                      minHeight: 140,
                       fontFamily:
                         "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
                     }}
@@ -958,7 +1085,7 @@ export const PriceBreakFormulasView: React.FC = () => {
                     style={{
                       width: "100%",
                       marginTop: 16,
-                      padding: "10px 16px",
+                      padding: "12px 16px",
                       background: "linear-gradient(135deg, #00B8CC 0%, #00D4E8 100%)",
                       border: "none",
                       borderRadius: 9999,
@@ -974,83 +1101,234 @@ export const PriceBreakFormulasView: React.FC = () => {
               )}
 
               {popupType === "preview" && (
-                <div
-                  style={{
-                    maxHeight: "65vh",
-                    overflowY: "auto",
-                    overflowX: "auto",
-                    borderRadius: 8,
-                    border: "1px solid rgba(255,255,255,0.08)",
-                  }}
-                >
-                  <table
+                <div style={{ display: "grid", gap: 12 }}>
+                  <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                    Adjust threshold amounts, variable type routing, arithmetic operators, or markup percentages directly per tier:
+                  </div>
+
+                  <div
                     style={{
-                      width: "100%",
-                      borderCollapse: "collapse",
-                      minWidth: 500,
+                      maxHeight: "72vh",
+                      overflowY: "auto",
+                      overflowX: "auto",
+                      borderRadius: 10,
+                      border: "1px solid rgba(255,255,255,0.08)",
                     }}
                   >
-                    <thead>
-                      <tr style={{ background: "rgba(255,255,255,0.04)", position: "sticky", top: 0, zIndex: 1 }}>
-                        <th style={thStyle}>#</th>
-                        <th style={thStyle}>Range</th>
-                        <th style={thStyle}>Expression</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {previewRows.map((row, index) => {
-                        const isInfinity = row.endAmount === "999999999.00";
-                        const operatorSymbol = row.operator === "add" ? "+" : "-";
-                        const operatorColor = row.operator === "add" ? "#27A644" : "#EB5757";
-                        return (
-                          <tr
-                            key={`${row.startAmount}-${row.endAmount}-${index}`}
-                            style={{
-                              borderTop: "1px solid rgba(255,255,255,0.08)",
-                            }}
-                          >
-                            <td style={tdMonoStyle}>{index + 1}</td>
-                            <td style={tdStyle}>
-                              <code style={codePillStyle}>${row.startAmount}</code>
-                              <span style={{ color: "#62666D", margin: "0 6px" }}>—</span>
-                              <code style={codePillStyle}>{isInfinity ? "∞" : `$${row.endAmount}`}</code>
-                            </td>
-                            <td style={tdStyle}>
-                              <span style={softPillStyle}>{capitalize(row.variableType)}</span>
-                              <span
-                                style={{
-                                  color: operatorColor,
-                                  fontFamily:
-                                    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                                  fontSize: 12,
-                                  margin: "0 6px",
-                                  fontWeight: 700,
-                                }}
-                              >
-                                {operatorSymbol}
-                              </span>
-                              <span
-                                style={{
-                                  color: "#f8fafc",
-                                  fontFamily:
-                                    "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-                                  fontSize: 13,
-                                  fontWeight: 700,
-                                }}
-                              >
-                                {row.value}%
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                    <table
+                      style={{
+                        width: "100%",
+                        borderCollapse: "collapse",
+                        minWidth: 920,
+                      }}
+                    >
+                      <thead>
+                        <tr style={{ background: "rgba(255,255,255,0.04)", position: "sticky", top: 0, zIndex: 1 }}>
+                          <th style={thStyle}>#</th>
+                          <th style={thStyle}>Start Amount ($)</th>
+                          <th style={thStyle}>End Amount ($)</th>
+                          <th style={thStyle}>Variable Type</th>
+                          <th style={thStyle}>Operator (+ / -)</th>
+                          <th style={thStyle}>Value (%)</th>
+                          <th style={{ ...thStyle, textAlign: "center", width: 50 }}>✕</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {previewRows.map((row, index) => {
+                          const isInfinity = row.endAmount === "999999999.00";
+                          return (
+                            <tr
+                              key={`preview-tier-${index}`}
+                              style={{
+                                borderTop: "1px solid rgba(255,255,255,0.06)",
+                              }}
+                            >
+                              <td style={tdMonoStyle}>{index + 1}</td>
+
+                              {/* Start Amount */}
+                              <td style={tdStyle}>
+                                <input
+                                  type="number"
+                                  step="0.01"
+                                  value={row.startAmount}
+                                  onChange={(e) =>
+                                    handleUpdatePreviewRow(index, "startAmount", e.target.value)
+                                  }
+                                  style={{
+                                    ...previewInputStyle,
+                                    width: 105,
+                                    color: "#67e8f9",
+                                    fontFamily: "monospace",
+                                  }}
+                                />
+                              </td>
+
+                              {/* End Amount with Cascading Next Start Amount */}
+                              <td style={tdStyle}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                  <input
+                                    type="text"
+                                    value={isInfinity ? "999999999.00" : row.endAmount}
+                                    onChange={(e) =>
+                                      handleUpdatePreviewRow(index, "endAmount", e.target.value)
+                                    }
+                                    style={{
+                                      ...previewInputStyle,
+                                      width: 120,
+                                      color: isInfinity ? "#a7f3d0" : "#67e8f9",
+                                      fontFamily: "monospace",
+                                    }}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      handleUpdatePreviewRow(
+                                        index,
+                                        "endAmount",
+                                        isInfinity ? "50.00" : "999999999.00"
+                                      )
+                                    }
+                                    title="Toggle infinity end amount"
+                                    style={{
+                                      padding: "4px 8px",
+                                      borderRadius: 6,
+                                      fontSize: 11,
+                                      fontWeight: 700,
+                                      cursor: "pointer",
+                                      background: isInfinity
+                                        ? "rgba(0,184,204,0.2)"
+                                        : "rgba(255,255,255,0.05)",
+                                      border: `1px solid ${
+                                        isInfinity ? "rgba(0,184,204,0.4)" : "rgba(255,255,255,0.12)"
+                                      }`,
+                                      color: isInfinity ? "#67e8f9" : "#94a3b8",
+                                    }}
+                                  >
+                                    ∞
+                                  </button>
+                                </div>
+                              </td>
+
+                              {/* Variable Type Dropdown */}
+                              <td style={tdStyle}>
+                                <select
+                                  value={row.variableType}
+                                  onChange={(e) =>
+                                    handleUpdatePreviewRow(
+                                      index,
+                                      "variableType",
+                                      e.target.value as VariableType
+                                    )
+                                  }
+                                  style={previewSelectStyle}
+                                >
+                                  {VARIABLE_TYPES.map((type) => (
+                                    <option key={type} value={type} style={{ background: "#18181b", color: "#f8fafc" }}>
+                                      {capitalize(type)}
+                                    </option>
+                                  ))}
+                                </select>
+                              </td>
+
+                              {/* Operator Selector (Scenario 1, 2, 3 respected per row) */}
+                              <td style={tdStyle}>
+                                <select
+                                  value={row.operator}
+                                  onChange={(e) =>
+                                    handleUpdatePreviewRow(
+                                      index,
+                                      "operator",
+                                      e.target.value as OperatorType
+                                    )
+                                  }
+                                  style={{
+                                    ...previewSelectStyle,
+                                    fontWeight: 700,
+                                    color: row.operator === "add" ? "#86efac" : "#fca5a5",
+                                    background:
+                                      row.operator === "add"
+                                        ? "rgba(34,197,94,0.08)"
+                                        : "rgba(239,68,68,0.08)",
+                                    border: `1px solid ${
+                                      row.operator === "add"
+                                        ? "rgba(34,197,94,0.3)"
+                                        : "rgba(239,68,68,0.3)"
+                                    }`,
+                                  }}
+                                >
+                                  <option value="add" style={{ background: "#18181b", color: "#86efac" }}>
+                                    + Add
+                                  </option>
+                                  <option value="subtract" style={{ background: "#18181b", color: "#fca5a5" }}>
+                                    - Subtract
+                                  </option>
+                                </select>
+                              </td>
+
+                              {/* Value Input */}
+                              <td style={tdStyle}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                  <input
+                                    type="number"
+                                    value={row.value}
+                                    onChange={(e) =>
+                                      handleUpdatePreviewRow(
+                                        index,
+                                        "value",
+                                        parseFloat(e.target.value) || 0
+                                      )
+                                    }
+                                    style={{
+                                      ...previewInputStyle,
+                                      width: 90,
+                                      color: "#f8fafc",
+                                      fontWeight: 700,
+                                      fontFamily: "monospace",
+                                    }}
+                                  />
+                                  <span style={{ color: "#94a3b8", fontSize: 13, fontWeight: 700 }}>%</span>
+                                </div>
+                              </td>
+
+                              {/* Delete Row */}
+                              <td style={{ ...tdStyle, textAlign: "center" }}>
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeletePreviewRow(index)}
+                                  title="Delete Tier"
+                                  style={{
+                                    background: "none",
+                                    border: "none",
+                                    color: "#ef4444",
+                                    cursor: "pointer",
+                                    fontSize: 14,
+                                  }}
+                                >
+                                  ✕
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+                    <button
+                      type="button"
+                      onClick={closePopup}
+                      className="btn-postman"
+                      style={{ padding: "8px 24px" }}
+                    >
+                      Done Editing
+                    </button>
+                  </div>
                 </div>
               )}
 
               {popupType === "info" && (
-                <div style={{ display: "grid", gap: 16, maxHeight: "65vh", overflowY: "auto" }}>
+                <div style={{ display: "grid", gap: 16, maxHeight: "70vh", overflowY: "auto" }}>
                   <SectionCard title="Current Configuration Snapshot">
                     <RowLine left="Formula Name" right={normalizeText(formulaName) || "—"} />
                     <RowLine left="Base Variable Type" right={capitalize(baseVariableType)} />
@@ -1058,6 +1336,7 @@ export const PriceBreakFormulasView: React.FC = () => {
                     <RowLine left="Operator" right={globalOperator === "add" ? "Add" : "Subtract"} />
                     <RowLine left="End Amounts" right={endAmounts.length ? endAmounts.join(", ") : "—"} />
                     <RowLine left="Values" right={values.length ? values.join(", ") : "—"} />
+                    <RowLine left="Configured Preview Tiers" right={String(previewRows.length)} />
                   </SectionCard>
                   <SectionCard title="Write API Info">
                     <RowLine left="Method" right="POST" rightColor="#86efac" />
@@ -1116,32 +1395,40 @@ const thStyle: React.CSSProperties = {
 };
 const tdStyle: React.CSSProperties = {
   textAlign: "left",
-  padding: "12px 10px",
+  padding: "8px 10px",
   color: "#e2e8f0",
   fontSize: 13,
-  verticalAlign: "top",
-  whiteSpace: "pre-wrap",
-  overflowWrap: "anywhere",
+  verticalAlign: "middle",
+  whiteSpace: "nowrap",
 };
 const tdMonoStyle: React.CSSProperties = {
   ...tdStyle,
   fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
 };
-const codePillStyle: React.CSSProperties = {
-  color: "#00B8CC",
-  background: "rgba(0,184,204,.12)",
-  padding: "3px 6px",
+
+const previewInputStyle: React.CSSProperties = {
+  padding: "6px 8px",
+  background: "rgba(0,0,0,0.3)",
+  border: "1px solid rgba(255,255,255,0.12)",
   borderRadius: 6,
-  fontSize: 12,
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+  color: "#f8fafc",
+  fontSize: 13,
+  outline: "none",
+  boxSizing: "border-box",
 };
-const softPillStyle: React.CSSProperties = {
-  padding: "2px 8px",
-  background: "rgba(255,255,255,.05)",
-  borderRadius: 9999,
-  color: "#D0D6E0",
+
+const previewSelectStyle: React.CSSProperties = {
+  padding: "6px 8px",
+  background: "rgba(0,0,0,0.3)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  borderRadius: 6,
+  color: "#f8fafc",
   fontSize: 12,
+  outline: "none",
+  cursor: "pointer",
+  boxSizing: "border-box",
 };
+
 const Pill: React.FC<{ label: string; value: string }> = ({ label, value }) => {
   return (
     <span
@@ -1162,6 +1449,7 @@ const Pill: React.FC<{ label: string; value: string }> = ({ label, value }) => {
     </span>
   );
 };
+
 const SectionCard: React.FC<{
   title: string;
   children: React.ReactNode;
@@ -1190,6 +1478,7 @@ const SectionCard: React.FC<{
     </div>
   );
 };
+
 const RowLine: React.FC<{
   left: string;
   right: string;
@@ -1237,6 +1526,7 @@ const RowLine: React.FC<{
     </div>
   );
 };
+
 const ConfigCard: React.FC<{
   title: string;
   subtitle: string;
@@ -1332,3 +1622,5 @@ const ConfigCard: React.FC<{
     </div>
   );
 };
+
+export default PriceBreakFormulasView;

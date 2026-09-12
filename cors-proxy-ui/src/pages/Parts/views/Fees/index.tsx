@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import { loadTekionApiSettingsBundle } from "../../../../services/tekionApiSettings";
 import type { KeyValuePair } from "../../../../types/proxy.types";
 
-const MODULE_NAME = "Fees";
 const SEARCH_URL =
   "https://preprodapp.tekioncloud.com/api/service-module/u/fee/v3/search?withNoDealers=false&locale=en_US";
 const CREATE_URL =
@@ -34,7 +33,6 @@ const DEFAULT_FEES = [
   "Freight fee",
 ] as const;
 
-type ViewMode = "home" | "get" | "post" | "put";
 type RunState = "idle" | "loading" | "success" | "error" | "warning";
 type PricingType = "FLAT_PRICE" | "PERCENTAGE_PART";
 type FeeType = (typeof FEE_TYPES)[number];
@@ -69,7 +67,7 @@ function normalizeText(value: unknown): string {
 function getEnabledGlobalHeaders(): Record<string, string> {
   const bundle = loadTekionApiSettingsBundle();
 
-  const headers = (bundle.globalHeaders ?? [])
+  return (bundle.globalHeaders ?? [])
     .filter(
       (header: KeyValuePair) =>
         header.enabled && header.key.trim() && String(header.value).trim()
@@ -78,13 +76,6 @@ function getEnabledGlobalHeaders(): Record<string, string> {
       acc[header.key] = String(header.value);
       return acc;
     }, {});
-
-  logger.info("loaded global headers from settings", {
-    count: Object.keys(headers).length,
-    keys: Object.keys(headers),
-  });
-
-  return headers;
 }
 
 function getDealerIdFromHeaders(headers: Record<string, string>): string {
@@ -96,19 +87,11 @@ function getDealerIdFromHeaders(headers: Record<string, string>): string {
     {}
   );
 
-  const dealerId = lowerMap["dealerid"] || lowerMap["dealer-id"] || "";
-
-  logger.info("resolved dealer id from headers", {
-    dealerId: dealerId || "NOT_FOUND",
-  });
-
-  return dealerId;
+  return lowerMap["dealerid"] || lowerMap["dealer-id"] || "";
 }
 
 function detectFeeType(description: string): FeeType {
   const desc = description.toLowerCase();
-
-  logger.debug("detecting fee type", { description, normalized: desc });
 
   if (desc.includes("shop") && desc.includes("suppl")) return "ShopSupplies";
   if (desc.includes("paint") && desc.includes("material")) return "PaintMaterials";
@@ -136,45 +119,27 @@ function detectFeeType(description: string): FeeType {
 
   for (const item of singleKeywords) {
     if (desc.includes(item.keyword)) {
-      logger.debug("fee type keyword match found", item);
       return item.type;
     }
   }
 
-  logger.debug("no fee type keyword match found, defaulting to Misc");
   return "Misc";
 }
 
 function generateFeeCode(description: string): string {
-  const code = description
+  return description
     .replace(/\bfee(s)?\b/gi, "")
     .replace(/\s+/g, " ")
     .trim()
     .toUpperCase()
     .replace(/\s+/g, "");
-
-  logger.debug("generated fee code", {
-    description,
-    generatedCode: code,
-  });
-
-  return code;
 }
 
 function getTomorrowMidnight(): number {
   const tomorrow = new Date();
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(0, 0, 0, 0);
-
-  const timestamp = tomorrow.getTime();
-
-  logger.debug("calculated tomorrow midnight", {
-    currentIso: new Date().toISOString(),
-    tomorrowMidnightIso: tomorrow.toISOString(),
-    timestamp,
-  });
-
-  return timestamp;
+  return tomorrow.getTime();
 }
 
 function extractFeesArray(raw: unknown): FeeRecord[] {
@@ -197,50 +162,43 @@ function extractFeesArray(raw: unknown): FeeRecord[] {
 
 async function fetchFees(headers: Record<string, string>): Promise<FeeRecord[]> {
   const requestBody = {
-    pageInfo: {
-      start: 0,
-      rows: 1000,
-    },
-    sort: [{ order: "DESC", field: "modifiedTime" }],
-    filters: [],
+    sort: [{ field: "modifiedTime", order: "DESC" }],
+    filters: [
+      {
+        field: "department",
+        operator: "IN",
+        values: ["PARTS"],
+        additional: {
+          value: ["PARTS"],
+          option: { label: "Parts", value: "PARTS" },
+          eventDetails: { action: "select-option" },
+        },
+      },
+    ],
+    searchText: null,
+    groupBy: [],
+    includeFields: [],
+    searchableFields: [],
+    excludeFields: [],
+    pageInfo: { start: 0, rows: 100 },
   };
-
-  const requestHeaders = {
-    ...headers,
-    "content-type": "application/json",
-  };
-
-  logger.info("sending fee search request", {
-    url: SEARCH_URL,
-    body: requestBody,
-    headerKeys: Object.keys(requestHeaders),
-  });
 
   const response = await fetch(SEARCH_URL, {
     method: "POST",
-    headers: requestHeaders,
+    headers: {
+      ...headers,
+      "content-type": "application/json",
+    },
     body: JSON.stringify(requestBody),
   });
 
   const json = (await response.json()) as FeeSearchResponse;
 
-  logger.info("fee search response received", {
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText,
-    rawStatus: json?.status,
-  });
-
-  logger.debug("fee search response json", json);
-
   if (!response.ok) {
     throw new Error(json?.message || `HTTP ${response.status}`);
   }
 
-  const fees = extractFeesArray(json);
-
-  logger.info("extracted fee records", { count: fees.length });
-  return fees;
+  return extractFeesArray(json);
 }
 
 function buildCreatePayload(args: {
@@ -256,7 +214,7 @@ function buildCreatePayload(args: {
   const effectiveTimeInMillis = getTomorrowMidnight();
   const glAccountIdOrNumber = `${dealerId}_9999`;
 
-  const payload = {
+  return {
     feeCode,
     dealerId,
     description,
@@ -458,38 +416,18 @@ function buildCreatePayload(args: {
       documentDefault: "en_US",
     },
   };
-
-  logger.info("built create fee payload", {
-    feeCode,
-    dealerId,
-    feeType,
-    pricingType,
-    amountInput,
-    convertedAmount: amount,
-    payloadSize: JSON.stringify(payload).length,
-  });
-
-  logger.debug("full create fee payload", payload);
-  return payload;
 }
 
 async function createFee(
   payload: Record<string, unknown>,
   headers: Record<string, string>
 ): Promise<{ id?: string | null }> {
-  const requestHeaders = {
-    ...headers,
-    "content-type": "application/json",
-  };
-
-  logger.info("sending create fee request", {
-    url: CREATE_URL,
-    headerKeys: Object.keys(requestHeaders),
-  });
-
   const response = await fetch(CREATE_URL, {
     method: "POST",
-    headers: requestHeaders,
+    headers: {
+      ...headers,
+      "content-type": "application/json",
+    },
     body: JSON.stringify(payload),
   });
 
@@ -497,15 +435,6 @@ async function createFee(
     data?: { id?: string | null };
     message?: string;
   };
-
-  logger.info("create fee response received", {
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText,
-    feeId: json?.data?.id || null,
-  });
-
-  logger.debug("create fee response json", json);
 
   if (!response.ok) {
     throw new Error(json?.message || `HTTP ${response.status}`);
@@ -515,11 +444,10 @@ async function createFee(
 }
 
 export const FeesView: React.FC = () => {
-  const [viewMode, setViewMode] = useState<ViewMode>("home");
   const [runState, setRunState] = useState<RunState>("idle");
-  const [statusText, setStatusText] = useState("Ready");
+  const [statusText, setStatusText] = useState("Ready to search or create fees");
   const [errorText, setErrorText] = useState("");
-  const [lastRunAt, setLastRunAt] = useState("");
+  const [showInfo, setShowInfo] = useState(false);
 
   const [fees, setFees] = useState<FeeRecord[]>([]);
   const [searchText, setSearchText] = useState("");
@@ -531,143 +459,82 @@ export const FeesView: React.FC = () => {
   const [pricingType, setPricingType] = useState<PricingType>("FLAT_PRICE");
   const [amountInput, setAmountInput] = useState("");
   const [selectedDefaultFee, setSelectedDefaultFee] = useState<string>("");
-
   const [isCreatingFee, setIsCreatingFee] = useState(false);
-  const [createResponseText, setCreateResponseText] = useState("");
-
-  useEffect(() => {
-    logger.info("component mounted");
-    logger.info("supported fee types loaded", FEE_TYPES);
-    logger.info("default fee templates loaded", DEFAULT_FEES);
-    return () => logger.info("component unmounted");
-  }, []);
-
-  useEffect(() => {
-    logger.info("view mode changed", { viewMode });
-  }, [viewMode]);
+  const [showCreateForm, setShowCreateForm] = useState(true);
 
   useEffect(() => {
     if (!description.trim()) {
       setFeeCode("");
       setFeeType("Misc");
-      logger.debug("description cleared, reset fee code and type");
       return;
     }
-
-    const generated = generateFeeCode(description);
-    const detected = detectFeeType(description);
-
-    setFeeCode(generated);
-    setFeeType(detected);
-
-    logger.info("description auto-processed", {
-      description,
-      generatedFeeCode: generated,
-      detectedFeeType: detected,
-    });
+    setFeeCode(generateFeeCode(description));
+    setFeeType(detectFeeType(description));
   }, [description]);
-
-  useEffect(() => {
-    logger.info("pricing type changed", { pricingType });
-  }, [pricingType]);
 
   const filteredFees = useMemo(() => {
     const query = searchText.trim().toLowerCase();
     if (!query) return fees;
 
-    const next = fees.filter((item) => {
-      const feeCodeValue = normalizeText(item.feeCode).toLowerCase();
-      const descValue = normalizeText(item.description).toLowerCase();
-      const deptValue = normalizeText(item.department).toLowerCase();
-      const typeValue = normalizeText(item.type).toLowerCase();
+    return fees.filter((item) => {
+      const code = normalizeText(item.feeCode).toLowerCase();
+      const desc = normalizeText(item.description).toLowerCase();
+      const dept = normalizeText(item.department).toLowerCase();
+      const type = normalizeText(item.type).toLowerCase();
 
       return (
-        feeCodeValue.includes(query) ||
-        descValue.includes(query) ||
-        deptValue.includes(query) ||
-        typeValue.includes(query)
+        code.includes(query) ||
+        desc.includes(query) ||
+        dept.includes(query) ||
+        type.includes(query)
       );
     });
-
-    logger.debug("filtered fees recalculated", {
-      total: fees.length,
-      filtered: next.length,
-      searchText,
-    });
-
-    return next;
   }, [fees, searchText]);
 
   const handleLoadFees = async (): Promise<void> => {
-    logger.info("GET fees button clicked");
-
     setIsLoadingFees(true);
     setRunState("loading");
-    setStatusText("Loading fees...");
+    setStatusText("Fetching Parts fees...");
     setErrorText("");
 
     try {
       const headers = getEnabledGlobalHeaders();
-
       if (Object.keys(headers).length === 0) {
-        logger.warn("global headers missing before GET fees");
         setRunState("error");
-        setStatusText("Global headers are missing");
-        setErrorText(
-          "No active global headers found. Go to Settings, select a dealer profile, and save/apply Global Headers."
-        );
+        setStatusText("Global headers missing");
+        setErrorText("Configure and save active Global Headers in Settings.");
         return;
       }
 
       const rows = await fetchFees(headers);
       setFees(rows);
       setRunState("success");
-      setStatusText(`Retrieved ${rows.length} fee record${rows.length === 1 ? "" : "s"}`);
-      setLastRunAt(new Date().toLocaleString());
-
-      logger.info("fees loaded successfully", { count: rows.length });
+      setStatusText(`✓ Retrieved ${rows.length} Parts fee record${rows.length === 1 ? "" : "s"}`);
     } catch (error: unknown) {
       logger.error("GET fees failed", error);
       setRunState("error");
       setStatusText("Failed to fetch fees");
       setErrorText(error instanceof Error ? error.message : String(error));
-      setLastRunAt(new Date().toLocaleString());
     } finally {
       setIsLoadingFees(false);
     }
   };
 
-  const handleDefaultFeeSelect = (value: string) => {
-    logger.info("default fee selected", { value });
-    setSelectedDefaultFee(value);
-    setDescription(value);
-    setCreateResponseText("");
+  const handleDefaultFeeSelect = (fee: string) => {
+    setSelectedDefaultFee(fee);
+    setDescription(fee);
+    if (!amountInput) setAmountInput("0");
   };
 
   const handleCreateFee = async (): Promise<void> => {
-    logger.info("create fee button clicked", {
-      description,
-      feeCode,
-      feeType,
-      pricingType,
-      amountInput,
-    });
-
-    setCreateResponseText("");
-
     const trimmedDescription = description.trim();
     const finalFeeCode = feeCode.trim() || generateFeeCode(trimmedDescription);
     const amountNumber = Number(amountInput);
 
     if (!trimmedDescription || !finalFeeCode || !Number.isFinite(amountNumber)) {
-      logger.warn("create fee validation failed", {
-        trimmedDescription,
-        finalFeeCode,
-        amountInput,
-      });
       setRunState("error");
-      setStatusText("Please fill all required fields");
-      setErrorText("Description, Fee Code, and Amount are required.");
+      setStatusText("Validation Error");
+      setErrorText("Description, Fee Code, and a valid Amount are required.");
       return;
     }
 
@@ -678,21 +545,15 @@ export const FeesView: React.FC = () => {
 
     try {
       const headers = getEnabledGlobalHeaders();
-
       if (Object.keys(headers).length === 0) {
-        logger.warn("global headers missing before create fee");
         setRunState("error");
-        setStatusText("Global headers are missing");
-        setErrorText(
-          "No active global headers found. Go to Settings, select a dealer profile, and save/apply Global Headers."
-        );
+        setStatusText("Global headers missing");
+        setErrorText("Configure and save active Global Headers in Settings.");
         return;
       }
 
       const dealerId = getDealerIdFromHeaders(headers);
-
       if (!dealerId) {
-        logger.error("dealer id missing from headers");
         setRunState("error");
         setStatusText("Dealer ID not found");
         setErrorText("Dealer ID was not found in Global Headers.");
@@ -711,880 +572,445 @@ export const FeesView: React.FC = () => {
       const result = await createFee(payload, headers);
 
       setRunState("success");
-      setStatusText(`Fee "${finalFeeCode}" created successfully`);
-      setCreateResponseText(`Created successfully. Fee ID: ${result.id || "N/A"}`);
-      setLastRunAt(new Date().toLocaleString());
+      setStatusText(`✓ Fee "${finalFeeCode}" created successfully (ID: ${result.id || "N/A"})`);
 
-      logger.info("fee created successfully", {
-        feeCode: finalFeeCode,
-        feeId: result.id || null,
-      });
+      // Refresh list to show newly created fee
+      void handleLoadFees();
 
-      setTimeout(() => {
-        logger.info("clearing create form after success");
-        setDescription("");
-        setFeeCode("");
-        setFeeType("Misc");
-        setPricingType("FLAT_PRICE");
-        setAmountInput("");
-        setSelectedDefaultFee("");
-        setCreateResponseText("");
-      }, 3000);
+      // Reset form fields
+      setDescription("");
+      setFeeCode("");
+      setFeeType("Misc");
+      setPricingType("FLAT_PRICE");
+      setAmountInput("");
+      setSelectedDefaultFee("");
     } catch (error: unknown) {
       logger.error("create fee failed", error);
       setRunState("error");
       setStatusText("Failed to create fee");
       setErrorText(error instanceof Error ? error.message : String(error));
-      setCreateResponseText(`Error: ${error instanceof Error ? error.message : String(error)}`);
-      setLastRunAt(new Date().toLocaleString());
     } finally {
       setIsCreatingFee(false);
     }
   };
 
+  const banner = useMemo(() => {
+    switch (runState) {
+      case "error":
+        return { bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.25)", text: "#fecaca" };
+      case "success":
+        return { bg: "rgba(34,197,94,0.1)", border: "rgba(34,197,94,0.25)", text: "#bbf7d0" };
+      case "warning":
+        return { bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.25)", text: "#fde68a" };
+      default:
+        return { bg: "rgba(255,255,255,0.03)", border: "rgba(255,255,255,0.08)", text: "#cbd5e1" };
+    }
+  }, [runState]);
+
   return (
-    <div style={{ display: "grid", gap: 16, minWidth: 0 }}>
+    <div style={{ display: "grid", gap: 16 }}>
+      {/* Executive Header */}
       <div
         style={{
-          borderRadius: 18,
+          borderRadius: 16,
           border: "1px solid rgba(255,255,255,0.08)",
           background: "rgba(255,255,255,0.03)",
-          padding: 20,
-          minWidth: 0,
+          padding: 18,
+          display: "grid",
+          gap: 14,
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#f8fafc" }}>
+              Fees Configuration
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowInfo((p) => !p)}
+              style={{
+                width: 20,
+                height: 20,
+                borderRadius: 999,
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                color: "#94a3b8",
+                fontSize: 11,
+                cursor: "pointer",
+                fontWeight: 700,
+              }}
+              title="Toggle Description"
+            >
+              i
+            </button>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button
+              className="btn-secondary btn-sm"
+              type="button"
+              onClick={() => setShowCreateForm((prev) => !prev)}
+            >
+              {showCreateForm ? "Hide Creator" : "+ Create Fee"}
+            </button>
+
+            <button
+              className="btn-postman"
+              type="button"
+              onClick={() => void handleLoadFees()}
+              disabled={isLoadingFees || isCreatingFee}
+            >
+              {isLoadingFees ? "Fetching..." : "GET"}
+            </button>
+          </div>
+        </div>
+
+        {showInfo && (
+          <div
+            style={{
+              padding: 12,
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.02)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              color: "#94a3b8",
+              fontSize: 12,
+              lineHeight: 1.6,
+            }}
+          >
+            Searches and creates fee configurations strictly mapped to the <code>PARTS</code> department.
+            Selecting standard templates automatically pre-fills the fee code, category, and GL mapping.
+          </div>
+        )}
+
+        <div
+          style={{
+            borderRadius: 12,
+            padding: "10px 14px",
+            fontSize: 13,
+            border: `1px solid ${banner.border}`,
+            background: banner.bg,
+            color: banner.text,
+          }}
+        >
+          <div style={{ fontWeight: 700 }}>{statusText}</div>
+          {errorText && <div style={{ fontSize: 12, marginTop: 4 }}>{errorText}</div>}
+        </div>
+      </div>
+
+      {/* Smart Fee Creator Panel */}
+      {showCreateForm && (
+        <div
+          style={{
+            borderRadius: 16,
+            border: "1px solid rgba(255,255,255,0.08)",
+            background: "rgba(255,255,255,0.03)",
+            padding: 18,
+            display: "grid",
+            gap: 14,
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: "#f8fafc" }}>
+              Quick Template Selector
+            </span>
+            <span style={{ fontSize: 11, color: "#94a3b8" }}>
+              Clicking auto-detects code & category
+            </span>
+          </div>
+
+          {/* Quick Select Template Chips */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {DEFAULT_FEES.map((fee) => {
+              const isSelected = selectedDefaultFee === fee;
+              return (
+                <button
+                  key={fee}
+                  type="button"
+                  onClick={() => handleDefaultFeeSelect(fee)}
+                  style={{
+                    padding: "6px 12px",
+                    borderRadius: 8,
+                    border: isSelected
+                      ? "1px solid rgba(59,130,246,0.5)"
+                      : "1px solid rgba(255,255,255,0.08)",
+                    background: isSelected
+                      ? "rgba(59,130,246,0.18)"
+                      : "rgba(255,255,255,0.02)",
+                    color: isSelected ? "#93c5fd" : "#cbd5e1",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    transition: "all 0.15s ease",
+                  }}
+                >
+                  {fee.replace(/\s*fee$/i, "")}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Compact Input Grid */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+              gap: 12,
+              marginTop: 4,
+            }}
+          >
+            <div>
+              <div style={labelStyle}>Description</div>
+              <input
+                className="st-input"
+                type="text"
+                value={description}
+                onChange={(e) => {
+                  setSelectedDefaultFee("");
+                  setDescription(e.target.value);
+                }}
+                placeholder="e.g., Tire Disposal fee"
+                style={inputStyle}
+              />
+            </div>
+
+            <div>
+              <div style={labelStyle}>Fee Code</div>
+              <input
+                className="st-input"
+                type="text"
+                value={feeCode}
+                onChange={(e) => setFeeCode(e.target.value.toUpperCase())}
+                placeholder="Auto-generated"
+                style={{ ...inputStyle, fontFamily: "monospace", color: "#93c5fd" }}
+              />
+            </div>
+
+            <div>
+              <div style={labelStyle}>Fee Type</div>
+              <select
+                className="st-input"
+                value={feeType}
+                onChange={(e) => setFeeType(e.target.value as FeeType)}
+                style={inputStyle}
+              >
+                {FEE_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <div style={labelStyle}>Pricing Mode</div>
+              <div
+                style={{
+                  height: 38,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "0 10px",
+                  borderRadius: 8,
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  background: "rgba(255,255,255,0.02)",
+                }}
+              >
+                <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer", color: "#e2e8f0" }}>
+                  <input
+                    type="radio"
+                    name="pricingType"
+                    checked={pricingType === "FLAT_PRICE"}
+                    onChange={() => setPricingType("FLAT_PRICE")}
+                  />
+                  Flat ($)
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer", color: "#e2e8f0" }}>
+                  <input
+                    type="radio"
+                    name="pricingType"
+                    checked={pricingType === "PERCENTAGE_PART"}
+                    onChange={() => setPricingType("PERCENTAGE_PART")}
+                  />
+                  % of Part
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <div style={labelStyle}>
+                {pricingType === "FLAT_PRICE" ? "Amount ($)" : "Percentage (%)"}
+              </div>
+              <input
+                className="st-input"
+                type="number"
+                value={amountInput}
+                onChange={(e) => setAmountInput(e.target.value)}
+                placeholder={pricingType === "FLAT_PRICE" ? "0.00" : "0"}
+                style={inputStyle}
+              />
+            </div>
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
+            <button
+              className="btn-postman"
+              type="button"
+              onClick={() => void handleCreateFee()}
+              disabled={isCreatingFee || !description || !amountInput}
+              style={{ minWidth: 140 }}
+            >
+              {isCreatingFee ? "Creating..." : "Create Fee"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Live Server Records Table */}
+      <div
+        style={{
+          borderRadius: 16,
+          border: "1px solid rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.03)",
+          padding: 16,
         }}
       >
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            alignItems: "flex-start",
-            gap: 12,
+            alignItems: "center",
+            marginBottom: 12,
             flexWrap: "wrap",
-            marginBottom: 14,
+            gap: 10,
           }}
         >
-          <div style={{ minWidth: 0 }}>
-            <div
-              style={{
-                fontSize: 24,
-                fontWeight: 800,
-                color: "#f8fafc",
-                marginBottom: 6,
-                wordBreak: "break-word",
-              }}
-            >
-              Fees
-            </div>
-
-            <div
-              style={{
-                color: "#94a3b8",
-                fontSize: 14,
-                lineHeight: 1.7,
-                whiteSpace: "pre-wrap",
-                overflowWrap: "anywhere",
-              }}
-            >
-              Search existing fee configurations, create new fees, and keep room for future PUT
-              support. Uses active Global Headers from Settings.
-            </div>
-          </div>
-
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button
-              className={viewMode === "home" ? "btn-postman" : "btn-secondary btn-sm"}
-              type="button"
-              onClick={() => setViewMode("home")}
-            >
-              Home
-            </button>
-
-            <button
-              className={viewMode === "get" ? "btn-postman" : "btn-secondary btn-sm"}
-              type="button"
-              onClick={() => setViewMode("get")}
-            >
-              GET
-            </button>
-
-            <button
-              className={viewMode === "post" ? "btn-postman" : "btn-secondary btn-sm"}
-              type="button"
-              onClick={() => setViewMode("post")}
-            >
-              POST
-            </button>
-
-            <button
-              className={viewMode === "put" ? "btn-postman" : "btn-secondary btn-sm"}
-              type="button"
-              onClick={() => setViewMode("put")}
-            >
-              PUT
-            </button>
-          </div>
-        </div>
-
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
-          <Pill label="Module" value={MODULE_NAME} />
-          <Pill label="Mode" value={viewMode.toUpperCase()} />
-          <Pill label="Loaded Fees" value={String(fees.length)} />
-          <Pill label="Filtered Fees" value={String(filteredFees.length)} />
-          <Pill label="Create Type" value={pricingType} />
-          {lastRunAt ? <Pill label="Last Run" value={lastRunAt} /> : null}
-        </div>
-
-        <div
-          style={{
-            borderRadius: 14,
-            padding: "12px 14px",
-            fontSize: 13,
-            lineHeight: 1.6,
-            border:
-              runState === "error"
-                ? "1px solid rgba(239,68,68,0.25)"
-                : runState === "success"
-                ? "1px solid rgba(34,197,94,0.25)"
-                : runState === "warning"
-                ? "1px solid rgba(245,158,11,0.25)"
-                : "1px solid rgba(255,255,255,0.08)",
-            background:
-              runState === "error"
-                ? "rgba(239,68,68,0.10)"
-                : runState === "success"
-                ? "rgba(34,197,94,0.10)"
-                : runState === "warning"
-                ? "rgba(245,158,11,0.10)"
-                : "rgba(255,255,255,0.03)",
-            color:
-              runState === "error"
-                ? "#fecaca"
-                : runState === "success"
-                ? "#bbf7d0"
-                : runState === "warning"
-                ? "#fde68a"
-                : "#cbd5e1",
-            whiteSpace: "pre-wrap",
-            overflowWrap: "anywhere",
-          }}
-        >
-          <div style={{ fontWeight: 700, marginBottom: errorText ? 6 : 0 }}>{statusText}</div>
-          {errorText ? <div>{errorText}</div> : null}
-        </div>
-      </div>
-
-      {viewMode === "home" ? (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-            gap: 16,
-          }}
-        >
-          <ActionCard
-            icon="📥"
-            title="GET - Fetch Fee Details"
-            description="Load service fee records and view them in a scrollable searchable table."
-            buttonLabel="Open GET"
-            onClick={() => {
-              logger.info("home action clicked", { action: "get" });
-              setViewMode("get");
-            }}
-          />
-
-          <ActionCard
-            icon="➕"
-            title="POST - Create Fee Configuration"
-            description="Create a new fee with auto-detected fee type, auto-generated code, and pricing setup."
-            buttonLabel="Open POST"
-            onClick={() => {
-              logger.info("home action clicked", { action: "post" });
-              setViewMode("post");
-            }}
-          />
-
-          <ActionCard
-            icon="✏️"
-            title="PUT - Update Fee Settings"
-            description="Reserved for future update support. UI placeholder is included for now."
-            buttonLabel="Open PUT"
-            onClick={() => {
-              logger.info("home action clicked", { action: "put" });
-              setViewMode("put");
-            }}
-          />
-        </div>
-      ) : null}
-
-      {viewMode === "get" ? (
-        <div style={{ display: "grid", gap: 16, minWidth: 0 }}>
-          <SectionCard title="Fetch Fee Details">
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button
-                className="btn-postman"
-                type="button"
-                onClick={() => {
-                  void handleLoadFees();
-                }}
-                disabled={isLoadingFees}
-              >
-                {isLoadingFees ? "Loading..." : "Load Fees"}
-              </button>
-            </div>
-          </SectionCard>
-
-          <SectionCard title="Fee Search / Results">
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
-              <input
-                className="st-input"
-                type="text"
-                value={searchText}
-                onChange={(e) => {
-                  logger.debug("fee search input changed", { value: e.target.value });
-                  setSearchText(e.target.value);
-                }}
-                placeholder="Search fee code, description, department, type..."
-                style={{ ...inputStyle, flex: 1, minWidth: 260 }}
-              />
-
-              <div
-                style={{
-                  padding: "8px 12px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  background: "rgba(255,255,255,0.02)",
-                  color: "#cbd5e1",
-                  fontSize: 12,
-                  fontWeight: 700,
-                }}
-              >
-                {filteredFees.length} / {fees.length}
-              </div>
-            </div>
-
-            {fees.length === 0 ? (
-              <EmptyText text="No fees loaded yet. Click Load Fees." />
-            ) : (
-              <div
-                style={{
-                  overflowX: "auto",
-                  maxHeight: 560,
-                  overflowY: "auto",
-                  borderRadius: 14,
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
-              >
-                <table
-                  style={{
-                    width: "100%",
-                    borderCollapse: "collapse",
-                    minWidth: 900,
-                  }}
-                >
-                  <thead
-                    style={{
-                      position: "sticky",
-                      top: 0,
-                      zIndex: 1,
-                      background: "#1f2937",
-                    }}
-                  >
-                    <tr>
-                      <th style={thStyle}>#</th>
-                      <th style={thStyle}>Fee Code</th>
-                      <th style={thStyle}>Description</th>
-                      <th style={thStyle}>Department</th>
-                      <th style={thStyle}>Type</th>
-                      <th style={thStyle}>Active</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    {filteredFees.map((item, index) => (
-                      <tr
-                        key={`${item.id ?? item.feeCode ?? index}-${index}`}
-                        style={{
-                          borderTop: "1px solid rgba(255,255,255,0.08)",
-                          background: index % 2 === 0 ? "transparent" : "rgba(255,255,255,0.02)",
-                        }}
-                      >
-                        <td style={tdStyle}>{index + 1}</td>
-                        <td style={tdMonoStyle}>{normalizeText(item.feeCode) || "-"}</td>
-                        <td style={tdStyle}>{normalizeText(item.description) || "-"}</td>
-                        <td style={tdStyle}>{normalizeText(item.department) || "-"}</td>
-                        <td style={tdStyle}>{normalizeText(item.type) || "-"}</td>
-                        <td style={tdStyle}>
-                          <span
-                            style={{
-                              display: "inline-flex",
-                              padding: "4px 10px",
-                              borderRadius: 999,
-                              border: item.active
-                                ? "1px solid rgba(34,197,94,0.25)"
-                                : "1px solid rgba(239,68,68,0.25)",
-                              background: item.active
-                                ? "rgba(34,197,94,0.10)"
-                                : "rgba(239,68,68,0.10)",
-                              color: item.active ? "#86efac" : "#fca5a5",
-                              fontSize: 12,
-                              fontWeight: 700,
-                            }}
-                          >
-                            {item.active ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#f8fafc" }}>
+            Existing Parts Fees{" "}
+            {fees.length > 0 && (
+              <span style={{ color: "#94a3b8", fontSize: 12 }}>
+                ({filteredFees.length} of {fees.length})
+              </span>
             )}
-          </SectionCard>
+          </div>
+
+          <input
+            type="text"
+            className="st-input"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            placeholder="Search fee code, description, type..."
+            style={{ width: 240, height: 32, fontSize: 12 }}
+          />
         </div>
-      ) : null}
 
-      {viewMode === "post" ? (
-        <div style={{ display: "grid", gap: 16, minWidth: 0 }}>
-          <SectionCard title="Create Fee Configuration">
-            <div
-              style={{
-                padding: 16,
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: 14,
-              }}
-            >
-              <div
-                style={{
-                  color: "#f8fafc",
-                  fontSize: 14,
-                  fontWeight: 700,
-                  marginBottom: 10,
-                }}
-              >
-                Quick Select Default Fees
-              </div>
-
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-                  gap: 8,
-                }}
-              >
-                {DEFAULT_FEES.map((fee) => {
-                  const isSelected = selectedDefaultFee === fee;
-
-                  return (
-                    <button
-                      key={fee}
-                      type="button"
-                      onClick={() => handleDefaultFeeSelect(fee)}
-                      style={{
-                        minHeight: 40,
-                        padding: "8px 10px",
-                        borderRadius: 10,
-                        border: isSelected
-                          ? "1px solid rgba(0,113,227,0.45)"
-                          : "1px solid rgba(255,255,255,0.08)",
-                        background: isSelected
-                          ? "rgba(0,113,227,0.16)"
-                          : "rgba(255,255,255,0.03)",
-                        color: "#e5e7eb",
-                        cursor: "pointer",
-                        fontSize: 13,
-                        fontWeight: isSelected ? 700 : 600,
-                      }}
-                    >
-                      {fee.replace(/\s*fee$/i, "")}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 8 }}>
-                Click to auto-fill description, fee code, and detected fee type.
-              </div>
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-                gap: 14,
-              }}
-            >
-              <Field
-                label="Fee Code"
-                value={feeCode}
-                placeholder="Auto-generated"
-                onChange={(value) => {
-                  logger.debug("fee code input changed", { value });
-                  setFeeCode(value);
-                }}
-                readOnly={false}
-                hint="Editable"
-              />
-
-              <Field
-                label="Description"
-                value={description}
-                placeholder="e.g., Wheel Weight fee, Freight fee"
-                onChange={(value) => {
-                  logger.debug("description input changed", { value });
-                  setDescription(value);
-                }}
-                hint="Auto-generates code and type"
-              />
-
-              <div>
-                <div style={labelStyle}>Fee Type</div>
-                <select
-                  className="st-input"
-                  value={feeType}
-                  onChange={(e) => {
-                    const nextValue = e.target.value as FeeType;
-                    logger.info("fee type changed manually", { nextValue });
-                    setFeeType(nextValue);
-                  }}
-                  style={inputStyle}
-                >
-                  {FEE_TYPES.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-                <div style={hintStyle}>Auto-detected from description when possible</div>
-              </div>
-
-              <div>
-                <div style={labelStyle}>Pricing Type</div>
-                <div
-                  style={{
-                    minHeight: 44,
-                    display: "flex",
-                    flexWrap: "wrap",
-                    alignItems: "center",
-                    gap: 16,
-                    padding: "10px 12px",
-                    borderRadius: 12,
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    background: "rgba(255,255,255,0.02)",
-                  }}
-                >
-                  <label style={radioLabelStyle}>
-                    <input
-                      type="radio"
-                      name="pricing-type-post-react"
-                      value="FLAT_PRICE"
-                      checked={pricingType === "FLAT_PRICE"}
-                      onChange={() => {
-                        logger.info("pricing type radio changed", { value: "FLAT_PRICE" });
-                        setPricingType("FLAT_PRICE");
-                      }}
-                    />
-                    <span>Flat Price ($)</span>
-                  </label>
-
-                  <label style={radioLabelStyle}>
-                    <input
-                      type="radio"
-                      name="pricing-type-post-react"
-                      value="PERCENTAGE_PART"
-                      checked={pricingType === "PERCENTAGE_PART"}
-                      onChange={() => {
-                        logger.info("pricing type radio changed", {
-                          value: "PERCENTAGE_PART",
-                        });
-                        setPricingType("PERCENTAGE_PART");
-                      }}
-                    />
-                    <span>% of Part</span>
-                  </label>
-                </div>
-              </div>
-
-              <Field
-                label={pricingType === "FLAT_PRICE" ? "Amount ($)" : "Percentage (%)"}
-                value={amountInput}
-                placeholder={pricingType === "FLAT_PRICE" ? "e.g., 46.00" : "e.g., 10"}
-                onChange={(value) => {
-                  logger.debug("amount input changed", { value });
-                  setAmountInput(value);
-                }}
-                type="number"
-                hint={pricingType === "FLAT_PRICE" ? "Enter dollar amount" : "Enter percentage"}
-              />
-            </div>
-
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button
-                className="btn-postman"
-                type="button"
-                onClick={() => {
-                  void handleCreateFee();
-                }}
-                disabled={isCreatingFee}
-              >
-                {isCreatingFee ? "Creating..." : "Create Fee"}
-              </button>
-            </div>
-
-            {createResponseText ? (
-              <div
-                style={{
-                  borderRadius: 12,
-                  border:
-                    runState === "success"
-                      ? "1px solid rgba(34,197,94,0.25)"
-                      : "1px solid rgba(239,68,68,0.25)",
-                  background:
-                    runState === "success"
-                      ? "rgba(34,197,94,0.10)"
-                      : "rgba(239,68,68,0.10)",
-                  color: runState === "success" ? "#bbf7d0" : "#fecaca",
-                  padding: "12px 14px",
-                  fontSize: 13,
-                  lineHeight: 1.6,
-                  whiteSpace: "pre-wrap",
-                  overflowWrap: "anywhere",
-                }}
-              >
-                {createResponseText}
-              </div>
-            ) : null}
-          </SectionCard>
-
-          <SectionCard title="Create Form Snapshot">
-            <RowLine left="Description" right={description || "—"} />
-            <RowLine left="Fee Code" right={feeCode || "—"} />
-            <RowLine left="Fee Type" right={feeType} />
-            <RowLine left="Pricing Type" right={pricingType} />
-            <RowLine
-              left={pricingType === "FLAT_PRICE" ? "Amount ($)" : "Percentage (%)"}
-              right={amountInput || "—"}
-            />
-          </SectionCard>
-        </div>
-      ) : null}
-
-      {viewMode === "put" ? (
-        <SectionCard title="Update Fee Settings">
+        {fees.length === 0 ? (
           <div
             style={{
-              borderRadius: 16,
-              border: "1px solid rgba(255,255,255,0.08)",
-              background: "rgba(255,255,255,0.02)",
-              padding: 28,
+              padding: 24,
+              color: "#94a3b8",
               textAlign: "center",
+              fontSize: 13,
+              borderRadius: 12,
+              border: "1px dashed rgba(255,255,255,0.1)",
             }}
           >
-            <div style={{ fontSize: 56, marginBottom: 16 }}>🚧</div>
-
-            <div
-              style={{
-                color: "#f8fafc",
-                fontSize: 22,
-                fontWeight: 800,
-                marginBottom: 10,
-              }}
-            >
-              Update Fee - Coming Soon
-            </div>
-
-            <div
-              style={{
-                color: "#94a3b8",
-                fontSize: 14,
-                lineHeight: 1.7,
-                maxWidth: 700,
-                margin: "0 auto 18px",
-                whiteSpace: "pre-wrap",
-                overflowWrap: "anywhere",
-              }}
-            >
-              The PUT operation for updating fees is currently under development. This section is
-              intentionally reserved for future update support.
-            </div>
-
-            <div
-              style={{
-                maxWidth: 520,
-                margin: "0 auto",
-                textAlign: "left",
-                borderRadius: 14,
-                border: "1px solid rgba(255,255,255,0.08)",
-                background: "rgba(255,255,255,0.03)",
-                padding: 18,
-              }}
-            >
-              <div
-                style={{
-                  color: "#f8fafc",
-                  fontSize: 15,
-                  fontWeight: 700,
-                  marginBottom: 10,
-                }}
-              >
-                Planned Features
-              </div>
-
-              <ul
-                style={{
-                  margin: 0,
-                  paddingLeft: 18,
-                  color: "#cbd5e1",
-                  fontSize: 13,
-                  lineHeight: 1.9,
-                }}
-              >
-                <li>Update existing fee configurations</li>
-                <li>Modify pricing and departments</li>
-                <li>Change fee status (active/inactive)</li>
-                <li>Edit fee codes and descriptions</li>
-              </ul>
-            </div>
+            No fees loaded yet. Click GET.
           </div>
-        </SectionCard>
-      ) : null}
+        ) : (
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
+              <thead>
+                <tr style={{ background: "rgba(255,255,255,0.04)" }}>
+                  <th style={thStyle}>#</th>
+                  <th style={thStyle}>Fee Code</th>
+                  <th style={thStyle}>Description</th>
+                  <th style={thStyle}>Department</th>
+                  <th style={thStyle}>Type</th>
+                  <th style={thStyle}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredFees.map((item, index) => (
+                  <tr
+                    key={`${item.id ?? item.feeCode ?? index}-${index}`}
+                    style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+                  >
+                    <td style={tdStyle}>{index + 1}</td>
+                    <td style={tdMonoStyle}>{normalizeText(item.feeCode) || "—"}</td>
+                    <td style={tdStyle}>{normalizeText(item.description) || "—"}</td>
+                    <td style={tdStyle}>{normalizeText(item.department) || "PARTS"}</td>
+                    <td style={tdStyle}>{normalizeText(item.type) || "—"}</td>
+                    <td style={tdStyle}>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          padding: "2px 8px",
+                          borderRadius: 999,
+                          fontSize: 10,
+                          fontWeight: 800,
+                          background: item.active
+                            ? "rgba(34,197,94,0.12)"
+                            : "rgba(239,68,68,0.12)",
+                          color: item.active ? "#86efac" : "#fca5a5",
+                          border: `1px solid ${
+                            item.active ? "rgba(34,197,94,0.25)" : "rgba(239,68,68,0.25)"
+                          }`,
+                        }}
+                      >
+                        {item.active ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
 
+const labelStyle: React.CSSProperties = {
+  color: "#94a3b8",
+  fontSize: 11,
+  fontWeight: 700,
+  marginBottom: 4,
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
+};
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  height: 38,
+  borderRadius: 8,
+  padding: "8px 10px",
+  fontSize: 13,
+  boxSizing: "border-box",
+};
+
 const thStyle: React.CSSProperties = {
   textAlign: "left",
-  padding: "12px 10px",
-  color: "#cbd5e1",
-  fontSize: 12,
+  padding: "10px 8px",
+  color: "#94a3b8",
+  fontSize: 11,
   fontWeight: 800,
+  textTransform: "uppercase",
+  letterSpacing: 0.5,
   whiteSpace: "nowrap",
 };
 
 const tdStyle: React.CSSProperties = {
   textAlign: "left",
-  padding: "12px 10px",
+  padding: "10px 8px",
   color: "#e2e8f0",
-  fontSize: 13,
-  verticalAlign: "top",
-  whiteSpace: "pre-wrap",
-  overflowWrap: "anywhere",
+  fontSize: 12,
+  verticalAlign: "middle",
 };
 
 const tdMonoStyle: React.CSSProperties = {
   ...tdStyle,
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+  fontFamily: "ui-monospace, monospace",
 };
-
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  minHeight: 42,
-  borderRadius: 12,
-  padding: "10px 12px",
-  fontSize: 13,
-  boxSizing: "border-box",
-};
-
-const labelStyle: React.CSSProperties = {
-  color: "#94a3b8",
-  fontSize: 12,
-  fontWeight: 700,
-  marginBottom: 6,
-};
-
-const hintStyle: React.CSSProperties = {
-  color: "#94a3b8",
-  fontSize: 12,
-  marginTop: 6,
-};
-
-const radioLabelStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  color: "#e5e7eb",
-  fontSize: 13,
-  cursor: "pointer",
-};
-
-const Pill: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <span
-    style={{
-      display: "inline-flex",
-      alignItems: "center",
-      gap: 8,
-      padding: "6px 10px",
-      borderRadius: 999,
-      border: "1px solid rgba(255,255,255,0.08)",
-      background: "rgba(255,255,255,0.03)",
-      color: "#cbd5e1",
-      fontSize: 12,
-    }}
-  >
-    {label} <b style={{ color: "#f8fafc" }}>{value}</b>
-  </span>
-);
-
-const SectionCard: React.FC<{
-  title: string;
-  children: React.ReactNode;
-}> = ({ title, children }) => (
-  <div
-    style={{
-      borderRadius: 18,
-      border: "1px solid rgba(255,255,255,0.08)",
-      background: "rgba(255,255,255,0.03)",
-      padding: 18,
-      minWidth: 0,
-    }}
-  >
-    <div
-      style={{
-        fontSize: 18,
-        fontWeight: 800,
-        color: "#f8fafc",
-        marginBottom: 12,
-      }}
-    >
-      {title}
-    </div>
-
-    <div style={{ display: "grid", gap: 12 }}>{children}</div>
-  </div>
-);
-
-const EmptyText: React.FC<{ text: string }> = ({ text }) => (
-  <div
-    style={{
-      borderRadius: 14,
-      border: "1px dashed rgba(148,163,184,0.30)",
-      padding: 24,
-      color: "#94a3b8",
-      textAlign: "center",
-    }}
-  >
-    {text}
-  </div>
-);
-
-const ActionCard: React.FC<{
-  icon: string;
-  title: string;
-  description: string;
-  buttonLabel: string;
-  onClick: () => void;
-}> = ({ icon, title, description, buttonLabel, onClick }) => (
-  <div
-    style={{
-      borderRadius: 18,
-      border: "1px solid rgba(255,255,255,0.08)",
-      background: "rgba(255,255,255,0.03)",
-      padding: 18,
-      display: "grid",
-      gap: 12,
-    }}
-  >
-    <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: 12,
-          display: "grid",
-          placeItems: "center",
-          background: "rgba(0,184,204,0.12)",
-          fontSize: 20,
-        }}
-      >
-        {icon}
-      </div>
-
-      <div style={{ minWidth: 0 }}>
-        <div style={{ color: "#f8fafc", fontSize: 16, fontWeight: 800, marginBottom: 4 }}>
-          {title}
-        </div>
-        <div style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.6 }}>{description}</div>
-      </div>
-    </div>
-
-    <button className="btn-postman" type="button" onClick={onClick}>
-      {buttonLabel}
-    </button>
-  </div>
-);
-
-const Field: React.FC<{
-  label: string;
-  value: string;
-  placeholder?: string;
-  hint?: string;
-  readOnly?: boolean;
-  type?: string;
-  onChange: (value: string) => void;
-}> = ({ label, value, placeholder, hint, readOnly = false, type = "text", onChange }) => (
-  <div>
-    <div style={labelStyle}>{label}</div>
-    <input
-      className="st-input"
-      type={type}
-      value={value}
-      placeholder={placeholder}
-      readOnly={readOnly}
-      onChange={(e) => onChange(e.target.value)}
-      style={{
-        ...inputStyle,
-        opacity: readOnly ? 0.85 : 1,
-      }}
-    />
-    {hint ? <div style={hintStyle}>{hint}</div> : null}
-  </div>
-);
-
-const RowLine: React.FC<{
-  left: string;
-  right: string;
-  rightColor?: string;
-}> = ({ left, right, rightColor = "#cbd5e1" }) => (
-  <div
-    style={{
-      display: "flex",
-      justifyContent: "space-between",
-      gap: 12,
-      alignItems: "flex-start",
-      padding: "10px 12px",
-      borderRadius: 12,
-      border: "1px solid rgba(255,255,255,0.08)",
-      background: "rgba(255,255,255,0.02)",
-      flexWrap: "wrap",
-    }}
-  >
-    <div
-      style={{
-        color: "#e2e8f0",
-        fontSize: 13,
-        lineHeight: 1.5,
-        whiteSpace: "pre-wrap",
-        overflowWrap: "anywhere",
-        maxWidth: "100%",
-      }}
-    >
-      {left}
-    </div>
-
-    <div
-      style={{
-        color: rightColor,
-        fontSize: 12,
-        fontWeight: 700,
-        whiteSpace: "pre-wrap",
-        overflowWrap: "anywhere",
-        textAlign: "right",
-        maxWidth: "100%",
-      }}
-    >
-      {right}
-    </div>
-  </div>
-);
 
 export default FeesView;
