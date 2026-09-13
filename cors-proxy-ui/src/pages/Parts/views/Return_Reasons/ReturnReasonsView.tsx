@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { loadTekionApiSettingsBundle } from "../../../../services/tekionApiSettings";
+import { usePartsBlueprint } from "../../../../Context/Blueprint_Parts_Context";
 import type { KeyValuePair } from "../../../../types/proxy.types";
 
 const BASE_URL =
@@ -76,6 +77,42 @@ function parsePositiveInteger(value: string): number | null {
   return Number.isFinite(num) ? num : null;
 }
 
+/**
+ * Handles boolean or string representations of Yes/No
+ */
+function parseYesNo(val: unknown): boolean | null {
+  if (val === null || val === undefined) return null;
+  if (typeof val === "boolean") return val;
+  if (typeof val === "number") return val > 0;
+  if (typeof val === "string") {
+    const s = val.trim().toLowerCase();
+    if (!s) return null;
+    if (s === "yes" || s === "y" || s === "true" || s === "1") return true;
+    if (s === "no" || s === "n" || s === "false" || s === "0") return false;
+  }
+  return null;
+}
+
+/**
+ * Extracts percentage digits from text formats:
+ * "20%", "20 %", "Cost + 15%", "15 percent", or empty text -> defaults to "0"
+ */
+function extractRestockPercentage(raw: unknown): string {
+  if (raw === null || raw === undefined) return "0";
+  if (typeof raw === "number") return String(Math.max(0, Math.round(raw)));
+
+  const str = String(raw).trim();
+  if (!str) return "0";
+
+  const match = str.match(/(\d+(?:\.\d+)?)/);
+  if (match) {
+    const num = Math.round(parseFloat(match[1]));
+    return String(Math.max(0, num));
+  }
+
+  return "0";
+}
+
 function getEnabledGlobalHeaders(): Record<string, string> {
   const bundle = loadTekionApiSettingsBundle();
   return (bundle.globalHeaders ?? [])
@@ -133,6 +170,8 @@ async function updateReturnReason(
 }
 
 export const ReturnReasonsView: React.FC = () => {
+  const { hasBlueprint, getAnswer } = usePartsBlueprint();
+
   const [rows, setRows] = useState<ReturnReasonRecord[]>([]);
   const [runState, setRunState] = useState<RunState>("idle");
   const [statusText, setStatusText] = useState("Ready to check return reasons");
@@ -140,6 +179,57 @@ export const ReturnReasonsView: React.FC = () => {
   const [amountInput, setAmountInput] = useState("0");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
+
+  // 1. Resolve blueprint answers
+  const rawChargesFeeAnswer = useMemo(() => {
+    if (!hasBlueprint) return null;
+    return (
+      getAnswer("Do you charge a restocking fee?") ??
+      getAnswer("charge a restocking fee") ??
+      getAnswer("restocking fee")
+    );
+  }, [hasBlueprint, getAnswer]);
+
+  const rawFeeAmountAnswer = useMemo(() => {
+    if (!hasBlueprint) return null;
+    return (
+      getAnswer("what amount is your restocking fee") ??
+      getAnswer("If yes, what amount is your restocking fee?") ??
+      getAnswer("restocking fee amount")
+    );
+  }, [hasBlueprint, getAnswer]);
+
+  const chargesRestockFee = useMemo(() => {
+    return parseYesNo(rawChargesFeeAnswer);
+  }, [rawChargesFeeAnswer]);
+
+  const extractedBlueprintAmount = useMemo(() => {
+    if (chargesRestockFee === false) return "0";
+    return extractRestockPercentage(rawFeeAmountAnswer);
+  }, [chargesRestockFee, rawFeeAmountAnswer]);
+
+  // 2. Pre-fill input from Blueprint
+  useEffect(() => {
+    if (chargesRestockFee === null) return;
+
+    if (chargesRestockFee === false) {
+      setAmountInput("0");
+      setStatusText('Blueprint specifies "No" to Restocking Fee. Creation is not required.');
+      setRunState("warning");
+    } else {
+      setAmountInput(extractedBlueprintAmount);
+      setStatusText(`✓ Blueprint specifies "Yes" with ${extractedBlueprintAmount}% Restock Fee.`);
+      setRunState("idle");
+    }
+  }, [chargesRestockFee, extractedBlueprintAmount]);
+
+  const handleResetToBlueprint = () => {
+    if (chargesRestockFee === false) {
+      setAmountInput("0");
+    } else {
+      setAmountInput(extractedBlueprintAmount);
+    }
+  };
 
   useEffect(() => {
     logger.info("component mounted");
@@ -367,6 +457,58 @@ export const ReturnReasonsView: React.FC = () => {
           >
             Validates whether <code>{TARGET_RETURN_REASON.reasonCode}</code> exists on the server.
             The action button automatically routes to <b>Update</b> if found or <b>Create</b> if missing.
+          </div>
+        )}
+
+        {/* Blueprint Review Card */}
+        {hasBlueprint && rawChargesFeeAnswer !== null && (
+          <div
+            style={{
+              padding: "10px 14px",
+              borderRadius: 10,
+              background: chargesRestockFee ? "rgba(59, 130, 246, 0.08)" : "rgba(245, 158, 11, 0.08)",
+              border: `1px solid ${chargesRestockFee ? "rgba(59, 130, 246, 0.25)" : "rgba(245, 158, 11, 0.25)"}`,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 10,
+            }}
+          >
+            <div>
+              <span
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: chargesRestockFee ? "#60a5fa" : "#fbbf24",
+                  textTransform: "uppercase",
+                }}
+              >
+                📋 Blueprint Response:
+              </span>
+              <div style={{ color: "#f8fafc", fontSize: 12, marginTop: 2 }}>
+                Charge Restocking Fee: <b>{chargesRestockFee ? "Yes" : "No"}</b>
+                {chargesRestockFee && (
+                  <span>
+                    {" "}• Answered Amount: <b>{normalizeText(rawFeeAmountAnswer) || "None (defaulted to 0%)"}</b>
+                  </span>
+                )}
+                {!chargesRestockFee && (
+                  <span style={{ color: "#fde68a" }}>
+                    {" "}— Dealer does not charge a restock fee. Creation is not needed.
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="btn-secondary btn-sm"
+              onClick={handleResetToBlueprint}
+              title="Reset input to blueprint answers"
+            >
+              ↺ Reset to Blueprint
+            </button>
           </div>
         )}
 

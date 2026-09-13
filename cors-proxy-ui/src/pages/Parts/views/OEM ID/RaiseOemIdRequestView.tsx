@@ -9,6 +9,7 @@ import {
   subscribeToExtensionCapture,
   type ArcTekionProfile,
 } from "../../../../services/extensionBridge";
+import { usePartsBlueprint } from "../../../../Context/Blueprint_Parts_Context";
 import type { KeyValuePair } from "../../../../types/proxy.types";
 
 const TENANTS_URL =
@@ -49,7 +50,7 @@ interface DealerInfo {
   dealerName?: string | null;
   createdTime?: number;
   active?: boolean;
-  displayName?: string;
+  displayName?: string | null;
   lastModifiedByUser?: string;
 }
 
@@ -78,6 +79,74 @@ const logger = {
 
 function normalize(value: unknown): string {
   return String(value ?? "").trim();
+}
+
+/**
+ * Robust extraction logic to handle pure codes, comma/tab separated strings,
+ * or conversational text like:
+ * "PARTS PURCHASING CODE= 307120///////////////////////115903=DEALER CODE"
+ */
+function extractOemDealerCodes(rawText: string): string[] {
+  if (!rawText || !rawText.trim()) return [];
+
+  const BLACKLIST_WORDS = new Set([
+    "PARTS",
+    "PURCHASING",
+    "DEALER",
+    "DEALERS",
+    "CODE",
+    "CODES",
+    "FACTORY",
+    "ORDERS",
+    "ORDER",
+    "SUBMIT",
+    "WHAT",
+    "NONE",
+    "NULL",
+    "TRUE",
+    "FALSE",
+    "SAME",
+    "MAIN",
+    "STORE",
+    "SETUP",
+    "TEST",
+    "OEM",
+    "ID",
+    "AND",
+    "THE",
+    "FOR",
+    "OUR",
+  ]);
+
+  // Replace delimiters with spaces
+  const cleanSeparators = rawText.replace(/[/\\,=;:|\t\r\n]+/g, " ");
+  const tokens = cleanSeparators.split(/\s+/).map((t) => t.trim()).filter(Boolean);
+
+  const candidates: string[] = [];
+
+  for (const token of tokens) {
+    const upper = token.toUpperCase();
+
+    // Skip blacklisted common vocabulary words
+    if (BLACKLIST_WORDS.has(upper)) continue;
+
+    // OEM codes in auto DMS are typically 4-10 alphanumeric characters and contain numbers
+    const isAlphanumericLength = /^[A-Z0-9]{4,10}$/i.test(upper);
+    const hasAtLeastOneDigit = /\d/.test(upper);
+
+    if (isAlphanumericLength && hasAtLeastOneDigit) {
+      if (!candidates.includes(upper)) {
+        candidates.push(upper);
+      }
+    }
+  }
+
+  // Fallback: If heuristic found nothing, return trimmed raw text
+  if (candidates.length === 0 && rawText.trim()) {
+    return [rawText.trim().toUpperCase()];
+  }
+
+  return candidates;
 }
 
 function getEnabledGlobalHeaders(): Record<string, string> {
@@ -312,6 +381,9 @@ const CompactStepCard: React.FC<{
 );
 
 export const RaiseOemIdRequestView: React.FC = () => {
+  // Blueprint Context Integration
+  const { hasBlueprint, getAnswer } = usePartsBlueprint();
+
   const [runState, setRunState] = useState<RunState>("idle");
   const [statusText, setStatusText] = useState("Ready");
   const [errorText, setErrorText] = useState("");
@@ -339,6 +411,32 @@ export const RaiseOemIdRequestView: React.FC = () => {
 
   const [captureVersion, setCaptureVersion] = useState(0);
   const [autoSelectionMessage, setAutoSelectionMessage] = useState("");
+
+  // Retrieve raw OEM code string from Blueprint
+  const rawBlueprintAnswer = useMemo(() => {
+    if (!hasBlueprint) return "";
+    const ans =
+      getAnswer("factory parts orders") ??
+      getAnswer("Dealer code(s) (OEM ID#)") ??
+      getAnswer("Dealer code(s)");
+    return typeof ans === "string" ? ans.trim() : ans ? String(ans).trim() : "";
+  }, [hasBlueprint, getAnswer]);
+
+  // Pre-fill OEM Codes input when blueprint data is detected
+  useEffect(() => {
+    if (!rawBlueprintAnswer) return;
+    setOemDealerCodesInput((prev) => {
+      if (prev.trim()) return prev; // Preserve manual user input if already typed
+      const extracted = extractOemDealerCodes(rawBlueprintAnswer);
+      return extracted.join("\n");
+    });
+  }, [rawBlueprintAnswer]);
+
+  const handleResetToBlueprint = () => {
+    if (!rawBlueprintAnswer) return;
+    const extracted = extractOemDealerCodes(rawBlueprintAnswer);
+    setOemDealerCodesInput(extracted.join("\n"));
+  };
 
   useEffect(() => {
     logger.info("mounted");
@@ -402,7 +500,7 @@ export const RaiseOemIdRequestView: React.FC = () => {
   const parsedOemDealerCodes = useMemo(() => {
     const parsed = oemDealerCodesInput
       .split(/[\n,]/)
-      .map((item) => normalize(item))
+      .map((item) => normalize(item).toUpperCase())
       .filter(Boolean);
 
     logger.debug("parsed OEM dealer codes", parsed);
@@ -649,7 +747,7 @@ export const RaiseOemIdRequestView: React.FC = () => {
         `Auto-validation completed. Tenant "${validatedTenantId}" and dealer "${validatedDealerId}" are ready.`
       );
       setAutoSelectionMessage(
-        `✅ Auto-validated tenant ${validatedTenantId} and dealer ${validatedDealerId}. You can now enter OEM dealer codes and preview/submit.`
+        `✅ Auto-validated tenant ${validatedTenantId} and dealer ${validatedDealerId}. You can now review OEM dealer codes and preview/submit.`
       );
     } catch (error: unknown) {
       logger.error("autoResolveTenantAndDealer failed", error);
@@ -685,12 +783,8 @@ export const RaiseOemIdRequestView: React.FC = () => {
       tagId: null,
       releaseType: null,
       labels: {
-        ENV: {
-          value: ["PREPROD"],
-        },
-        TEMPLATE_ID: {
-          value: TEMPLATE_ID,
-        },
+        ENV: { value: ["PREPROD"] },
+        TEMPLATE_ID: { value: TEMPLATE_ID },
       },
       platform: "ARC",
       cluster: "ARC_DEFAULT",
@@ -703,20 +797,10 @@ export const RaiseOemIdRequestView: React.FC = () => {
           templateId: TEMPLATE_ID,
           templateName: "update dealer-master internal ",
           headers: {
-            "Content-Type": {
-              format: "application/json",
-              params: [],
-              required: true,
-            },
-            "tek-sandbox-id": {
-              format: "${tekSandboxId}",
-              params: ["tekSandboxId"],
-              required: false,
-            },
+            "Content-Type": { format: "application/json", params: [], required: true },
+            "tek-sandbox-id": { format: "${tekSandboxId}", params: ["tekSandboxId"], required: false },
           },
-          headerParams: {
-            tekSandboxId: "",
-          },
+          headerParams: { tekSandboxId: "" },
           bodyParams: {},
           preDefinedValuesParams: {},
           url: "/dealer-settings/restricted/dealer-master/internal/update",
@@ -786,6 +870,7 @@ export const RaiseOemIdRequestView: React.FC = () => {
 
   return (
     <div style={{ display: "grid", gap: 14 }}>
+      {/* Top Header Card */}
       <div
         style={{
           borderRadius: 18,
@@ -990,25 +1075,67 @@ export const RaiseOemIdRequestView: React.FC = () => {
         </CompactStepCard>
       </div>
 
-      <SectionCard
-        title="Step 4 · Enter OEM Dealer Codes"
-      >
+      {/* Step 4: OEM Dealer Codes with Blueprint Auto-Fill */}
+      <SectionCard title="Step 4 · Enter OEM Dealer Codes">
+        {rawBlueprintAnswer && (
+          <div
+            style={{
+              padding: "10px 14px",
+              borderRadius: 10,
+              background: "rgba(59, 130, 246, 0.08)",
+              border: "1px solid rgba(59, 130, 246, 0.25)",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 10,
+            }}
+          >
+            <div>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#60a5fa", textTransform: "uppercase" }}>
+                📋 Blueprint Raw Answer:
+              </span>
+              <div style={{ color: "#f8fafc", fontSize: 12, marginTop: 2, fontFamily: "monospace" }}>
+                {rawBlueprintAnswer}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="btn-secondary btn-sm"
+              onClick={handleResetToBlueprint}
+              title="Re-run extraction and populate input"
+            >
+              ↺ Re-extract from Blueprint
+            </button>
+          </div>
+        )}
+
         <textarea
           className="st-input"
           value={oemDealerCodesInput}
           onChange={(e) => {
             setOemDealerCodesInput(e.target.value);
           }}
-          placeholder={"Multiple ID's will be comma separated"}
-          rows={8}
+          placeholder={"Multiple IDs can be entered line-by-line or comma-separated\ne.g.\n318190\nA318190\n115903"}
+          rows={6}
           style={{
             ...inputStyle,
-            minHeight: 160,
+            minHeight: 140,
             resize: "vertical",
+            fontFamily: "monospace",
           }}
         />
+
+        <div style={{ fontSize: 12, color: "#94a3b8" }}>
+          Parsed OEM Codes ({parsedOemDealerCodes.length}):{" "}
+          <b style={{ color: "#86efac" }}>
+            {parsedOemDealerCodes.length > 0 ? parsedOemDealerCodes.join(", ") : "None detected"}
+          </b>
+        </div>
       </SectionCard>
 
+      {/* Step 5: Submit or Preview */}
       <SectionCard
         title="Step 5 · Preview / Raise Request"
         info="Preview becomes available after tenant and dealer are resolved and at least one OEM code is entered."
@@ -1017,7 +1144,7 @@ export const RaiseOemIdRequestView: React.FC = () => {
           <button
             className="btn-postman"
             type="button"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !canPreviewPayload}
             onClick={() => {
               void submitApprovalRequest();
             }}

@@ -1,6 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { PARTS_NAV_ITEMS, type PartsSectionKey } from "./partsConfig";
-import { loadLatestExtensionCapture, subscribeToExtensionCapture } from "../../services/extensionBridge";
+import {
+  loadLatestExtensionCapture,
+  subscribeToExtensionCapture,
+} from "../../services/extensionBridge";
+import {
+  PartsBlueprintProvider,
+  usePartsBlueprint,
+} from "../../Context/Blueprint_Parts_Context";
+
 import { VoidPartsReasonsView } from "./views/Void Parts Reasons";
 import { CodeSetupView } from "./views/CodeSetupView";
 import ReturnReasonsView from "./views/Return_Reasons/ReturnReasonsView";
@@ -75,11 +83,11 @@ const CONTENT_STYLE: React.CSSProperties = {
 const TITLE_ROW_STYLE: React.CSSProperties = {
   display: "flex",
   alignItems: "center",
-  gap: 14,
+  gap: 12,
   flexWrap: "wrap",
 };
 
-const DEALER_PILL_STYLE: React.CSSProperties = {
+const PILL_STYLE: React.CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
   gap: 8,
@@ -134,53 +142,32 @@ function renderActiveView(activeKey: PartsSectionKey): React.ReactNode {
   }
 }
 
-export const Parts: React.FC<Props> = ({ onBack }) => {
+const PartsLayout: React.FC<Props & { selectedDealerTenant: string }> = ({
+  onBack,
+  selectedDealerTenant,
+}) => {
   const [activeKey, setActiveKey] = useState<PartsSectionKey>("void-parts-reasons");
-  const [selectedDealerId, setSelectedDealerId] = useState<string>("");
-  const [selectedDealerTenant, setSelectedDealerTenant] = useState<string>("");
+  const {
+    selectedDealerId,
+    tekionId,
+    hasBlueprint,
+    blueprint,
+    loading,
+    refresh,
+  } = usePartsBlueprint();
 
-  useEffect(() => {
-    const syncSelectedDealer = () => {
-      const storedProfileId = localStorage.getItem(SELECTED_DEALER_PROFILE_KEY);
-      const latestCapture = loadLatestExtensionCapture();
-      const matchedProfile =
-        latestCapture?.tekionProfiles?.find((profile) => profile.id === storedProfileId) ?? null;
-
-      setSelectedDealerId(matchedProfile?.dealerId ?? "");
-      setSelectedDealerTenant(matchedProfile?.tenantName ?? "");
-    };
-
-    syncSelectedDealer();
-
-    const unsubscribe = subscribeToExtensionCapture(() => {
-      syncSelectedDealer();
-    });
-
-    const handleWindowFocus = () => {
-      syncSelectedDealer();
-    };
-
-    window.addEventListener("focus", handleWindowFocus);
-
-    return () => {
-      unsubscribe();
-      window.removeEventListener("focus", handleWindowFocus);
-    };
-  }, []);
-
-  const activeView = useMemo(() => {
-    return renderActiveView(activeKey);
-  }, [activeKey]);
+  const activeView = useMemo(() => renderActiveView(activeKey), [activeKey]);
 
   const selectedDealerDisplay = selectedDealerId || "Not Selected";
   const selectedDealerSubText = selectedDealerTenant
     ? selectedDealerTenant
     : "Select a dealer in Settings to apply dealer-specific headers";
 
+  const answeredCount = blueprint?.populatedFlatRows?.length ?? 0;
+
   return (
     <div style={PAGE_STYLE}>
       <div style={CONTAINER_STYLE}>
-        {/* Global Module Header with Unified Context Metadata */}
         <div style={HEADER_STYLE}>
           <div>
             <div style={TITLE_ROW_STYLE}>
@@ -188,9 +175,43 @@ export const Parts: React.FC<Props> = ({ onBack }) => {
                 🧩 Parts
               </div>
 
-              <div style={DEALER_PILL_STYLE}>
+              <div style={PILL_STYLE}>
                 <span style={{ color: "#94a3b8" }}>Dealer ID:</span>
-                <span style={{ color: "#f8fafc", fontWeight: 800 }}>{selectedDealerDisplay}</span>
+                <span style={{ color: "#f8fafc", fontWeight: 800 }}>
+                  {selectedDealerDisplay}
+                </span>
+              </div>
+
+              {tekionId && (
+                <div style={PILL_STYLE}>
+                  <span style={{ color: "#94a3b8" }}>Tekion ID:</span>
+                  <span style={{ color: "#60a5fa", fontWeight: 800, fontFamily: "monospace" }}>
+                    {tekionId}
+                  </span>
+                </div>
+              )}
+
+              <div
+                style={{
+                  ...PILL_STYLE,
+                  borderColor: hasBlueprint
+                    ? "rgba(34, 197, 94, 0.3)"
+                    : "rgba(239, 68, 68, 0.3)",
+                  background: hasBlueprint
+                    ? "rgba(34, 197, 94, 0.08)"
+                    : "rgba(239, 68, 68, 0.08)",
+                  cursor: "pointer",
+                }}
+                onClick={() => void refresh()}
+                title="Click to re-check blueprint from IndexedDB"
+              >
+                <span style={{ color: hasBlueprint ? "#4ade80" : "#f87171", fontWeight: 700 }}>
+                  {loading
+                    ? "↻ Resolving..."
+                    : hasBlueprint
+                    ? `✓ Blueprint Linked (${answeredCount} answers)`
+                    : "✕ No Parts Blueprint"}
+                </span>
               </div>
             </div>
 
@@ -204,7 +225,6 @@ export const Parts: React.FC<Props> = ({ onBack }) => {
           </button>
         </div>
 
-        {/* Sidebar + Active Child Component Layout */}
         <div className="parts-responsive-grid" style={LAYOUT_STYLE}>
           <aside style={SIDEBAR_STYLE}>
             <div style={{ display: "grid", gap: 6 }}>
@@ -242,7 +262,6 @@ export const Parts: React.FC<Props> = ({ onBack }) => {
             </div>
           </aside>
 
-          {/* Renders the active sub-view directly, removing layout duplication */}
           <main style={CONTENT_STYLE}>
             <div style={{ minWidth: 0 }}>{activeView}</div>
           </main>
@@ -259,6 +278,46 @@ export const Parts: React.FC<Props> = ({ onBack }) => {
         `}
       </style>
     </div>
+  );
+};
+
+export const Parts: React.FC<Props> = (props) => {
+  const [selectedDealerId, setSelectedDealerId] = useState<string>("");
+  const [selectedDealerTenant, setSelectedDealerTenant] = useState<string>("");
+
+  useEffect(() => {
+    const syncSelectedDealer = () => {
+      const storedProfileId = localStorage.getItem(SELECTED_DEALER_PROFILE_KEY);
+      const latestCapture = loadLatestExtensionCapture();
+      const matchedProfile =
+        latestCapture?.tekionProfiles?.find((p) => p.id === storedProfileId) ?? null;
+
+      setSelectedDealerId(matchedProfile?.dealerId ?? "");
+      setSelectedDealerTenant(matchedProfile?.tenantName ?? "");
+    };
+
+    syncSelectedDealer();
+
+    const unsubscribe = subscribeToExtensionCapture(() => {
+      syncSelectedDealer();
+    });
+
+    const handleWindowFocus = () => {
+      syncSelectedDealer();
+    };
+
+    window.addEventListener("focus", handleWindowFocus);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener("focus", handleWindowFocus);
+    };
+  }, []);
+
+  return (
+    <PartsBlueprintProvider dealerId={selectedDealerId}>
+      <PartsLayout {...props} selectedDealerTenant={selectedDealerTenant} />
+    </PartsBlueprintProvider>
   );
 };
 

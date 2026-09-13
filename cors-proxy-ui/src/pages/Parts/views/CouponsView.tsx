@@ -1,11 +1,16 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { loadGlobalHeaders } from "../../../services/tekionApiSettings";
+import { usePartsBlueprint } from "../../../Context/Blueprint_Parts_Context";
 import type { KeyValuePair } from "../../../types/proxy.types";
 
 const TGPT_TOKEN_KEY = "tgpt_access_token";
 const TGPT_BASE = "https://tapapi.tekioncloud.com/tapapi/tgpt";
 const COUPON_CREATE_URL =
   "https://preprodapp.tekioncloud.com/api/parts/proxy/u/settings/coupon";
+
+const QUESTION_HAS_COUPONS = "Do you have any parts coupons/discounts?";
+const QUESTION_COUPON_DETAILS =
+  "If yes, please provide the details for all additional discounts or other information here:";
 
 const MASTER_PARTS_PROMPT = `You are a lossless Automotive DMS Data Extraction Engine specializing specifically in PARTS Coupons and Discounts.
 The input contains arbitrary text from dealer parts notes, price lists, parts percentages, and spreadsheet exports.
@@ -98,6 +103,8 @@ function extractDealerIdFromHeaders(headers: Record<string, string>): string {
 }
 
 export const CouponsView: React.FC = () => {
+  const { getAnswer, hasBlueprint, loading: blueprintLoading } = usePartsBlueprint();
+
   const [token, setToken] = useState<string>("");
   const [draftToken, setDraftToken] = useState<string>("");
   const [inputText, setInputText] = useState<string>("");
@@ -118,6 +125,28 @@ export const CouponsView: React.FC = () => {
   const enabledHeaders = useMemo(() => toEnabledHeaderMap(loadGlobalHeaders()), []);
   const dealerId = useMemo(() => extractDealerIdFromHeaders(enabledHeaders), [enabledHeaders]);
   const globalHeaderCount = useMemo(() => Object.keys(enabledHeaders).length, [enabledHeaders]);
+
+  // Extract values directly from Blueprint IndexedDB context
+  const blueprintCouponStatus = useMemo(() => {
+    const ans = getAnswer(QUESTION_HAS_COUPONS);
+    return typeof ans === "string" ? ans.trim() : normalize(ans);
+  }, [getAnswer]);
+
+  const hasCouponsInBlueprint = useMemo(() => {
+    return blueprintCouponStatus.toLowerCase() === "yes";
+  }, [blueprintCouponStatus]);
+
+  const blueprintDetailsText = useMemo(() => {
+    const ans = getAnswer(QUESTION_COUPON_DETAILS);
+    return typeof ans === "string" ? ans.trim() : normalize(ans);
+  }, [getAnswer]);
+
+  // Auto-populate when Blueprint loads if the input is empty and coupons are declared "Yes"
+  useEffect(() => {
+    if (hasBlueprint && hasCouponsInBlueprint && blueprintDetailsText && !inputText) {
+      setInputText(blueprintDetailsText);
+    }
+  }, [hasBlueprint, hasCouponsInBlueprint, blueprintDetailsText, inputText]);
 
   const handleSaveToken = () => {
     if (!draftToken.trim()) return;
@@ -218,7 +247,10 @@ export const CouponsView: React.FC = () => {
       const jsonData = JSON.parse(jsonMatch[0]);
       const formatted: ParsedPartsCoupon[] = (jsonData.records || []).map((item: any, idx: number) => {
         const isPercentage = item.discount?.type === "percentage";
-        const val = item.discount?.value !== null && item.discount?.value !== undefined ? String(item.discount.value) : "0";
+        const val =
+          item.discount?.value !== null && item.discount?.value !== undefined
+            ? String(item.discount.value)
+            : "0";
 
         return {
           id: `parts-coupon-${idx}-${Date.now()}`,
@@ -257,8 +289,12 @@ export const CouponsView: React.FC = () => {
       if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
         const jsonData = JSON.parse(trimmed);
         const formatted: ParsedPartsCoupon[] = (jsonData.records || []).map((item: any, idx: number) => {
-          const isPercentage = item.discount?.type === "percentage" || item.pricingMethod === "PERCENTAGE";
-          const val = item.discount?.value !== null && item.discount?.value !== undefined ? String(item.discount.value) : item.value || "0";
+          const isPercentage =
+            item.discount?.type === "percentage" || item.pricingMethod === "PERCENTAGE";
+          const val =
+            item.discount?.value !== null && item.discount?.value !== undefined
+              ? String(item.discount.value)
+              : item.value || "0";
 
           return {
             id: `parts-coupon-${idx}-${Date.now()}`,
@@ -298,7 +334,9 @@ export const CouponsView: React.FC = () => {
 
     return parsedData.map((coupon) => {
       const isPercentage = coupon.pricingMethod === "PERCENTAGE";
-      const cleanGl = coupon.glAccount.includes("_") ? coupon.glAccount : `${dealerPrefix}_${coupon.glAccount}`;
+      const cleanGl = coupon.glAccount.includes("_")
+        ? coupon.glAccount
+        : `${dealerPrefix}_${coupon.glAccount}`;
       const numericVal = coupon.value || "0";
 
       const basePayload: any = {
@@ -572,6 +610,16 @@ export const CouponsView: React.FC = () => {
           <span style={badgeStyle}>
             Department: <b style={{ color: "#38bdf8" }}>PARTS Only</b>
           </span>
+          {blueprintLoading ? (
+            <span style={badgeStyle}>Blueprint: <b style={{ color: "#fde047" }}>Loading...</b></span>
+          ) : (
+            <span style={badgeStyle}>
+              Blueprint Coupon Answer:{" "}
+              <b style={{ color: hasCouponsInBlueprint ? "#86efac" : "#94a3b8" }}>
+                {blueprintCouponStatus || "None"}
+              </b>
+            </span>
+          )}
         </div>
 
         {message && (
@@ -602,9 +650,22 @@ export const CouponsView: React.FC = () => {
           gap: 12,
         }}
       >
-        <label style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" }}>
-          Paste Raw Dealer Notes or Spreadsheet Rows
-        </label>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <label style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" }}>
+            Paste Raw Dealer Notes or Spreadsheet Rows
+          </label>
+          {hasCouponsInBlueprint && blueprintDetailsText && (
+            <button
+              type="button"
+              onClick={() => setInputText(blueprintDetailsText)}
+              className="btn-secondary btn-sm"
+              style={{ fontSize: 11, padding: "4px 8px" }}
+            >
+              ⟳ Re-sync from Blueprint Details
+            </button>
+          )}
+        </div>
+
         <textarea
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
@@ -662,7 +723,9 @@ BATTERY15 - $15.00 FLAT DISCOUNT"
             fontSize: 12,
           }}
         >
-          <div style={{ fontWeight: 800, marginBottom: 4 }}>⚠️ Ignored Segments (Not Classified as Valid Coupons):</div>
+          <div style={{ fontWeight: 800, marginBottom: 4 }}>
+            ⚠️ Ignored Segments (Not Classified as Valid Coupons):
+          </div>
           <ul style={{ margin: 0, paddingLeft: 20 }}>
             {unclassifiedData.map((txt, i) => (
               <li key={i}>{txt}</li>
@@ -738,11 +801,17 @@ BATTERY15 - $15.00 FLAT DISCOUNT"
                     <td style={tdStyle}>
                       <select
                         value={row.pricingMethod}
-                        onChange={(e) => handleEditRow(idx, "pricingMethod", e.target.value as "FLAT" | "PERCENTAGE")}
+                        onChange={(e) =>
+                          handleEditRow(idx, "pricingMethod", e.target.value as "FLAT" | "PERCENTAGE")
+                        }
                         style={{ ...cellInputStyle, cursor: "pointer" }}
                       >
-                        <option value="FLAT" style={{ background: "#18181b" }}>Dollar ($)</option>
-                        <option value="PERCENTAGE" style={{ background: "#18181b" }}>Percentage (%)</option>
+                        <option value="FLAT" style={{ background: "#18181b" }}>
+                          Dollar ($)
+                        </option>
+                        <option value="PERCENTAGE" style={{ background: "#18181b" }}>
+                          Percentage (%)
+                        </option>
                       </select>
                     </td>
                     <td style={tdStyle}>
@@ -783,7 +852,10 @@ BATTERY15 - $15.00 FLAT DISCOUNT"
                           borderRadius: 4,
                           fontSize: 10,
                           fontWeight: 700,
-                          background: row.confidence >= 0.8 ? "rgba(16, 185, 129, 0.15)" : "rgba(245, 158, 11, 0.15)",
+                          background:
+                            row.confidence >= 0.8
+                              ? "rgba(16, 185, 129, 0.15)"
+                              : "rgba(245, 158, 11, 0.15)",
                           color: row.confidence >= 0.8 ? "#86efac" : "#fde68a",
                         }}
                       >
