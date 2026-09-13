@@ -15,6 +15,10 @@ import {
   loadLatestExtensionCapture,
   subscribeToExtensionCapture,
 } from "../../services/extensionBridge";
+import {
+  ServiceBlueprintProvider,
+  useServiceBlueprint,
+} from "../../Context/Blueprint_Service_Context";
 
 interface Props {
   onBack: () => void;
@@ -55,6 +59,72 @@ const SERVICE_ITEMS: ServiceNavItem[] = [
   { key: "mpvi", label: "11. Mpvi" },
   { key: "dispatch-settings", label: "12. Dispatch Settings" },
 ];
+
+const TopBlueprintBadges: React.FC = () => {
+  const { tekionId, hasBlueprint, blueprint, loading } = useServiceBlueprint();
+
+  const answerCount = useMemo(() => {
+    if (!blueprint) return 0;
+    const rows = blueprint.populatedFlatRows ?? blueprint.allFields ?? [];
+    return rows.filter(
+      (r) => r.decodedValue !== undefined && r.decodedValue !== null && r.decodedValue !== ""
+    ).length;
+  }, [blueprint]);
+
+  return (
+    <>
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          padding: "6px 10px",
+          borderRadius: 999,
+          border: "1px solid rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.04)",
+          color: "#cbd5e1",
+          fontSize: 12,
+          lineHeight: 1.2,
+          whiteSpace: "nowrap",
+        }}
+      >
+        <span style={{ color: "#94a3b8" }}>Tekion ID</span>
+        <span style={{ color: "#f8fafc", fontWeight: 800 }}>
+          {tekionId ?? "Not Found"}
+        </span>
+      </div>
+
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "6px 10px",
+          borderRadius: 999,
+          border: hasBlueprint
+            ? "1px solid rgba(34, 197, 94, 0.35)"
+            : "1px solid rgba(244, 63, 94, 0.35)",
+          background: hasBlueprint
+            ? "rgba(34, 197, 94, 0.12)"
+            : "rgba(244, 63, 94, 0.12)",
+          color: hasBlueprint ? "#86efac" : "#fca5a5",
+          fontSize: 12,
+          fontWeight: 700,
+          lineHeight: 1.2,
+          whiteSpace: "nowrap",
+        }}
+      >
+        {loading ? (
+          "Loading Blueprint..."
+        ) : hasBlueprint ? (
+          `✓ Blueprint Linked (${answerCount} answers)`
+        ) : (
+          "⚠ No Blueprint Linked"
+        )}
+      </div>
+    </>
+  );
+};
 
 function renderServiceSection(activeKey: ServiceSectionKey): React.ReactNode {
   switch (activeKey) {
@@ -151,211 +221,67 @@ export const Service: React.FC<Props> = ({ onBack }) => {
     : "Select a dealer in Settings to apply dealer-specific headers";
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        maxHeight: "100vh",
-        overflow: "auto",
-        padding: "24px 16px 36px",
-        boxSizing: "border-box",
-      }}
-      className="service-page-scroll"
-    >
-      <style>
-        {`
-          .service-page-scroll::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-          }
+    <ServiceBlueprintProvider dealerId={selectedDealerId}>
+      <div
+        style={{
+          minHeight: "100vh",
+          maxHeight: "100vh",
+          overflow: "auto",
+          padding: "24px 16px 36px",
+          boxSizing: "border-box",
+        }}
+        className="service-page-scroll"
+      >
+        <style>
+          {`
+            .service-page-scroll::-webkit-scrollbar {
+              width: 8px;
+              height: 8px;
+            }
 
-          .service-page-scroll::-webkit-scrollbar-track {
-            background: transparent;
-          }
+            .service-page-scroll::-webkit-scrollbar-track {
+              background: transparent;
+            }
 
-          .service-page-scroll::-webkit-scrollbar-thumb {
-            background: rgba(255,255,255,0.14);
-            border-radius: 8px;
-          }
+            .service-page-scroll::-webkit-scrollbar-thumb {
+              background: rgba(255,255,255,0.14);
+              border-radius: 8px;
+            }
 
-          .service-page-scroll::-webkit-scrollbar-thumb:hover {
-            background: rgba(255,255,255,0.24);
-          }
-        `}
-      </style>
+            .service-page-scroll::-webkit-scrollbar-thumb:hover {
+              background: rgba(255,255,255,0.24);
+            }
+          `}
+        </style>
 
-      <div style={{ maxWidth: 1400, margin: "0 auto", display: "grid", gap: 16 }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            gap: 12,
-            flexWrap: "wrap",
-          }}
-        >
-          <div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                flexWrap: "wrap",
-                marginBottom: 4,
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 28,
-                  fontWeight: 800,
-                  color: "#f8fafc",
-                }}
-              >
-                🛠 Service
-              </div>
-
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  background: "rgba(255,255,255,0.04)",
-                  color: "#cbd5e1",
-                  fontSize: 12,
-                  lineHeight: 1.2,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                <span style={{ color: "#94a3b8" }}>Selected Dealer ID</span>
-                <span style={{ color: "#f8fafc", fontWeight: 800 }}>
-                  {selectedDealerDisplay}
-                </span>
-              </div>
-            </div>
-
-
-            <div
-              style={{
-                color: "#64748b",
-                fontSize: 12,
-                lineHeight: 1.6,
-                marginTop: 4,
-                whiteSpace: "pre-wrap",
-                overflowWrap: "anywhere",
-              }}
-            >
-              {selectedDealerSubText}
-            </div>
-          </div>
-
-          <button className="btn-secondary btn-sm" onClick={onBack}>
-            ← Back
-          </button>
-        </div>
-
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "320px minmax(0, 1fr)",
-            gap: 16,
-            alignItems: "start",
-          }}
-        >
+        <div style={{ maxWidth: 1400, margin: "0 auto", display: "grid", gap: 16 }}>
           <div
             style={{
-              borderRadius: 18,
-              border: "1px solid rgba(255,255,255,0.08)",
-              background: "rgba(255,255,255,0.03)",
-              padding: 14,
-              display: "grid",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
               gap: 12,
-              position: "sticky",
-              top: 12,
-              maxHeight: "calc(100vh - 48px)",
-              overflow: "auto",
+              flexWrap: "wrap",
             }}
-            className="service-left-scroll"
           >
-            <div
-              style={{
-                color: "#f8fafc",
-                fontSize: 18,
-                fontWeight: 800,
-                padding: "4px 4px 2px",
-              }}
-            >
-              Service Sections
-            </div>
-
-            <div style={{ display: "grid", gap: 8 }}>
-              {SERVICE_ITEMS.map((item) => {
-                const isActive = item.key === activeKey;
-
-                return (
-                  <button
-                    key={item.key}
-                    type="button"
-                    onClick={() => setActiveKey(item.key)}
-                    style={{
-                      width: "100%",
-                      textAlign: "left",
-                      borderRadius: 14,
-                      cursor: "pointer",
-                      padding: "10px 14px",
-                      border: isActive
-                        ? "1px solid rgba(59,130,246,0.35)"
-                        : "1px solid rgba(255,255,255,0.08)",
-                      background: isActive
-                        ? "rgba(59,130,246,0.12)"
-                        : "rgba(255,255,255,0.02)",
-                    }}
-                  >
-                    <div
-                      style={{
-                        color: isActive ? "#dbeafe" : "#f8fafc",
-                        fontSize: 14,
-                        fontWeight: 700,
-                      }}
-                    >
-                      {item.label}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div
-            style={{
-              minWidth: 0,
-              borderRadius: 18,
-              border: "1px solid rgba(255,255,255,0.08)",
-              background: "rgba(255,255,255,0.03)",
-              padding: 18,
-              maxHeight: "calc(100vh - 48px)",
-              overflow: "auto",
-            }}
-            className="service-content-scroll"
-          >
-            <div style={{ marginBottom: 14 }}>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 6 }}>
+            <div>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  marginBottom: 4,
+                }}
+              >
                 <div
                   style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "6px 10px",
-                    borderRadius: 999,
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    background: "rgba(255,255,255,0.03)",
-                    color: "#cbd5e1",
-                    fontSize: 12,
+                    fontSize: 28,
+                    fontWeight: 800,
+                    color: "#f8fafc",
                   }}
                 >
-
-
+                  🛠 Service
                 </div>
 
                 <div
@@ -366,28 +292,137 @@ export const Service: React.FC<Props> = ({ onBack }) => {
                     padding: "6px 10px",
                     borderRadius: 999,
                     border: "1px solid rgba(255,255,255,0.08)",
-                    background: "rgba(255,255,255,0.03)",
+                    background: "rgba(255,255,255,0.04)",
                     color: "#cbd5e1",
                     fontSize: 12,
+                    lineHeight: 1.2,
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  Dealer ID
-                  <span style={{ color: "#f8fafc", fontWeight: 700 }}>
+                  <span style={{ color: "#94a3b8" }}>Selected Dealer ID</span>
+                  <span style={{ color: "#f8fafc", fontWeight: 800 }}>
                     {selectedDealerDisplay}
                   </span>
                 </div>
+
+                <TopBlueprintBadges />
               </div>
 
-              <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 800 }}>
-                {activeMeta.label}
+              <div
+                style={{
+                  color: "#64748b",
+                  fontSize: 12,
+                  lineHeight: 1.6,
+                  marginTop: 4,
+                  whiteSpace: "pre-wrap",
+                  overflowWrap: "anywhere",
+                }}
+              >
+                {selectedDealerSubText}
               </div>
             </div>
 
-            {renderServiceSection(activeKey)}
+            <button className="btn-secondary btn-sm" onClick={onBack}>
+              ← Back
+            </button>
+          </div>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "320px minmax(0, 1fr)",
+              gap: 16,
+              alignItems: "start",
+            }}
+          >
+            <div
+              style={{
+                borderRadius: 18,
+                border: "1px solid rgba(255,255,255,0.08)",
+                background: "rgba(255,255,255,0.03)",
+                padding: 14,
+                display: "grid",
+                gap: 12,
+                position: "sticky",
+                top: 12,
+                maxHeight: "calc(100vh - 48px)",
+                overflow: "auto",
+              }}
+              className="service-left-scroll"
+            >
+              <div
+                style={{
+                  color: "#f8fafc",
+                  fontSize: 18,
+                  fontWeight: 800,
+                  padding: "4px 4px 2px",
+                }}
+              >
+                Service Sections
+              </div>
+
+              <div style={{ display: "grid", gap: 8 }}>
+                {SERVICE_ITEMS.map((item) => {
+                  const isActive = item.key === activeKey;
+
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() => setActiveKey(item.key)}
+                      style={{
+                        width: "100%",
+                        textAlign: "left",
+                        borderRadius: 14,
+                        cursor: "pointer",
+                        padding: "10px 14px",
+                        border: isActive
+                          ? "1px solid rgba(59,130,246,0.35)"
+                          : "1px solid rgba(255,255,255,0.08)",
+                        background: isActive
+                          ? "rgba(59,130,246,0.12)"
+                          : "rgba(255,255,255,0.02)",
+                      }}
+                    >
+                      <div
+                        style={{
+                          color: isActive ? "#dbeafe" : "#f8fafc",
+                          fontSize: 14,
+                          fontWeight: 700,
+                        }}
+                      >
+                        {item.label}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div
+              style={{
+                minWidth: 0,
+                borderRadius: 18,
+                border: "1px solid rgba(255,255,255,0.08)",
+                background: "rgba(255,255,255,0.03)",
+                padding: 18,
+                maxHeight: "calc(100vh - 48px)",
+                overflow: "auto",
+              }}
+              className="service-content-scroll"
+            >
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 800 }}>
+                  {activeMeta.label}
+                </div>
+              </div>
+
+              {renderServiceSection(activeKey)}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ServiceBlueprintProvider>
   );
 };
 

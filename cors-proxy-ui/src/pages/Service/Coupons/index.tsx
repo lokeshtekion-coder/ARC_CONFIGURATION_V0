@@ -1,15 +1,16 @@
-// /Users/tlreddy/Desktop/ARC_CONFIGURATION_V0/cors-proxy-ui/src/pages/Service/Coupons/index.tsx
-
 import React, { useEffect, useMemo, useState } from "react";
 import {
   loadGlobalHeaders,
-  loadTekionApiSettingsBundle,
 } from "../../../services/tekionApiSettings";
 import type { KeyValuePair } from "../../../types/proxy.types";
 import { ParsedCoupon, TGPT_TOKEN_KEY, TGPT_BASE, MASTER_PROMPT } from "./constants";
+import { useServiceBlueprint } from "../../../Context/Blueprint_Service_Context";
 
 const COUPON_CREATE_URL =
   "https://preprodapp.tekioncloud.com/api/service-module/u/coupon?locale=en_US";
+
+const BLUEPRINT_QUESTION_KEY =
+  'Please list all discounts (put "None" if you don\'t use discounts)';
 
 type UiMessage = {
   ok: boolean;
@@ -54,6 +55,8 @@ function extractDealerIdFromHeaders(headers: Record<string, string>): string {
 }
 
 const CouponsView: React.FC = () => {
+  const { getAnswer, hasBlueprint, loading: blueprintLoading } = useServiceBlueprint();
+
   const [token, setToken] = useState<string>("");
   const [draftToken, setDraftToken] = useState<string>("");
   const [inputText, setInputText] = useState<string>("");
@@ -64,6 +67,24 @@ const CouponsView: React.FC = () => {
   const [loadingText, setLoadingText] = useState("");
   const [isPushing, setIsPushing] = useState(false);
   const [message, setMessage] = useState<UiMessage | null>(null);
+
+  // Extract raw discount text from Service Blueprint
+  const rawBlueprintValue = useMemo(() => {
+    if (!hasBlueprint) return "";
+    const ans = getAnswer(BLUEPRINT_QUESTION_KEY);
+    if (ans === undefined || ans === null) return "";
+    if (typeof ans === "string") return ans.trim();
+    if (Array.isArray(ans)) return ans.join("\n");
+    if (typeof ans === "object") return JSON.stringify(ans, null, 2);
+    return String(ans).trim();
+  }, [hasBlueprint, getAnswer]);
+
+  // Pre-fill input once blueprint answer is resolved
+  useEffect(() => {
+    if (rawBlueprintValue && !inputText) {
+      setInputText(rawBlueprintValue);
+    }
+  }, [rawBlueprintValue, inputText]);
 
   useEffect(() => {
     const saved = localStorage.getItem(TGPT_TOKEN_KEY);
@@ -282,11 +303,14 @@ const CouponsView: React.FC = () => {
     const startTimeVal = String(Date.now() + 120000);
 
     return parsedData.map((coupon) => {
-      const isFixedPrice = coupon.priceAmount !== null && coupon.priceAmount > 0 && (coupon.discountAmount === null || coupon.discountType === "None");
+      const isFixedPrice =
+        coupon.priceAmount !== null &&
+        coupon.priceAmount > 0 &&
+        (coupon.discountAmount === null || coupon.discountType === "None");
       const isPercentage = !isFixedPrice && coupon.discountType === "Percentage";
 
       const discountTypeVal = isFixedPrice ? "FIXED" : "FLAT";
-      const pricingMethod = isFixedPrice ? "FLAT" : (isPercentage ? "PERCENTAGE" : "FLAT");
+      const pricingMethod = isFixedPrice ? "FLAT" : isPercentage ? "PERCENTAGE" : "FLAT";
 
       let appliedOnTekion = "LABOR_PLUS_PARTS";
       if (coupon.appliedOn === "Labor") appliedOnTekion = "LABOR";
@@ -342,7 +366,9 @@ const CouponsView: React.FC = () => {
 
       const numericVal = isFixedPrice
         ? coupon.priceAmount!
-        : (coupon.discountAmount !== null ? coupon.discountAmount : 1);
+        : coupon.discountAmount !== null
+        ? coupon.discountAmount
+        : 1;
 
       return {
         couponCode: coupon.code,
@@ -358,7 +384,7 @@ const CouponsView: React.FC = () => {
         appliedOn: appliedOnTekion,
         pricingDetail: {
           pricingMethod,
-          flatAmount: isFixedPrice ? numericVal : (isPercentage ? null : String(numericVal)),
+          flatAmount: isFixedPrice ? numericVal : isPercentage ? null : String(numericVal),
           percentage: isPercentage ? String(numericVal) : null,
           capAmount: coupon.capAmount !== null ? String(coupon.capAmount) : null,
           ...(isFixedPrice ? { flatSellingPrice: numericVal } : {}),
@@ -604,8 +630,7 @@ const CouponsView: React.FC = () => {
       }}
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2 style={{ margin: 0, fontSize: "1.25rem", color: "#fff" }}>
-        </h2>
+        <h2 style={{ margin: 0, fontSize: "1.25rem", color: "#fff" }}>Coupons & Discounts</h2>
         <button
           onClick={() => {
             localStorage.removeItem(TGPT_TOKEN_KEY);
@@ -654,6 +679,29 @@ const CouponsView: React.FC = () => {
         >
           Global Headers: <b style={{ color: "#f8fafc" }}>{globalHeaderCount}</b>
         </span>
+        <span
+          style={{
+            padding: "6px 10px",
+            borderRadius: 999,
+            background: rawBlueprintValue
+              ? "rgba(34,197,94,0.08)"
+              : "rgba(255,255,255,0.04)",
+            border: rawBlueprintValue
+              ? "1px solid rgba(34,197,94,0.25)"
+              : "1px solid rgba(255,255,255,0.08)",
+            color: rawBlueprintValue ? "#86efac" : "#94a3b8",
+            fontSize: 12,
+          }}
+        >
+          Blueprint Field:{" "}
+          <b style={{ color: rawBlueprintValue ? "#86efac" : "#f8fafc" }}>
+            {blueprintLoading
+              ? "Loading..."
+              : rawBlueprintValue
+              ? "Answer Found"
+              : "No Answer"}
+          </b>
+        </span>
       </div>
 
       {message ? (
@@ -675,14 +723,43 @@ const CouponsView: React.FC = () => {
       ) : null}
 
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        <label htmlFor="coupon-input" style={{ fontSize: "0.9rem" }}>
-          Paste raw dealer blueprint notes below:
-        </label>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 8,
+          }}
+        >
+          <label htmlFor="coupon-input" style={{ fontSize: "0.9rem" }}>
+            Dealer Blueprint Discount Notes:
+          </label>
+          {rawBlueprintValue && (
+            <button
+              type="button"
+              onClick={() => setInputText(rawBlueprintValue)}
+              style={{
+                background: "rgba(34,197,94,0.12)",
+                border: "1px solid rgba(34,197,94,0.3)",
+                color: "#86efac",
+                fontSize: "12px",
+                padding: "3px 10px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                fontWeight: 600,
+              }}
+            >
+              ↻ Reload from Blueprint
+            </button>
+          )}
+        </div>
+
         <textarea
           id="coupon-input"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
-          placeholder="Paste notes here..."
+          placeholder="Paste notes here or load from blueprint..."
           disabled={isAiLoading}
           style={{
             width: "100%",
@@ -697,7 +774,8 @@ const CouponsView: React.FC = () => {
             opacity: isAiLoading ? 0.5 : 1,
           }}
         />
-        <div style={{ display: "flex", gap: "12px" }}>
+
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
           <button
             onClick={handleAIParse}
             disabled={isAiLoading || !inputText.trim()}
@@ -708,7 +786,7 @@ const CouponsView: React.FC = () => {
               borderRadius: "6px",
               color: "#fff",
               fontWeight: 600,
-              cursor: isAiLoading ? "not-allowed" : "pointer",
+              cursor: isAiLoading || !inputText.trim() ? "not-allowed" : "pointer",
               display: "flex",
               alignItems: "center",
               gap: "8px",
@@ -727,7 +805,7 @@ const CouponsView: React.FC = () => {
               borderRadius: "6px",
               color: "#cbd5e1",
               fontWeight: 600,
-              cursor: isAiLoading ? "not-allowed" : "pointer",
+              cursor: isAiLoading || !inputText.trim() ? "not-allowed" : "pointer",
             }}
           >
             Parse Local JSON (Manual)

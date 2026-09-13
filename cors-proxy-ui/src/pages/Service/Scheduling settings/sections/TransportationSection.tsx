@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import type { OperationKey, TransportationSummaryRow, UiMessage } from "../types";
 
 type ResultRow = { name: string; ok: boolean; text: string };
@@ -31,28 +31,50 @@ const TransportationSection: React.FC<Props> = ({
   onLoad,
   onExecute,
 }) => {
+  // Track whether this is the initial load when the user opened the section
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    // Skip the automatic trigger on mount
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    // Only triggers when the user actively clicks GET or CONFIGURE
+    if (operation === "get") {
+      onLoad();
+    } else if (operation === "configure") {
+      onExecute();
+    }
+  }, [operation]);
+
   if (operation !== "get" && operation !== "configure") return null;
 
+  const isActive = loading || running;
+  const statusText = loading
+    ? "Fetching transportation types..."
+    : running
+    ? "Fetching and auto-configuring..."
+    : null;
+
   return (
-    <>
+    <div style={{ display: "grid", gap: 16 }}>
+      {/* Header & Status Panel */}
       <div style={{ ...cardStyle, display: "grid", gap: 12 }}>
-        <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800 }}>
-          Transportation Settings
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800 }}>
+            {operation === "get" ? "Transportation Types" : "Auto-Configuration"}
+          </div>
+
+          {isActive && (
+            <span style={{ color: "#94a3b8", fontSize: 13, fontStyle: "italic" }}>
+              {statusText}
+            </span>
+          )}
         </div>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button className="btn-secondary btn-sm" onClick={onLoad} disabled={loading}>
-            {loading ? "Loading..." : "▶ Load"}
-          </button>
-
-          {operation === "configure" ? (
-            <button className="btn-primary" onClick={onExecute} disabled={running}>
-              {running ? "Running..." : "⚙ Auto Configure"}
-            </button>
-          ) : null}
-        </div>
-
-        {message ? (
+        {message && (
           <div
             style={{
               borderRadius: 12,
@@ -69,13 +91,14 @@ const TransportationSection: React.FC<Props> = ({
           >
             {message.text}
           </div>
-        ) : null}
+        )}
       </div>
 
-      {rows.length > 0 ? (
+      {/* Loaded Transportation Types */}
+      {rows.length > 0 && (
         <div style={{ ...cardStyle, display: "grid", gap: 10 }}>
-          <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800 }}>
-            Transportation Types
+          <div style={{ color: "#f8fafc", fontSize: 15, fontWeight: 700 }}>
+            Configured Types ({rows.length})
           </div>
 
           {rows.map((row, index) => (
@@ -103,12 +126,20 @@ const TransportationSection: React.FC<Props> = ({
             </div>
           ))}
         </div>
-      ) : null}
+      )}
 
-      {operation === "configure" && result ? (
+      {/* Execution Results */}
+      {operation === "configure" && result && (
         <div style={cardStyle}>
-          <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
-            Transportation Configuration Results
+          <div
+            style={{
+              color: "#f8fafc",
+              fontSize: 15,
+              fontWeight: 700,
+              marginBottom: 12,
+            }}
+          >
+            Execution Results
           </div>
 
           <div style={{ display: "grid", gap: 8 }}>
@@ -133,8 +164,8 @@ const TransportationSection: React.FC<Props> = ({
             ))}
           </div>
         </div>
-      ) : null}
-    </>
+      )}
+    </div>
   );
 };
 
