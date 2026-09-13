@@ -1,6 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { DAY_OPTIONS } from "../constants";
 import type { DayState, OperationKey, UiMessage } from "../types";
+import { useServiceBlueprint } from "../../../../Context/Blueprint_Service_Context";
+import {
+  TGPT_TOKEN_KEY,
+  SCHEDULE_SYNC_EVENT,
+  extractAllBlueprintScheduleNotes,
+  streamScheduleExtraction,
+  parseScheduleLocally,
+  getCachedUnifiedSchedule,
+  matchDaySchedule,
+  UnifiedScheduleResponse,
+} from "../services/tgptScheduleService";
 
 type Props = {
   operation: OperationKey | "";
@@ -15,16 +26,14 @@ type Props = {
 };
 
 type InputMode = "ai" | "manual";
-type PreviewSource = "appointment_hours" | "operating_hours" | "manual" | "unknown";
 
 type ParsedSchedulePreviewItem = {
-  source: PreviewSource;
+  source: string;
   blocked: boolean;
   start: string;
   end: string;
   rawValue: string;
-  rawSegments: string[];
-  notes: string[];
+  notes: string;
 };
 
 const cardStyle: React.CSSProperties = {
@@ -44,299 +53,20 @@ const inputStyle: React.CSSProperties = {
   outline: "none",
 };
 
-function normalizeText(value: unknown): string {
-  return String(value ?? "").trim();
-}
-
-function escapeRegex(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function isBlockedText(value: string): boolean {
-  const normalized = normalizeText(value).toLowerCase();
-  if (!normalized) return true;
-
-  const compact = normalized.replace(/\s+/g, " ");
-  return [
-    "na",
-    "n/a",
-    "closed",
-    "close",
-    "blocked",
-    "not available",
-    "not applicable",
-    "off",
-    "holiday",
-    "none",
-    "-",
-    "--",
-  ].includes(compact);
-}
-
-function formatTwoDigits(n: number): string {
-  return String(n).padStart(2, "0");
-}
-
-function to24HourFromHourMinute(hour: number, minute: number, meridiem?: "am" | "pm"): string {
-  let h = hour;
-
-  if (meridiem === "am") {
-    if (h === 12) h = 0;
-  } else if (meridiem === "pm") {
-    if (h < 12) h += 12;
-  }
-
-  if (h < 0 || h > 23 || minute < 0 || minute > 59) {
-    return "";
-  }
-
-  return `${formatTwoDigits(h)}:${formatTwoDigits(minute)}`;
-}
-
-function parseTimeToken(raw: string): string {
-  const original = normalizeText(raw).toLowerCase();
-  if (!original) return "";
-
-  const cleaned = original
-    .replace(/\./g, "")
-    .replace(/\s+/g, "")
-    .replace("a.m", "am")
-    .replace("p.m", "pm");
-
-  const meridiemMatch = cleaned.match(/(am|pm)$/);
-  const meridiem = meridiemMatch?.[1] as "am" | "pm" | undefined;
-  const core = cleaned.replace(/(am|pm)$/, "");
-
-  if (!core) return "";
-
-  if (core.includes(":")) {
-    const [hStr, mStr = "0"] = core.split(":");
-    const hour = Number(hStr);
-    const minute = Number(mStr);
-    if (Number.isNaN(hour) || Number.isNaN(minute)) return "";
-    return to24HourFromHourMinute(hour, minute, meridiem);
-  }
-
-  const digits = core.replace(/\D/g, "");
-  if (!digits) return "";
-
-  if (digits.length <= 2) {
-    const hour = Number(digits);
-    if (Number.isNaN(hour)) return "";
-    return to24HourFromHourMinute(hour, 0, meridiem);
-  }
-
-  if (digits.length === 3) {
-    const hour = Number(digits.slice(0, 1));
-    const minute = Number(digits.slice(1, 3));
-    if (Number.isNaN(hour) || Number.isNaN(minute)) return "";
-    return to24HourFromHourMinute(hour, minute, meridiem);
-  }
-
-  if (digits.length === 4) {
-    const hour = Number(digits.slice(0, 2));
-    const minute = Number(digits.slice(2, 4));
-    if (Number.isNaN(hour) || Number.isNaN(minute)) return "";
-    return to24HourFromHourMinute(hour, minute, meridiem);
-  }
-
-  return "";
-}
-
-function extractTimeRanges(raw: string): Array<{ start: string; end: string; raw: string }> {
-  const text = normalizeText(raw);
-  if (!text || isBlockedText(text)) return [];
-
-  const normalized = text
-    .replace(/[–—]/g, "-")
-    .replace(/\bto\b/gi, "-")
-    .replace(/\s*-\s*/g, "-")
-    .replace(/\s*,\s*/g, ",")
-    .replace(/\s*\/\s*/g, "/")
-    .trim();
-
-  const segments = normalized
-    .split(/[;,/]+/)
-    .map((segment) => normalizeText(segment))
-    .filter(Boolean);
-
-  const out: Array<{ start: string; end: string; raw: string }> = [];
-
-  for (const segment of segments) {
-    const pair = segment.split("-");
-    if (pair.length !== 2) continue;
-
-    const leftRaw = normalizeText(pair[0]);
-    const rightRaw = normalizeText(pair[1]);
-
-    const start = parseTimeToken(leftRaw);
-    const end = parseTimeToken(rightRaw);
-
-    if (start && end) {
-      out.push({
-        start,
-        end,
-        raw: segment,
-      });
-    }
-  }
-
-  return out;
-}
-
-function parseRawHoursValue(raw: string): {
-  blocked: boolean;
-  start: string;
-  end: string;
-  rawSegments: string[];
-  notes: string[];
-} {
-  const notes: string[] = [];
-  const text = normalizeText(raw);
-
-  if (!text || isBlockedText(text)) {
-    return {
-      blocked: true,
-      start: "",
-      end: "",
-      rawSegments: text ? [text] : [],
-      notes: text ? ['Detected closed/blocked value'] : ["No usable value found"],
-    };
-  }
-
-  const ranges = extractTimeRanges(text);
-
-  if (ranges.length === 0) {
-    return {
-      blocked: false,
-      start: "",
-      end: "",
-      rawSegments: text ? [text] : [],
-      notes: ["Could not safely parse time range"],
-    };
-  }
-
-  if (ranges.length > 1) {
-    notes.push(
-      "Multiple time windows detected; using earliest start and latest end for advisor schedule preview"
-    );
-  }
-
-  const sorted = [...ranges].sort((a, b) => a.start.localeCompare(b.start));
-  const start = sorted[0].start;
-  const end = [...sorted].sort((a, b) => b.end.localeCompare(a.end))[0].end;
-
-  return {
-    blocked: false,
-    start,
-    end,
-    rawSegments: ranges.map((item) => item.raw),
-    notes,
-  };
-}
-
-function buildEmptyPreviewFromSchedule(
-  schedule: DayState
-): Record<string, ParsedSchedulePreviewItem> {
+function buildEmptyPreview(schedule: DayState): Record<string, ParsedSchedulePreviewItem> {
   const out: Record<string, ParsedSchedulePreviewItem> = {};
-
   for (const day of DAY_OPTIONS) {
     const row = schedule[day.key];
     out[day.key] = {
-      source: "unknown",
+      source: "Manual",
       blocked: Boolean(row?.blocked),
       start: row?.start || "",
       end: row?.end || "",
       rawValue: "",
-      rawSegments: [],
-      notes: [],
+      notes: "",
     };
   }
-
   return out;
-}
-
-function extractSectionValue(
-  text: string,
-  dayLabel: string,
-  labelText: string
-): string {
-  const escapedDay = escapeRegex(dayLabel);
-  const escapedLabel = escapeRegex(labelText);
-
-  const regex = new RegExp(
-    `${escapedDay}\\s*\\(${escapedLabel}\\)\\s*:\\s*([\\s\\S]*?)(?=\\n(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\\s*\\((?:Operating Hours|Appointment Hours - can be same as operating hours)\\)\\s*:|$)`,
-    "i"
-  );
-
-  return normalizeText(text.match(regex)?.[1]);
-}
-
-function parseRawScheduleText(
-  rawInput: string,
-  schedule: DayState
-): Record<string, ParsedSchedulePreviewItem> {
-  const text = rawInput.replace(/\r/g, "");
-  const preview = buildEmptyPreviewFromSchedule(schedule);
-
-  for (const day of DAY_OPTIONS) {
-    const appointmentRaw = extractSectionValue(
-      text,
-      day.label,
-      "Appointment Hours - can be same as operating hours"
-    );
-
-    const operatingRaw = extractSectionValue(text, day.label, "Operating Hours");
-
-    if (appointmentRaw) {
-      const parsed = parseRawHoursValue(appointmentRaw);
-      preview[day.key] = {
-        source: "appointment_hours",
-        blocked: parsed.blocked,
-        start: parsed.start,
-        end: parsed.end,
-        rawValue: appointmentRaw,
-        rawSegments: parsed.rawSegments,
-        notes: parsed.notes,
-      };
-      continue;
-    }
-
-    if (operatingRaw) {
-      const parsed = parseRawHoursValue(operatingRaw);
-      preview[day.key] = {
-        source: "operating_hours",
-        blocked: parsed.blocked,
-        start: parsed.start,
-        end: parsed.end,
-        rawValue: operatingRaw,
-        rawSegments: parsed.rawSegments,
-        notes: parsed.notes,
-      };
-      continue;
-    }
-
-    preview[day.key] = {
-      ...preview[day.key],
-      source: "unknown",
-      notes: ["No Appointment Hours or Operating Hours found"],
-    };
-  }
-
-  return preview;
-}
-
-function getPreviewSourceLabel(source: PreviewSource): string {
-  switch (source) {
-    case "appointment_hours":
-      return "Appointment Hours";
-    case "operating_hours":
-      return "Operating Hours";
-    case "manual":
-      return "Manual";
-    default:
-      return "—";
-  }
 }
 
 const ServiceAdvisorsSection: React.FC<Props> = ({
@@ -350,32 +80,64 @@ const ServiceAdvisorsSection: React.FC<Props> = ({
   onLoad,
   onExecute,
 }) => {
+  const { getAnswer, hasBlueprint } = useServiceBlueprint();
+
   const [inputMode, setInputMode] = useState<InputMode>("ai");
   const [autoSelectEnabled, setAutoSelectEnabled] = useState(false);
   const [rawScheduleInput, setRawScheduleInput] = useState("");
   const [parsedPreview, setParsedPreview] = useState<Record<string, ParsedSchedulePreviewItem>>(
-    buildEmptyPreviewFromSchedule(advisorSchedule)
+    buildEmptyPreview(advisorSchedule)
   );
+  const [validationWarnings, setValidationWarnings] = useState<string[]>([]);
+
+  const [token, setToken] = useState<string>("");
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState("");
+  const [localMessage, setLocalMessage] = useState<UiMessage | null>(null);
 
   useEffect(() => {
-    setParsedPreview((prev) => {
-      const next = { ...prev };
-      for (const day of DAY_OPTIONS) {
-        if (!next[day.key]) {
-          next[day.key] = {
-            source: "unknown",
-            blocked: Boolean(advisorSchedule[day.key]?.blocked),
-            start: advisorSchedule[day.key]?.start || "",
-            end: advisorSchedule[day.key]?.end || "",
-            rawValue: "",
-            rawSegments: [],
-            notes: [],
-          };
-        }
+    const saved = localStorage.getItem(TGPT_TOKEN_KEY);
+    if (saved) setToken(saved);
+  }, []);
+
+  const applyAppointmentHours = (data: UnifiedScheduleResponse) => {
+    const newPreview = buildEmptyPreview(advisorSchedule);
+    for (const day of DAY_OPTIONS) {
+      const item = matchDaySchedule(data.appointmentHours, day.key, day.label);
+      if (item) {
+        newPreview[day.key] = {
+          source: item.source || "Appointment Hours",
+          blocked: Boolean(item.blocked),
+          start: item.start || "",
+          end: item.end || "",
+          rawValue: item.raw || "",
+          notes: item.notes || "",
+        };
       }
-      return next;
-    });
-  }, [advisorSchedule]);
+    }
+    setParsedPreview(newPreview);
+    setValidationWarnings(data.validationWarnings || []);
+  };
+
+  useEffect(() => {
+    const cached = getCachedUnifiedSchedule();
+    if (cached) applyAppointmentHours(cached);
+
+    const handleSync = (e: Event) => {
+      const customEvent = e as CustomEvent<UnifiedScheduleResponse>;
+      if (customEvent.detail) applyAppointmentHours(customEvent.detail);
+    };
+
+    window.addEventListener(SCHEDULE_SYNC_EVENT, handleSync);
+    return () => window.removeEventListener(SCHEDULE_SYNC_EVENT, handleSync);
+  }, []);
+
+  useEffect(() => {
+    if (hasBlueprint && getAnswer && !rawScheduleInput) {
+      const rawText = extractAllBlueprintScheduleNotes(getAnswer);
+      if (rawText.trim()) setRawScheduleInput(rawText);
+    }
+  }, [hasBlueprint, getAnswer, rawScheduleInput]);
 
   const canShowConfigurator = operation === "post";
 
@@ -391,27 +153,13 @@ const ServiceAdvisorsSection: React.FC<Props> = ({
 
   const updateScheduleRow = (
     dayKey: keyof DayState,
-    patch: {
-      blocked?: boolean;
-      start?: string;
-      end?: string;
-    }
+    patch: { blocked?: boolean; start?: string; end?: string }
   ) => {
     setAdvisorSchedule((prev) => {
-      const nextCurrentDay = {
-        ...prev[dayKey],
-        ...patch,
-      };
-
-      if (!autoSelectEnabled) {
-        return {
-          ...prev,
-          [dayKey]: nextCurrentDay,
-        };
-      }
+      const nextCurrentDay = { ...prev[dayKey], ...patch };
+      if (!autoSelectEnabled) return { ...prev, [dayKey]: nextCurrentDay };
 
       const next = { ...prev };
-
       for (const day of DAY_OPTIONS) {
         next[day.key] = {
           ...next[day.key],
@@ -420,24 +168,70 @@ const ServiceAdvisorsSection: React.FC<Props> = ({
           end: nextCurrentDay.end,
         };
       }
-
       return next;
     });
   };
 
-  const handlePreviewFromAiInput = () => {
-    const nextPreview = parseRawScheduleText(rawScheduleInput, advisorSchedule);
-    setParsedPreview(nextPreview);
+  const handleAIParse = async () => {
+    if (!rawScheduleInput.trim() || !token) {
+      if (!token) {
+        setLocalMessage({
+          ok: false,
+          text: "TGPT token missing. Please paste token in Coupons View or localStorage.",
+        });
+      }
+      return;
+    }
+
+    setIsAiLoading(true);
+    setLoadingText("Initializing TGPT...");
+    setLocalMessage(null);
+
+    try {
+      const data = await streamScheduleExtraction(token, rawScheduleInput, (status) =>
+        setLoadingText(status)
+      );
+      applyAppointmentHours(data);
+      setLocalMessage({
+        ok: true,
+        text: "Appointment hours extracted and cross-validated with Operating Hours.",
+      });
+    } catch (err: any) {
+      setLocalMessage({
+        ok: false,
+        text: `AI Error: ${err.message}`,
+      });
+    } finally {
+      setIsAiLoading(false);
+      setLoadingText("");
+    }
+  };
+
+  const handleManualLocalParse = () => {
+    if (!rawScheduleInput.trim()) return;
+    setLocalMessage(null);
+
+    try {
+      const data = parseScheduleLocally(rawScheduleInput);
+      applyAppointmentHours(data);
+      setLocalMessage({
+        ok: true,
+        text: "Parsed locally via 5-layer rule engine (Offline).",
+      });
+    } catch (err: any) {
+      setLocalMessage({
+        ok: false,
+        text: `Local Parse Error: ${err.message}`,
+      });
+    }
   };
 
   const handleApplyPreviewToSchedule = () => {
     setAdvisorSchedule((prev) => {
       const next = { ...prev };
-
       for (const day of DAY_OPTIONS) {
         const preview = parsedPreview[day.key];
         if (!preview) continue;
-
         next[day.key] = {
           ...next[day.key],
           blocked: preview.blocked,
@@ -445,7 +239,6 @@ const ServiceAdvisorsSection: React.FC<Props> = ({
           end: preview.blocked ? "" : preview.end,
         };
       }
-
       return next;
     });
   };
@@ -471,24 +264,24 @@ const ServiceAdvisorsSection: React.FC<Props> = ({
           ) : null}
         </div>
 
-        {message ? (
+        {(message || localMessage) && (
           <div
             style={{
               borderRadius: 12,
               padding: "10px 12px",
               fontSize: 13,
-              color: message.ok ? "#bbf7d0" : "#fecaca",
-              background: message.ok
+              color: (localMessage || message)!.ok ? "#bbf7d0" : "#fecaca",
+              background: (localMessage || message)!.ok
                 ? "rgba(34,197,94,0.10)"
                 : "rgba(239,68,68,0.10)",
-              border: message.ok
+              border: (localMessage || message)!.ok
                 ? "1px solid rgba(34,197,94,0.22)"
                 : "1px solid rgba(239,68,68,0.22)",
             }}
           >
-            {message.text}
+            {(localMessage || message)!.text}
           </div>
-        ) : null}
+        )}
       </div>
 
       {operation === "get" && serviceAdvisorsRaw ? (
@@ -520,17 +313,10 @@ const ServiceAdvisorsSection: React.FC<Props> = ({
             </div>
 
             <div style={{ color: "#94a3b8", fontSize: 13 }}>
-              Configure a default weekly schedule for all active Service Advisors.
+              Configure a default weekly appointment schedule for all active Service Advisors.
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                gap: 16,
-                flexWrap: "wrap",
-                alignItems: "center",
-              }}
-            >
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
               <label
                 style={{
                   display: "inline-flex",
@@ -546,7 +332,7 @@ const ServiceAdvisorsSection: React.FC<Props> = ({
                   checked={inputMode === "ai"}
                   onChange={() => setInputMode("ai")}
                 />
-                Option 1: AI
+                Option 1: AI (TGPT)
               </label>
 
               <label
@@ -570,73 +356,107 @@ const ServiceAdvisorsSection: React.FC<Props> = ({
 
             {inputMode === "ai" ? (
               <div style={{ display: "grid", gap: 10 }}>
-                <div style={{ color: "#f8fafc", fontSize: 14, fontWeight: 700 }}>
-                  AI Raw Schedule Input
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: 8,
+                  }}
+                >
+                  <div style={{ color: "#f8fafc", fontSize: 14, fontWeight: 700 }}>
+                    AI Raw Schedule Input
+                  </div>
+                  {getAnswer && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const rawText = extractAllBlueprintScheduleNotes(getAnswer);
+                        if (rawText.trim()) setRawScheduleInput(rawText);
+                      }}
+                      style={{
+                        background: "rgba(34,197,94,0.12)",
+                        border: "1px solid rgba(34,197,94,0.3)",
+                        color: "#86efac",
+                        fontSize: "12px",
+                        padding: "3px 10px",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                      }}
+                    >
+                      ↻ Reload from Blueprint
+                    </button>
+                  )}
                 </div>
 
                 <div style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.5 }}>
-                  Paste dealership raw schedule notes. We prefer{" "}
-                  <span style={{ color: "#e2e8f0", fontWeight: 700 }}>
-                    Appointment Hours - can be same as operating hours
-                  </span>{" "}
-                  first, then fallback to{" "}
-                  <span style={{ color: "#e2e8f0", fontWeight: 700 }}>
-                    Operating Hours
-                  </span>
-                  . Multiple windows like <code>730-1000, 1300-1530</code> are supported and will
-                  be merged into a full-day preview window like <code>07:30 - 15:30</code>.
+                  This box contains both Operating and Appointment hours. If appointment notes say{" "}
+                  <code>same</code> or <code>same as operating hours</code>, TGPT automatically resolves
+                  them against the operating hours.
                 </div>
 
                 <textarea
                   value={rawScheduleInput}
                   onChange={(e) => setRawScheduleInput(e.target.value)}
-                  placeholder={`Paste raw scheduling notes here...
-
-Example:
-Monday (Operating Hours):
-730-1730
-Monday (Appointment Hours - can be same as operating hours):
-730-1000, 1300-1530
-Tuesday (Operating Hours):
-7:30 AM - 5:30 PM
-Tuesday (Appointment Hours - can be same as operating hours):
-7:30-10:00, 13:00-15:30
-Wednesday (Operating Hours):
-730-1730
-Wednesday (Appointment Hours - can be same as operating hours):
-NA
-Thursday (Operating Hours):
-Closed
-Friday (Operating Hours):
-7-5
-Saturday (Operating Hours):
-N/A
-Sunday (Operating Hours):
-N/A`}
+                  placeholder="Paste raw scheduling notes here or load from blueprint..."
                   rows={14}
+                  disabled={isAiLoading}
                   style={{
                     width: "100%",
                     padding: "12px 14px",
                     borderRadius: 12,
                     border: "1px solid rgba(255,255,255,0.10)",
                     background: "rgba(255,255,255,0.03)",
-                    color: "#f8fafc",
+                    color: "#a7f3d0",
                     outline: "none",
                     resize: "vertical",
                     fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
                     fontSize: 12,
                     lineHeight: 1.5,
+                    opacity: isAiLoading ? 0.6 : 1,
                   }}
                 />
 
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                   <button
                     type="button"
-                    className="btn-secondary btn-sm"
-                    onClick={handlePreviewFromAiInput}
-                    disabled={!rawScheduleInput.trim()}
+                    onClick={handleAIParse}
+                    disabled={isAiLoading || !rawScheduleInput.trim()}
+                    style={{
+                      padding: "10px 24px",
+                      background: isAiLoading ? "#60a5fa" : "#3b82f6",
+                      border: "none",
+                      borderRadius: "6px",
+                      color: "#fff",
+                      fontWeight: 600,
+                      cursor: isAiLoading || !rawScheduleInput.trim() ? "not-allowed" : "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      fontSize: "13px",
+                    }}
                   >
-                    Preview Parsed Schedule
+                    {isAiLoading ? `⏳ ${loadingText}` : "✨ Parse with AI (Auto)"}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleManualLocalParse}
+                    disabled={isAiLoading || !rawScheduleInput.trim()}
+                    style={{
+                      padding: "10px 24px",
+                      background: "transparent",
+                      border: "1px solid rgba(255,255,255,0.2)",
+                      borderRadius: "6px",
+                      color: "#cbd5e1",
+                      fontWeight: 600,
+                      cursor: isAiLoading || !rawScheduleInput.trim() ? "not-allowed" : "pointer",
+                      fontSize: "13px",
+                    }}
+                  >
+                    ⚡ Parse Local (Offline)
                   </button>
 
                   <button
@@ -660,8 +480,29 @@ N/A`}
                   lineHeight: 1.5,
                 }}
               >
-                Manual option selected. You can directly fill the weekly schedule below. Later we
-                can wire a richer manual bulk-input mode if needed.
+                Manual option selected. Directly adjust weekly schedule below.
+              </div>
+            )}
+
+            {validationWarnings.length > 0 && (
+              <div
+                style={{
+                  borderRadius: 10,
+                  background: "rgba(234, 179, 8, 0.1)",
+                  border: "1px solid rgba(234, 179, 8, 0.3)",
+                  padding: "10px 14px",
+                  color: "#fef08a",
+                  fontSize: 13,
+                  display: "grid",
+                  gap: 4,
+                }}
+              >
+                <div style={{ fontWeight: 700 }}>⚠️ Cross-Validation Alerts:</div>
+                <ul style={{ margin: 0, paddingLeft: 20 }}>
+                  {validationWarnings.map((w, idx) => (
+                    <li key={idx}>{w}</li>
+                  ))}
+                </ul>
               </div>
             )}
 
@@ -690,13 +531,8 @@ N/A`}
                   checked={autoSelectEnabled}
                   onChange={(e) => setAutoSelectEnabled(e.target.checked)}
                 />
-                Auto Select
+                Auto Select (Apply changes across all days)
               </label>
-
-              <div style={{ color: "#94a3b8", fontSize: 12, lineHeight: 1.5 }}>
-                When checked, changing one day’s blocked/start/end values will automatically copy
-                the same values to all days. If unchecked later, the copied values remain preserved.
-              </div>
             </div>
 
             <div
@@ -750,11 +586,7 @@ N/A`}
                       value={row.start}
                       disabled={row.blocked}
                       style={inputStyle}
-                      onChange={(e) =>
-                        updateScheduleRow(day.key, {
-                          start: e.target.value,
-                        })
-                      }
+                      onChange={(e) => updateScheduleRow(day.key, { start: e.target.value })}
                     />
 
                     <input
@@ -762,11 +594,7 @@ N/A`}
                       value={row.end}
                       disabled={row.blocked}
                       style={inputStyle}
-                      onChange={(e) =>
-                        updateScheduleRow(day.key, {
-                          end: e.target.value,
-                        })
-                      }
+                      onChange={(e) => updateScheduleRow(day.key, { end: e.target.value })}
                     />
                   </div>
                 );
@@ -780,41 +608,20 @@ N/A`}
             </div>
 
             <div style={{ color: "#94a3b8", fontSize: 13 }}>
-              Appointment hours are preferred first. If multiple ranges are found, preview uses the
-              earliest start and latest end.
+              Advisor appointment hours resolved with full operating hours awareness.
             </div>
 
             <div style={{ overflowX: "auto" }}>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  fontSize: 13,
-                }}
-              >
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
                   <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                    <th style={{ textAlign: "left", padding: "10px 8px", color: "#94a3b8" }}>
-                      Day
-                    </th>
-                    <th style={{ textAlign: "left", padding: "10px 8px", color: "#94a3b8" }}>
-                      Source
-                    </th>
-                    <th style={{ textAlign: "left", padding: "10px 8px", color: "#94a3b8" }}>
-                      Blocked
-                    </th>
-                    <th style={{ textAlign: "left", padding: "10px 8px", color: "#94a3b8" }}>
-                      Start
-                    </th>
-                    <th style={{ textAlign: "left", padding: "10px 8px", color: "#94a3b8" }}>
-                      End
-                    </th>
-                    <th style={{ textAlign: "left", padding: "10px 8px", color: "#94a3b8" }}>
-                      Parsed Segments
-                    </th>
-                    <th style={{ textAlign: "left", padding: "10px 8px", color: "#94a3b8" }}>
-                      Notes
-                    </th>
+                    <th style={{ textAlign: "left", padding: "10px 8px", color: "#94a3b8" }}>Day</th>
+                    <th style={{ textAlign: "left", padding: "10px 8px", color: "#94a3b8" }}>Source</th>
+                    <th style={{ textAlign: "left", padding: "10px 8px", color: "#94a3b8" }}>Blocked</th>
+                    <th style={{ textAlign: "left", padding: "10px 8px", color: "#94a3b8" }}>Start</th>
+                    <th style={{ textAlign: "left", padding: "10px 8px", color: "#94a3b8" }}>End</th>
+                    <th style={{ textAlign: "left", padding: "10px 8px", color: "#94a3b8" }}>Raw Input</th>
+                    <th style={{ textAlign: "left", padding: "10px 8px", color: "#94a3b8" }}>Notes</th>
                   </tr>
                 </thead>
 
@@ -825,15 +632,15 @@ N/A`}
                         {label}
                       </td>
                       <td style={{ padding: "10px 8px", color: "#cbd5e1" }}>
-                        {getPreviewSourceLabel(preview?.source ?? "unknown")}
+                        {preview?.source || "—"}
                       </td>
                       <td style={{ padding: "10px 8px", color: "#cbd5e1" }}>
                         {preview?.blocked ? "Yes" : "No"}
                       </td>
-                      <td style={{ padding: "10px 8px", color: "#cbd5e1" }}>
+                      <td style={{ padding: "10px 8px", color: "#86efac", fontWeight: 600 }}>
                         {preview?.start || "—"}
                       </td>
-                      <td style={{ padding: "10px 8px", color: "#cbd5e1" }}>
+                      <td style={{ padding: "10px 8px", color: "#86efac", fontWeight: 600 }}>
                         {preview?.end || "—"}
                       </td>
                       <td
@@ -841,23 +648,12 @@ N/A`}
                           padding: "10px 8px",
                           color: "#94a3b8",
                           fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-                          whiteSpace: "pre-wrap",
-                          wordBreak: "break-word",
                         }}
                       >
-                        {preview?.rawSegments?.length
-                          ? preview.rawSegments.join(" | ")
-                          : preview?.rawValue || "—"}
+                        {preview?.rawValue || "—"}
                       </td>
-                      <td
-                        style={{
-                          padding: "10px 8px",
-                          color: "#94a3b8",
-                          whiteSpace: "pre-wrap",
-                          wordBreak: "break-word",
-                        }}
-                      >
-                        {preview?.notes?.length ? preview.notes.join(" • ") : "—"}
+                      <td style={{ padding: "10px 8px", color: "#fde047" }}>
+                        {preview?.notes || "—"}
                       </td>
                     </tr>
                   ))}

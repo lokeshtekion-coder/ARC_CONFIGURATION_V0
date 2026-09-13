@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { loadGlobalHeaders } from "../../../services/tekionApiSettings";
 import type { KeyValuePair } from "../../../types/proxy.types";
+import { useServiceBlueprint } from "../../../Context/Blueprint_Service_Context";
 
 type OperationKey = "get" | "post";
 
@@ -44,11 +45,12 @@ type CreateResponse = {
 };
 
 type LaborPreset = {
-  key: string;
+  key: "cp" | "ip" | "wp";
   code: string;
   description: string;
   rateType: number;
   accent: string;
+  blueprintQuestion: string;
 };
 
 const LABOR_RATE_URL =
@@ -61,6 +63,7 @@ const PRESET_RATES: LaborPreset[] = [
     description: "Customer Labor Rate",
     rateType: 0,
     accent: "#3b82f6",
+    blueprintQuestion: "What is your default Customer labor rate?",
   },
   {
     key: "ip",
@@ -68,6 +71,7 @@ const PRESET_RATES: LaborPreset[] = [
     description: "Internal Labor Rate",
     rateType: 0,
     accent: "#f59e0b",
+    blueprintQuestion: "What is your default Internal labor rate?",
   },
   {
     key: "wp",
@@ -75,6 +79,7 @@ const PRESET_RATES: LaborPreset[] = [
     description: "Warranty Labor Rate",
     rateType: 0,
     accent: "#22c55e",
+    blueprintQuestion: "What is your default Warranty labor rate?",
   },
 ];
 
@@ -84,6 +89,51 @@ function normalize(value: unknown): string {
 
 function normalizeUpper(value: unknown): string {
   return normalize(value).toUpperCase();
+}
+
+/**
+ * Extracts a numeric labor rate from clean numbers or conversational sentences.
+ * e.g., "$185.00", "185", "Our standard customer rate is $195/hr", "165 an hour"
+ */
+function extractRateFromText(value: unknown): string {
+  if (value === undefined || value === null) return "";
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+    return String(value);
+  }
+
+  const str = String(value).trim();
+  if (!str) return "";
+
+  // Direct clean number check (e.g. "185", "185.50", "$185")
+  const cleanDirect = str.replace(/[$,\s]/g, "");
+  if (!Number.isNaN(Number(cleanDirect)) && Number(cleanDirect) > 0) {
+    return cleanDirect;
+  }
+
+  // Regex 1: Explicit dollar sign pattern ($195 or $ 195.50)
+  const dollarMatch = str.match(/\$\s*(\d+(?:\.\d{1,2})?)/);
+  if (dollarMatch?.[1] && Number(dollarMatch[1]) > 0) {
+    return dollarMatch[1];
+  }
+
+  // Regex 2: Number followed by /hr, hr, hour, per hour
+  const hourlyMatch = str.match(/\b(\d+(?:\.\d{1,2})?)\s*(?:\/|\bper\b)?\s*(?:hr|hour)\b/i);
+  if (hourlyMatch?.[1] && Number(hourlyMatch[1]) > 0) {
+    return hourlyMatch[1];
+  }
+
+  // Regex 3: Match plausible dealership labor rates (e.g. between 30 and 1500)
+  const allNumbers = str.match(/\b\d+(?:\.\d{1,2})?\b/g);
+  if (allNumbers && allNumbers.length > 0) {
+    const plausible = allNumbers.find((nStr) => {
+      const n = parseFloat(nStr);
+      return n >= 30 && n <= 1500;
+    });
+    if (plausible) return plausible;
+    return allNumbers[0];
+  }
+
+  return "";
 }
 
 function toEnabledHeaderMap(headers: KeyValuePair[]): Record<string, string> {
@@ -350,8 +400,8 @@ const badgeStyle: React.CSSProperties = {
   background: "rgba(255,255,255,0.03)",
   border: "1px solid rgba(255,255,255,0.08)",
   color: "#cbd5e1",
-  fontSize: 10,
-  whiteSpace: "wrap",
+  fontSize: 11,
+  whiteSpace: "nowrap",
 };
 
 const cardStyle: React.CSSProperties = {
@@ -414,6 +464,8 @@ function zebraRowStyle(index: number): React.CSSProperties {
 }
 
 const LaborPricingView: React.FC = () => {
+  const { getAnswer, hasBlueprint, loading: blueprintLoading } = useServiceBlueprint();
+
   const [headerMap, setHeaderMap] = useState<Record<string, string>>({});
   const [operation, setOperation] = useState<OperationKey>("get");
 
@@ -424,6 +476,13 @@ const LaborPricingView: React.FC = () => {
   const [laborRates, setLaborRates] = useState<LaborRateRow[]>([]);
   const [rawGetResponse, setRawGetResponse] = useState<unknown>(null);
   const [showRawGetResponse, setShowRawGetResponse] = useState(false);
+
+  // Individual preset rates (pre-filled from Blueprint)
+  const [presetRates, setPresetRates] = useState<Record<"cp" | "ip" | "wp", string>>({
+    cp: "0",
+    ip: "0",
+    wp: "0",
+  });
 
   const [hourlyRate, setHourlyRate] = useState("0");
   const [effectiveDate, setEffectiveDate] = useState(buildTomorrowInputDate());
@@ -451,6 +510,63 @@ const LaborPricingView: React.FC = () => {
   const detectedSiteId = useMemo(() => extractSiteIdFromHeaders(headerMap), [headerMap]);
   const effectiveSiteId = detectedSiteId || "-1_7896";
   const headerCount = useMemo(() => Object.keys(headerMap).length, [headerMap]);
+
+  // Extract Blueprint Rates for presets
+  const blueprintRates = useMemo(() => {
+    if (!hasBlueprint) return { cp: "", ip: "", wp: "" };
+
+    const cpRaw = getAnswer("What is your default Customer labor rate?");
+    const ipRaw = getAnswer("What is your default Internal labor rate?");
+    const wpRaw = getAnswer("What is your default Warranty labor rate?");
+
+    return {
+      cp: extractRateFromText(cpRaw),
+      ip: extractRateFromText(ipRaw),
+      wp: extractRateFromText(wpRaw),
+    };
+  }, [hasBlueprint, getAnswer]);
+
+  // Auto-populate preset inputs when blueprint is loaded
+  useEffect(() => {
+    if (!hasBlueprint) return;
+
+    setPresetRates((prev) => {
+      const next = { ...prev };
+      let changed = false;
+
+      (["cp", "ip", "wp"] as const).forEach((key) => {
+        const bpRate = blueprintRates[key];
+        if (bpRate && (prev[key] === "0" || prev[key] === "")) {
+          next[key] = bpRate;
+          changed = true;
+        }
+      });
+
+      return changed ? next : prev;
+    });
+
+    // Also populate default shared hourlyRate if CP is found
+    if (blueprintRates.cp && (hourlyRate === "0" || !hourlyRate)) {
+      setHourlyRate(blueprintRates.cp);
+    }
+  }, [blueprintRates, hasBlueprint, hourlyRate]);
+
+  const handleReloadFromBlueprint = useCallback(() => {
+    setPresetRates({
+      cp: blueprintRates.cp || "0",
+      ip: blueprintRates.ip || "0",
+      wp: blueprintRates.wp || "0",
+    });
+
+    if (blueprintRates.cp) {
+      setHourlyRate(blueprintRates.cp);
+    }
+
+    setMessage({
+      ok: true,
+      text: "Labor rates reloaded from Service Blueprint.",
+    });
+  }, [blueprintRates]);
 
   const proxyRequest = useCallback(
     async (payload: {
@@ -551,7 +667,7 @@ const LaborPricingView: React.FC = () => {
         }
 
         if (!Number.isFinite(params.rateValue) || params.rateValue <= 0) {
-          throw new Error("Please enter a valid hourly labor rate.");
+          throw new Error(`Please enter a valid hourly labor rate for ${params.name}.`);
         }
 
         const payload = buildCreatePayload({
@@ -571,10 +687,11 @@ const LaborPricingView: React.FC = () => {
 
         setMessage({
           ok: true,
-          text: `Labor rate "${params.name}" created successfully${response?.data?.id ? ` (ID: ${response.data.id})` : ""}.`,
+          text: `Labor rate "${params.name}" created successfully${
+            response?.data?.id ? ` (ID: ${response.data.id})` : ""
+          }.`,
         });
 
-        setHourlyRate("0");
         if (params.key === "custom") {
           setCustomCode("");
           setCustomDescription("");
@@ -597,16 +714,16 @@ const LaborPricingView: React.FC = () => {
 
   const handleCreatePreset = useCallback(
     async (preset: LaborPreset) => {
-      const rateValue = Number(hourlyRate);
+      const specificRate = Number(presetRates[preset.key] || hourlyRate);
       await createLaborRate({
         key: preset.key,
         name: preset.code,
         description: preset.description,
         rateType: preset.rateType,
-        rateValue,
+        rateValue: specificRate,
       });
     },
-    [createLaborRate, hourlyRate]
+    [createLaborRate, hourlyRate, presetRates]
   );
 
   const handleCreateCustom = useCallback(async () => {
@@ -656,10 +773,14 @@ const LaborPricingView: React.FC = () => {
       name: normalizeUpper(customCode) || "CP",
       description: normalize(customDescription) || "Customer Labor Rate",
       rateType: 0,
-      hourLaborRate: Number(customRate || hourlyRate || 0),
+      hourLaborRate: Number(customRate || presetRates.cp || hourlyRate || 0),
       effectiveDateInput: effectiveDate || buildTomorrowInputDate(),
     });
-  }, [customCode, customDescription, customRate, effectiveDate, effectiveSiteId, hourlyRate]);
+  }, [customCode, customDescription, customRate, effectiveDate, effectiveSiteId, hourlyRate, presetRates.cp]);
+
+  const hasAnyBlueprintRate = Boolean(
+    blueprintRates.cp || blueprintRates.ip || blueprintRates.wp
+  );
 
   return (
     <div
@@ -679,13 +800,45 @@ const LaborPricingView: React.FC = () => {
       `}</style>
 
       {/* Meta Indicators */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
         <span style={badgeStyle}>
           Tek Site ID: <b style={{ color: detectedSiteId ? "#86efac" : "#fcd34d" }}>{effectiveSiteId}</b>
         </span>
         <span style={badgeStyle}>
           Global Headers: <b style={{ color: "#f8fafc" }}>{headerCount}</b>
         </span>
+        <span
+          style={{
+            ...badgeStyle,
+            background: hasAnyBlueprintRate ? "rgba(34,197,94,0.08)" : "rgba(255,255,255,0.03)",
+            border: hasAnyBlueprintRate ? "1px solid rgba(34,197,94,0.25)" : "1px solid rgba(255,255,255,0.08)",
+            color: hasAnyBlueprintRate ? "#86efac" : "#94a3b8",
+          }}
+        >
+          Blueprint Rates:{" "}
+          <b style={{ color: hasAnyBlueprintRate ? "#86efac" : "#f8fafc" }}>
+            {blueprintLoading ? "Loading..." : hasAnyBlueprintRate ? "Detected" : "None Found"}
+          </b>
+        </span>
+
+        {hasAnyBlueprintRate && (
+          <button
+            type="button"
+            onClick={handleReloadFromBlueprint}
+            style={{
+              background: "rgba(34,197,94,0.12)",
+              border: "1px solid rgba(34,197,94,0.3)",
+              color: "#86efac",
+              fontSize: "11px",
+              padding: "4px 8px",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            ↻ Sync from Blueprint
+          </button>
+        )}
       </div>
 
       {/* Action Bar */}
@@ -896,14 +1049,17 @@ const LaborPricingView: React.FC = () => {
             >
               <div>
                 <label style={{ display: "block", color: "#cbd5e1", fontSize: 13, marginBottom: 6 }}>
-                  Hourly Labor Rate ($)
+                  Fallback Hourly Labor Rate ($)
                 </label>
                 <input
                   type="number"
                   min="0"
                   step="0.01"
                   value={hourlyRate}
-                  onChange={(e) => setHourlyRate(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setHourlyRate(val);
+                  }}
                   style={{
                     width: "100%",
                     padding: "12px 14px",
@@ -938,77 +1094,132 @@ const LaborPricingView: React.FC = () => {
             </div>
           </div>
 
-          {/* Quick Create Presets as Sleek Rows */}
+          {/* Quick Create Presets */}
           <div style={cardStyle}>
-            <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
-              Quick Create Presets
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                flexWrap: "wrap",
+                gap: 8,
+                marginBottom: 12,
+              }}
+            >
+              <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800 }}>
+                Quick Create Presets
+              </div>
+              <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                Pre-filled automatically from Conquest Service Blueprint questions.
+              </div>
             </div>
 
-            <div style={{ display: "grid", gap: 8 }}>
-              {PRESET_RATES.map((preset) => (
-                <div
-                  key={preset.key}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 12,
-                    flexWrap: "wrap",
-                    padding: "10px 14px",
-                    borderRadius: 12,
-                    border: `1px solid ${preset.accent}24`,
-                    background: `${preset.accent}0d`,
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <span
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        padding: "4px 10px",
-                        borderRadius: 8,
-                        fontSize: 13,
-                        fontWeight: 800,
-                        color: preset.accent,
-                        background: `${preset.accent}1a`,
-                        border: `1px solid ${preset.accent}33`,
-                        minWidth: 44,
-                      }}
-                    >
-                      {preset.code}
-                    </span>
+            <div style={{ display: "grid", gap: 10 }}>
+              {PRESET_RATES.map((preset) => {
+                const currentVal = presetRates[preset.key] || "";
+                const bpDetected = blueprintRates[preset.key];
 
-                    <span style={{ color: "#f8fafc", fontSize: 14, fontWeight: 600 }}>
-                      {preset.description}
-                    </span>
-                  </div>
+                return (
+                  <div
+                    key={preset.key}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      gap: 12,
+                      flexWrap: "wrap",
+                      padding: "12px 14px",
+                      borderRadius: 12,
+                      border: `1px solid ${preset.accent}24`,
+                      background: `${preset.accent}0d`,
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          padding: "4px 10px",
+                          borderRadius: 8,
+                          fontSize: 13,
+                          fontWeight: 800,
+                          color: preset.accent,
+                          background: `${preset.accent}1a`,
+                          border: `1px solid ${preset.accent}33`,
+                          minWidth: 44,
+                        }}
+                      >
+                        {preset.code}
+                      </span>
 
-                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                    <div style={{ color: "#cbd5e1", fontSize: 13 }}>
-                      Rate: <b style={{ color: "#f8fafc" }}>{formatCurrency(hourlyRate)}</b>
+                      <div>
+                        <div style={{ color: "#f8fafc", fontSize: 14, fontWeight: 600 }}>
+                          {preset.description}
+                        </div>
+                        {bpDetected ? (
+                          <div style={{ color: "#86efac", fontSize: 11, marginTop: 2 }}>
+                            ✨ Blueprint: {formatCurrency(bpDetected)}
+                          </div>
+                        ) : (
+                          <div style={{ color: "#94a3b8", fontSize: 11, marginTop: 2 }}>
+                            No Blueprint value found
+                          </div>
+                        )}
+                      </div>
                     </div>
 
-                    <button
-                      className="btn-primary"
-                      onClick={() => void handleCreatePreset(preset)}
-                      disabled={creatingKey !== null || headerCount === 0}
-                      style={{
-                        background: preset.accent,
-                        borderColor: preset.accent,
-                        padding: "6px 14px",
-                        fontSize: 13,
-                      }}
-                    >
-                      {creatingKey === preset.key ? "Creating..." : `Create ${preset.code}`}
-                    </button>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ color: "#cbd5e1", fontSize: 13 }}>Rate ($):</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={currentVal}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setPresetRates((prev) => ({
+                              ...prev,
+                              [preset.key]: val,
+                            }));
+                          }}
+                          placeholder={hourlyRate !== "0" ? hourlyRate : "0.00"}
+                          style={{
+                            width: 100,
+                            padding: "6px 10px",
+                            borderRadius: 8,
+                            border: "1px solid rgba(255,255,255,0.12)",
+                            background: "rgba(0,0,0,0.3)",
+                            color: "#86efac",
+                            fontWeight: 700,
+                            outline: "none",
+                            fontSize: 13,
+                          }}
+                        />
+                      </div>
+
+                      <button
+                        className="btn-primary"
+                        onClick={() => void handleCreatePreset(preset)}
+                        disabled={creatingKey !== null || headerCount === 0}
+                        style={{
+                          background: preset.accent,
+                          borderColor: preset.accent,
+                          padding: "8px 16px",
+                          fontSize: 13,
+                        }}
+                      >
+                        {creatingKey === preset.key ? "Creating..." : `Create ${preset.code}`}
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          {/* Custom Labor Rate as Inline Row */}
+          {/* Custom Labor Rate */}
           <div style={cardStyle}>
             <div
               style={{
@@ -1151,6 +1362,7 @@ const LaborPricingView: React.FC = () => {
             ) : null}
           </div>
 
+          {/* Payload Preview */}
           <div style={cardStyle}>
             <div
               style={{
