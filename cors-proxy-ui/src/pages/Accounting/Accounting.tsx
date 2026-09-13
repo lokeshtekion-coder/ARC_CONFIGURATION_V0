@@ -24,7 +24,6 @@ type AccountingNavKey =
 interface AccountingNavItem {
   key: AccountingNavKey;
   label: string;
-  description: string;
 }
 
 const SELECTED_DEALER_PROFILE_KEY = "arc_selected_dealer_profile_id_v1";
@@ -33,42 +32,42 @@ const ACCOUNTING_ITEMS: AccountingNavItem[] = [
   {
     key: "ap-setup",
     label: "AP Setup",
-    description: "Accounts Payable setup workspace",
+
   },
   {
     key: "ar-setup",
     label: "AR Setup",
-    description: "Accounts Receivable setup workspace",
+
   },
   {
     key: "accounting-global-settings",
     label: "Accounting Global Settings",
-    description: "Global accounting settings and controls",
+
   },
   {
     key: "auto-posting-settings",
     label: "Auto Posting Settings",
-    description: "Posting automation settings",
+
   },
   {
     key: "user-access-setup",
     label: "User Access Setup",
-    description: "Accounting permissions and user access",
+
   },
   {
     key: "field-rules-setup",
     label: "Field Rules Setup",
-    description: "Accounting field rule configuration",
+
   },
   {
     key: "journal-mapping",
     label: "Journal Mapping",
-    description: "Journal mapping workspace",
+
   },
   {
     key: "glam",
     label: "GLAM",
-    description: "General Ledger Account Mapping workspace",
+
   },
 ];
 
@@ -135,10 +134,10 @@ const dealerPillStyle: React.CSSProperties = {
 
 function PlaceholderContent({
   title,
-  description,
+
 }: {
   title: string;
-  description: string;
+
 }) {
   return (
     <div style={{ display: "grid", gap: 16 }}>
@@ -153,15 +152,7 @@ function PlaceholderContent({
         >
           {title}
         </div>
-        <div
-          style={{
-            color: "#94a3b8",
-            fontSize: 14,
-            lineHeight: 1.7,
-          }}
-        >
-          {description}
-        </div>
+
       </div>
 
       <div
@@ -281,9 +272,7 @@ export const Accounting: React.FC<Props> = ({ onBack }) => {
               </div>
             </div>
 
-            <div style={{ color: "#94a3b8", fontSize: 14 }}>
-              Accounting auto-configuration workspace
-            </div>
+
 
             <div
               style={{
@@ -359,15 +348,7 @@ export const Accounting: React.FC<Props> = ({ onBack }) => {
                     {item.label}
                   </div>
 
-                  <div
-                    style={{
-                      color: isActive ? "#bfdbfe" : "#94a3b8",
-                      fontSize: 12,
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    {item.description}
-                  </div>
+
                 </button>
               );
             })}
@@ -419,9 +400,7 @@ export const Accounting: React.FC<Props> = ({ onBack }) => {
                 {activeItem.label}
               </div>
 
-              <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>
-                {activeItem.description}
-              </div>
+
             </div>
 
             {activeItem.key === "glam" ? (
@@ -433,7 +412,6 @@ export const Accounting: React.FC<Props> = ({ onBack }) => {
             ) : (
               <PlaceholderContent
                 title={activeItem.label}
-                description={activeItem.description}
               />
             )}
           </div>

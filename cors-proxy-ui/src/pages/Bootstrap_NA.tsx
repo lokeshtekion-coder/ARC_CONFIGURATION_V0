@@ -32,7 +32,7 @@ const ACCT_TYPE_COLORS: Record<string, string> = {
 const acctColor = (t: string) => ACCT_TYPE_COLORS[t?.toUpperCase()] ?? "#98989d";
 
 /* ─── Tabs ──────────────────────────────────────────────────────────── */
-type Tab = "glAccounts" | "costCenter" | "journals";
+type Tab = "glAccounts" | "costCenter" | "journals" | "salesChains";
 
 /* ─── GL Accounts Sub-view ──────────────────────────────────────────── */
 const GLAccountsView: React.FC<{ accounts: GLAccount[] }> = ({ accounts }) => {
@@ -194,6 +194,225 @@ const JournalsView: React.FC<{ journals: Journal[] }> = ({ journals }) => (
   </table>
 );
 
+/* ─── Sales Chains Sub-view ─────────────────────────────────────────── */
+interface SalesChainsProps {
+  assetMap: Record<string, any> | null;
+}
+
+const SalesChainsView: React.FC<SalesChainsProps> = ({ assetMap }) => {
+  const assetKeys = useMemo(() => {
+    if (!assetMap || typeof assetMap !== "object") return [];
+    return Object.keys(assetMap);
+  }, [assetMap]);
+
+  const [filterAssetKey, setFilterAssetKey] = useState<string>("ALL");
+  const [expandedKeys, setExpandedKeys]     = useState<Record<string, boolean>>({});
+  const [showRawMap, setShowRawMap]         = useState<boolean>(false);
+
+  // Initialize: expand the first asset or all if count <= 3
+  useEffect(() => {
+    if (assetKeys.length > 0) {
+      const initial: Record<string, boolean> = {};
+      assetKeys.forEach((key, idx) => {
+        initial[key] = idx === 0 || assetKeys.length <= 3;
+      });
+      setExpandedKeys(initial);
+    }
+  }, [assetKeys]);
+
+  if (!assetMap || assetKeys.length === 0) {
+    return (
+      <div className="bx-empty-state">
+        <span className="bx-empty-icon">⛓</span>
+        <p>No <code>accessibleAssetMap</code> entries found in this payload.</p>
+      </div>
+    );
+  }
+
+  const toggleExpand = (key: string) => {
+    setExpandedKeys((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const expandAll = () => {
+    const next: Record<string, boolean> = {};
+    assetKeys.forEach((k) => { next[k] = true; });
+    setExpandedKeys(next);
+  };
+
+  const collapseAll = () => {
+    const next: Record<string, boolean> = {};
+    assetKeys.forEach((k) => { next[k] = false; });
+    setExpandedKeys(next);
+  };
+
+  const displayedKeys = filterAssetKey === "ALL"
+    ? assetKeys
+    : assetKeys.filter((k) => k === filterAssetKey);
+
+  return (
+    <div className="bx-table-wrap">
+      {/* Asset Map Dropdown & Accordion Actions */}
+      <div className="bx-search-bar" style={{ gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+        <label htmlFor="asset-map-select" style={{ fontSize: "13px", fontWeight: 600 }}>
+          accessibleAssetMap:
+        </label>
+        <select
+          id="asset-map-select"
+          className="bx-search-input"
+          style={{ maxWidth: "340px", cursor: "pointer" }}
+          value={filterAssetKey}
+          onChange={(e) => setFilterAssetKey(e.target.value)}
+        >
+          <option value="ALL">Show All Assets ({assetKeys.length})</option>
+          {assetKeys.map((key) => {
+            const entry = assetMap[key];
+            const displayName = entry?.name || entry?.dealerName || entry?.assetName;
+            return (
+              <option key={key} value={key}>
+                {key}{displayName ? ` — ${displayName}` : ""}
+              </option>
+            );
+          })}
+        </select>
+
+        <div style={{ display: "flex", gap: "6px" }}>
+          <button className="btn-secondary btn-xs" onClick={expandAll}>Expand All</button>
+          <button className="btn-secondary btn-xs" onClick={collapseAll}>Collapse All</button>
+        </div>
+      </div>
+
+      {/* Expandable/Collapsible Asset Cards */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "12px" }}>
+        {displayedKeys.map((key) => {
+          const currentAsset = assetMap[key] ?? {};
+          const rawChains =
+            currentAsset.salesChains ??
+            currentAsset.salesChain ??
+            currentAsset.chains ??
+            null;
+
+          const chainsList: any[] = Array.isArray(rawChains)
+            ? rawChains
+            : rawChains && typeof rawChains === "object"
+            ? Object.values(rawChains)
+            : [];
+
+          const displayName = currentAsset.name || currentAsset.dealerName || currentAsset.assetName;
+          const isExpanded = !!expandedKeys[key];
+
+          return (
+            <div key={key} className="bx-cc-block" style={{ margin: 0 }}>
+              <div
+                className="bx-cc-header"
+                onClick={() => toggleExpand(key)}
+                style={{ cursor: "pointer", userSelect: "none" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ fontSize: "11px" }}>{isExpanded ? "▼" : "▶"}</span>
+                  <code className="bx-key-label">{key}</code>
+                  {displayName && (
+                    <span style={{ fontSize: "13px", fontWeight: 500 }}>{displayName}</span>
+                  )}
+                </div>
+                <span className="bx-count-badge">
+                  {chainsList.length} Chain{chainsList.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+
+              {isExpanded && (
+                <div style={{ padding: "8px 0 0 0" }}>
+                  {chainsList.length > 0 ? (
+                    <table className="bx-table">
+                      <thead>
+                        <tr>
+                          <th>Chain Name</th>
+                          <th>Code / Key</th>
+                          <th>Chain ID</th>
+                          <th>Status / Default</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {chainsList.map((c, idx) => (
+                          <tr key={c.id ?? c.key ?? c.code ?? idx}>
+                            <td>{c.name ?? c.chainName ?? "—"}</td>
+                            <td><code className="bx-mono">{c.code ?? c.chainCode ?? c.key ?? "—"}</code></td>
+                            <td><code className="bx-mono bx-muted">{c.id ?? c.chainId ?? "—"}</code></td>
+                            <td>
+                              {c.isDefault || c.defaultChain ? (
+                                <span className="bx-type-badge" style={{ color: "#30d158", borderColor: "#30d15844" }}>
+                                  DEFAULT
+                                </span>
+                              ) : (
+                                <span className="bx-muted">—</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div style={{ padding: "12px" }}>
+                      <div className="bx-no-opts" style={{ marginBottom: "8px" }}>
+                        No explicit sales chains array found under this asset. Full asset payload:
+                      </div>
+                      <pre
+                        className="bx-mono"
+                        style={{
+                          padding: "10px",
+                          background: "#1c1c1e",
+                          borderRadius: "6px",
+                          fontSize: "12px",
+                          overflowX: "auto",
+                        }}
+                      >
+                        {JSON.stringify(currentAsset, null, 2)}
+                      </pre>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Collapsible Raw accessibleAssetMap JSON */}
+      <div style={{ marginTop: "16px" }}>
+        <button
+          className="bx-history-toggle"
+          style={{
+            width: "100%",
+            justifyContent: "space-between",
+            display: "flex",
+            padding: "8px 12px",
+            cursor: "pointer",
+          }}
+          onClick={() => setShowRawMap((v) => !v)}
+        >
+          <span>🔍 Raw <code>accessibleAssetMap</code> JSON ({assetKeys.length} assets)</span>
+          <span>{showRawMap ? "▲ Collapse" : "▼ Expand"}</span>
+        </button>
+        {showRawMap && (
+          <pre
+            className="bx-mono"
+            style={{
+              marginTop: "8px",
+              padding: "12px",
+              background: "#1c1c1e",
+              borderRadius: "6px",
+              fontSize: "12px",
+              maxHeight: "340px",
+              overflow: "auto",
+            }}
+          >
+            {JSON.stringify(assetMap, null, 2)}
+          </pre>
+        )}
+      </div>
+    </div>
+  );
+};
+
 /* ─── History Panel ─────────────────────────────────────────────────── */
 const HistoryPanel: React.FC<{
   records:         BootstrapRecord[];
@@ -251,11 +470,13 @@ interface Props { onBack: () => void; }
 export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
 
   /* ── Core state ─────────────────────────────────────────────────── */
-  const [jsonText, setJsonText] = useState("");
-  const [result,   setResult]   = useState<BootstrapOutput | null>(null);
-  const [stats,    setStats]    = useState<BootstrapStats   | null>(null);
-  const [error,    setError]    = useState<string           | null>(null);
-  const [tab,      setTab]      = useState<Tab>("glAccounts");
+  const [jsonText, setJsonText]                     = useState("");
+  const [result,   setResult]                       = useState<BootstrapOutput | null>(null);
+  const [stats,    setStats]                        = useState<BootstrapStats   | null>(null);
+  const [accessibleAssetMap, setAccessibleAssetMap] = useState<Record<string, any> | null>(null);
+  const [error,    setError]                        = useState<string           | null>(null);
+  const [tab,      setTab]                          = useState<Tab>("glAccounts");
+  const [showLeftPanel, setShowLeftPanel]           = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
 
   /* ── Save Snapshot state ────────────────────────────────────────── */
@@ -331,12 +552,21 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
       const output = extractBootstrapData(parsed);
       setResult(output);
       setStats(computeStats(output));
+
+      const rawMap =
+        parsed?.data?.accessibleAssetMap ??
+        parsed?.accessibleAssetMap ??
+        (output as Record<string, any>)?.accessibleAssetMap ??
+        null;
+      setAccessibleAssetMap(rawMap && typeof rawMap === "object" ? rawMap : null);
+
       setError(null);
       setSaveMsg(null);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Invalid JSON");
       setResult(null);
       setStats(null);
+      setAccessibleAssetMap(null);
     }
   }, [jsonText]);
 
@@ -345,6 +575,7 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
     setJsonText("");
     setResult(null);
     setStats(null);
+    setAccessibleAssetMap(null);
     setError(null);
     setSaveDealer("");
     setSaveMsg(null);
@@ -390,9 +621,10 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
 
   /* ── Tab config ─────────────────────────────────────────────────── */
   const TABS: [Tab, string, number | undefined][] = [
-    ["glAccounts", "GL Accounts",  stats?.totalGLAccounts],
-    ["costCenter",  "Cost Centers", stats?.costCenterKeysFound],
-    ["journals",    "Journals",     stats?.totalJournals],
+    ["glAccounts",  "GL Accounts",  stats?.totalGLAccounts],
+    ["costCenter",   "Cost Centers", stats?.costCenterKeysFound],
+    ["journals",     "Journals",     stats?.totalJournals],
+    ["salesChains",  "Sales Chains", accessibleAssetMap ? Object.keys(accessibleAssetMap).length : undefined],
   ];
 
   const allKeysFound = stats
@@ -407,6 +639,13 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
       <div className="bx-header">
         <div className="bx-header-left">
           <button className="btn-secondary btn-sm" onClick={onBack}>← Back</button>
+          <button
+            className="btn-secondary btn-sm"
+            onClick={() => setShowLeftPanel((prev) => !prev)}
+            title={showLeftPanel ? "Collapse left panel" : "Expand left panel"}
+          >
+            {showLeftPanel ? "◀ Hide Panel" : "▶ Show Panel"}
+          </button>
           <span className="bx-title">🗃 Bootstrap Extractor</span>
         </div>
 
@@ -442,104 +681,109 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
       {/* ── Body ────────────────────────────────────────────────────── */}
       <div className="bx-body">
 
-        {/* ── Input Panel ─────────────────────────────────────────── */}
-        <div className="bx-input-panel">
-          <div className="bx-panel-label">Paste Bootstrap Response JSON</div>
-          <textarea
-            className="bx-json-textarea"
-            value={jsonText}
-            onChange={(e) => setJsonText(e.target.value)}
-            placeholder={`Paste full bootstrap API response...\n\n{\n  "data": {\n    "allAccounts": { ... },\n    "customField": { ... },\n    "allJournals":  { ... }\n  }\n}`}
-            spellCheck={false}
-          />
-          {error && <div className="bx-error">⚠ {error}</div>}
-
-          <div className="bx-input-actions">
-            <button className="btn-postman" onClick={handleExtract}>▶ Extract</button>
-            <button className="btn-cancel-bulk" onClick={handleClear}>✕ Clear</button>
-            <button
-              className="btn-secondary btn-sm"
-              title="Upload .json file"
-              onClick={() => fileRef.current?.click()}
-            >
-              📂 Upload File
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".json"
-              style={{ display: "none" }}
-              onChange={handleFile}
+        {/* ── Left Input Panel (Collapsible) ────────────────────────── */}
+        {showLeftPanel && (
+          <div className="bx-input-panel">
+            <div className="bx-panel-label">Paste Bootstrap Response JSON</div>
+            <textarea
+              className="bx-json-textarea"
+              value={jsonText}
+              onChange={(e) => setJsonText(e.target.value)}
+              placeholder={`Paste full bootstrap API response...\n\n{\n  "data": {\n    "allAccounts": { ... },\n    "customField": { ... },\n    "allJournals":  { ... },\n    "accessibleAssetMap": { ... }\n  }\n}`}
+              spellCheck={false}
             />
-          </div>
+            {error && <div className="bx-error">⚠ {error}</div>}
 
-          {/* ── Save Snapshot ──────────────────────────────────────── */}
-          {result && (
-            <div className="glv-save-block">
-              <div className="glv-step-label">
-                <span className="glv-step-num">💾</span> Save for GL Validation
-              </div>
-              <input
-                className="glv-input"
-                placeholder="Dealer ID e.g. DEALER_001"
-                value={saveDealer}
-                onChange={(e) => { setSaveDealer(e.target.value); setSaveMsg(null); }}
-              />
+            <div className="bx-input-actions">
+              <button className="btn-postman" onClick={handleExtract}>▶ Extract</button>
+              <button className="btn-cancel-bulk" onClick={handleClear}>✕ Clear</button>
               <button
-                className="btn-primary"
-                style={{ width: "100%" }}
-                disabled={!saveDealer.trim() || saving}
-                onClick={handleSave}
+                className="btn-secondary btn-sm"
+                title="Upload .json file"
+                onClick={() => fileRef.current?.click()}
               >
-                {saving ? "Saving…" : "💾 Save Snapshot"}
+                📂 Upload File
               </button>
-              {saveMsg && (
-                <div className={saveMsg.ok ? "glv-save-ok" : "bx-error"}>
-                  {saveMsg.text}
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".json"
+                style={{ display: "none" }}
+                onChange={handleFile}
+              />
+            </div>
+
+            {/* ── Save Snapshot ──────────────────────────────────────── */}
+            {result && (
+              <div className="glv-save-block">
+                <div className="glv-step-label">
+                  <span className="glv-step-num">💾</span> Save for GL Validation
                 </div>
+                <input
+                  className="glv-input"
+                  placeholder="Dealer ID e.g. DEALER_001"
+                  value={saveDealer}
+                  onChange={(e) => { setSaveDealer(e.target.value); setSaveMsg(null); }}
+                />
+                <button
+                  className="btn-primary"
+                  style={{ width: "100%" }}
+                  disabled={!saveDealer.trim() || saving}
+                  onClick={handleSave}
+                >
+                  {saving ? "Saving…" : "💾 Save Snapshot"}
+                </button>
+                {saveMsg && (
+                  <div className={saveMsg.ok ? "glv-save-ok" : "bx-error"}>
+                    {saveMsg.text}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Cost Center Key Status Legend ───────────────────────── */}
+            <div className="bx-legend">
+              <div className="bx-legend-title">Cost Center Keys (5)</div>
+              {[...COST_CENTER_KEYS].map((key) => {
+                const found = stats?.foundKeys.includes(key);
+                return (
+                  <div key={key} className="bx-legend-row">
+                    <span>{found === undefined ? "○" : found ? "✅" : "❌"}</span>
+                    <code className="bx-legend-key">{key}</code>
+                    {found === false && (
+                      <span className="bx-legend-miss">missing</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ── IndexedDB Saved Snapshots ───────────────────────────── */}
+            <div className="bx-history-section">
+              <button
+                className="bx-history-toggle"
+                onClick={() => setShowHistory((v) => !v)}
+              >
+                <span>📚 Saved Snapshots ({idbHistory.length})</span>
+                <span>{showHistory ? "▲" : "▼"}</span>
+              </button>
+              {showHistory && (
+                <HistoryPanel
+                  records={idbHistory}
+                  onDelete={handleIdbDelete}
+                  onDownloadJson={handleHistoryDownloadJson}
+                  onDownloadCsv={handleHistoryDownloadCsv}
+                />
               )}
             </div>
-          )}
-
-          {/* ── Cost Center Key Status Legend ───────────────────────── */}
-          <div className="bx-legend">
-            <div className="bx-legend-title">Cost Center Keys (5)</div>
-            {[...COST_CENTER_KEYS].map((key) => {
-              const found = stats?.foundKeys.includes(key);
-              return (
-                <div key={key} className="bx-legend-row">
-                  <span>{found === undefined ? "○" : found ? "✅" : "❌"}</span>
-                  <code className="bx-legend-key">{key}</code>
-                  {found === false && (
-                    <span className="bx-legend-miss">missing</span>
-                  )}
-                </div>
-              );
-            })}
           </div>
-
-          {/* ── IndexedDB Saved Snapshots ───────────────────────────── */}
-          <div className="bx-history-section">
-            <button
-              className="bx-history-toggle"
-              onClick={() => setShowHistory((v) => !v)}
-            >
-              <span>📚 Saved Snapshots ({idbHistory.length})</span>
-              <span>{showHistory ? "▲" : "▼"}</span>
-            </button>
-            {showHistory && (
-              <HistoryPanel
-                records={idbHistory}
-                onDelete={handleIdbDelete}
-                onDownloadJson={handleHistoryDownloadJson}
-                onDownloadCsv={handleHistoryDownloadCsv}
-              />
-            )}
-          </div>
-        </div>
+        )}
 
         {/* ── Output Panel ──────────────────────────────────────────── */}
-        <div className="bx-output-panel">
+        <div
+          className="bx-output-panel"
+          style={{ flex: 1, width: showLeftPanel ? undefined : "100%" }}
+        >
           {!result ? (
             <div className="bx-empty-state">
               <span className="bx-empty-icon">🗃</span>
@@ -570,6 +814,7 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
                   <CostCenterView setup={result.costCenterSetup} stats={stats} />
                 )}
                 {tab === "journals" && <JournalsView journals={result.journals} />}
+                {tab === "salesChains" && <SalesChainsView assetMap={accessibleAssetMap} />}
               </div>
             </>
           )}

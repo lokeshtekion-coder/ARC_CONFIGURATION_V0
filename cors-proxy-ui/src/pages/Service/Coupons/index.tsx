@@ -567,7 +567,7 @@ const CouponsView: React.FC = () => {
       <div className="flex flex-col items-center justify-center min-h-[320px] bg-[#18181b] rounded-2xl border border-zinc-800 p-8 text-zinc-200">
         <h2 className="text-xl font-bold mb-2">Authentication Required</h2>
         <p className="text-zinc-400 text-sm mb-6 text-center max-w-sm">
-          Please provide your TGPT access token to unlock AI parsing for coupons.
+          Please provide your TGPT access token.
         </p>
         <div className="flex gap-2 w-full max-w-sm">
           <input
@@ -591,7 +591,7 @@ const CouponsView: React.FC = () => {
   return (
     <div
       style={{
-        minHeight: 320,
+        minHeight: 220,
         borderRadius: 16,
         border: "1px solid rgba(255,255,255,0.08)",
         background: "rgba(255,255,255,0.02)",
@@ -605,7 +605,6 @@ const CouponsView: React.FC = () => {
     >
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <h2 style={{ margin: 0, fontSize: "1.25rem", color: "#fff" }}>
-          Coupons & Discounts Workspace
         </h2>
         <button
           onClick={() => {

@@ -820,16 +820,6 @@ export const GLAM: React.FC = () => {
   return (
     <div style={{ display: "grid", gap: 14, minWidth: 0 }}>
       <div>
-        <div
-          style={{
-            fontSize: 24,
-            fontWeight: 800,
-            color: "#f8fafc",
-            marginBottom: 6,
-          }}
-        >
-          GLAM
-        </div>
 
         <div
           style={{
@@ -840,17 +830,7 @@ export const GLAM: React.FC = () => {
             flexWrap: "wrap",
           }}
         >
-          <div
-            style={{
-              color: "#94a3b8",
-              fontSize: 14,
-              lineHeight: 1.7,
-              maxWidth: 920,
-            }}
-          >
-            General Ledger Account Mapping workspace with left navigation and
-            section-based content area.
-          </div>
+
 
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button

@@ -1456,12 +1456,7 @@ const OpcodeManagementView: React.FC = () => {
       `}</style>
 
       <div>
-        <div style={{ fontSize: 24, fontWeight: 800, color: "#f8fafc", marginBottom: 6 }}>
-          🧩 Opcode Management
-        </div>
-        <div style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.6 }}>
-          Manage Service Types, MPVI, SUBLET, PDI, CUST CONCERN, and opcode validation flows using Global Headers.
-        </div>
+
       </div>
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -1489,10 +1484,7 @@ const OpcodeManagementView: React.FC = () => {
         >
           <div>
             <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 800, marginBottom: 4 }}>
-              Actions
-            </div>
-            <div style={{ color: "#94a3b8", fontSize: 13 }}>
-              Primary setup and validation entry points.
+             Click Below Options
             </div>
           </div>
 
@@ -1502,18 +1494,7 @@ const OpcodeManagementView: React.FC = () => {
         </div>
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button
-            className={activeView === "home" ? "btn-primary" : "btn-secondary btn-sm"}
-            onClick={() => switchView("home")}
-          >
-            Home
-          </button>
-          <button
-            className={activeView === "get" ? "btn-primary" : "btn-secondary btn-sm"}
-            onClick={() => switchView("get")}
-          >
-            📥 Get Opcodes
-          </button>
+
           <button
             className={activeView === "post" ? "btn-primary" : "btn-secondary btn-sm"}
             onClick={() => switchView("post")}

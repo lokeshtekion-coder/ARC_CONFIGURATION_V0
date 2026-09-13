@@ -1424,7 +1424,7 @@ const NewVehiclesView: React.FC = () => {
                   marginBottom: 6,
                 }}
               >
-                Auto Configure
+
               </div>
               <div
                 style={{
@@ -1433,7 +1433,7 @@ const NewVehiclesView: React.FC = () => {
                   lineHeight: 1.6,
                 }}
               >
-                Compact workspace for make-based new vehicle GL mapping with strict JSON-driven make alias and model phrase detection.
+
               </div>
             </div>
 

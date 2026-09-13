@@ -57,7 +57,7 @@ export const SUBSECTION_META: Record<
 > = {
   "consumer-scheduling": {
     title: "Consumer Scheduling",
-    description: "Fetch and update consumer scheduling permissions.",
+    description: "",
     ops: ["get", "put"],
   },
   transportation: {

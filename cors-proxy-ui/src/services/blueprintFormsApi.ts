@@ -152,14 +152,24 @@ function resolveBlueprintHeaders(): Record<string, string> {
     );
   }
 
-  // Ensure userId matches token subject (e.g., tlreddy@tekion.com)
+  // Extract TAP user identity from JWT (e.g., tlreddy@tekion.com)
   const tokenSub = extractSubFromJwt(baseHeaders["tap-duo-api-token"]);
-  const resolvedUserId = baseHeaders["userid"] || baseHeaders["userId"] || tokenSub;
+
+  // CRITICAL FIX: TAP endpoints require tokenSub (email) as userId.
+  // tokenSub MUST take precedence over DMS global header UUIDs (e.g., 579ecb45...).
+  const resolvedUserId = tokenSub || baseHeaders["userid"] || baseHeaders["userId"];
 
   if (resolvedUserId) {
     baseHeaders["userid"] = resolvedUserId;
     baseHeaders["userId"] = resolvedUserId;
+    if (tokenSub && tokenSub.includes("@")) {
+      baseHeaders["email"] = tokenSub;
+    }
   }
+
+  // Remove conflicting DMS impersonation headers that break TAP onboarding APIs
+  delete baseHeaders["original-userid"];
+  delete baseHeaders["original-tenantid"];
 
   logger.info("Headers built successfully", {
     headerCount: Object.keys(baseHeaders).length,
@@ -236,7 +246,6 @@ export async function fetchBlueprintFormResponses(
   return rawHits.map((hit: Record<string, unknown>) => {
     const rawId = String(hit.id || "");
     const rawFormId = String(hit.formId || "");
-    // hit.id is the UUID required by the /formRelease/{id} endpoint
     const resolvedReleaseId = String(hit.id || hit.releaseId || "");
 
     return {

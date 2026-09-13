@@ -16,10 +16,25 @@ import type {
   FlattenedDecodedRow,
   CsvRow,
 } from "../utils/blueprintFormDecoder";
-import type { BlueprintModule, BlueprintFormListItem } from "../services/blueprintFormsApi";
+import type {
+  BlueprintModule,
+  BlueprintFormListItem,
+} from "../services/blueprintFormsApi";
 
 interface Props {
   onBack: () => void;
+}
+
+interface MediaPayload {
+  mediaId: string;
+  filename?: string;
+  url: string;
+  uploadStatus?: string;
+  mimeType?: string;
+  mediaCategory?: string;
+  mediaSize?: number;
+  createdTime?: number;
+  [key: string]: unknown;
 }
 
 const logger = {
@@ -30,28 +45,28 @@ const logger = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  DROPDOWN: "#0a84ff",
-  SINGLE_CHOICE: "#0a84ff",
-  MULTIPLE_CHOICE: "#bf5af2",
-  RADIO: "#0a84ff",
-  CHECKBOX: "#bf5af2",
-  TEXT: "#30d158",
-  SHORT_TEXT: "#30d158",
-  LONG_TEXT: "#30d158",
-  NUMBER: "#ff9f0a",
-  CURRENCY: "#ff9f0a",
-  SLIDER: "#ff9f0a",
-  DATE: "#ff6c37",
-  TIME: "#ff6c37",
-  DATE_TIME: "#ff6c37",
-  EMAIL: "#5ac8fa",
-  PHONE: "#5ac8fa",
-  URL: "#5ac8fa",
-  FILE_UPLOAD: "#64d2ff",
-  PARAGRAPH: "#98989d",
-  LOGO: "#98989d",
-  SIGNATURE: "#ffd60a",
-  RATING: "#ffd60a",
+  DROPDOWN: "#38bdf8",
+  SINGLE_CHOICE: "#38bdf8",
+  MULTIPLE_CHOICE: "#c084fc",
+  RADIO: "#38bdf8",
+  CHECKBOX: "#c084fc",
+  TEXT: "#4ade80",
+  SHORT_TEXT: "#4ade80",
+  LONG_TEXT: "#4ade80",
+  NUMBER: "#fb923c",
+  CURRENCY: "#fbbf24",
+  SLIDER: "#fb923c",
+  DATE: "#f43f5e",
+  TIME: "#f43f5e",
+  DATE_TIME: "#f43f5e",
+  EMAIL: "#2dd4bf",
+  PHONE: "#2dd4bf",
+  URL: "#2dd4bf",
+  FILE_UPLOAD: "#818cf8",
+  PARAGRAPH: "#94a3b8",
+  LOGO: "#94a3b8",
+  SIGNATURE: "#facc15",
+  RATING: "#facc15",
 };
 
 const PARTS_EXCLUDED_TITLES = new Set<string>([
@@ -217,41 +232,188 @@ const ACCOUNTING_EXCLUDED_TITLES = new Set<string>([
   "Please upload a list of your journals",
 ]);
 
-const STICKY_HEADER_STYLE: React.CSSProperties = {
-  position: "sticky",
-  top: 0,
-  backgroundColor: "#161618",
-  zIndex: 10,
-  boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-};
-
 function typeColor(type: string): string {
-  return TYPE_COLORS[type] ?? "#98989d";
+  return TYPE_COLORS[type] ?? "#94a3b8";
+}
+
+function isMediaObject(val: unknown): val is MediaPayload {
+  return (
+    typeof val === "object" &&
+    val !== null &&
+    "mediaId" in val &&
+    "url" in val &&
+    typeof (val as { url: unknown }).url === "string"
+  );
+}
+
+function buildTekionMediaUrl(media: MediaPayload): string {
+  const BUCKET_PREFIX = "com-tekioncloud-tap-dealeronboarding/";
+  const BASE_URL = "https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?";
+
+  const rawPath = media.url.startsWith(BUCKET_PREFIX)
+    ? media.url.slice(BUCKET_PREFIX.length)
+    : media.url;
+
+  return `${BASE_URL}${encodeURI(rawPath)}`;
+}
+
+function tryParseMedia(val: unknown): MediaPayload | null {
+  if (isMediaObject(val)) return val;
+  if (typeof val === "string") {
+    const trimmed = val.trim();
+    if (trimmed.startsWith("{") && trimmed.includes('"mediaId"') && trimmed.includes('"url"')) {
+      try {
+        const parsed = JSON.parse(trimmed) as unknown;
+        if (isMediaObject(parsed)) return parsed;
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
+}
+
+function tryParseMediaArray(val: unknown): MediaPayload[] | null {
+  if (Array.isArray(val)) {
+    const list: MediaPayload[] = [];
+    for (const item of val) {
+      const parsed = tryParseMedia(item);
+      if (parsed) list.push(parsed);
+      else return null;
+    }
+    return list.length > 0 ? list : null;
+  }
+  if (typeof val === "string") {
+    const trimmed = val.trim();
+    if (trimmed.startsWith("[") && trimmed.includes('"mediaId"') && trimmed.includes('"url"')) {
+      try {
+        const parsed = JSON.parse(trimmed) as unknown;
+        if (Array.isArray(parsed)) return tryParseMediaArray(parsed);
+      } catch {
+        return null;
+      }
+    }
+  }
+  return null;
 }
 
 function renderValueUI(value: unknown): React.ReactNode {
-  if (value === null || value === undefined) return "—";
-  if (typeof value === "string") return value.trim() || "—";
-  if (typeof value === "boolean") return value ? "Yes" : "No";
-  if (typeof value === "number") return String(value);
-  if (
-    Array.isArray(value) &&
-    value.every((v) => typeof v === "string" || typeof v === "number")
-  ) {
-    return value.join(", ");
+  if (value === null || value === undefined) {
+    return <span className="bd-no-value">No answer provided</span>;
   }
+
+  const singleMedia = tryParseMedia(value);
+  if (singleMedia) {
+    const fileUrl = buildTekionMediaUrl(singleMedia);
+    const displayName = singleMedia.filename || "View Attached Document";
+    return (
+      <a
+        href={fileUrl}
+        target="_blank"
+        rel="noreferrer"
+        className="bd-link-pill"
+        title={displayName}
+      >
+        <span>📄</span>
+        {displayName}
+      </a>
+    );
+  }
+
+  const mediaList = tryParseMediaArray(value);
+  if (mediaList) {
+    return (
+      <div className="bd-array-wrap">
+        {mediaList.map((m, idx) => {
+          const fileUrl = buildTekionMediaUrl(m);
+          const displayName = m.filename || `Document ${idx + 1}`;
+          return (
+            <a
+              key={m.mediaId || idx}
+              href={fileUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="bd-link-pill"
+              title={displayName}
+            >
+              <span>📄</span>
+              {displayName}
+            </a>
+          );
+        })}
+      </div>
+    );
+  }
+
+  if (typeof value === "boolean") {
+    return (
+      <span className={`bd-bool-pill ${value ? "is-yes" : "is-no"}`}>
+        {value ? "✓ Yes" : "✕ No"}
+      </span>
+    );
+  }
+
+  if (typeof value === "number") {
+    return <span className="bd-num-pill">{value.toLocaleString()}</span>;
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) return <span className="bd-no-value">No answer provided</span>;
+
+    if (/^https?:\/\//i.test(trimmed)) {
+      return (
+        <a
+          href={trimmed}
+          target="_blank"
+          rel="noreferrer"
+          className="bd-link-pill"
+          title={trimmed}
+        >
+          <span>🔗</span>
+          {trimmed}
+        </a>
+      );
+    }
+
+    return <div className="bd-str-value">{trimmed}</div>;
+  }
+
+  if (Array.isArray(value)) {
+    if (value.length === 0) return <span className="bd-no-value">Empty selection</span>;
+    return (
+      <div className="bd-array-wrap">
+        {value.map((v, i) => {
+          const itemMedia = tryParseMedia(v);
+          if (itemMedia) {
+            const fileUrl = buildTekionMediaUrl(itemMedia);
+            const displayName = itemMedia.filename || "View Attached Document";
+            return (
+              <a
+                key={itemMedia.mediaId || i}
+                href={fileUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="bd-link-pill"
+                title={displayName}
+              >
+                <span>📄</span>
+                {displayName}
+              </a>
+            );
+          }
+          return (
+            <span key={i} className="bd-array-item">
+              {typeof v === "object" ? JSON.stringify(v) : String(v)}
+            </span>
+          );
+        })}
+      </div>
+    );
+  }
+
   return (
-    <pre
-      style={{
-        background: "rgba(255,255,255,0.06)",
-        padding: "6px 8px",
-        borderRadius: "6px",
-        fontSize: "0.85em",
-        margin: 0,
-        whiteSpace: "pre-wrap",
-        wordBreak: "break-word",
-      }}
-    >
+    <pre className="bd-json-blob">
       <code>{JSON.stringify(value, null, 2)}</code>
     </pre>
   );
@@ -259,10 +421,23 @@ function renderValueUI(value: unknown): React.ReactNode {
 
 function fmtText(value: unknown): string {
   if (value === null || value === undefined) return "—";
+
+  const singleMedia = tryParseMedia(value);
+  if (singleMedia) {
+    return `${singleMedia.filename || "Document"} (${buildTekionMediaUrl(singleMedia)})`;
+  }
+
+  const mediaList = tryParseMediaArray(value);
+  if (mediaList) {
+    return mediaList
+      .map((m) => `${m.filename || "Document"} (${buildTekionMediaUrl(m)})`)
+      .join(", ");
+  }
+
   if (typeof value === "string") return value.trim() || "—";
   if (typeof value === "boolean") return value ? "Yes" : "No";
   if (typeof value === "number") return String(value);
-  if (Array.isArray(value)) return value.join(", ");
+  if (Array.isArray(value)) return value.map((v) => fmtText(v)).join(", ");
   return JSON.stringify(value, null, 2);
 }
 
@@ -315,11 +490,9 @@ function parseLaunchDate(value: string): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function getTLabel(value: string): {
-  label: string;
-  tone: "future" | "today" | "past" | "unknown";
-  diffDays: number | null;
-} {
+function getTLabel(
+  value: string
+): { label: string; tone: "future" | "today" | "past" | "unknown"; diffDays: number | null } {
   const d = parseLaunchDate(value);
   if (!d) return { label: "Unknown", tone: "unknown", diffDays: null };
 
@@ -330,7 +503,7 @@ function getTLabel(value: string): {
   const diffDays = Math.round(diffMs / 86400000);
 
   if (diffDays > 0) return { label: `T-${diffDays}`, tone: "future", diffDays };
-  if (diffDays === 0) return { label: "T", tone: "today", diffDays };
+  if (diffDays === 0) return { label: "T-Day", tone: "today", diffDays };
   return { label: "Launched", tone: "past", diffDays };
 }
 
@@ -353,28 +526,37 @@ interface AutoDecodedResult {
   saveKey: string;
 }
 
-const TypeBadge: React.FC<{ type: string }> = ({ type }) => (
-  <span
-    className="bd-type-badge"
-    style={{ color: typeColor(type), borderColor: typeColor(type) + "33" }}
-  >
-    {type}
-  </span>
-);
+const TypeBadge: React.FC<{ type: string }> = ({ type }) => {
+  const color = typeColor(type);
 
-const Spinner: React.FC = () => (
+  return (
+    <span
+      className="bd-type-badge"
+      style={{
+        color,
+        background: `${color}14`,
+        borderColor: `${color}30`,
+      }}
+    >
+      <span className="bd-type-dot" style={{ background: color }} />
+      {type}
+    </span>
+  );
+};
+
+const Spinner: React.FC<{ size?: number }> = ({ size = 15 }) => (
   <svg
-    width="16"
-    height="16"
+    width={size}
+    height={size}
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
-    strokeWidth="2"
+    strokeWidth="2.5"
     strokeLinecap="round"
     strokeLinejoin="round"
-    style={{ animation: "bd-spin 1s linear infinite", marginRight: 6 }}
+    className="bd-spin"
   >
-    <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
+    <circle cx="12" cy="12" r="10" strokeOpacity="0.2" />
     <path d="M12 2a10 10 0 0 1 10 10" />
   </svg>
 );
@@ -383,62 +565,146 @@ const SectionsView: React.FC<{
   sections: DecodedSection[];
   populatedOnly: boolean;
 }> = ({ sections, populatedOnly }) => (
-  <div className="bd-sections">
+  <div className="bd-sections-stack">
     {sections.map((section) => {
       const fields = populatedOnly
         ? section.fields.filter(
-            (f) =>
-              f.hasUserValue && f.decodedValue != null && f.decodedValue !== ""
+            (f) => f.hasUserValue && f.decodedValue != null && f.decodedValue !== ""
           )
         : section.fields;
 
       if (fields.length === 0) return null;
 
       return (
-        <div key={section.sectionId} className="bd-section-block">
-          <div className="bd-section-header">
-            <span className="bd-section-name">
-              {section.sectionName ?? "(No Name)"}
-            </span>
-            <span className="bd-section-meta">
-              {fields.length} fields · order {section.sectionOrder}
+        <div key={section.sectionId} className="bd-section-card">
+          <div className="bd-section-head">
+            <div className="bd-section-title-wrap">
+              <span className="bd-section-icon">📋</span>
+              <span className="bd-section-name">
+                {section.sectionName ?? "(Untitled Section)"}
+              </span>
+            </div>
+            <span className="bd-section-pill">
+              {fields.length} {fields.length === 1 ? "field" : "fields"}
             </span>
           </div>
-          <table className="bd-table">
-            <thead>
-              <tr>
-                <th style={STICKY_HEADER_STYLE}>Title</th>
-                <th style={STICKY_HEADER_STYLE}>Decoded Value</th>
-                <th style={STICKY_HEADER_STYLE}>Subsection</th>
-                <th style={STICKY_HEADER_STYLE}>Type</th>
-              </tr>
-            </thead>
-            <tbody>
-              {fields.map((field) => (
-                <tr
-                  key={field.fieldId}
-                  className={field.hasUserValue ? "" : "bd-row-empty"}
-                >
-                  <td className="bd-cell-title">
-                    {field.title ?? field.fieldName ?? field.fieldId}
-                  </td>
-                  <td className="bd-cell-value">
-                    {field.hasUserValue ? (
-                      <span className="bd-value">
-                        {renderValueUI(field.decodedValue)}
-                      </span>
-                    ) : (
-                      <span className="bd-no-value">No answer</span>
-                    )}
-                  </td>
-                  <td className="bd-cell-sub">{field.subsectionName ?? "—"}</td>
-                  <td>
-                    <TypeBadge type={field.type} />
-                  </td>
+
+          <div className="bd-table-wrap">
+            <table
+              className="bd-table"
+              style={{
+                width: "100%",
+                tableLayout: "fixed",
+                borderCollapse: "collapse",
+                display: "table",
+              }}
+            >
+              <thead style={{ display: "table-header-group" }}>
+                <tr style={{ display: "table-row" }}>
+                  <th
+                    className="bd-th-question"
+                    style={{
+                      width: "42%",
+                      display: "table-cell",
+                      textAlign: "left",
+                      padding: "10px 16px",
+                      color: "#94a3b8",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      letterSpacing: "0.05em",
+                      textTransform: "uppercase",
+                      visibility: "visible",
+                    }}
+                  >
+                    Question / Context
+                  </th>
+                  <th
+                    className="bd-th-answer"
+                    style={{
+                      width: "43%",
+                      display: "table-cell",
+                      textAlign: "left",
+                      padding: "10px 16px",
+                      color: "#94a3b8",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      letterSpacing: "0.05em",
+                      textTransform: "uppercase",
+                      visibility: "visible",
+                    }}
+                  >
+                    Decoded Answer
+                  </th>
+                  <th
+                    className="bd-th-type"
+                    style={{
+                      width: "15%",
+                      display: "table-cell",
+                      textAlign: "left",
+                      padding: "10px 16px",
+                      color: "#94a3b8",
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      letterSpacing: "0.05em",
+                      textTransform: "uppercase",
+                      visibility: "visible",
+                    }}
+                  >
+                    Field Type
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody style={{ display: "table-row-group" }}>
+                {fields.map((field) => (
+                  <tr
+                    key={field.fieldId}
+                    className={field.hasUserValue ? "" : "bd-row-muted"}
+                    style={{ display: "table-row" }}
+                  >
+                    <td
+                      className="bd-cell-title"
+                      style={{
+                        display: "table-cell",
+                        overflowWrap: "break-word",
+                        verticalAlign: "top",
+                        padding: "12px 16px",
+                      }}
+                    >
+                      {field.subsectionName && (
+                        <div className="bd-sub-badge">{field.subsectionName}</div>
+                      )}
+                      <div className="bd-title-text">
+                        {field.title ?? field.fieldName ?? field.fieldId}
+                      </div>
+                      <code className="bd-field-subid">{field.fieldId}</code>
+                    </td>
+                    <td
+                      className="bd-cell-value"
+                      style={{
+                        display: "table-cell",
+                        overflowWrap: "break-word",
+                        verticalAlign: "top",
+                        padding: "12px 16px",
+                      }}
+                    >
+                      {renderValueUI(field.decodedValue)}
+                    </td>
+                    <td
+                      className="bd-cell-type"
+                      style={{
+                        display: "table-cell",
+                        overflowWrap: "break-word",
+                        verticalAlign: "top",
+                        padding: "12px 16px",
+                      }}
+                    >
+                      <TypeBadge type={field.type} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       );
     })}
@@ -446,37 +712,51 @@ const SectionsView: React.FC<{
 );
 
 const FlatView: React.FC<{ rows: FlattenedDecodedRow[] }> = ({ rows }) => (
-  <div className="bd-sections">
-    <table className="bd-table">
-      <thead>
-        <tr>
-          <th style={STICKY_HEADER_STYLE}>Section</th>
-          <th style={STICKY_HEADER_STYLE}>Title</th>
-          <th style={STICKY_HEADER_STYLE}>Decoded Value</th>
-          <th style={STICKY_HEADER_STYLE}>Subsection</th>
-          <th style={STICKY_HEADER_STYLE}>Type</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row, i) => (
-          <tr key={`${row.fieldId}-${i}`}>
-            <td className="bd-cell-section">{row.sectionName ?? "—"}</td>
-            <td className="bd-cell-title">{row.title ?? row.fieldId}</td>
-            <td className="bd-cell-value">
-              {row.hasUserValue ? (
-                <span className="bd-value">{renderValueUI(row.decodedValue)}</span>
-              ) : (
-                <span className="bd-no-value">No answer</span>
-              )}
-            </td>
-            <td className="bd-cell-sub">{row.subsectionName ?? "—"}</td>
-            <td>
-              <TypeBadge type={row.type} />
-            </td>
+  <div className="bd-section-card">
+    <div className="bd-table-wrap">
+      <table
+        className="bd-table"
+        style={{
+          width: "100%",
+          tableLayout: "fixed",
+          borderCollapse: "collapse",
+          display: "table",
+        }}
+      >
+        <thead style={{ display: "table-header-group" }}>
+          <tr style={{ display: "table-row" }}>
+            <th style={{ width: "20%", display: "table-cell", padding: "10px 16px" }}>Section</th>
+            <th style={{ width: "35%", display: "table-cell", padding: "10px 16px" }}>Question / Title</th>
+            <th style={{ width: "35%", display: "table-cell", padding: "10px 16px" }}>Decoded Answer</th>
+            <th style={{ width: "10%", display: "table-cell", padding: "10px 16px" }}>Type</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody style={{ display: "table-row-group" }}>
+          {rows.map((row, i) => (
+            <tr key={`${row.fieldId}-${i}`} style={{ display: "table-row" }}>
+              <td className="bd-cell-section" style={{ display: "table-cell", padding: "12px 16px" }}>
+                <span className="bd-section-tag">{row.sectionName ?? "—"}</span>
+              </td>
+              <td className="bd-cell-title" style={{ display: "table-cell", padding: "12px 16px" }}>
+                {row.subsectionName && <div className="bd-sub-badge">{row.subsectionName}</div>}
+                <div className="bd-title-text">{row.title ?? row.fieldId}</div>
+                <code className="bd-field-subid">{row.fieldId}</code>
+              </td>
+              <td className="bd-cell-value" style={{ display: "table-cell", padding: "12px 16px" }}>
+                {row.hasUserValue ? (
+                  renderValueUI(row.decodedValue)
+                ) : (
+                  <span className="bd-no-value">No answer provided</span>
+                )}
+              </td>
+              <td style={{ display: "table-cell", padding: "12px 16px" }}>
+                <TypeBadge type={row.type} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   </div>
 );
 
@@ -484,46 +764,54 @@ const CsvView: React.FC<{ rows: CsvRow[]; onDownload: () => void }> = ({
   rows,
   onDownload,
 }) => (
-  <div className="bd-sections">
+  <div className="bd-section-card">
     <div className="bd-csv-toolbar">
-      <span className="bd-csv-hint">{rows.length} rows ready for export</span>
-      <button className="btn-postman" onClick={onDownload}>
-        ⬇ Download CSV
+      <div>
+        <span className="bd-csv-badge">{rows.length} records</span>
+        <span className="bd-csv-hint">Structured for export or reporting</span>
+      </div>
+      <button className="bd-btn bd-btn-primary" onClick={onDownload}>
+        ⬇ Export CSV
       </button>
     </div>
-    <table className="bd-table">
-      <thead>
-        <tr>
-          <th style={STICKY_HEADER_STYLE}>Section</th>
-          <th style={STICKY_HEADER_STYLE}>Field ID</th>
-          <th style={STICKY_HEADER_STYLE}>Title</th>
-          <th style={STICKY_HEADER_STYLE}>Decoded Value</th>
-          <th style={STICKY_HEADER_STYLE}>Type</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row, i) => (
-          <tr key={`${row.fieldId}-${i}`}>
-            <td className="bd-cell-section">{row.sectionName}</td>
-            <td>
-              <code className="bd-field-id">{row.fieldId}</code>
-            </td>
-            <td className="bd-cell-title">{row.title}</td>
-            <td className="bd-cell-value">
-              <span className="bd-value">{row.decodedValue}</span>
-            </td>
-            <td>
-              <TypeBadge type={row.type} />
-            </td>
+
+    <div className="bd-table-wrap">
+      <table className="bd-table" style={{ width: "100%", tableLayout: "fixed" }}>
+        <thead>
+          <tr>
+            <th style={{ width: "18%" }}>Section</th>
+            <th style={{ width: "16%" }}>Field ID</th>
+            <th style={{ width: "32%" }}>Title</th>
+            <th style={{ width: "24%" }}>Decoded Value</th>
+            <th style={{ width: "10%" }}>Type</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {rows.map((row, i) => (
+            <tr key={`${row.fieldId}-${i}`}>
+              <td className="bd-cell-section">{row.sectionName}</td>
+              <td>
+                <code className="bd-field-subid">{row.fieldId}</code>
+              </td>
+              <td className="bd-cell-title">{row.title}</td>
+              <td className="bd-cell-value">
+                <span className="bd-str-value">{row.decodedValue}</span>
+              </td>
+              <td>
+                <TypeBadge type={row.type} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   </div>
 );
 
 const HumanView: React.FC<{ text: string }> = ({ text }) => (
-  <pre className="bd-human-pre">{text || "(Nothing populated)"}</pre>
+  <div className="bd-section-card">
+    <pre className="bd-human-pre">{text || "(No populated responses available)"}</pre>
+  </div>
 );
 
 interface StorePickerModalProps {
@@ -548,13 +836,11 @@ const StorePickerModal: React.FC<StorePickerModalProps> = ({
   const [localSearch, setLocalSearch] = useState(search);
 
   useEffect(() => {
-    if (open) {
-      setLocalSearch(search);
-    }
+    if (open) setLocalSearch(search);
   }, [open, search]);
 
   useEffect(() => {
-    const timer = setTimeout(() => onSearchChange(localSearch), 300);
+    const timer = setTimeout(() => onSearchChange(localSearch), 250);
     return () => clearTimeout(timer);
   }, [localSearch, onSearchChange]);
 
@@ -562,6 +848,7 @@ const StorePickerModal: React.FC<StorePickerModalProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
+
     if (open) window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [open, onClose]);
@@ -569,104 +856,59 @@ const StorePickerModal: React.FC<StorePickerModalProps> = ({
   if (!open) return null;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.55)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 2000,
-        padding: 20,
-      }}
-      onClick={onClose}
-    >
-      <div
-        style={{
-          width: "min(760px, 100%)",
-          maxHeight: "82vh",
-          overflow: "hidden",
-          borderRadius: 18,
-          border: "1px solid rgba(255,255,255,0.10)",
-          background: "#111216",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.45)",
-          display: "flex",
-          flexDirection: "column",
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div
-          style={{
-            padding: "16px 18px 12px",
-            borderBottom: "1px solid rgba(255,255,255,0.08)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-          }}
-        >
+    <div className="bd-modal-backdrop" onClick={onClose}>
+      <div className="bd-modal-box" onClick={(e) => e.stopPropagation()}>
+        <div className="bd-modal-head">
           <div>
-            <div style={{ fontSize: 18, fontWeight: 700 }}>Select T-90 Store</div>
-            <div style={{ fontSize: 12, opacity: 0.7 }}>
-              Search by Tekion ID, Dealer ID, or dealership name
-            </div>
+            <div className="bd-modal-title">Select T-90 Target Store</div>
+            <div className="bd-modal-sub">Filtered stores launching within 90 days</div>
           </div>
-          <button className="btn-secondary btn-sm" onClick={onClose}>
-            ✕ Close
+          <button className="bd-icon-btn" onClick={onClose} title="Close">
+            ✕
           </button>
         </div>
-        <div style={{ padding: 16, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+
+        <div className="bd-modal-search">
+          <span className="bd-search-icon">🔍</span>
           <input
             type="text"
-            className="stores-input"
+            className="bd-input"
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
-            placeholder="Search T-90 stores..."
+            placeholder="Search Tekion ID, Dealer ID, or Dealership Name..."
             autoFocus
           />
         </div>
-        <div style={{ padding: 16, overflow: "auto" }}>
+
+        <div className="bd-modal-list">
           {stores.length === 0 ? (
-            <div style={{ padding: 18, opacity: 0.7 }}>No T-90 stores found.</div>
+            <div className="bd-empty-hint">No T-90 stores match your query.</div>
           ) : (
-            <div style={{ display: "grid", gap: 10 }}>
-              {stores.map((store) => {
-                const active = selectedStore?.tekion_id === store.tekion_id;
-                return (
-                  <button
-                    key={store.tekion_id}
-                    type="button"
-                    onClick={() => {
-                      onSelect(store);
-                      onClose();
-                    }}
-                    style={{
-                      width: "100%",
-                      textAlign: "left",
-                      padding: "14px 16px",
-                      borderRadius: 14,
-                      border: active
-                        ? "1px solid rgba(10,132,255,0.7)"
-                        : "1px solid rgba(255,255,255,0.08)",
-                      background: active
-                        ? "rgba(10,132,255,0.14)"
-                        : "rgba(255,255,255,0.03)",
-                      color: "inherit",
-                      cursor: "pointer",
-                      transition: "background 0.2s",
-                    }}
-                  >
-                    <div style={{ fontWeight: 700, fontSize: 14 }}>
-                      {store.tekion_id}_{store.dealer_id}
+            stores.map((store) => {
+              const active = selectedStore?.tekion_id === store.tekion_id;
+              const tStatus = getTLabel(store.launch_date);
+
+              return (
+                <button
+                  key={store.tekion_id}
+                  type="button"
+                  className={`bd-store-item ${active ? "is-active" : ""}`}
+                  onClick={() => {
+                    onSelect(store);
+                    onClose();
+                  }}
+                >
+                  <div className="bd-store-item-info">
+                    <div className="bd-store-item-title">
+                      <span>{store.tekion_id}_{store.dealer_id}</span>
+                      <span className={`bd-t-badge tone-${tStatus.tone}`}>{tStatus.label}</span>
                     </div>
-                    <div style={{ fontSize: 12, opacity: 0.78, marginTop: 4 }}>
-                      {store.dba_name || "—"}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+                    <div className="bd-store-item-desc">{store.dba_name || "—"}</div>
+                  </div>
+                  <span className="bd-store-item-arrow">→</span>
+                </button>
+              );
+            })
           )}
         </div>
       </div>
@@ -700,17 +942,12 @@ function filterDecodedResultByExcludedTitles(
   module: BlueprintModule | null
 ): RunDecoderResult {
   const excludedTitles = getExcludedTitleSet(module);
-
-  if (excludedTitles.size === 0) {
-    return decoded;
-  }
+  if (excludedTitles.size === 0) return decoded;
 
   const filteredSections = decoded.decodedSections
     .map((section) => ({
       ...section,
-      fields: section.fields.filter(
-        (field) => !excludedTitles.has(field.title ?? "")
-      ),
+      fields: section.fields.filter((field) => !excludedTitles.has(field.title ?? "")),
     }))
     .filter((section) => section.fields.length > 0);
 
@@ -748,27 +985,22 @@ function filterDecodedResultByExcludedTitles(
 
 export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
   const [inputMode, setInputMode] = useState<InputMode>("auto");
-
   const [jsonText, setJsonText] = useState("");
   const [isDragging, setIsDragging] = useState(false);
-
   const [viewMode, setViewMode] = useState<ViewMode>("sections");
   const [populatedOnly, setPopulatedOnly] = useState(true);
   const [result, setResult] = useState<RunDecoderResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-
   const [saveKey, setSaveKey] = useState("");
   const [dealerName, setDealerName] = useState("");
   const [formName, setFormName] = useState("");
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [saveError, setSaveError] = useState<string | null>(null);
-
   const [storeRecords, setStoreRecords] = useState<StoreRecord[]>([]);
   const [storeLoading, setStoreLoading] = useState(false);
   const [storeSearch, setStoreSearch] = useState("");
   const [selectedStore, setSelectedStore] = useState<StoreRecord | null>(null);
   const [storeModalOpen, setStoreModalOpen] = useState(false);
-
   const [autoModules, setAutoModules] = useState<BlueprintModule[]>([
     "parts",
     "service",
@@ -777,23 +1009,17 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
   const [autoLoading, setAutoLoading] = useState(false);
   const [autoForms, setAutoForms] = useState<BlueprintFormListItem[]>([]);
   const [autoMessage, setAutoMessage] = useState<string | null>(null);
-  const [autoDecodedResults, setAutoDecodedResults] = useState<
-    AutoDecodedResult[]
-  >([]);
-  const [activeAutoModule, setActiveAutoModule] = useState<BlueprintModule | null>(
-    null
-  );
-  const [saveAllStatus, setSaveAllStatus] = useState<
-    "idle" | "saving" | "saved" | "error"
-  >("idle");
+  const [autoDecodedResults, setAutoDecodedResults] = useState<AutoDecodedResult[]>([]);
+  const [activeAutoModule, setActiveAutoModule] = useState<BlueprintModule | null>(null);
+  const [saveAllStatus, setSaveAllStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const restoreRef = useRef<HTMLInputElement>(null);
 
   const activeAutoResult =
     activeAutoModule != null
-      ? autoDecodedResults.find((item) => item.module === activeAutoModule) ??
-        null
+      ? autoDecodedResults.find((item) => item.module === activeAutoModule) ?? null
       : null;
 
   const loadStoreRecords = useCallback(async () => {
@@ -804,9 +1030,7 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
       setStoreRecords(data);
     } catch (e: unknown) {
       logger.error("Failed to load stores from IndexedDB", e);
-      setError(
-        e instanceof Error ? e.message : "Failed to load stores from IndexedDB"
-      );
+      setError(e instanceof Error ? e.message : "Failed to load stores from IndexedDB");
     } finally {
       setStoreLoading(false);
     }
@@ -816,14 +1040,12 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
     void loadStoreRecords();
   }, [loadStoreRecords]);
 
-  const t90Stores = useMemo(
-    () => storeRecords.filter(isT90Store),
-    [storeRecords]
-  );
+  const t90Stores = useMemo(() => storeRecords.filter(isT90Store), [storeRecords]);
 
   const filteredStoreList = useMemo(() => {
     const q = storeSearch.trim().toLowerCase();
     if (!q) return t90Stores;
+
     return t90Stores.filter((row) => {
       return (
         row.tekion_id.toLowerCase().includes(q) ||
@@ -839,10 +1061,12 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
       service: false,
       accounting: false,
     };
+
     for (const form of autoForms) {
       const module = detectModuleFromFormName(form.formName);
       if (module) map[module] = true;
     }
+
     return map;
   }, [autoForms]);
 
@@ -866,20 +1090,10 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
       const key = `${dn || "manual"}-${fn}`
         .replace(/\s+/g, "_")
         .replace(/[^a-zA-Z0-9_\-]/g, "");
+
       const detectedModule = detectModuleFromFormName(fn);
       const decoded = runDecoder(payload);
-      const filteredDecoded = filterDecodedResultByExcludedTitles(
-        decoded,
-        detectedModule
-      );
-
-      logger.info("Manual payload decoded successfully", {
-        key,
-        dealerName: dn,
-        formName: fn,
-        module: detectedModule,
-        fieldsCount: filteredDecoded.allFields.length,
-      });
+      const filteredDecoded = filterDecodedResultByExcludedTitles(decoded, detectedModule);
 
       setDealerName(dn);
       setFormName(fn);
@@ -944,11 +1158,6 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
     }
 
     const tekionId = selectedStore.tekion_id.trim();
-    logger.info("Starting auto-fetch for store", {
-      tekionId,
-      dealerId: selectedStore.dealer_id,
-      modules: autoModules,
-    });
 
     setAutoLoading(true);
     setError(null);
@@ -967,22 +1176,14 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
     try {
       const forms = await fetchBlueprintFormResponses(tekionId);
       const filtered = filterBlueprintTargetForms(forms, autoModules);
-
       setAutoForms(filtered);
 
       if (filtered.length === 0) {
-        logger.warn("No matching blueprint conquest forms found", {
-          totalReturned: forms.length,
-          modules: autoModules,
-        });
-        setAutoMessage(
-          "No matching blueprint conquest forms found for selected modules."
-        );
+        setAutoMessage("No matching blueprint conquest forms found for selected modules.");
         return;
       }
 
       const pickedByModule = new Map<BlueprintModule, BlueprintFormListItem>();
-
       for (const form of filtered) {
         const module = detectModuleFromFormName(form.formName);
         if (!module) continue;
@@ -998,22 +1199,9 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
         const form = pickedByModule.get(module);
         if (!form) continue;
 
-        logger.info(`Fetching detail for ${module} form`, {
-          formId: form.formId,
-          releaseId: form.releaseId,
-          formName: form.formName,
-        });
-
-        const detail = (await fetchBlueprintFormDetail(
-          form.formId,
-          form.releaseId
-        )) as InputPayload;
-
+        const detail = (await fetchBlueprintFormDetail(form.formId, form.releaseId)) as InputPayload;
         const decoded = runDecoder(detail);
-        const filteredDecoded = filterDecodedResultByExcludedTitles(
-          decoded,
-          module
-        );
+        const filteredDecoded = filterDecodedResultByExcludedTitles(decoded, module);
 
         const rawDetail = detail as unknown as {
           data?: {
@@ -1024,14 +1212,12 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
 
         const dn = String(
           rawDetail?.data?.formData?.releasedDealerName ||
-          form.dealerName ||
-          selectedStore.dba_name ||
-          ""
+            form.dealerName ||
+            selectedStore.dba_name ||
+            ""
         ).trim();
 
-        const fn = String(
-          rawDetail?.data?.formName ?? form.formName ?? ""
-        ).trim();
+        const fn = String(rawDetail?.data?.formName ?? form.formName ?? "").trim();
 
         const key = `${tekionId}-${fn}`
           .replace(/\s+/g, "_")
@@ -1051,9 +1237,7 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
       setAutoDecodedResults(results);
 
       if (results.length === 0) {
-        setAutoMessage(
-          "Matching forms were found, but no valid module detail could be decoded."
-        );
+        setAutoMessage("Matching forms were found, but no valid module detail could be decoded.");
         return;
       }
 
@@ -1072,9 +1256,7 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
       }
 
       setAutoMessage(
-        `Fetched and decoded ${results.length} form(s): ${results
-          .map((r) => moduleLabel(r.module))
-          .join(", ")}`
+        `Decoded ${results.length} form(s): ${results.map((r) => moduleLabel(r.module)).join(", ")}`
       );
     } catch (e: unknown) {
       logger.error("Auto fetch workflow failed", e);
@@ -1089,10 +1271,6 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
     async (module: BlueprintModule) => {
       const selected = autoDecodedResults.find((item) => item.module === module);
       if (!selected) return;
-
-      logger.info(`Switching active decoded view to: ${module}`, {
-        saveKey: selected.saveKey,
-      });
 
       setActiveAutoModule(module);
       setResult(selected.decoded);
@@ -1113,9 +1291,7 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
 
   const toggleModule = useCallback((module: BlueprintModule) => {
     setAutoModules((prev) =>
-      prev.includes(module)
-        ? prev.filter((m) => m !== module)
-        : [...prev, module]
+      prev.includes(module) ? prev.filter((m) => m !== module) : [...prev, module]
     );
   }, []);
 
@@ -1152,18 +1328,13 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
 
       await idbSaveBlueprint(record);
 
-      const res = await fetch(
-        "http://localhost:4000/api/validation/blueprint-save",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ key: saveKey, data: record }),
-        }
-      );
+      const res = await fetch("http://localhost:4000/api/validation/blueprint-save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: saveKey, data: record }),
+      });
 
       if (!res.ok) throw new Error(`Server: HTTP ${res.status}`);
-
-      logger.info("Saved blueprint to IDB and filesystem", { key: saveKey });
       setSaveStatus("saved");
     } catch (err: unknown) {
       logger.error("Failed to save blueprint", err);
@@ -1177,10 +1348,6 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
 
     setSaveAllStatus("saving");
     setSaveError(null);
-    logger.info("Saving all decoded results", {
-      count: autoDecodedResults.length,
-    });
-
     const errors: string[] = [];
 
     await Promise.allSettled(
@@ -1202,18 +1369,13 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
 
           await idbSaveBlueprint(record);
 
-          const res = await fetch(
-            "http://localhost:4000/api/validation/blueprint-save",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ key: item.saveKey, data: record }),
-            }
-          );
+          const res = await fetch("http://localhost:4000/api/validation/blueprint-save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ key: item.saveKey, data: record }),
+          });
 
-          if (!res.ok) {
-            throw new Error(`Server: HTTP ${res.status}`);
-          }
+          if (!res.ok) throw new Error(`Server: HTTP ${res.status}`);
         } catch (err: unknown) {
           errors.push(
             `Failed saving ${item.formName}: ${
@@ -1225,11 +1387,9 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
     );
 
     if (errors.length > 0) {
-      logger.error("Errors occurred during save all", errors);
       setSaveAllStatus("error");
       setSaveError(errors.join(" | "));
     } else {
-      logger.info("Successfully saved all decoded results");
       setSaveAllStatus("saved");
     }
   }, [autoDecodedResults, selectedStore]);
@@ -1250,12 +1410,11 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
           savedAt: string;
         };
 
-        if (!record.key) {
-          throw new Error("Invalid blueprint file — missing key");
-        }
+        if (!record.key) throw new Error("Invalid blueprint file — missing key");
 
         const module = detectModuleFromFormName(record.formName ?? "");
         const restoredDecoded = record.decodedResponse ?? record.data;
+
         const filteredRestoredDecoded = restoredDecoded
           ? filterDecodedResultByExcludedTitles(restoredDecoded, module)
           : undefined;
@@ -1266,19 +1425,13 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
             ? filterDecodedResultByExcludedTitles(record.data, module)
             : record.data,
           decodedResponse: record.decodedResponse
-            ? filterDecodedResultByExcludedTitles(
-                record.decodedResponse,
-                module
-              )
+            ? filterDecodedResultByExcludedTitles(record.decodedResponse, module)
             : record.decodedResponse,
         };
 
         await idbSaveBlueprint(restoredRecord);
 
-        if (filteredRestoredDecoded) {
-          setResult(filteredRestoredDecoded);
-        }
-
+        if (filteredRestoredDecoded) setResult(filteredRestoredDecoded);
         setDealerName(record.dealerName ?? "");
         setFormName(record.formName ?? "");
         setSaveKey(record.key);
@@ -1288,9 +1441,7 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
         setAutoDecodedResults([]);
         setActiveAutoModule(null);
       } catch (err: unknown) {
-        setError(
-          err instanceof Error ? err.message : "Failed to restore from file"
-        );
+        setError(err instanceof Error ? err.message : "Failed to restore from file");
       }
 
       e.target.value = "";
@@ -1318,20 +1469,74 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
   const totalSections = result?.decodedSections.length ?? 0;
   const totalFields = result?.allFields.length ?? 0;
   const answered = result?.populatedFlatRows.length ?? 0;
+  const answeredPct = totalFields > 0 ? Math.round((answered / totalFields) * 100) : 0;
 
-  const flatRows = populatedOnly
-    ? result?.populatedFlatRows ?? []
-    : result?.allFields ?? [];
+  const flatRows = populatedOnly ? result?.populatedFlatRows ?? [] : result?.allFields ?? [];
 
   const VIEW_TABS: [ViewMode, string][] = [
     ["sections", "By Section"],
     ["flat", "Flat Rows"],
     ["csv", "CSV Ready"],
-    ["human", "Human"],
+    ["human", "Document Summary"],
   ];
 
   return (
     <>
+      {/* Global layout & header visibility reset */}
+      <style>{`
+        .bd-table {
+          width: 100% !important;
+          table-layout: fixed !important;
+          border-collapse: collapse !important;
+          display: table !important;
+        }
+        .bd-table thead {
+          display: table-header-group !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          background: #0f172a !important;
+        }
+        .bd-table thead tr {
+          display: table-row !important;
+          visibility: visible !important;
+        }
+        .bd-table thead th {
+          display: table-cell !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          color: #94a3b8 !important;
+          font-size: 11px !important;
+          font-weight: 700 !important;
+          text-transform: uppercase !important;
+          letter-spacing: 0.05em !important;
+          padding: 12px 16px !important;
+          border-bottom: 1px solid #334155 !important;
+        }
+        .bd-table tbody {
+          display: table-row-group !important;
+        }
+        .bd-table tbody tr {
+          display: table-row !important;
+        }
+        .bd-table tbody td {
+          display: table-cell !important;
+          vertical-align: top !important;
+          padding: 14px 16px !important;
+        }
+
+        .bd-table td::before,
+        .bd-table td::after,
+        .bd-cell-title::before,
+        .bd-cell-title::after,
+        .bd-cell-value::before,
+        .bd-cell-value::after,
+        .bd-cell-type::before,
+        .bd-cell-type::after {
+          content: none !important;
+          display: none !important;
+        }
+      `}</style>
+
       <StorePickerModal
         open={storeModalOpen}
         stores={filteredStoreList}
@@ -1343,509 +1548,365 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
       />
 
       <div className="bd-shell">
-        <div className="bd-header">
+        <header className="bd-header">
           <div className="bd-header-left">
-            <button className="btn-secondary btn-sm" onClick={onBack}>
+            <button className="bd-btn bd-btn-secondary bd-btn-sm" onClick={onBack}>
               ← Back
             </button>
-            <span className="bd-title">🔍 Blueprint Form Decoder</span>
+            <button
+              className="bd-btn bd-btn-secondary bd-btn-sm"
+              onClick={() => setIsSidebarOpen((prev) => !prev)}
+              title={isSidebarOpen ? "Hide left panel" : "Show left panel"}
+            >
+              {isSidebarOpen ? "◀ Hide Panel" : "▶ Show Panel"}
+            </button>
+            <div className="bd-header-title-group">
+              <h1 className="bd-title">Blueprint Decoder</h1>
+              <span className="bd-version-tag">Tekion Arc</span>
+            </div>
           </div>
 
           {result && (
-            <div className="bd-stats">
-              <span className="bd-stat">
-                <span className="bd-stat-n">{totalSections}</span> sections
-              </span>
-              <span className="bd-stat">
-                <span className="bd-stat-n">{totalFields}</span> total fields
-              </span>
-              <span className="bd-stat bd-stat-pop">
-                <span className="bd-stat-n">{answered}</span> answered
-              </span>
+            <div className="bd-stats-bar">
+              <div className="bd-stat-chip">
+                <span className="bd-stat-val">{totalSections}</span>
+                <span className="bd-stat-lbl">Sections</span>
+              </div>
+              <div className="bd-stat-chip">
+                <span className="bd-stat-val">{totalFields}</span>
+                <span className="bd-stat-lbl">Fields</span>
+              </div>
+              <div className="bd-stat-chip highlight">
+                <span className="bd-stat-val">{answered}</span>
+                <span className="bd-stat-lbl">Answered ({answeredPct}%)</span>
+              </div>
             </div>
           )}
-        </div>
+        </header>
 
-        <div className="bd-body">
-          <div className="bd-input-panel">
-            <div className="bd-card">
-              <div className="bd-card-title">Input Mode</div>
-              <div className="bd-segmented">
-                <button
-                  className={`bd-segmented-btn ${
-                    inputMode === "auto" ? "active" : ""
-                  }`}
-                  onClick={() => setInputMode("auto")}
-                >
-                  ⚡ Auto Fetch
-                </button>
-                <button
-                  className={`bd-segmented-btn ${
-                    inputMode === "manual" ? "active" : ""
-                  }`}
-                  onClick={() => setInputMode("manual")}
-                >
-                  ✍️ Manual JSON
-                </button>
-              </div>
-            </div>
-
-            {inputMode === "auto" && (
-              <>
-                <div className="bd-card">
-                  <div className="bd-card-title">Dealership Selection</div>
-                  <button
-                    className="btn-secondary"
-                    style={{ width: "100%", justifyContent: "space-between" }}
-                    onClick={() => setStoreModalOpen(true)}
-                  >
-                    <span>
-                      {selectedStore
-                        ? `🏬 ${selectedStore.tekion_id}`
-                        : "🏬 Select Store"}
-                    </span>
-                    <span style={{ opacity: 0.5 }}>▼</span>
-                  </button>
-
-                  {selectedStore && (
-                    <div
-                      style={{
-                        fontSize: 13,
-                        color: "rgba(255,255,255,0.7)",
-                        padding: "4px 8px",
-                      }}
-                    >
-                      <span style={{ fontWeight: 600, color: "#fff" }}>
-                        {selectedStore.dealer_id}
-                      </span>
-                      <br />
-                      {selectedStore.dba_name || "Unknown DBA"}
-                    </div>
-                  )}
-
-                  <button
-                    className="btn-secondary btn-sm"
-                    style={{ width: "100%", opacity: 0.7, marginTop: 4 }}
-                    onClick={() => void loadStoreRecords()}
-                    disabled={storeLoading}
-                  >
-                    {storeLoading ? (
-                      <>
-                        <Spinner /> Refreshing...
-                      </>
-                    ) : (
-                      "↻ Sync Stores DB"
-                    )}
-                  </button>
-                </div>
-
-                <div className="bd-card">
-                  <div className="bd-card-title">Modules to Extract</div>
-                  <div className="bd-pill-group">
-                    {(
-                      ["parts", "service", "accounting"] as BlueprintModule[]
-                    ).map((mod) => {
-                      const isActive = autoModules.includes(mod);
-                      return (
-                        <button
-                          key={mod}
-                          className={`bd-pill ${isActive ? "active" : ""}`}
-                          onClick={() => toggleModule(mod)}
-                        >
-                          {isActive ? "✓" : "+"} {moduleLabel(mod)}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  <button
-                    className="btn-postman"
-                    style={{
-                      width: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginTop: 8,
-                    }}
-                    onClick={handleAutoFetch}
-                    disabled={
-                      autoLoading ||
-                      autoModules.length === 0 ||
-                      !selectedStore
-                    }
-                  >
-                    {autoLoading ? (
-                      <>
-                        <Spinner /> Fetching APIs...
-                      </>
-                    ) : (
-                      "🚀 Fetch & Decode"
-                    )}
-                  </button>
-
-                  {autoMessage && (
-                    <div
-                      className="bd-anim-fade-in"
-                      style={{
-                        fontSize: 12,
-                        color: "#a1a1aa",
-                        textAlign: "center",
-                      }}
-                    >
-                      {autoMessage}
-                    </div>
-                  )}
-                </div>
-
-                {autoDecodedResults.length > 0 && (
-                  <div className="bd-card bd-anim-fade-in">
-                    <div className="bd-card-title">View Decoded Results</div>
-                    <div className="bd-pill-group" style={{ marginBottom: 8 }}>
-                      {autoDecodedResults.map((item) => (
-                        <button
-                          key={item.module}
-                          className={`bd-pill ${
-                            activeAutoModule === item.module ? "active" : ""
-                          }`}
-                          onClick={() => void handleSelectAutoResult(item.module)}
-                        >
-                          {moduleLabel(item.module)}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div
-                      style={{
-                        background: "rgba(0,0,0,0.2)",
-                        borderRadius: 8,
-                        padding: 8,
-                      }}
-                    >
-                      {(
-                        ["parts", "service", "accounting"] as BlueprintModule[]
-                      ).map((module) => (
-                        <div
-                          key={module}
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            fontSize: 12,
-                            padding: "4px 6px",
-                          }}
-                        >
-                          <span style={{ color: "rgba(255,255,255,0.6)" }}>
-                            {moduleLabel(module)} Match
-                          </span>
-                          <span>
-                            {matchedModuleMap[module] ? "✅ Found" : "❌ None"}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-
-            {inputMode === "manual" && (
-              <div className="bd-card">
-                <div className="bd-card-title">Raw JSON Payload</div>
-                <div
-                  className={`bd-dropzone ${isDragging ? "dragging" : ""}`}
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                >
-                  <textarea
-                    ref={textareaRef}
-                    className="bd-json-textarea"
-                    style={{
-                      border: "none",
-                      background: "transparent",
-                      width: "100%",
-                      height: "140px",
-                      padding: 12,
-                      resize: "vertical",
-                    }}
-                    value={jsonText}
-                    onChange={(e) => setJsonText(e.target.value)}
-                    placeholder="Paste API response JSON here...&#10;or drag & drop a .json file."
-                    spellCheck={false}
-                  />
-                  {isDragging && (
-                    <div
-                      style={{
-                        position: "absolute",
-                        inset: 0,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        background: "rgba(10,132,255,0.15)",
-                        backdropFilter: "blur(2px)",
-                        pointerEvents: "none",
-                        color: "#0a84ff",
-                        fontWeight: 600,
-                        fontSize: 15,
-                      }}
-                    >
-                      📁 Drop JSON File Here
-                    </div>
-                  )}
-                </div>
-
-                <div style={{ display: "flex", gap: 8 }}>
-                  <button
-                    className="btn-postman"
-                    style={{ flex: 2 }}
-                    onClick={handleDecode}
-                  >
-                    ▶ Decode
-                  </button>
-                  <button
-                    className="btn-secondary"
-                    style={{ flex: 1 }}
-                    onClick={handleClear}
-                  >
-                    Clear
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {error && (
-              <div
-                className="bd-error bd-anim-fade-in"
-                style={{ borderRadius: 8 }}
-              >
-                ⚠ {error}
-              </div>
-            )}
-
-            <div className="bd-card">
-              <div className="bd-card-title">Display & Backup</div>
-
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  fontSize: 13,
-                  cursor: "pointer",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={populatedOnly}
-                  onChange={(e) => setPopulatedOnly(e.target.checked)}
-                  style={{ accentColor: "#0a84ff", width: 16, height: 16 }}
-                />
-                <span>Hide empty (unanswered) fields</span>
-              </label>
-
-              <hr
-                style={{
-                  border: 0,
-                  borderTop: "1px solid rgba(255,255,255,0.08)",
-                  margin: "4px 0",
-                }}
-              />
-
-              <button
-                className="btn-secondary btn-sm"
-                style={{
+        <main
+          className={`bd-body ${!isSidebarOpen ? "sidebar-collapsed" : ""}`}
+          style={
+            !isSidebarOpen
+              ? {
+                  display: "grid",
+                  gridTemplateColumns: "1fr",
                   width: "100%",
-                  justifyContent: "center",
-                  display: "flex",
-                  gap: 6,
-                }}
-                onClick={() => restoreRef.current?.click()}
-              >
-                <span>📂</span> Restore from Backup File
-              </button>
-              <input
-                ref={restoreRef}
-                type="file"
-                accept=".json"
-                style={{ display: "none" }}
-                onChange={handleRestoreFromFile}
-              />
-            </div>
-
-            {result && (
-              <div
-                className="bd-card bd-anim-fade-in"
-                style={{
-                  borderColor: "rgba(48, 209, 88, 0.3)",
-                  background: "rgba(48, 209, 88, 0.02)",
-                }}
-              >
-                <div className="bd-card-title" style={{ color: "#30d158" }}>
-                  💾 Local Database
+                }
+              : undefined
+          }
+        >
+          {isSidebarOpen && (
+            <aside className="bd-input-panel">
+              <div className="bd-card">
+                <div className="bd-card-header">
+                  <span className="bd-card-label">Extraction Mode</span>
                 </div>
+                <div className="bd-segmented">
+                  <button
+                    className={`bd-segmented-btn ${inputMode === "auto" ? "active" : ""}`}
+                    onClick={() => setInputMode("auto")}
+                  >
+                    ⚡ Auto Fetch
+                  </button>
+                  <button
+                    className={`bd-segmented-btn ${inputMode === "manual" ? "active" : ""}`}
+                    onClick={() => setInputMode("manual")}
+                  >
+                    ✍️ Manual JSON
+                  </button>
+                </div>
+              </div>
 
-                {!saveKey ? (
-                  <div style={{ fontSize: 12, color: "#ff453a" }}>
-                    ⚠️ Could not extract store key.
-                  </div>
-                ) : (
-                  <>
-                    <div
-                      style={{
-                        background: "rgba(0,0,0,0.3)",
-                        padding: "6px 10px",
-                        borderRadius: 6,
-                        fontSize: 12,
-                        fontFamily: "monospace",
-                        color: "rgba(255,255,255,0.8)",
-                      }}
-                    >
-                      {saveKey}
+              {inputMode === "auto" && (
+                <>
+                  <div className="bd-card">
+                    <div className="bd-card-header">
+                      <span className="bd-card-label">Target Dealership</span>
+                      <button
+                        className="bd-link-btn"
+                        onClick={() => void loadStoreRecords()}
+                        disabled={storeLoading}
+                      >
+                        {storeLoading ? <Spinner size={12} /> : "↻ Sync DB"}
+                      </button>
                     </div>
 
-                    {saveStatus === "idle" && (
-                      <button className="btn-primary" onClick={handleSave}>
-                        Save{" "}
-                        {activeAutoModule
-                          ? moduleLabel(activeAutoModule)
-                          : "View"}{" "}
-                        to IDB
-                      </button>
-                    )}
-
-                    {saveStatus === "exists" && (
-                      <button
-                        className="btn-secondary"
-                        style={{ borderColor: "#ff9f0a", color: "#ff9f0a" }}
-                        onClick={handleSave}
-                      >
-                        🔄 Overwrite Existing Save
-                      </button>
-                    )}
-
-                    {saveStatus === "saving" && (
-                      <div
-                        style={{
-                          fontSize: 13,
-                          color: "#0a84ff",
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                      >
-                        <Spinner /> Saving...
+                    <button className="bd-store-select-btn" onClick={() => setStoreModalOpen(true)}>
+                      <div className="bd-store-select-main">
+                        <span className="bd-store-icon">🏬</span>
+                        <div className="bd-store-text">
+                          <div className="bd-store-main-id">
+                            {selectedStore
+                              ? `${selectedStore.tekion_id}_${selectedStore.dealer_id}`
+                              : "Choose Dealership"}
+                          </div>
+                          <div className="bd-store-sub-name">
+                            {selectedStore?.dba_name || "Click to browse T-90 stores"}
+                          </div>
+                        </div>
                       </div>
-                    )}
-                    {saveStatus === "saved" && (
-                      <div style={{ fontSize: 13, color: "#30d158" }}>
-                        ✅ Successfully saved
-                      </div>
-                    )}
-                    {saveStatus === "error" && (
-                      <div style={{ fontSize: 13, color: "#ff453a" }}>
-                        ❌ {saveError}
-                      </div>
-                    )}
+                      <span className="bd-select-arrow">▾</span>
+                    </button>
+                  </div>
 
-                    {autoDecodedResults.length > 1 && (
-                      <>
-                        <hr
-                          style={{
-                            border: 0,
-                            borderTop: "1px solid rgba(255,255,255,0.08)",
-                            margin: "4px 0",
-                          }}
-                        />
-                        <button
-                          className="btn-secondary btn-sm"
-                          onClick={() => void handleSaveAll()}
-                          disabled={saveAllStatus === "saving"}
-                          style={{
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                        >
-                          {saveAllStatus === "saving" ? (
-                            <>
-                              <Spinner /> Saving all...
-                            </>
-                          ) : (
-                            "💾 Save All Extracted Forms"
-                          )}
+                  <div className="bd-card">
+                    <div className="bd-card-header">
+                      <span className="bd-card-label">Target Modules</span>
+                    </div>
+
+                    <div className="bd-pill-group">
+                      {(["parts", "service", "accounting"] as BlueprintModule[]).map((mod) => {
+                        const isActive = autoModules.includes(mod);
+                        return (
+                          <button
+                            key={mod}
+                            type="button"
+                            className={`bd-pill ${isActive ? "active" : ""}`}
+                            onClick={() => toggleModule(mod)}
+                          >
+                            <span className="bd-pill-indicator">{isActive ? "✓" : "+"}</span>
+                            {moduleLabel(mod)}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    <button
+                      className="bd-btn bd-btn-primary bd-btn-block"
+                      onClick={handleAutoFetch}
+                      disabled={autoLoading || autoModules.length === 0 || !selectedStore}
+                    >
+                      {autoLoading ? (
+                        <>
+                          <Spinner />
+                          Querying Conquest APIs...
+                        </>
+                      ) : (
+                        "🚀 Extract & Decode Forms"
+                      )}
+                    </button>
+
+                    {autoMessage && <div className="bd-status-callout">{autoMessage}</div>}
+                  </div>
+
+                  {autoDecodedResults.length > 0 && (
+                    <div className="bd-card bd-card-glow">
+                      <div className="bd-card-header">
+                        <span className="bd-card-label">Decoded Modules</span>
+                        <span className="bd-badge-mini">{autoDecodedResults.length} ready</span>
+                      </div>
+
+                      <div className="bd-segmented bd-segmented-wrap" style={{ marginBottom: 12 }}>
+                        {autoDecodedResults.map((item) => (
+                          <button
+                            key={item.module}
+                            className={`bd-segmented-btn ${
+                              activeAutoModule === item.module ? "active" : ""
+                            }`}
+                            onClick={() => void handleSelectAutoResult(item.module)}
+                          >
+                            {moduleLabel(item.module)}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="bd-match-list">
+                        {(["parts", "service", "accounting"] as BlueprintModule[]).map((mod) => (
+                          <div key={mod} className="bd-match-row">
+                            <span className="bd-match-name">{moduleLabel(mod)} Form</span>
+                            <span
+                              className={`bd-match-pill ${
+                                matchedModuleMap[mod] ? "is-found" : "is-none"
+                              }`}
+                            >
+                              {matchedModuleMap[mod] ? "Available" : "Not Found"}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {inputMode === "manual" && (
+                <div className="bd-card">
+                  <div className="bd-card-header">
+                    <span className="bd-card-label">Direct JSON Input</span>
+                  </div>
+
+                  <div
+                    className={`bd-dropzone ${isDragging ? "dragging" : ""}`}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                  >
+                    <textarea
+                      ref={textareaRef}
+                      className="bd-json-textarea"
+                      value={jsonText}
+                      onChange={(e) => setJsonText(e.target.value)}
+                      placeholder="Paste form detail payload or drag .json file here..."
+                      spellCheck={false}
+                    />
+                    {isDragging && (
+                      <div className="bd-dropzone-overlay">📂 Drop JSON File to Load</div>
+                    )}
+                  </div>
+
+                  <div className="bd-action-row">
+                    <button className="bd-btn bd-btn-primary" style={{ flex: 2 }} onClick={handleDecode}>
+                      ▶ Run Decoder
+                    </button>
+                    <button className="bd-btn bd-btn-secondary" style={{ flex: 1 }} onClick={handleClear}>
+                      Clear
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {error && <div className="bd-banner-error">⚠ {error}</div>}
+
+              <div className="bd-card">
+                <div className="bd-card-header">
+                  <span className="bd-card-label">Display & Cache</span>
+                </div>
+
+                <label className="bd-checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={populatedOnly}
+                    onChange={(e) => setPopulatedOnly(e.target.checked)}
+                  />
+                  <span>Hide unanswered questions</span>
+                </label>
+
+                <button
+                  className="bd-btn bd-btn-secondary bd-btn-sm"
+                  onClick={() => restoreRef.current?.click()}
+                >
+                  📂 Restore from Backup File
+                </button>
+
+                <input
+                  ref={restoreRef}
+                  type="file"
+                  accept=".json"
+                  style={{ display: "none" }}
+                  onChange={handleRestoreFromFile}
+                />
+              </div>
+
+              {result && (
+                <div className="bd-card bd-card-success">
+                  <div className="bd-card-header">
+                    <span className="bd-card-label" style={{ color: "#4ade80" }}>
+                      Persistence Storage
+                    </span>
+                    <span className="bd-badge-pill green">IndexedDB</span>
+                  </div>
+
+                  {!saveKey ? (
+                    <div className="bd-subtext-error">⚠️ Missing metadata key for local save.</div>
+                  ) : (
+                    <div className="bd-save-flow">
+                      <code className="bd-key-chip">{saveKey}</code>
+
+                      {saveStatus === "idle" && (
+                        <button className="bd-btn bd-btn-primary" onClick={handleSave}>
+                          💾 Save {activeAutoModule ? moduleLabel(activeAutoModule) : "View"} to IDB
                         </button>
-                        {saveAllStatus === "saved" && (
-                          <div
-                            style={{
-                              fontSize: 12,
-                              color: "#30d158",
-                              textAlign: "center",
-                            }}
-                          >
-                            ✅ All forms saved
-                          </div>
-                        )}
-                        {saveAllStatus === "error" && (
-                          <div
-                            style={{
-                              fontSize: 12,
-                              color: "#ff453a",
-                              textAlign: "center",
-                            }}
-                          >
-                            ❌ {saveError}
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
+                      )}
 
-          <div className="bd-output-panel">
-            {!result && (
-              <div className="bd-output-empty bd-anim-fade-in">
-                <span
-                  className="bd-empty-icon"
-                  style={{ fontSize: "3rem", marginBottom: 12, display: "block" }}
-                >
-                  📋
-                </span>
-                <p>
+                      {saveStatus === "exists" && (
+                        <button className="bd-btn bd-btn-warning" onClick={handleSave}>
+                          🔄 Overwrite Existing Record
+                        </button>
+                      )}
+
+                      {saveStatus === "saving" && (
+                        <div className="bd-inline-loader">
+                          <Spinner />
+                          Saving record...
+                        </div>
+                      )}
+
+                      {saveStatus === "saved" && (
+                        <div className="bd-inline-success">✓ Saved to Local DB & Disk</div>
+                      )}
+
+                      {saveStatus === "error" && (
+                        <div className="bd-subtext-error">✕ {saveError}</div>
+                      )}
+
+                      {autoDecodedResults.length > 1 && (
+                        <div className="bd-save-all-wrap">
+                          <button
+                            className="bd-btn bd-btn-secondary bd-btn-sm"
+                            onClick={() => void handleSaveAll()}
+                            disabled={saveAllStatus === "saving"}
+                          >
+                            {saveAllStatus === "saving" ? (
+                              <>
+                                <Spinner />
+                                Saving all...
+                              </>
+                            ) : (
+                              "💾 Save All Extracted Forms"
+                            )}
+                          </button>
+
+                          {saveAllStatus === "saved" && (
+                            <span className="bd-inline-success-sm">✓ All forms synced</span>
+                          )}
+
+                          {saveAllStatus === "error" && (
+                            <span className="bd-subtext-error">✕ {saveError}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </aside>
+          )}
+
+          <section
+            className="bd-output-panel"
+            style={{
+              flex: 1,
+              minWidth: 0,
+              width: "100%",
+              ...(!isSidebarOpen ? { gridColumn: "1 / -1" } : {}),
+            }}
+          >
+            {!result ? (
+              <div className="bd-empty-state">
+                <div className="bd-empty-icon-ring">📋</div>
+                <h3 className="bd-empty-title">No Decoded Data</h3>
+                <p className="bd-empty-desc">
                   {inputMode === "auto"
-                    ? "Select store, choose modules, then Fetch & Decode"
-                    : (
-                      <>
-                        Paste JSON or drop a file and click{" "}
-                        <strong>Decode</strong>
-                      </>
-                    )}
+                    ? "Select a dealership store on the left and click 'Extract & Decode Forms'."
+                    : "Paste an API response JSON or drop a file to inspect structured answers."}
                 </p>
-                <p className="bd-empty-hint-text" style={{ opacity: 0.6 }}>
-                  Supports any blueprint form API response
-                </p>
+                <div className="bd-empty-tags">
+                  <span>Parts Conquest</span>
+                  <span>•</span>
+                  <span>Service Conquest</span>
+                  <span>•</span>
+                  <span>Accounting Conquest</span>
+                </div>
               </div>
-            )}
-
-            {result && (
+            ) : (
               <>
-                <div
-                  className="bd-view-bar"
-                  style={{
-                    position: "sticky",
-                    top: 16,
-                    zIndex: 20,
-                    background: "#111216",
-                    paddingBottom: 12,
-                  }}
-                >
-                  <div className="kv-mode-tabs">
+                <div className="bd-view-bar">
+                  <div className="bd-segmented compact bd-segmented-wrap">
                     {VIEW_TABS.map(([mode, label]) => (
                       <button
                         key={mode}
-                        className={`kv-mode-btn ${
-                          viewMode === mode ? "kv-mode-active" : ""
-                        }`}
+                        className={`bd-segmented-btn ${viewMode === mode ? "active" : ""}`}
                         onClick={() => setViewMode(mode)}
                       >
                         {label}
@@ -1853,20 +1914,17 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
                     ))}
                   </div>
 
-                  <span className="bd-view-count">
+                  <div className="bd-view-counter">
                     {viewMode === "sections" && `${totalSections} sections`}
-                    {viewMode === "flat" && `${flatRows.length} rows`}
-                    {viewMode === "csv" && `${result.csvReadyRows.length} rows`}
-                    {viewMode === "human" && "populated fields"}
-                  </span>
+                    {viewMode === "flat" && `${flatRows.length} displayed rows`}
+                    {viewMode === "csv" && `${result.csvReadyRows.length} exportable rows`}
+                    {viewMode === "human" && "Clean text outline"}
+                  </div>
                 </div>
 
-                <div className="bd-output-content bd-anim-fade-in">
+                <div className="bd-view-content">
                   {viewMode === "sections" && (
-                    <SectionsView
-                      sections={result.decodedSections}
-                      populatedOnly={populatedOnly}
-                    />
+                    <SectionsView sections={result.decodedSections} populatedOnly={populatedOnly} />
                   )}
                   {viewMode === "flat" && <FlatView rows={flatRows} />}
                   {viewMode === "csv" && (
@@ -1875,14 +1933,12 @@ export const BlueprintDecoder: React.FC<Props> = ({ onBack }) => {
                       onDownload={() => downloadCsv(result.csvReadyRows)}
                     />
                   )}
-                  {viewMode === "human" && (
-                    <HumanView text={result.humanReadable} />
-                  )}
+                  {viewMode === "human" && <HumanView text={result.humanReadable} />}
                 </div>
               </>
             )}
-          </div>
-        </div>
+          </section>
+        </main>
       </div>
     </>
   );

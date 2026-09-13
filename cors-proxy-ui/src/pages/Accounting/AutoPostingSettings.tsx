@@ -375,13 +375,7 @@ const AutoPostingSettings: React.FC = () => {
   return (
     <div style={{ display: "grid", gap: 16 }}>
       <div style={cardStyle}>
-        <div style={{ color: "#f8fafc", fontSize: 22, fontWeight: 800, marginBottom: 6 }}>
-          Auto Posting Settings
-        </div>
-        <div style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.7 }}>
-          Fetch current accounting auto posting workflow settings, build a safe payload dynamically
-          from dealer data, and save updates using Global Headers.
-        </div>
+
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
           <span style={pillStyle}>

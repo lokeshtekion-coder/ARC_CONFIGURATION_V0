@@ -865,12 +865,7 @@ const SetupFieldsView: React.FC = () => {
       `}</style>
 
       <div>
-        <div style={{ fontSize: 24, fontWeight: 800, color: "#f8fafc", marginBottom: 6 }}>
-          📝 Setup Fields
-        </div>
-        <div style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.6 }}>
-          View and configure service-related cost center custom fields using Global Headers.
-        </div>
+
       </div>
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -880,9 +875,7 @@ const SetupFieldsView: React.FC = () => {
         <span style={badgeStyle}>
           Global Headers: <b style={{ color: "#f8fafc" }}>{headerCount}</b>
         </span>
-        <span style={badgeStyle}>
-          Asset Type: <b style={{ color: "#f8fafc" }}>customField</b>
-        </span>
+
       </div>
 
       <div style={cardStyle}>
@@ -899,10 +892,7 @@ const SetupFieldsView: React.FC = () => {
           <div>
             <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 800, marginBottom: 4 }}>
               Operations
-            </div>
-            <div style={{ color: "#94a3b8", fontSize: 13 }}>
-              Retrieve current field setup or configure supported cost center fields.
-            </div>
+                      </div>
           </div>
 
           <button className="btn-secondary btn-sm" onClick={refreshHeaders}>
@@ -911,12 +901,6 @@ const SetupFieldsView: React.FC = () => {
         </div>
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-          <button
-            className={activeView === "home" ? "btn-primary" : "btn-secondary btn-sm"}
-            onClick={() => setActiveView("home")}
-          >
-            Home
-          </button>
           <button
             className={activeView === "get" ? "btn-primary" : "btn-secondary btn-sm"}
             onClick={() => setActiveView("get")}

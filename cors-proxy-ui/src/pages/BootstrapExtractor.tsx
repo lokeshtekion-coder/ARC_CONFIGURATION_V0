@@ -192,7 +192,6 @@ function getSalesChainsRows(data: unknown): Array<Record<string, unknown>> {
 
   const rows: Array<Record<string, unknown>> = [];
 
-  // Inject __source to distinguish where the config came from
   rows.push(
     ...mapObjectValuesToRows(salesChains.masterAssetDocMap).map((r) => ({
       ...r,
@@ -211,7 +210,6 @@ function getSalesChainsRows(data: unknown): Array<Record<string, unknown>> {
   rows.forEach((row, index) => {
     const id = normalize(row.id);
     const entryKey = normalize(row.__entryKey);
-    // Fix: Include index in dedupe to prevent silent collision losses if explicit IDs are missing
     const dedupeKey = id ? `${id}-${row.__source}` : `${entryKey}-${index}-${row.__source}`;
 
     if (!deduped.has(dedupeKey)) {
@@ -436,12 +434,18 @@ const MetricCard: React.FC<{ label: string; value: React.ReactNode }> = ({ label
 const SalesChainsView: React.FC<{ data: unknown; glAccounts: GLAccount[] }> = ({ data, glAccounts }) => {
   const [sortBy, setSortBy] = useState<string | null>(null);
   const [sortAsc, setSortAsc] = useState(true);
+  const [isAccessibleMapOpen, setIsAccessibleMapOpen] = useState(true);
+  const [selectedDealerFilter, setSelectedDealerFilter] = useState<string>("ALL");
 
   const rows = useMemo(() => getSalesChainsRows(data), [data]);
   const accessibleRows = useMemo(() => getSalesChainsAccessibleRows(data), [data]);
   const salesChains = useMemo(() => getSalesChainsRoot(data), [data]);
 
-  // Create an O(1) lookup map for GL Accounts based on ID
+  const filteredAccessibleRows = useMemo(() => {
+    if (selectedDealerFilter === "ALL") return accessibleRows;
+    return accessibleRows.filter((r) => r.dealerId === selectedDealerFilter);
+  }, [accessibleRows, selectedDealerFilter]);
+
   const glMap = useMemo(() => {
     const map = new Map<string, GLAccount>();
     glAccounts.forEach((acc) => map.set(acc.id, acc));
@@ -454,11 +458,9 @@ const SalesChainsView: React.FC<{ data: unknown; glAccounts: GLAccount[] }> = ({
     return [...rows].sort((a, b) => {
       const getVal = (row: Record<string, unknown>) => {
         const acctId = row[sortBy];
-        // If null or missing, sort it to the bottom
         if (acctId === null || acctId === undefined || acctId === "") return "\uFFFF";
 
         const gl = glMap.get(String(acctId));
-        // Sort by the GL Account Name if found, otherwise fallback to the ID itself
         if (gl) return (gl.accountName ?? "").toLowerCase();
         return String(acctId).toLowerCase();
       };
@@ -484,7 +486,6 @@ const SalesChainsView: React.FC<{ data: unknown; glAccounts: GLAccount[] }> = ({
     </span>
   );
 
-  // Smart Sub-component to render an Account Cell
   const SmartAccountCell = ({ acctId }: { acctId: unknown }) => {
     if (acctId === null || acctId === undefined || acctId === "") {
       return <span style={{ color: "#475569" }}>—</span>;
@@ -494,7 +495,6 @@ const SalesChainsView: React.FC<{ data: unknown; glAccounts: GLAccount[] }> = ({
     const gl = glMap.get(strId);
 
     if (!gl) {
-      // Account ID exists in config, but isn't found in GL extraction
       return (
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
           <code className="bx-mono" style={{ color: "#cbd5e1" }}>
@@ -505,7 +505,6 @@ const SalesChainsView: React.FC<{ data: unknown; glAccounts: GLAccount[] }> = ({
       );
     }
 
-    // Beautifully rendered GL Account block
     const typeColor = acctColor(gl.accountTypeId);
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -557,54 +556,131 @@ const SalesChainsView: React.FC<{ data: unknown; glAccounts: GLAccount[] }> = ({
       {/* Accessible Assets Mapping */}
       {accessibleRows.length > 0 && (
         <div className="bx-table-wrap">
-          <div className="bx-search-bar" style={{ background: "transparent", borderBottom: "none", paddingBottom: 0 }}>
-            <span
-              className="bx-count-badge"
-              style={{ background: "rgba(10,132,255,0.15)", color: "#60a5fa", border: "1px solid rgba(10,132,255,0.3)" }}
+          <div
+            className="bx-search-bar"
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 10,
+              padding: "10px 14px",
+            }}
+          >
+            <div
+              onClick={() => setIsAccessibleMapOpen((prev) => !prev)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                cursor: "pointer",
+                userSelect: "none",
+              }}
             >
-              accessibleAssetMap
-            </span>
+              <span style={{ fontSize: 12, color: "#60a5fa" }}>
+                {isAccessibleMapOpen ? "▼" : "▶"}
+              </span>
+              <span
+                className="bx-count-badge"
+                style={{
+                  background: "rgba(10,132,255,0.15)",
+                  color: "#60a5fa",
+                  border: "1px solid rgba(10,132,255,0.3)",
+                }}
+              >
+                accessibleAssetMap ({accessibleRows.length} dealer{accessibleRows.length !== 1 ? "s" : ""})
+              </span>
+              <span style={{ fontSize: 12, color: "#94a3b8" }}>
+                {isAccessibleMapOpen ? "Click to collapse" : "Click to expand"}
+              </span>
+            </div>
+
+            {isAccessibleMapOpen && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <label htmlFor="dealer-filter-select" style={{ fontSize: 12, color: "#94a3b8" }}>
+                  Filter Dealer:
+                </label>
+                <select
+                  id="dealer-filter-select"
+                  className="bx-search-input"
+                  style={{
+                    maxWidth: 240,
+                    padding: "4px 8px",
+                    fontSize: 12,
+                    cursor: "pointer",
+                    height: 30,
+                  }}
+                  value={selectedDealerFilter}
+                  onChange={(e) => setSelectedDealerFilter(e.target.value)}
+                >
+                  <option value="ALL">All Dealers ({accessibleRows.length})</option>
+                  {accessibleRows.map((row) => (
+                    <option key={row.dealerId} value={row.dealerId}>
+                      {row.dealerId} ({row.assetIds.length} assets)
+                    </option>
+                  ))}
+                </select>
+                {selectedDealerFilter !== "ALL" && (
+                  <button
+                    className="btn-secondary btn-xs"
+                    onClick={() => setSelectedDealerFilter("ALL")}
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            )}
           </div>
-          <table className="bx-table">
-            <thead>
-              <tr>
-                <th style={{ width: 150 }}>Dealer ID</th>
-                <th>Accessible Asset IDs</th>
-              </tr>
-            </thead>
-            <tbody>
-              {accessibleRows.map((row) => (
-                <tr key={row.dealerId}>
-                  <td>
-                    <code className="bx-mono">{row.dealerId}</code>
-                  </td>
-                  <td>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                      {row.assetIds.length > 0 ? (
-                        row.assetIds.map((id) => (
-                          <span
-                            key={id}
-                            style={{
-                              padding: "4px 8px",
-                              background: "rgba(255,255,255,0.06)",
-                              border: "1px solid rgba(255,255,255,0.1)",
-                              borderRadius: 6,
-                              fontSize: 12,
-                              fontFamily: "monospace",
-                            }}
-                          >
-                            {id}
-                          </span>
-                        ))
-                      ) : (
-                        <span style={{ color: "#64748b" }}>—</span>
-                      )}
-                    </div>
-                  </td>
+
+          {isAccessibleMapOpen && (
+            <table className="bx-table">
+              <thead>
+                <tr>
+                  <th style={{ width: 180 }}>Dealer ID</th>
+                  <th>
+                    Accessible Asset IDs ({filteredAccessibleRows.reduce((acc, r) => acc + r.assetIds.length, 0)} total)
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredAccessibleRows.map((row) => (
+                  <tr key={row.dealerId}>
+                    <td style={{ verticalAlign: "top" }}>
+                      <code className="bx-mono" style={{ color: "#60a5fa", fontWeight: 600 }}>
+                        {row.dealerId}
+                      </code>
+                      <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>
+                        {row.assetIds.length} asset{row.assetIds.length !== 1 ? "s" : ""}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                        {row.assetIds.length > 0 ? (
+                          row.assetIds.map((id) => (
+                            <span
+                              key={id}
+                              style={{
+                                padding: "4px 8px",
+                                background: "rgba(255,255,255,0.06)",
+                                border: "1px solid rgba(255,255,255,0.1)",
+                                borderRadius: 6,
+                                fontSize: 12,
+                                fontFamily: "monospace",
+                              }}
+                            >
+                              {id}
+                            </span>
+                          ))
+                        ) : (
+                          <span style={{ color: "#64748b" }}>—</span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       )}
 
@@ -671,7 +747,7 @@ const SalesChainsView: React.FC<{ data: unknown; glAccounts: GLAccount[] }> = ({
                           border: "1px solid rgba(255,255,255,0.1)",
                           background: "rgba(255,255,255,0.05)",
                           fontSize: 12,
-                          color: "#e2e8f0"
+                          color: "#e2e8f0",
                         }}
                       >
                         {String(type)}
@@ -751,6 +827,7 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
   const [stats, setStats] = useState<BootstrapStats | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>("glAccounts");
+  const [showLeftPanel, setShowLeftPanel] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const [saving, setSaving] = useState(false);
@@ -819,10 +896,8 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
 
     try {
       const parsed = JSON.parse(text);
-      // We cast to any so we can seamlessly inject the decoded sales chains for storage
       const output = extractBootstrapData(parsed) as any;
 
-      // Fix: Safely deep clone the parsed structure before modification to prevent React state mutation bugs
       let payloadToSave: Record<string, unknown>;
       try {
         payloadToSave = structuredClone(parsed);
@@ -830,7 +905,6 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
         payloadToSave = JSON.parse(JSON.stringify(parsed));
       }
 
-      // Extract and enrich sales chains directly into the output object for storage
       const rawRows = getSalesChainsRows(payloadToSave);
       if (rawRows.length > 0) {
         const glMap = new Map<string, GLAccount>();
@@ -838,9 +912,9 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
           output.glAccounts.forEach((acc: GLAccount) => glMap.set(acc.id, acc));
         }
 
-        const decodedRows = rawRows.map(row => {
+        const decodedRows = rawRows.map((row) => {
           const decodedRow: Record<string, unknown> = { ...row };
-          ['saleAccountId', 'costOfSaleAccountId', 'costOffsetAccountId'].forEach(key => {
+          ["saleAccountId", "costOfSaleAccountId", "costOffsetAccountId"].forEach((key) => {
             const acctId = row[key];
             if (acctId) {
               const gl = glMap.get(String(acctId));
@@ -854,10 +928,8 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
           return decodedRow;
         });
 
-        // 1. Attach to the extracted result (ensures it is saved as extractedData and included in Download JSON)
         output.SalesChains_Decoded = decodedRows;
 
-        // 2. Attach to the raw payload structure exactly alongside standard salesChains
         const rootData = (asObject(payloadToSave.data) ? payloadToSave.data : payloadToSave) as any;
         if (rootData) {
           rootData.SalesChains_Decoded = decodedRows;
@@ -880,7 +952,6 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
 
   const handleLoad = useCallback((record: BootstrapRecord) => {
     try {
-      // Cast to any momentarily just in case the db structure has drift
       const rec = record as any;
       const output = (rec.data || rec.extractedData) as BootstrapOutput;
 
@@ -1036,12 +1107,11 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
         rawPayload = undefined;
       }
 
-      // If we correctly updated rawPayload inside runExtractionFromText, IDB receives it natively
       await idbSaveBootstrapWithRawSections({
         key: result.dealerId,
         dealerName: result.dealerId,
         envName: result.dealerId,
-        extractedData: result, // Now natively includes SalesChains_Decoded
+        extractedData: result,
         rawPayload,
         savedAt: timestamp,
       });
@@ -1070,7 +1140,6 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
 
   const handleHistoryDownloadJson = (record: BootstrapRecord) => {
     const tag = `bootstrap__${record.dealerName}__${record.savedAt.replace(/[:.]/g, "-")}`;
-    // Fix: Cast the entire record to any to bypass strict typing for missing properties
     const rec = record as any;
     const dataToDownload = rec.data || rec.extractedData;
     downloadFile(JSON.stringify(dataToDownload, null, 2), `${tag}.json`, "application/json");
@@ -1078,7 +1147,6 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
 
   const handleHistoryDownloadCsv = (record: BootstrapRecord) => {
     const tag = `bootstrap__${record.dealerName}__${record.savedAt.replace(/[:.]/g, "-")}`;
-    // Fix: Cast the entire record to any
     const rec = record as any;
     const dataToDownload = rec.data || rec.extractedData;
     downloadFile(toCsvString(dataToDownload as BootstrapOutput), `${tag}.csv`, "text/csv");
@@ -1115,6 +1183,13 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
         <div className="bx-header-left">
           <button className="btn-secondary btn-sm" onClick={onBack}>
             ← Back
+          </button>
+          <button
+            className="btn-secondary btn-sm"
+            onClick={() => setShowLeftPanel((prev) => !prev)}
+            title={showLeftPanel ? "Collapse left panel" : "Expand left panel"}
+          >
+            {showLeftPanel ? "◀ Hide Panel" : "▶ Show Panel"}
           </button>
           <span className="bx-title">🗃 Bootstrap Extractor</span>
         </div>
@@ -1156,180 +1231,194 @@ export const BootstrapExtractor: React.FC<Props> = ({ onBack }) => {
         )}
       </div>
 
-      <div className="bx-body">
-        <div className="bx-input-panel">
-          <div
-            style={{
-              marginBottom: 14,
-              padding: 12,
-              borderRadius: 14,
-              border: "1px solid rgba(59,130,246,0.18)",
-              background: "rgba(59,130,246,0.08)",
-              display: "grid",
-              gap: 10,
-            }}
-          >
-            <div style={{ color: "#f8fafc", fontWeight: 700, fontSize: 14 }}>
-              ⚡ Auto Fetch from Selected Dealer Headers
-            </div>
-
-            <div style={{ color: "#94a3b8", fontSize: 12, lineHeight: 1.5 }}>
-              Uses the enabled Global Headers from Settings. Select a dealer in Captured Dealer Profiles,
-              then fetch the bootstrap response automatically.
-            </div>
-
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              <span
-                style={{
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  background: "rgba(255,255,255,0.04)",
-                  color: "#cbd5e1",
-                  fontSize: 12,
-                }}
-              >
-                Enabled Headers: <b style={{ color: "#f8fafc" }}>{enabledHeaderCount}</b>
-              </span>
-
-              <span
-                style={{
-                  padding: "6px 10px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  background: "rgba(255,255,255,0.04)",
-                  color: "#cbd5e1",
-                  fontSize: 12,
-                }}
-              >
-                Dealer ID: <b style={{ color: detectedDealerId ? "#86efac" : "#fca5a5" }}>
-                  {detectedDealerId ?? "Not found"}
-                </b>
-              </span>
-            </div>
-
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <button
-                className="btn-postman"
-                onClick={() => void handleFetchBootstrap()}
-                disabled={fetchingBootstrap || !detectedDealerId || enabledHeaderCount === 0}
-              >
-                {fetchingBootstrap ? "Fetching..." : "⇢ Fetch Bootstrap"}
-              </button>
-
-              <button className="btn-secondary btn-sm" onClick={refreshGlobalHeaders}>
-                ⟳ Refresh Headers
-              </button>
-            </div>
-
-            {fetchMsg ? (
-              <div
-                style={{
-                  color: fetchMsg.ok ? "#bbf7d0" : "#fecaca",
-                  background: fetchMsg.ok
-                    ? "rgba(34,197,94,0.10)"
-                    : "rgba(239,68,68,0.10)",
-                  border: fetchMsg.ok
-                    ? "1px solid rgba(34,197,94,0.22)"
-                    : "1px solid rgba(239,68,68,0.22)",
-                  borderRadius: 12,
-                  padding: "10px 12px",
-                  fontSize: 13,
-                }}
-              >
-                {fetchMsg.text}
-              </div>
-            ) : null}
-          </div>
-
-          <div className="bx-panel-label">Paste Bootstrap Response JSON</div>
-          <textarea
-            className="bx-json-textarea"
-            value={jsonText}
-            onChange={(e) => setJsonText(e.target.value)}
-            placeholder={`Paste full bootstrap API response...\n\n{\n  "data": {\n    "allAccounts": { ... },\n    "customField": { ... },\n    "allJournals": { ... },\n    "salesChains": { ... }\n  }\n}`}
-            spellCheck={false}
-          />
-          {error && <div className="bx-error">⚠ {error}</div>}
-
-          <div className="bx-input-actions">
-            <button className="btn-postman" onClick={handleExtract}>
-              ▶ Extract
-            </button>
-            <button className="btn-cancel-bulk" onClick={handleClear}>
-              ✕ Clear
-            </button>
-            <button
-              className="btn-secondary btn-sm"
-              title="Upload .json file"
-              onClick={() => fileRef.current?.click()}
+      {/* ── Body: Dynamically overrides grid template when panel is hidden ── */}
+      <div
+        className="bx-body"
+        style={!showLeftPanel ? { gridTemplateColumns: "1fr" } : undefined}
+      >
+        {showLeftPanel && (
+          <div className="bx-input-panel">
+            <div
+              style={{
+                marginBottom: 14,
+                padding: 12,
+                borderRadius: 14,
+                border: "1px solid rgba(59,130,246,0.18)",
+                background: "rgba(59,130,246,0.08)",
+                display: "grid",
+                gap: 10,
+              }}
             >
-              📂 Upload File
-            </button>
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".json"
-              style={{ display: "none" }}
-              onChange={handleFile}
-            />
-          </div>
+              <div style={{ color: "#f8fafc", fontWeight: 700, fontSize: 14 }}>
+                ⚡ Auto Fetch from Selected Dealer Headers
+              </div>
 
-          {result && (
-            <div className="glv-save-block">
-              <div className="glv-step-label">
-                <span className="glv-step-num">💾</span> Save for GL Validation
+              <div style={{ color: "#94a3b8", fontSize: 12, lineHeight: 1.5 }}>
+                Uses the enabled Global Headers from Settings. Select a dealer in Captured Dealer Profiles,
+                then fetch the bootstrap response automatically.
               </div>
-              <div className="bd-save-key-row">
-                <span className="bd-save-key-label">Dealer ID</span>
-                <span className="bd-save-key-value">{result.dealerId}</span>
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                <span
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: 999,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(255,255,255,0.04)",
+                    color: "#cbd5e1",
+                    fontSize: 12,
+                  }}
+                >
+                  Enabled Headers: <b style={{ color: "#f8fafc" }}>{enabledHeaderCount}</b>
+                </span>
+
+                <span
+                  style={{
+                    padding: "6px 10px",
+                    borderRadius: 999,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(255,255,255,0.04)",
+                    color: "#cbd5e1",
+                    fontSize: 12,
+                  }}
+                >
+                  Dealer ID: <b style={{ color: detectedDealerId ? "#86efac" : "#fca5a5" }}>
+                    {detectedDealerId ?? "Not found"}
+                  </b>
+                </span>
               </div>
-              <button
-                className="btn-primary"
-                style={{ width: "100%" }}
-                disabled={result.dealerId === "UNKNOWN" || saving}
-                onClick={handleSave}
-              >
-                {saving ? "Saving…" : "💾 Save Snapshot"}
+
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button
+                  className="btn-postman"
+                  onClick={() => void handleFetchBootstrap()}
+                  disabled={fetchingBootstrap || !detectedDealerId || enabledHeaderCount === 0}
+                >
+                  {fetchingBootstrap ? "Fetching..." : "⇢ Fetch Bootstrap"}
+                </button>
+
+                <button className="btn-secondary btn-sm" onClick={refreshGlobalHeaders}>
+                  ⟳ Refresh Headers
+                </button>
+              </div>
+
+              {fetchMsg ? (
+                <div
+                  style={{
+                    color: fetchMsg.ok ? "#bbf7d0" : "#fecaca",
+                    background: fetchMsg.ok
+                      ? "rgba(34,197,94,0.10)"
+                      : "rgba(239,68,68,0.10)",
+                    border: fetchMsg.ok
+                      ? "1px solid rgba(34,197,94,0.22)"
+                      : "1px solid rgba(239,68,68,0.22)",
+                    borderRadius: 12,
+                    padding: "10px 12px",
+                    fontSize: 13,
+                  }}
+                >
+                  {fetchMsg.text}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="bx-panel-label">Paste Bootstrap Response JSON</div>
+            <textarea
+              className="bx-json-textarea"
+              value={jsonText}
+              onChange={(e) => setJsonText(e.target.value)}
+              placeholder={`Paste full bootstrap API response...\n\n{\n  "data": {\n    "allAccounts": { ... },\n    "customField": { ... },\n    "allJournals": { ... },\n    "salesChains": { ... }\n  }\n}`}
+              spellCheck={false}
+            />
+            {error && <div className="bx-error">⚠ {error}</div>}
+
+            <div className="bx-input-actions">
+              <button className="btn-postman" onClick={handleExtract}>
+                ▶ Extract
               </button>
-              {saveMsg && (
-                <div className={saveMsg.ok ? "glv-save-ok" : "bx-error"}>{saveMsg.text}</div>
+              <button className="btn-cancel-bulk" onClick={handleClear}>
+                ✕ Clear
+              </button>
+              <button
+                className="btn-secondary btn-sm"
+                title="Upload .json file"
+                onClick={() => fileRef.current?.click()}
+              >
+                📂 Upload File
+              </button>
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".json"
+                style={{ display: "none" }}
+                onChange={handleFile}
+              />
+            </div>
+
+            {result && (
+              <div className="glv-save-block">
+                <div className="glv-step-label">
+                  <span className="glv-step-num">💾</span> Save for GL Validation
+                </div>
+                <div className="bd-save-key-row">
+                  <span className="bd-save-key-label">Dealer ID</span>
+                  <span className="bd-save-key-value">{result.dealerId}</span>
+                </div>
+                <button
+                  className="btn-primary"
+                  style={{ width: "100%" }}
+                  disabled={result.dealerId === "UNKNOWN" || saving}
+                  onClick={handleSave}
+                >
+                  {saving ? "Saving…" : "💾 Save Snapshot"}
+                </button>
+                {saveMsg && (
+                  <div className={saveMsg.ok ? "glv-save-ok" : "bx-error"}>{saveMsg.text}</div>
+                )}
+              </div>
+            )}
+
+            <div className="bx-legend">
+              <div className="bx-legend-title">Cost Center Keys (5)</div>
+              {[...COST_CENTER_KEYS].map((key) => {
+                const found = stats?.foundKeys.includes(key);
+                return (
+                  <div key={key} className="bx-legend-row">
+                    <span>{found === undefined ? "○" : found ? "✅" : "❌"}</span>
+                    <code className="bx-legend-key">{key}</code>
+                    {found === false && <span className="bx-legend-miss">missing</span>}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="bx-history-section">
+              <button className="bx-history-toggle" onClick={() => setShowHistory((v) => !v)}>
+                <span>📚 Saved Snapshots ({idbHistory.length})</span>
+                <span>{showHistory ? "▲" : "▼"}</span>
+              </button>
+              {showHistory && (
+                <HistoryPanel
+                  records={idbHistory}
+                  onLoad={handleLoad}
+                  onDelete={handleIdbDelete}
+                  onDownloadJson={handleHistoryDownloadJson}
+                  onDownloadCsv={handleHistoryDownloadCsv}
+                />
               )}
             </div>
-          )}
-
-          <div className="bx-legend">
-            <div className="bx-legend-title">Cost Center Keys (5)</div>
-            {[...COST_CENTER_KEYS].map((key) => {
-              const found = stats?.foundKeys.includes(key);
-              return (
-                <div key={key} className="bx-legend-row">
-                  <span>{found === undefined ? "○" : found ? "✅" : "❌"}</span>
-                  <code className="bx-legend-key">{key}</code>
-                  {found === false && <span className="bx-legend-miss">missing</span>}
-                </div>
-              );
-            })}
           </div>
+        )}
 
-          <div className="bx-history-section">
-            <button className="bx-history-toggle" onClick={() => setShowHistory((v) => !v)}>
-              <span>📚 Saved Snapshots ({idbHistory.length})</span>
-              <span>{showHistory ? "▲" : "▼"}</span>
-            </button>
-            {showHistory && (
-              <HistoryPanel
-                records={idbHistory}
-                onLoad={handleLoad}
-                onDelete={handleIdbDelete}
-                onDownloadJson={handleHistoryDownloadJson}
-                onDownloadCsv={handleHistoryDownloadCsv}
-              />
-            )}
-          </div>
-        </div>
-
-        <div className="bx-output-panel">
+        {/* ── Output Panel: Spans all grid columns & full width when left panel is hidden ── */}
+        <div
+          className="bx-output-panel"
+          style={{
+            gridColumn: !showLeftPanel ? "1 / -1" : undefined,
+            width: "100%",
+            minWidth: 0,
+          }}
+        >
           {!result ? (
             <div className="bx-empty-state">
               <span className="bx-empty-icon">🗃</span>

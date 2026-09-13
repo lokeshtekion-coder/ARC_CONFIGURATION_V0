@@ -1,0 +1,259 @@
+.bx-page {
+  width: 100%;
+}
+
+.bx-body {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.bx-input-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: sticky;
+  top: 72px;
+  align-self: start;
+}
+
+.bx-output-panel {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bx-card {
+  background: #151922;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+}
+
+.bx-card-highlight {
+  border-color: rgba(59, 130, 246, 0.22);
+  background: linear-gradient(180deg, rgba(59, 130, 246, 0.08), rgba(21, 25, 34, 0.92));
+}
+
+.bx-card-title {
+  color: #f8fafc;
+  font-weight: 800;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.bx-card-copy {
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.bx-pill-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.bx-pill-inline {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  color: #cbd5e1;
+  font-size: 12px;
+}
+
+.bx-panel-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #cbd5e1;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bx-json-textarea {
+  width: 100%;
+  min-height: 360px;
+  background: #0f1115;
+  border: 1px solid rgba(255,255,255,0.10);
+  color: #e5e7eb;
+  border-radius: 12px;
+  padding: 12px 13px;
+  font-size: 12px;
+  line-height: 1.6;
+  outline: none;
+  resize: vertical;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  white-space: pre;
+}
+
+.bx-json-textarea:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.10);
+}
+
+.bx-search-bar-minimal {
+  background: transparent;
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.bx-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.bx-metric-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bx-metric-label {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bx-metric-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.bx-saleschains-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.bx-chip-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.bx-mini-chip {
+  padding: 4px 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.bx-blue-badge {
+  background: rgba(10,132,255,0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(10,132,255,0.3);
+}
+
+.bx-smart-acct-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bx-smart-acct-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bx-smart-acct-number {
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.bx-smart-acct-type {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.bx-smart-acct-name {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.35;
+}
+
+.bx-acct-missing {
+  font-size: 10px;
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.bx-id-source-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bx-break-all {
+  word-break: break-all;
+}
+
+.bx-source-badge {
+  align-self: flex-start;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.bx-type-lite {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  font-size: 12px;
+  color: #e2e8f0;
+  display: inline-flex;
+}
+
+.bx-history-meta-clickable {
+  cursor: pointer;
+  flex: 1;
+}
+
+.bx-history-load-hint {
+  font-size: 10px;
+  color: #0a84ff;
+}
+
+@media (max-width: 1180px) {
+  .bx-body {
+    grid-template-columns: 1fr;
+  }
+
+  .bx-input-panel {
+    position: static;
+    top: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .bx-json-textarea {
+    min-height: 260px;
+  }
+
+  .bx-metric-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

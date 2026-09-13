@@ -49,7 +49,6 @@ type LaborPreset = {
   description: string;
   rateType: number;
   accent: string;
-  subtitle: string;
 };
 
 const LABOR_RATE_URL =
@@ -62,7 +61,6 @@ const PRESET_RATES: LaborPreset[] = [
     description: "Customer Labor Rate",
     rateType: 0,
     accent: "#3b82f6",
-    subtitle: "Customer Pay",
   },
   {
     key: "ip",
@@ -70,7 +68,6 @@ const PRESET_RATES: LaborPreset[] = [
     description: "Internal Labor Rate",
     rateType: 0,
     accent: "#f59e0b",
-    subtitle: "Internal",
   },
   {
     key: "wp",
@@ -78,7 +75,6 @@ const PRESET_RATES: LaborPreset[] = [
     description: "Warranty Labor Rate",
     rateType: 0,
     accent: "#22c55e",
-    subtitle: "Warranty",
   },
 ];
 
@@ -112,15 +108,6 @@ function findHeaderValueCaseInsensitive(
     if (found?.[1]) return normalize(found[1]);
   }
   return "";
-}
-
-function extractDealerIdFromHeaders(headers: Record<string, string>): string {
-  return findHeaderValueCaseInsensitive(headers, [
-    "dealerid",
-    "dealerId",
-    "dealer-id",
-    "x-dealer-id",
-  ]);
 }
 
 function extractSiteIdFromHeaders(headers: Record<string, string>): string {
@@ -359,26 +346,20 @@ const badgeStyle: React.CSSProperties = {
   alignItems: "center",
   gap: 6,
   padding: "6px 10px",
-  borderRadius: 999,
+  borderRadius: 899,
   background: "rgba(255,255,255,0.03)",
   border: "1px solid rgba(255,255,255,0.08)",
   color: "#cbd5e1",
-  fontSize: 12,
-  whiteSpace: "nowrap",
+  fontSize: 10,
+  whiteSpace: "wrap",
 };
 
 const cardStyle: React.CSSProperties = {
-  borderRadius: 16,
+  borderRadius: 10,
   border: "1px solid rgba(255,255,255,0.08)",
   background: "rgba(255,255,255,0.02)",
   padding: 16,
   minWidth: 0,
-};
-
-const statGridStyle: React.CSSProperties = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-  gap: 12,
 };
 
 const monoStyle: React.CSSProperties = {
@@ -400,8 +381,8 @@ function tableScrollWrapStyle(maxHeight: number): React.CSSProperties {
 }
 
 const tableElementStyle: React.CSSProperties = {
-  width: "100%",
-  minWidth: 980,
+  width: "80%",
+  minWidth: 880,
   borderCollapse: "collapse",
 };
 
@@ -420,7 +401,7 @@ const stickyThStyle: React.CSSProperties = {
 };
 
 const tdStyle: React.CSSProperties = {
-  padding: "10px 12px",
+  padding: "8px 10px",
   fontSize: 13,
   borderBottom: "1px solid rgba(255,255,255,0.05)",
   verticalAlign: "top",
@@ -444,7 +425,7 @@ const LaborPricingView: React.FC = () => {
   const [rawGetResponse, setRawGetResponse] = useState<unknown>(null);
   const [showRawGetResponse, setShowRawGetResponse] = useState(false);
 
-  const [hourlyRate, setHourlyRate] = useState("225");
+  const [hourlyRate, setHourlyRate] = useState("0");
   const [effectiveDate, setEffectiveDate] = useState(buildTomorrowInputDate());
 
   const [showCustomForm, setShowCustomForm] = useState(false);
@@ -467,7 +448,6 @@ const LaborPricingView: React.FC = () => {
     refreshHeaders();
   }, [refreshHeaders]);
 
-  const dealerId = useMemo(() => extractDealerIdFromHeaders(headerMap), [headerMap]);
   const detectedSiteId = useMemo(() => extractSiteIdFromHeaders(headerMap), [headerMap]);
   const effectiveSiteId = detectedSiteId || "-1_7896";
   const headerCount = useMemo(() => Object.keys(headerMap).length, [headerMap]);
@@ -594,7 +574,7 @@ const LaborPricingView: React.FC = () => {
           text: `Labor rate "${params.name}" created successfully${response?.data?.id ? ` (ID: ${response.data.id})` : ""}.`,
         });
 
-        setHourlyRate("225");
+        setHourlyRate("0");
         if (params.key === "custom") {
           setCustomCode("");
           setCustomDescription("");
@@ -670,23 +650,13 @@ const LaborPricingView: React.FC = () => {
     });
   }, [laborRates, search]);
 
-  const stats = useMemo(() => {
-    const total = laborRates.length;
-    const active = laborRates.filter((r) => getDisplayStatus(r) === "ACTIVE").length;
-    const upcoming = laborRates.filter((r) => getDisplayStatus(r) === "UPCOMING").length;
-    const expired = laborRates.filter((r) => getDisplayStatus(r) === "EXPIRED").length;
-    const inactive = laborRates.filter((r) => getDisplayStatus(r) === "INACTIVE").length;
-
-    return { total, active, upcoming, expired, inactive };
-  }, [laborRates]);
-
   const previewPayload = useMemo(() => {
     return buildCreatePayload({
       siteId: effectiveSiteId,
       name: normalizeUpper(customCode) || "CP",
       description: normalize(customDescription) || "Customer Labor Rate",
       rateType: 0,
-      hourLaborRate: Number(customRate || hourlyRate || 225),
+      hourLaborRate: Number(customRate || hourlyRate || 0),
       effectiveDateInput: effectiveDate || buildTomorrowInputDate(),
     });
   }, [customCode, customDescription, customRate, effectiveDate, effectiveSiteId, hourlyRate]);
@@ -695,8 +665,8 @@ const LaborPricingView: React.FC = () => {
     <div
       style={{
         display: "grid",
-        gap: 16,
-        maxHeight: "100%",
+        gap: 10,
+        maxHeight: "50%",
         overflow: "auto",
       }}
       className="labor-pricing-scroll"
@@ -708,58 +678,37 @@ const LaborPricingView: React.FC = () => {
         .labor-pricing-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.24); }
       `}</style>
 
-      <div>
-        <div style={{ fontSize: 24, fontWeight: 800, color: "#f8fafc", marginBottom: 6 }}>
-          💼 Labor Pricing
-        </div>
-        <div style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.6 }}>
-          Fetch current labor pricing and create preset or custom labor rates using Global Headers.
-        </div>
-      </div>
-
+      {/* Meta Indicators */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <span style={badgeStyle}>
-          Dealer ID: <b style={{ color: dealerId ? "#86efac" : "#fca5a5" }}>{dealerId || "Not found"}</b>
-        </span>
         <span style={badgeStyle}>
           Tek Site ID: <b style={{ color: detectedSiteId ? "#86efac" : "#fcd34d" }}>{effectiveSiteId}</b>
         </span>
         <span style={badgeStyle}>
           Global Headers: <b style={{ color: "#f8fafc" }}>{headerCount}</b>
         </span>
-        <span style={badgeStyle}>
-          API: <b style={{ color: "#f8fafc" }}>/service-module/u/labor-pricing/laborRate</b>
-        </span>
       </div>
 
+      {/* Action Bar */}
       <div style={cardStyle}>
         <div
           style={{
             display: "flex",
-            alignItems: "flex-start",
+            alignItems: "center",
             justifyContent: "space-between",
             gap: 12,
             flexWrap: "wrap",
           }}
         >
-          <div>
-            <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 800, marginBottom: 4 }}>
-              Operations
-            </div>
-            <div style={{ color: "#94a3b8", fontSize: 13 }}>
-              Choose an operation and execute it with the current Global Headers.
-            </div>
-          </div>
-
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button className="btn-secondary btn-sm" onClick={refreshHeaders}>
-              ⟳ Refresh Headers
-            </button>
             <button
               className={operation === "get" ? "btn-primary" : "btn-secondary btn-sm"}
-              onClick={() => setOperation("get")}
+              onClick={() => {
+                setOperation("get");
+                void fetchLaborRates();
+              }}
+              disabled={loading || headerCount === 0}
             >
-              📥 GET
+              {loading && operation === "get" ? "Fetching..." : "📥 GET"}
             </button>
             <button
               className={operation === "post" ? "btn-primary" : "btn-secondary btn-sm"}
@@ -768,24 +717,16 @@ const LaborPricingView: React.FC = () => {
               📤 POST
             </button>
           </div>
-        </div>
 
-        <div style={{ marginTop: 14, display: "flex", gap: 10, flexWrap: "wrap" }}>
-          {operation === "get" ? (
-            <button
-              className="btn-primary"
-              onClick={() => void fetchLaborRates()}
-              disabled={loading || headerCount === 0}
-            >
-              {loading ? "Fetching..." : "🚀 Fetch Labor Pricing"}
-            </button>
-          ) : null}
+          <button className="btn-secondary btn-sm" onClick={refreshHeaders}>
+            ⟳ Refresh Headers
+          </button>
         </div>
 
         {message ? (
           <div
             style={{
-              marginTop: 14,
+              marginTop: 12,
               borderRadius: 12,
               padding: "10px 12px",
               fontSize: 13,
@@ -804,164 +745,139 @@ const LaborPricingView: React.FC = () => {
       </div>
 
       {operation === "get" ? (
-        <>
-          <div style={statGridStyle}>
-            <div style={cardStyle}>
-              <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>Total Rates</div>
-              <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 800 }}>{stats.total}</div>
-            </div>
-            <div style={cardStyle}>
-              <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>Active</div>
-              <div style={{ color: "#22c55e", fontSize: 18, fontWeight: 800 }}>{stats.active}</div>
-            </div>
-            <div style={cardStyle}>
-              <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>Upcoming</div>
-              <div style={{ color: "#f59e0b", fontSize: 18, fontWeight: 800 }}>{stats.upcoming}</div>
-            </div>
-            <div style={cardStyle}>
-              <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>Expired</div>
-              <div style={{ color: "#ef4444", fontSize: 18, fontWeight: 800 }}>{stats.expired}</div>
-            </div>
-            <div style={cardStyle}>
-              <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>Inactive</div>
-              <div style={{ color: "#cbd5e1", fontSize: 18, fontWeight: 800 }}>{stats.inactive}</div>
-            </div>
-          </div>
-
-          <div style={cardStyle}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-                flexWrap: "wrap",
-                marginBottom: 12,
-              }}
-            >
-              <div>
-                <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800 }}>Labor Rate Results</div>
-                <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>
-                  Search by name, description, type, ID, or status.
-                </div>
-              </div>
-
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search labor rates..."
-                  style={{
-                    minWidth: 260,
-                    padding: "10px 12px",
-                    borderRadius: 12,
-                    border: "1px solid rgba(255,255,255,0.10)",
-                    background: "rgba(255,255,255,0.03)",
-                    color: "#f8fafc",
-                    outline: "none",
-                  }}
-                />
-
-                {rawGetResponse ? (
-                  <button
-                    className="btn-secondary btn-sm"
-                    onClick={() => setShowRawGetResponse((v) => !v)}
-                  >
-                    {showRawGetResponse ? "Hide Raw JSON" : "Show Raw JSON"}
-                  </button>
-                ) : null}
+        <div style={cardStyle}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              flexWrap: "wrap",
+              marginBottom: 12,
+            }}
+          >
+            <div>
+              <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800 }}>Labor Rate Results</div>
+              <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>
+                Search by name, description, type, ID, or status.
               </div>
             </div>
 
-            <div className="labor-pricing-scroll" style={tableScrollWrapStyle(520)}>
-              <table className="bx-table" style={tableElementStyle}>
-                <thead>
-                  <tr>
-                    <th style={stickyThStyle}>Name</th>
-                    <th style={stickyThStyle}>Description</th>
-                    <th style={stickyThStyle}>Rate Type</th>
-                    <th style={stickyThStyle}>Hourly Rate</th>
-                    <th style={stickyThStyle}>Status</th>
-                    <th style={stickyThStyle}>Effective Date</th>
-                    <th style={stickyThStyle}>ID</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredRates.length > 0 ? (
-                    filteredRates.map((rate, index) => {
-                      const status = getStatusVisual(getDisplayStatus(rate));
-                      return (
-                        <tr key={`${rate.id || rate.name || "rate"}-${index}`} style={zebraRowStyle(index)}>
-                          <td style={tdStyle}>
-                            <div style={{ color: "#f8fafc", fontWeight: 800 }}>
-                              {rate.name || "—"}
-                            </div>
-                          </td>
-                          <td style={tdStyle}>{rate.description || "—"}</td>
-                          <td style={tdStyle}>{getDisplayRateType(rate)}</td>
-                          <td style={tdStyle}>
-                            <span style={{ color: "#e2e8f0", fontWeight: 700 }}>
-                              {formatCurrency(getDisplayHourlyRate(rate))}
-                            </span>
-                          </td>
-                          <td style={tdStyle}>
-                            <span
-                              style={{
-                                display: "inline-flex",
-                                alignItems: "center",
-                                borderRadius: 999,
-                                padding: "4px 10px",
-                                fontSize: 12,
-                                fontWeight: 700,
-                                color: status.color,
-                                background: status.background,
-                                border: status.border,
-                              }}
-                            >
-                              {status.text}
-                            </span>
-                          </td>
-                          <td style={tdStyle}>{getDisplayEffectiveDate(rate)}</td>
-                          <td style={tdStyle}>
-                            <code style={monoStyle}>{rate.id || "—"}</code>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td style={tdStyle} colSpan={7}>
-                        <div style={{ color: "#94a3b8", padding: "8px 0" }}>
-                          {laborRates.length === 0
-                            ? "No labor rates loaded yet."
-                            : "No labor rates matched your search."}
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search labor rates..."
+                style={{
+                  minWidth: 260,
+                  padding: "10px 12px",
+                  borderRadius: 12,
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  background: "rgba(255,255,255,0.03)",
+                  color: "#f8fafc",
+                  outline: "none",
+                }}
+              />
 
-            {showRawGetResponse && rawGetResponse ? (
-              <div style={{ marginTop: 14 }}>
-                <pre
-                  style={{
-                    ...monoStyle,
-                    margin: 0,
-                    padding: 12,
-                    borderRadius: 12,
-                    background: "#0f172a",
-                    maxHeight: 320,
-                    overflow: "auto",
-                  }}
+              {rawGetResponse ? (
+                <button
+                  className="btn-secondary btn-sm"
+                  onClick={() => setShowRawGetResponse((v) => !v)}
                 >
-                  {JSON.stringify(rawGetResponse, null, 2)}
-                </pre>
-              </div>
-            ) : null}
+                  {showRawGetResponse ? "Hide Raw JSON" : "Show Raw JSON"}
+                </button>
+              ) : null}
+            </div>
           </div>
-        </>
+
+          <div className="labor-pricing-scroll" style={tableScrollWrapStyle(520)}>
+            <table className="bx-table" style={tableElementStyle}>
+              <thead>
+                <tr>
+                  <th style={stickyThStyle}>Name</th>
+                  <th style={stickyThStyle}>Description</th>
+                  <th style={stickyThStyle}>Rate Type</th>
+                  <th style={stickyThStyle}>Hourly Rate</th>
+                  <th style={stickyThStyle}>Status</th>
+                  <th style={stickyThStyle}>Effective Date</th>
+                  <th style={stickyThStyle}>ID</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredRates.length > 0 ? (
+                  filteredRates.map((rate, index) => {
+                    const status = getStatusVisual(getDisplayStatus(rate));
+                    return (
+                      <tr key={`${rate.id || rate.name || "rate"}-${index}`} style={zebraRowStyle(index)}>
+                        <td style={tdStyle}>
+                          <div style={{ color: "#f8fafc", fontWeight: 800 }}>
+                            {rate.name || "—"}
+                          </div>
+                        </td>
+                        <td style={tdStyle}>{rate.description || "—"}</td>
+                        <td style={tdStyle}>{getDisplayRateType(rate)}</td>
+                        <td style={tdStyle}>
+                          <span style={{ color: "#e2e8f0", fontWeight: 700 }}>
+                            {formatCurrency(getDisplayHourlyRate(rate))}
+                          </span>
+                        </td>
+                        <td style={tdStyle}>
+                          <span
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              borderRadius: 999,
+                              padding: "4px 10px",
+                              fontSize: 12,
+                              fontWeight: 700,
+                              color: status.color,
+                              background: status.background,
+                              border: status.border,
+                            }}
+                          >
+                            {status.text}
+                          </span>
+                        </td>
+                        <td style={tdStyle}>{getDisplayEffectiveDate(rate)}</td>
+                        <td style={tdStyle}>
+                          <code style={monoStyle}>{rate.id || "—"}</code>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td style={tdStyle} colSpan={7}>
+                      <div style={{ color: "#94a3b8", padding: "8px 0" }}>
+                        {laborRates.length === 0
+                          ? "No labor rates loaded yet."
+                          : "No labor rates matched your search."}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {showRawGetResponse && Boolean(rawGetResponse) && (
+            <div style={{ marginTop: 14 }}>
+              <pre
+                style={{
+                  ...monoStyle,
+                  margin: 0,
+                  padding: 12,
+                  borderRadius: 12,
+                  background: "#0f172a",
+                  maxHeight: 320,
+                  overflow: "auto",
+                }}
+              >
+                {JSON.stringify(rawGetResponse, null, 2)}
+              </pre>
+            </div>
+          )}
+        </div>
       ) : null}
 
       {operation === "post" ? (
@@ -1022,62 +938,77 @@ const LaborPricingView: React.FC = () => {
             </div>
           </div>
 
+          {/* Quick Create Presets as Sleek Rows */}
           <div style={cardStyle}>
             <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
               Quick Create Presets
             </div>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: 12,
-              }}
-            >
+            <div style={{ display: "grid", gap: 8 }}>
               {PRESET_RATES.map((preset) => (
                 <div
                   key={preset.key}
                   style={{
-                    borderRadius: 14,
-                    border: `1px solid ${preset.accent}33`,
-                    background: `${preset.accent}12`,
-                    padding: 16,
-                    display: "grid",
-                    gap: 10,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 12,
+                    flexWrap: "wrap",
+                    padding: "10px 14px",
+                    borderRadius: 12,
+                    border: `1px solid ${preset.accent}24`,
+                    background: `${preset.accent}0d`,
                   }}
                 >
-                  <div>
-                    <div style={{ color: "#f8fafc", fontSize: 16, fontWeight: 800 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: "4px 10px",
+                        borderRadius: 8,
+                        fontSize: 13,
+                        fontWeight: 800,
+                        color: preset.accent,
+                        background: `${preset.accent}1a`,
+                        border: `1px solid ${preset.accent}33`,
+                        minWidth: 44,
+                      }}
+                    >
                       {preset.code}
-                    </div>
-                    <div style={{ color: "#cbd5e1", fontSize: 13, marginTop: 4 }}>
+                    </span>
+
+                    <span style={{ color: "#f8fafc", fontSize: 14, fontWeight: 600 }}>
                       {preset.description}
-                    </div>
-                    <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 6 }}>
-                      {preset.subtitle}
-                    </div>
+                    </span>
                   </div>
 
-                  <div style={{ color: "#e2e8f0", fontSize: 13 }}>
-                    Rate: <b>{formatCurrency(hourlyRate)}</b>
-                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                    <div style={{ color: "#cbd5e1", fontSize: 13 }}>
+                      Rate: <b style={{ color: "#f8fafc" }}>{formatCurrency(hourlyRate)}</b>
+                    </div>
 
-                  <button
-                    className="btn-primary"
-                    onClick={() => void handleCreatePreset(preset)}
-                    disabled={creatingKey !== null || headerCount === 0}
-                    style={{
-                      background: preset.accent,
-                      borderColor: preset.accent,
-                    }}
-                  >
-                    {creatingKey === preset.key ? "Creating..." : `Create ${preset.code}`}
-                  </button>
+                    <button
+                      className="btn-primary"
+                      onClick={() => void handleCreatePreset(preset)}
+                      disabled={creatingKey !== null || headerCount === 0}
+                      style={{
+                        background: preset.accent,
+                        borderColor: preset.accent,
+                        padding: "6px 14px",
+                        fontSize: 13,
+                      }}
+                    >
+                      {creatingKey === preset.key ? "Creating..." : `Create ${preset.code}`}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
+          {/* Custom Labor Rate as Inline Row */}
           <div style={cardStyle}>
             <div
               style={{
@@ -1109,86 +1040,86 @@ const LaborPricingView: React.FC = () => {
             {showCustomForm ? (
               <div
                 style={{
-                  display: "grid",
-                  gap: 14,
-                  borderRadius: 14,
+                  display: "flex",
+                  alignItems: "flex-end",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  padding: "12px 14px",
+                  borderRadius: 12,
                   border: "1px solid rgba(255,255,255,0.06)",
                   background: "rgba(255,255,255,0.018)",
-                  padding: 14,
                 }}
               >
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                    gap: 12,
-                  }}
-                >
-                  <div>
-                    <label style={{ display: "block", color: "#cbd5e1", fontSize: 13, marginBottom: 6 }}>
-                      Code
-                    </label>
-                    <input
-                      value={customCode}
-                      onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
-                      placeholder="e.g. DIAG"
-                      style={{
-                        width: "100%",
-                        padding: "12px 14px",
-                        borderRadius: 12,
-                        border: "1px solid rgba(255,255,255,0.10)",
-                        background: "rgba(255,255,255,0.03)",
-                        color: "#f8fafc",
-                        outline: "none",
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: "block", color: "#cbd5e1", fontSize: 13, marginBottom: 6 }}>
-                      Description
-                    </label>
-                    <input
-                      value={customDescription}
-                      onChange={(e) => setCustomDescription(e.target.value)}
-                      placeholder="e.g. Diagnostic Labor Rate"
-                      style={{
-                        width: "100%",
-                        padding: "12px 14px",
-                        borderRadius: 12,
-                        border: "1px solid rgba(255,255,255,0.10)",
-                        background: "rgba(255,255,255,0.03)",
-                        color: "#f8fafc",
-                        outline: "none",
-                      }}
-                    />
-                  </div>
-
-                  <div>
-                    <label style={{ display: "block", color: "#cbd5e1", fontSize: 13, marginBottom: 6 }}>
-                      Hourly Rate ($)
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={customRate}
-                      onChange={(e) => setCustomRate(e.target.value)}
-                      placeholder="e.g. 150"
-                      style={{
-                        width: "100%",
-                        padding: "12px 14px",
-                        borderRadius: 12,
-                        border: "1px solid rgba(255,255,255,0.10)",
-                        background: "rgba(255,255,255,0.03)",
-                        color: "#f8fafc",
-                        outline: "none",
-                      }}
-                    />
-                  </div>
+                <div style={{ flex: "1 1 110px", minWidth: 100 }}>
+                  <label style={{ display: "block", color: "#94a3b8", fontSize: 12, marginBottom: 4 }}>
+                    Code
+                  </label>
+                  <input
+                    value={customCode}
+                    onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
+                    placeholder="e.g. DIAG"
+                    style={{
+                      width: "100%",
+                      boxSizing: "border-box",
+                      padding: "9px 12px",
+                      borderRadius: 10,
+                      border: "1px solid rgba(255,255,255,0.10)",
+                      background: "rgba(255,255,255,0.03)",
+                      color: "#f8fafc",
+                      outline: "none",
+                      fontSize: 13,
+                    }}
+                  />
                 </div>
 
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <div style={{ flex: "2 1 200px", minWidth: 180 }}>
+                  <label style={{ display: "block", color: "#94a3b8", fontSize: 12, marginBottom: 4 }}>
+                    Description
+                  </label>
+                  <input
+                    value={customDescription}
+                    onChange={(e) => setCustomDescription(e.target.value)}
+                    placeholder="e.g. Diagnostic Labor Rate"
+                    style={{
+                      width: "100%",
+                      boxSizing: "border-box",
+                      padding: "9px 12px",
+                      borderRadius: 10,
+                      border: "1px solid rgba(255,255,255,0.10)",
+                      background: "rgba(255,255,255,0.03)",
+                      color: "#f8fafc",
+                      outline: "none",
+                      fontSize: 13,
+                    }}
+                  />
+                </div>
+
+                <div style={{ flex: "1 1 120px", minWidth: 110 }}>
+                  <label style={{ display: "block", color: "#94a3b8", fontSize: 12, marginBottom: 4 }}>
+                    Rate ($)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={customRate}
+                    onChange={(e) => setCustomRate(e.target.value)}
+                    placeholder="e.g. 150"
+                    style={{
+                      width: "100%",
+                      boxSizing: "border-box",
+                      padding: "9px 12px",
+                      borderRadius: 10,
+                      border: "1px solid rgba(255,255,255,0.10)",
+                      background: "rgba(255,255,255,0.03)",
+                      color: "#f8fafc",
+                      outline: "none",
+                      fontSize: 13,
+                    }}
+                  />
+                </div>
+
+                <div style={{ display: "flex", gap: 8, alignItems: "center", paddingBottom: 1 }}>
                   <button
                     className="btn-primary"
                     onClick={() => void handleCreateCustom()}
@@ -1196,9 +1127,12 @@ const LaborPricingView: React.FC = () => {
                     style={{
                       background: "#9333ea",
                       borderColor: "#9333ea",
+                      padding: "9px 14px",
+                      fontSize: 13,
+                      whiteSpace: "nowrap",
                     }}
                   >
-                    {creatingKey === "custom" ? "Creating..." : "🚀 Create Custom Rate"}
+                    {creatingKey === "custom" ? "Creating..." : "🚀 Create"}
                   </button>
 
                   <button
@@ -1208,8 +1142,9 @@ const LaborPricingView: React.FC = () => {
                       setCustomDescription("");
                       setCustomRate("");
                     }}
+                    style={{ padding: "8px 12px" }}
                   >
-                    Reset Custom Form
+                    Reset
                   </button>
                 </div>
               </div>

@@ -37,73 +37,23 @@ type ServiceSectionKey =
 type ServiceNavItem = {
   key: ServiceSectionKey;
   label: string;
-  description: string;
 };
 
 const SELECTED_DEALER_PROFILE_KEY = "arc_selected_dealer_profile_id_v1";
 
 const SERVICE_ITEMS: ServiceNavItem[] = [
-  {
-    key: "scheduling-settings",
-    label: "1. Scheduling settings",
-    description:
-      "Consumer scheduling, transportation, advisors, shops, and general scheduling settings.",
-  },
-  {
-    key: "dealer-config",
-    label: "2. Dealer config",
-    description: "Placeholder for dealer-level service configuration.",
-  },
-  {
-    key: "setup-fields",
-    label: "3. Setup fields",
-    description: "Placeholder for service setup fields automation.",
-  },
-  {
-    key: "labor-pricing",
-    label: "4. Labor pricing",
-    description: "Placeholder for labor pricing automation.",
-  },
-  {
-    key: "opcode-management",
-    label: "5. Opcode management",
-    description: "Placeholder for opcode automation.",
-  },
-  {
-    key: "service-settings",
-    label: "6. Service settings",
-    description: "Placeholder for general service settings automation.",
-  },
-  {
-    key: "fees",
-    label: "7. Fees",
-    description: "Placeholder for fees automation.",
-  },
-  {
-    key: "coupons",
-    label: "8. Coupons",
-    description: "Placeholder for coupons automation.",
-  },
-  {
-    key: "pdf",
-    label: "9. Pdf",
-    description: "Placeholder for PDF-related service configuration.",
-  },
-  {
-    key: "check-in-setup",
-    label: "10. Check in setup",
-    description: "Placeholder for check-in setup automation.",
-  },
-  {
-    key: "mpvi",
-    label: "11. Mpvi",
-    description: "Placeholder for MPVI automation.",
-  },
-  {
-    key: "dispatch-settings",
-    label: "12. Dispatch Settings",
-    description: "Placeholder for dispatch settings automation.",
-  },
+  { key: "scheduling-settings", label: "1. Scheduling settings" },
+  { key: "dealer-config", label: "2. Dealer config" },
+  { key: "setup-fields", label: "3. Setup fields" },
+  { key: "labor-pricing", label: "4. Labor pricing" },
+  { key: "opcode-management", label: "5. Opcode management" },
+  { key: "service-settings", label: "6. Service settings" },
+  { key: "fees", label: "7. Fees" },
+  { key: "coupons", label: "8. Coupons" },
+  { key: "pdf", label: "9. Pdf" },
+  { key: "check-in-setup", label: "10. Check in setup" },
+  { key: "mpvi", label: "11. Mpvi" },
+  { key: "dispatch-settings", label: "12. Dispatch Settings" },
 ];
 
 function renderServiceSection(activeKey: ServiceSectionKey): React.ReactNode {
@@ -285,9 +235,6 @@ export const Service: React.FC<Props> = ({ onBack }) => {
               </div>
             </div>
 
-            <div style={{ color: "#94a3b8", fontSize: 14 }}>
-              Service auto-configuration workspace
-            </div>
 
             <div
               style={{
@@ -356,7 +303,7 @@ export const Service: React.FC<Props> = ({ onBack }) => {
                       textAlign: "left",
                       borderRadius: 14,
                       cursor: "pointer",
-                      padding: "12px 14px",
+                      padding: "10px 14px",
                       border: isActive
                         ? "1px solid rgba(59,130,246,0.35)"
                         : "1px solid rgba(255,255,255,0.08)",
@@ -370,20 +317,9 @@ export const Service: React.FC<Props> = ({ onBack }) => {
                         color: isActive ? "#dbeafe" : "#f8fafc",
                         fontSize: 14,
                         fontWeight: 700,
-                        marginBottom: 4,
                       }}
                     >
                       {item.label}
-                    </div>
-
-                    <div
-                      style={{
-                        color: isActive ? "#bfdbfe" : "#94a3b8",
-                        fontSize: 12,
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {item.description}
                     </div>
                   </button>
                 );
@@ -418,10 +354,8 @@ export const Service: React.FC<Props> = ({ onBack }) => {
                     fontSize: 12,
                   }}
                 >
-                  Active Section
-                  <span style={{ color: "#f8fafc", fontWeight: 700 }}>
-                    {activeMeta.label}
-                  </span>
+
+
                 </div>
 
                 <div
@@ -446,10 +380,6 @@ export const Service: React.FC<Props> = ({ onBack }) => {
 
               <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 800 }}>
                 {activeMeta.label}
-              </div>
-
-              <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>
-                {activeMeta.description}
               </div>
             </div>
 

@@ -205,12 +205,6 @@ const SchedulingSettingsView: React.FC = () => {
       `}</style>
 
       <div>
-        <div style={{ fontSize: 24, fontWeight: 800, color: "#f8fafc", marginBottom: 6 }}>
-          📅 Scheduling Settings
-        </div>
-        <div style={{ color: "#94a3b8", fontSize: 14, lineHeight: 1.6 }}>
-          Configure scheduling-related service settings using Global Headers from Settings.
-        </div>
       </div>
 
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
