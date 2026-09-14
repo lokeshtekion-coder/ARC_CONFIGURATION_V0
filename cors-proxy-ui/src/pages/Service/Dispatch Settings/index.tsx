@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { loadGlobalHeaders } from "../../../services/tekionApiSettings";
 import type { KeyValuePair } from "../../../types/proxy.types";
 
@@ -153,6 +153,8 @@ export const DispatchSettingsView: React.FC = () => {
   const [executionLogs, setExecutionLogs] = useState<ExecutionLog[]>([]);
   const [bottomTab, setBottomTab] = useState<"none" | "logs" | "json">("none");
 
+  const hasAutoFetchedRef = useRef(false);
+
   const dealerId = useMemo(() => extractDealerIdFromHeaders(headerMap), [headerMap]);
   const headerCount = useMemo(() => Object.keys(headerMap).length, [headerMap]);
   const validation = useMemo(() => validateSettings(settingsData), [settingsData]);
@@ -196,11 +198,6 @@ export const DispatchSettingsView: React.FC = () => {
       setHeaderMap({});
     }
   }, [appendLog]);
-
-  useEffect(() => {
-    appendLog("info", "Dispatch Settings view mounted");
-    refreshHeaders();
-  }, [appendLog, refreshHeaders]);
 
   const proxyRequest = useCallback(
     async (payload: { url: string; method: "GET" | "PUT"; body?: unknown }) => {
@@ -264,6 +261,39 @@ export const DispatchSettingsView: React.FC = () => {
     });
     return data;
   }, [appendLog, proxyRequest]);
+
+  useEffect(() => {
+    appendLog("info", "Dispatch Settings view mounted");
+    refreshHeaders();
+  }, [appendLog, refreshHeaders]);
+
+  useEffect(() => {
+    if (hasAutoFetchedRef.current || Object.keys(headerMap).length === 0) return;
+
+    hasAutoFetchedRef.current = true;
+
+    const runInitialFetch = async () => {
+      setLoading(true);
+      setMessage(null);
+      try {
+        const data = await fetchDispatchSettings();
+        setMessage({
+          ok: true,
+          text: `Settings auto-loaded for dealer ${data?.dealerId || dealerId || "N/A"}.`,
+        });
+      } catch (e: unknown) {
+        appendLog("error", "Initial auto-fetch failed", e);
+        setMessage({
+          ok: false,
+          text: e instanceof Error ? e.message : "Failed to fetch dispatch settings",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void runInitialFetch();
+  }, [headerMap, dealerId, fetchDispatchSettings, appendLog]);
 
   const handleGet = useCallback(async () => {
     setLoading(true);

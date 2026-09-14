@@ -1,8 +1,19 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { loadGlobalHeaders } from "../../../services/tekionApiSettings";
 import type { KeyValuePair } from "../../../types/proxy.types";
+import {
+  idbGetBlueprint,
+  idbGetAllBlueprints,
+  type BlueprintRecord,
+} from "../../../utils/blueprintDb";
+import { getStores } from "../../../services/storesDb";
+import type {
+  RunDecoderResult,
+  FlattenedDecodedRow,
+} from "../../../utils/blueprintFormDecoder";
+import { useServiceBlueprint } from "../../../Context/Blueprint_Service_Context";
 
-type ViewKey = "home" | "get" | "post";
+type ViewTab = "audit" | "configure";
 
 type UiMessage = {
   ok: boolean;
@@ -38,8 +49,34 @@ type ConfigureResultRow = {
   message: string;
 };
 
+type DryRunOptionAudit = {
+  candidate: string;
+  status: "EXISTS" | "WILL_ADD" | "INACTIVATED";
+  detail: string;
+};
+
+type DryRunFieldReport = {
+  fieldKey: string;
+  fieldName: string;
+  fieldId: string;
+  existingCount: number;
+  newOptionsCount: number;
+  verdict: "WOULD_UPDATE" | "WOULD_SKIP";
+  summary: string;
+  audits: DryRunOptionAudit[];
+};
+
 const ACCOUNTING_BOOTSTRAP_URL =
   "https://preprodapp.tekioncloud.com/api/accounting/u/configurable/bootstrap";
+
+const INVENTORY_COLLAPSE_KEYWORDS = [
+  "new car inventory",
+  "new truck inventory",
+  "used car inventory",
+  "used truck inventory",
+  "vehicle inventory -invv",
+  "vehicle inventory",
+];
 
 const logger = {
   debug: (...args: unknown[]) => console.debug("[SetupFields]", ...args),
@@ -54,6 +91,19 @@ function normalize(value: unknown): string {
 
 function normalizeLower(value: unknown): string {
   return normalize(value).toLowerCase();
+}
+
+function cleanString(str: string): string {
+  return normalizeLower(str).replace(/[^a-z0-9]/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function isOptionInactive(opt: CustomFieldOption): boolean {
+  if (opt.deleted === true) return true;
+  const extrasInactive = (opt.extras as Record<string, unknown>)?.inactive;
+  if (Array.isArray(extrasInactive)) {
+    return extrasInactive.length > 0 && String(extrasInactive[0]).toLowerCase() === "true";
+  }
+  return String(extrasInactive).toLowerCase() === "true";
 }
 
 function toEnabledHeaderMap(headers: KeyValuePair[]): Record<string, string> {
@@ -89,261 +139,339 @@ function extractDealerIdFromHeaders(headers: Record<string, string>): string {
   ]);
 }
 
-function getStatusTone(ok: boolean): React.CSSProperties {
-  return {
-    color: ok ? "#bbf7d0" : "#fecaca",
-    background: ok ? "rgba(34,197,94,0.10)" : "rgba(239,68,68,0.10)",
-    border: ok
-      ? "1px solid rgba(34,197,94,0.22)"
-      : "1px solid rgba(239,68,68,0.22)",
-    borderRadius: 12,
-    padding: "10px 12px",
-    fontSize: 13,
-  };
-}
+/** Unified Requirements & Rules Popover for all 4 Cost Centers */
+const UnifiedRequirementsTip: React.FC<{ blueprintMethodsCount: number }> = ({
+  blueprintMethodsCount,
+}) => {
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-function getResultPill(status: "success" | "error" | "skipped"): React.ReactNode {
-  const map = {
-    success: {
-      text: "SUCCESS",
-      color: "#86efac",
-      background: "rgba(34,197,94,0.10)",
-      border: "1px solid rgba(34,197,94,0.22)",
-    },
-    error: {
-      text: "ERROR",
-      color: "#fca5a5",
-      background: "rgba(239,68,68,0.10)",
-      border: "1px solid rgba(239,68,68,0.22)",
-    },
-    skipped: {
-      text: "SKIPPED",
-      color: "#fcd34d",
-      background: "rgba(245,158,11,0.10)",
-      border: "1px solid rgba(245,158,11,0.22)",
-    },
-  } as const;
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    };
+    if (open) document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [open]);
 
-  const tone = map[status];
+  const rules = [
+    {
+      title: "RO- CP Insur/Warr Split",
+      targets: ["Service Contracts"],
+      rule: "Matches against existing options containing 'service contract'. Creates 'Service Contracts' if not found.",
+    },
+    {
+      title: "RO Warranty",
+      targets: ["Warranty Receivable", "PDI"],
+      rule: "Audits both target options independently. Injects any missing option without duplicating existing items.",
+    },
+    {
+      title: "Parts Internal",
+      targets: ["Vehicle Inventory - INVV", "Other Supplies"],
+      rule: "Inactivates deprecated legacy IDs (NEW_TRUCK, USED_CAR, USED_TRUCK). Enforces Vehicle Inventory and Other Supplies.",
+    },
+    {
+      title: "RO Internal",
+      targets: ["Vehicle Inventory - INVV", `+${blueprintMethodsCount} Blueprint Methods`],
+      rule: "Always provisions Vehicle Inventory - INVV as default. Syncs internal payment methods from Accounting Conquest Blueprint.",
+    },
+  ];
 
   return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        borderRadius: 999,
-        padding: "4px 10px",
-        fontSize: 12,
-        fontWeight: 700,
-        color: tone.color,
-        background: tone.background,
-        border: tone.border,
-      }}
-    >
-      {tone.text}
-    </span>
+    <div ref={containerRef} style={{ position: "relative", display: "inline-flex" }}>
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "4px 8px",
+          borderRadius: 4,
+          background: open ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(255,255,255,0.12)",
+          color: open ? "#f1f5f9" : "#94a3b8",
+          fontSize: 12,
+          cursor: "pointer",
+          fontWeight: 500,
+        }}
+        title="View requirements and rules for all 4 cost centers"
+      >
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: 14,
+            height: 14,
+            borderRadius: "50%",
+            background: "rgba(255,255,255,0.1)",
+            fontSize: 10,
+            fontWeight: 700,
+          }}
+        >
+          i
+        </span>
+        <span>Requirements & Rules</span>
+      </button>
+
+      {open && (
+        <div
+          style={{
+            position: "absolute",
+            top: "125%",
+            right: 0,
+            width: 440,
+            maxWidth: "90vw",
+            background: "#0f172a",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: 8,
+            boxShadow: "0 12px 30px rgba(0,0,0,0.6)",
+            padding: 14,
+            zIndex: 100,
+            display: "grid",
+            gap: 10,
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.08)", paddingBottom: 6 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#f1f5f9" }}>
+              Cost Center Target Requirements Matrix
+            </span>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: 13 }}
+            >
+              ✕
+            </button>
+          </div>
+
+          <div style={{ display: "grid", gap: 8 }}>
+            {rules.map((item, idx) => (
+              <div
+                key={idx}
+                style={{
+                  background: "rgba(255,255,255,0.02)",
+                  border: "1px solid rgba(255,255,255,0.05)",
+                  borderRadius: 5,
+                  padding: "8px 10px",
+                  display: "grid",
+                  gap: 4,
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "#cbd5e1" }}>{item.title}</span>
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                    {item.targets.map((tgt, tIdx) => (
+                      <span
+                        key={tIdx}
+                        style={{
+                          fontSize: 10,
+                          fontFamily: "monospace",
+                          color: "#94a3b8",
+                          background: "rgba(255,255,255,0.04)",
+                          padding: "1px 5px",
+                          borderRadius: 3,
+                          border: "1px solid rgba(255,255,255,0.06)",
+                        }}
+                      >
+                        {tgt}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, color: "#64748b", lineHeight: 1.4 }}>{item.rule}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
-}
-
-const badgeStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  padding: "6px 10px",
-  borderRadius: 999,
-  background: "rgba(255,255,255,0.03)",
-  border: "1px solid rgba(255,255,255,0.08)",
-  color: "#cbd5e1",
-  fontSize: 12,
-  whiteSpace: "nowrap",
 };
 
-const cardStyle: React.CSSProperties = {
-  borderRadius: 16,
-  border: "1px solid rgba(255,255,255,0.08)",
-  background: "rgba(255,255,255,0.02)",
-  padding: 16,
-  minWidth: 0,
-};
+function findMatchingExistingOption(
+  target: string,
+  existingList: CustomFieldOption[]
+): CustomFieldOption | null {
+  const targetClean = cleanString(target);
 
-const monoStyle: React.CSSProperties = {
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-  fontSize: 12,
-  color: "#e2e8f0",
-  whiteSpace: "pre-wrap",
-  overflowWrap: "anywhere",
-};
-
-function tableScrollWrapStyle(maxHeight: number): React.CSSProperties {
-  return {
-    maxHeight,
-    overflowY: "auto",
-    overflowX: "auto",
-    borderRadius: 10,
-    border: "1px solid rgba(255,255,255,0.06)",
-  };
-}
-
-const tableElementStyle: React.CSSProperties = {
-  width: "100%",
-  minWidth: 980,
-  borderCollapse: "collapse",
-};
-
-const stickyThStyle: React.CSSProperties = {
-  position: "sticky",
-  top: 0,
-  background: "#111827",
-  color: "#94a3b8",
-  textAlign: "left",
-  padding: "10px 12px",
-  fontSize: 12,
-  fontWeight: 800,
-  zIndex: 1,
-  borderBottom: "1px solid rgba(255,255,255,0.08)",
-  whiteSpace: "nowrap",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "10px 12px",
-  fontSize: 13,
-  borderBottom: "1px solid rgba(255,255,255,0.05)",
-  verticalAlign: "top",
-};
-
-function zebraRowStyle(index: number): React.CSSProperties {
-  return {
-    background: index % 2 === 1 ? "rgba(255,255,255,0.015)" : "transparent",
-  };
-}
-
-function parseUserInput(inputText: string, fieldKey: string): CustomFieldOption[] | null {
-  const optionNames = inputText
-    .split(",")
-    .map((name) => name.trim())
-    .filter((name) => name.length > 0);
-
-  if (optionNames.length === 0) return null;
-
-  if (fieldKey === "REPAIR_ORDER_INTERNAL") {
-    logger.debug("Parsing REPAIR_ORDER_INTERNAL input", optionNames);
-
-    const vehicleInventoryKeywords = [
-      "new car inventory",
-      "new truck inventory",
-      "used car inventory",
-      "used truck inventory",
-      "vehicle inventory -invv",
-    ];
-
-    let hasVehicleInventory = false;
-    const regularOptions: string[] = [];
-
-    optionNames.forEach((name) => {
-      const normalized = normalizeLower(name);
-      if (vehicleInventoryKeywords.includes(normalized)) {
-        hasVehicleInventory = true;
-      } else {
-        regularOptions.push(name);
-      }
-    });
-
-    const finalOptions: CustomFieldOption[] = [];
-
-    if (hasVehicleInventory) {
-      finalOptions.push({
-        name: "Vehicle Inventory -INVV",
-        extras: {
-          enableControl: [false],
-          enableControl2: [false],
-          inactive: ["false"],
-        },
-      });
-    }
-
-    regularOptions.forEach((name) => {
-      finalOptions.push({
-        name,
-        extras: {
-          enableControl: [false],
-          enableControl2: [false],
-          inactive: ["false"],
-        },
-      });
-    });
-
-    logger.debug("Parsed REPAIR_ORDER_INTERNAL final options", finalOptions);
-    return finalOptions;
+  if (targetClean.includes("vehicle inventory")) {
+    const match = existingList.find((opt) =>
+      cleanString(opt.name ?? "").includes("vehicle inventory")
+    );
+    if (match) return match;
   }
 
-  const parsed = optionNames.map((name) => ({
-    name,
-    extras: { inactive: ["false"] },
-  }));
+  if (targetClean === "pdi" || targetClean.startsWith("pdi ")) {
+    const match = existingList.find((opt) => {
+      const optClean = cleanString(opt.name ?? "");
+      return /\bpdi\b/.test(optClean);
+    });
+    if (match) return match;
+  }
 
-  logger.debug(`Parsed ${fieldKey} input`, parsed);
-  return parsed;
+  if (targetClean.includes("service contract")) {
+    const match = existingList.find((opt) =>
+      cleanString(opt.name ?? "").includes("service contract")
+    );
+    if (match) return match;
+  }
+
+  if (targetClean.includes("warranty receivable")) {
+    const match = existingList.find((opt) => {
+      const optClean = cleanString(opt.name ?? "");
+      return optClean.includes("warranty receivable") || optClean === "warranty";
+    });
+    if (match) return match;
+  }
+
+  return (
+    existingList.find((opt) => cleanString(opt.name ?? "") === targetClean) ?? null
+  );
 }
 
-function validateAndMergeOptions(
+function validateAndProcessRepairOrderInternal(
   existingOptions: CustomFieldOption[],
-  newOptions: CustomFieldOption[],
-  fieldKey: string
+  selectedChips: string[]
 ): {
-  options: CustomFieldOption[];
+  mergedOptions: CustomFieldOption[];
   hasNewOptions: boolean;
+  audits: DryRunOptionAudit[];
   addedCount: number;
-  existingCount: number;
 } {
-  logger.info(
-    `Validating field ${fieldKey}`,
-    {
-      existingCount: existingOptions.length,
-      newCount: newOptions.length,
-      existingNames: existingOptions.map((x) => x.name),
-      newNames: newOptions.map((x) => x.name),
+  const candidateNames: string[] = ["Vehicle Inventory -INVV"];
+
+  for (const name of selectedChips) {
+    const lower = normalizeLower(name);
+    if (INVENTORY_COLLAPSE_KEYWORDS.includes(lower)) continue;
+    if (!candidateNames.some((c) => normalizeLower(c) === lower)) {
+      candidateNames.push(name.trim());
     }
-  );
+  }
 
-  const existingNames = new Set(
-    existingOptions.map((opt) => normalizeLower(opt.name))
-  );
+  const audits: DryRunOptionAudit[] = [];
+  const optionsToAdd: CustomFieldOption[] = [];
 
-  const optionsToAdd = newOptions.filter((newOpt) => {
-    const normalizedName = normalizeLower(newOpt.name);
-    const exists = normalizedName && existingNames.has(normalizedName);
-
-    if (exists) {
-      logger.debug(`Skipping existing option for ${fieldKey}`, newOpt.name);
+  for (const candidate of candidateNames) {
+    const match = findMatchingExistingOption(candidate, existingOptions);
+    if (match) {
+      audits.push({
+        candidate,
+        status: "EXISTS",
+        detail: `Already present as "${match.name}"`,
+      });
     } else {
-      logger.debug(`Adding new option for ${fieldKey}`, newOpt.name);
+      audits.push({
+        candidate,
+        status: "WILL_ADD",
+        detail: "Missing in Tekion; marked to add",
+      });
+      optionsToAdd.push({
+        name: candidate,
+        extras: {
+          enableControl: [false],
+          enableControl2: [false],
+          inactive: ["false"],
+        },
+      });
     }
-
-    return normalizedName && !exists;
-  });
-
-  const merged = [...existingOptions, ...optionsToAdd];
-
-  logger.info(`Validation complete for ${fieldKey}`, {
-    existingCount: existingOptions.length,
-    addedCount: optionsToAdd.length,
-    totalCount: merged.length,
-  });
+  }
 
   return {
-    options: merged,
+    mergedOptions: [...existingOptions, ...optionsToAdd],
     hasNewOptions: optionsToAdd.length > 0,
+    audits,
     addedCount: optionsToAdd.length,
-    existingCount: existingOptions.length,
   };
 }
 
-function processPartsInternalOptions(existingOptions: CustomFieldOption[]) {
-  logger.info("Processing PARTS_SALES_ORDER_INTERNAL", {
-    existingCount: existingOptions.length,
-  });
+function validateAndProcessCpIwSplit(existingOptions: CustomFieldOption[]) {
+  const match = findMatchingExistingOption("Service Contracts", existingOptions);
+  const audits: DryRunOptionAudit[] = [];
+  let merged = existingOptions;
+  let hasNew = false;
 
+  if (match) {
+    audits.push({
+      candidate: "Service Contracts",
+      status: "EXISTS",
+      detail: `Matched option: "${match.name}"`,
+    });
+  } else {
+    audits.push({
+      candidate: "Service Contracts",
+      status: "WILL_ADD",
+      detail: "Missing; will add 'Service Contracts'",
+    });
+    merged = [
+      ...existingOptions,
+      {
+        name: "Service Contracts",
+        extras: { inactive: ["false"] },
+      },
+    ];
+    hasNew = true;
+  }
+
+  return { mergedOptions: merged, hasNewOptions: hasNew, audits, addedCount: hasNew ? 1 : 0 };
+}
+
+function validateAndProcessWarranty(existingOptions: CustomFieldOption[]) {
+  const audits: DryRunOptionAudit[] = [];
+  const optionsToAdd: CustomFieldOption[] = [];
+
+  const matchWarranty = findMatchingExistingOption("Warranty Receivable", existingOptions);
+  if (matchWarranty) {
+    audits.push({
+      candidate: "Warranty Receivable",
+      status: "EXISTS",
+      detail: `Matched option: "${matchWarranty.name}"`,
+    });
+  } else {
+    audits.push({
+      candidate: "Warranty Receivable",
+      status: "WILL_ADD",
+      detail: "Missing; will add 'Warranty Receivable'",
+    });
+    optionsToAdd.push({
+      name: "Warranty Receivable",
+      extras: { inactive: ["false"] },
+    });
+  }
+
+  const matchPdi = findMatchingExistingOption("PDI", existingOptions);
+  if (matchPdi) {
+    audits.push({
+      candidate: "PDI",
+      status: "EXISTS",
+      detail: `Matched option: "${matchPdi.name}"`,
+    });
+  } else {
+    audits.push({
+      candidate: "PDI",
+      status: "WILL_ADD",
+      detail: "Missing; will add 'PDI'",
+    });
+    optionsToAdd.push({
+      name: "PDI",
+      extras: { inactive: ["false"] },
+    });
+  }
+
+  return {
+    mergedOptions: [...existingOptions, ...optionsToAdd],
+    hasNewOptions: optionsToAdd.length > 0,
+    audits,
+    addedCount: optionsToAdd.length,
+  };
+}
+
+function validateAndProcessPartsInternal(existingOptions: CustomFieldOption[]) {
   const inactiveIds = ["NEW_TRUCK_INVENTORY", "USED_CAR_INVENTORY", "USED_TRUCK_INVENTORY"];
+  const audits: DryRunOptionAudit[] = [];
   let changesNeeded = false;
   let addedCount = 0;
 
@@ -352,12 +480,22 @@ function processPartsInternalOptions(existingOptions: CustomFieldOption[]) {
     const currentlyInactive = (option.extras as any)?.inactive?.[0] === "true";
     const currentlyDeleted = option.deleted === true;
 
-    if (shouldBeInactive && (!currentlyInactive || !currentlyDeleted)) {
-      changesNeeded = true;
-      logger.debug("Marking option inactive", {
-        id: option.id,
-        name: option.name,
-      });
+    if (shouldBeInactive) {
+      if (!currentlyInactive || !currentlyDeleted) {
+        changesNeeded = true;
+        addedCount += 1;
+        audits.push({
+          candidate: option.name ?? option.id ?? "Inventory",
+          status: "INACTIVATED",
+          detail: `Inactivate obsolete ID (${option.id})`,
+        });
+      } else {
+        audits.push({
+          candidate: option.name ?? option.id ?? "Inventory",
+          status: "EXISTS",
+          detail: `Inactive verified (${option.id})`,
+        });
+      }
     }
 
     return {
@@ -370,11 +508,36 @@ function processPartsInternalOptions(existingOptions: CustomFieldOption[]) {
     };
   });
 
-  const existingNames = new Set(processedOptions.map((opt) => normalizeLower(opt.name)));
-  const otherSuppliesExists = existingNames.has("other supplies");
+  const vehicleInvMatch = findMatchingExistingOption("Vehicle Inventory", processedOptions);
+  if (!vehicleInvMatch) {
+    processedOptions.push({
+      name: "Vehicle Inventory - INVV",
+      formEditable: true,
+      extras: {
+        enableControl: [false],
+        enableControl2: [false],
+        inactive: ["false"],
+      },
+      deleted: false,
+      systemDefined: false,
+    } as CustomFieldOption);
+    changesNeeded = true;
+    addedCount += 1;
+    audits.push({
+      candidate: "Vehicle Inventory - INVV",
+      status: "WILL_ADD",
+      detail: "Missing; will add 'Vehicle Inventory - INVV'",
+    });
+  } else {
+    audits.push({
+      candidate: "Vehicle Inventory - INVV",
+      status: "EXISTS",
+      detail: `Matched option: "${vehicleInvMatch.name}"`,
+    });
+  }
 
-  if (!otherSuppliesExists) {
-    logger.debug('Adding "Other Supplies" option');
+  const otherSuppliesMatch = findMatchingExistingOption("Other Supplies", processedOptions);
+  if (!otherSuppliesMatch) {
     processedOptions.push({
       id: "OTHER_SUPPLIES",
       name: "Other Supplies",
@@ -391,150 +554,180 @@ function processPartsInternalOptions(existingOptions: CustomFieldOption[]) {
     } as CustomFieldOption);
     changesNeeded = true;
     addedCount += 1;
+    audits.push({
+      candidate: "Other Supplies",
+      status: "WILL_ADD",
+      detail: "Missing; will add 'Other Supplies'",
+    });
+  } else {
+    audits.push({
+      candidate: "Other Supplies",
+      status: "EXISTS",
+      detail: `Matched option: "${otherSuppliesMatch.name}"`,
+    });
   }
-
-  const inactiveChanges = inactiveIds.filter((id) => {
-    const option = existingOptions.find((opt) => normalize(opt.id) === id);
-    return option && (((option.extras as any)?.inactive?.[0] !== "true") || option.deleted !== true);
-  }).length;
-
-  addedCount += inactiveChanges;
-
-  logger.info("Processed PARTS_SALES_ORDER_INTERNAL result", {
-    changesNeeded,
-    addedCount,
-    existingCount: existingOptions.length,
-    totalCount: processedOptions.length,
-  });
 
   return {
-    options: processedOptions,
+    mergedOptions: processedOptions,
     hasNewOptions: changesNeeded,
+    audits,
     addedCount,
-    existingCount: existingOptions.length,
   };
 }
 
-function getOptionsForField(
-  field: CustomFieldRow,
-  inputInternal: string,
-  inputCustomerPay: string
-):
-  | {
-      options: CustomFieldOption[];
-      hasNewOptions: boolean;
-      addedCount: number;
-      existingCount: number;
-    }
-  | null {
-  const key = normalize(field.key);
-
-  logger.debug("Resolving options for field", {
-    fieldName: field.name,
-    fieldKey: key,
-    currentOptionCount: Array.isArray(field.options) ? field.options.length : 0,
-  });
-
-  const fixedDefaults: Record<string, CustomFieldOption[]> = {
-    REPAIR_ORDER_CP_IW_SPLIT: [
-      {
-        name: "Service Contracts Receivables",
-        extras: { inactive: ["false"] },
-      },
-    ],
-    REPAIR_ORDER_WARRANTY: [
-      {
-        name: "Warranty Receivable",
-        extras: { inactive: ["false"] },
-      },
-      {
-        name: "PDI",
-        extras: { inactive: ["false"] },
-      },
-    ],
-  };
-
-  if (key === "PARTS_SALES_ORDER_INTERNAL") {
-    return processPartsInternalOptions(field.options || []);
-  }
-
-  if (fixedDefaults[key]) {
-    return validateAndMergeOptions(field.options || [], fixedDefaults[key], key);
-  }
-
-  if (key === "REPAIR_ORDER_INTERNAL") {
-    const inputText = normalize(inputInternal);
-    if (!inputText) return null;
-    const parsed = parseUserInput(inputText, key);
-    if (!parsed) return null;
-    return validateAndMergeOptions(field.options || [], parsed, key);
-  }
-
-  if (key === "REPAIR_ORDER_CUSTOMER_PAY") {
-    const inputText = normalize(inputCustomerPay);
-    if (!inputText) return null;
-    const parsed = parseUserInput(inputText, key);
-    if (!parsed) return null;
-    return validateAndMergeOptions(field.options || [], parsed, key);
-  }
-
-  logger.debug("No automation rule found for field", key);
-  return null;
-}
-
-const SetupFieldsView: React.FC = () => {
+export const SetupFieldsView: React.FC = () => {
+  const serviceBlueprint = useServiceBlueprint();
   const [headerMap, setHeaderMap] = useState<Record<string, string>>({});
-  const [activeView, setActiveView] = useState<ViewKey>("home");
+  const [activeTab, setActiveTab] = useState<ViewTab>("audit");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<UiMessage | null>(null);
 
   const [costCenterFields, setCostCenterFields] = useState<CustomFieldRow[]>([]);
   const [configureResults, setConfigureResults] = useState<ConfigureResultRow[]>([]);
-  const [rawBootstrapResponse, setRawBootstrapResponse] = useState<unknown>(null);
+  const [dryRunReports, setDryRunReports] = useState<DryRunFieldReport[]>([]);
+  const [rawBootstrapResponse, setRawBootstrapResponse] = useState<Record<string, unknown> | null>(null);
   const [showRawBootstrap, setShowRawBootstrap] = useState(false);
 
-  const [inputInternal, setInputInternal] = useState("Vehicle Inventory -INVV");
-  const [inputCustomerPay, setInputCustomerPay] = useState(
-    "Parts Receivable, Service Receivable"
-  );
+  const [internalChips, setInternalChips] = useState<string[]>([]);
+  const [customChipInput, setCustomChipInput] = useState("");
+  const [chipSearch, setChipSearch] = useState("");
+  const [blueprintSynced, setBlueprintSynced] = useState<boolean>(false);
+  const [blueprintSyncDetail, setBlueprintSyncDetail] = useState<string | null>(null);
 
-  const dealerId = useMemo(() => extractDealerIdFromHeaders(headerMap), [headerMap]);
+  // Dropdown state for Pre-Flight Delta Audit Trail
+  const [showAuditTrail, setShowAuditTrail] = useState<boolean>(false);
+
+  const rawDealerId = useMemo(
+    () => serviceBlueprint?.selectedDealerId || extractDealerIdFromHeaders(headerMap),
+    [serviceBlueprint?.selectedDealerId, headerMap]
+  );
+  const dealerId = normalize(rawDealerId);
+  const tekionId = serviceBlueprint?.tekionId || null;
   const headerCount = useMemo(() => Object.keys(headerMap).length, [headerMap]);
 
   const refreshHeaders = useCallback(() => {
     try {
       const loaded = toEnabledHeaderMap(loadGlobalHeaders());
-      logger.info("Global headers refreshed", {
-        headerCount: Object.keys(loaded).length,
-        dealerId: extractDealerIdFromHeaders(loaded),
-        headerKeys: Object.keys(loaded),
-      });
       setHeaderMap(loaded);
+      return loaded;
     } catch (e) {
       logger.error("Failed to refresh global headers", e);
       setHeaderMap({});
+      return {};
     }
   }, []);
 
   useEffect(() => {
-    logger.info("Setup Fields view mounted");
     refreshHeaders();
   }, [refreshHeaders]);
 
-  const proxyRequest = useCallback(
-    async (payload: {
-      url: string;
-      method: "POST" | "PUT";
-      body?: unknown;
-    }) => {
-      logger.info("Proxy request start", {
-        method: payload.method,
-        url: payload.url,
-        dealerId,
-        headerCount,
-        bodyPreview: payload.body ? JSON.stringify(payload.body).slice(0, 500) : null,
+  const syncInternalMethodsFromBlueprint = useCallback(async (): Promise<string[]> => {
+    if (!dealerId && !tekionId) return [];
+
+    try {
+      let resolvedTekionId = tekionId;
+
+      if (!resolvedTekionId) {
+        const stores = await getStores();
+        const store = stores.find(
+          (s) => s.dealer_id?.trim().toLowerCase() === dealerId.toLowerCase()
+        );
+        resolvedTekionId = store?.tekion_id?.trim() ?? null;
+      }
+
+      let accountingBp: BlueprintRecord | undefined;
+
+      if (resolvedTekionId) {
+        const expectedKey = `${resolvedTekionId}-Blueprint_-_Conquest_-_Accounting`;
+        accountingBp = await idbGetBlueprint(expectedKey);
+      }
+
+      if (!accountingBp) {
+        const all = await idbGetAllBlueprints();
+        const matches = all.filter((rec) => {
+          const isAccounting =
+            (rec.formName ?? "").toLowerCase().includes("accounting") ||
+            rec.key.toLowerCase().includes("accounting");
+          if (!isAccounting) return false;
+
+          const matchTekion =
+            resolvedTekionId &&
+            (rec.tekionId?.trim() === resolvedTekionId ||
+              rec.key.startsWith(resolvedTekionId));
+          const matchDealer =
+            rec.dealerId?.trim() === dealerId || rec.key.includes(dealerId);
+
+          return matchTekion || matchDealer;
+        });
+
+        if (matches.length > 0) {
+          matches.sort(
+            (a, b) => new Date(b.savedAt).getTime() - new Date(a.savedAt).getTime()
+          );
+          accountingBp = matches[0];
+        }
+      }
+
+      if (!accountingBp) {
+        setBlueprintSynced(false);
+        setBlueprintSyncDetail("No Accounting Blueprint found");
+        return [];
+      }
+
+      const decoded = (accountingBp.decodedResponse ??
+        accountingBp.data) as RunDecoderResult | null;
+      const flatRows: FlattenedDecodedRow[] =
+        decoded?.populatedFlatRows ?? decoded?.allFields ?? [];
+
+      const targetRow = flatRows.find((r) => {
+        const title = normalizeLower(r.title);
+        return (
+          title.includes("which internal payment methods do you use") ||
+          title.includes("internal payment methods")
+        );
       });
 
+      if (!targetRow || targetRow.decodedValue === undefined || targetRow.decodedValue === null) {
+        setBlueprintSynced(false);
+        setBlueprintSyncDetail("Unanswered in Blueprint");
+        return [];
+      }
+
+      const rawVal = targetRow.decodedValue;
+      let rawList: string[] = [];
+
+      if (Array.isArray(rawVal)) {
+        rawList = rawVal.map((x) => String(x).trim()).filter(Boolean);
+      } else if (typeof rawVal === "string") {
+        rawList = rawVal.split(/[,\n]/).map((x) => x.trim()).filter(Boolean);
+      }
+
+      const nonInventory = rawList.filter(
+        (item) => !INVENTORY_COLLAPSE_KEYWORDS.includes(normalizeLower(item))
+      );
+
+      setInternalChips(nonInventory);
+      setBlueprintSynced(true);
+      setBlueprintSyncDetail(`Imported ${nonInventory.length} methods from Blueprint`);
+      return nonInventory;
+    } catch (err) {
+      logger.error("Failed to load Accounting Blueprint for internal payment methods", err);
+      setBlueprintSynced(false);
+      setBlueprintSyncDetail("Error reading Blueprint");
+      return [];
+    }
+  }, [dealerId, tekionId]);
+
+  const proxyRequest = useCallback(
+    async (
+      payload: {
+        url: string;
+        method: "POST" | "PUT";
+        body?: unknown;
+      },
+      headersOverride?: Record<string, string>
+    ) => {
+      const activeHeaders = headersOverride ?? headerMap;
       const res = await fetch("http://localhost:4000/api/proxy", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -542,7 +735,7 @@ const SetupFieldsView: React.FC = () => {
           url: payload.url,
           method: payload.method,
           headers: {
-            ...headerMap,
+            ...activeHeaders,
             ...(payload.body ? { "content-type": "application/json" } : {}),
           },
           body: payload.body,
@@ -551,29 +744,11 @@ const SetupFieldsView: React.FC = () => {
       });
 
       if (!res.ok) {
-        logger.error("Proxy HTTP failure", {
-          status: res.status,
-          url: payload.url,
-        });
         throw new Error(`Proxy request failed with HTTP ${res.status}`);
       }
 
       const json = await res.json();
-
-      logger.debug("Proxy response envelope", {
-        status: json?.status,
-        statusText: json?.statusText,
-        hasBody: json?.body !== undefined,
-        hasData: json?.data !== undefined,
-        topLevelKeys: json && typeof json === "object" ? Object.keys(json) : [],
-      });
-
       if ((json?.status ?? 200) >= 400) {
-        logger.error("Proxy logical failure", {
-          status: json?.status,
-          statusText: json?.statusText,
-          url: payload.url,
-        });
         throw new Error(
           `${json?.status ?? ""} ${json?.statusText ?? "Request failed"}`.trim()
         );
@@ -581,197 +756,239 @@ const SetupFieldsView: React.FC = () => {
 
       return json?.body ?? json?.data ?? json;
     },
-    [dealerId, headerCount, headerMap]
+    [headerMap]
   );
 
-  const fetchBootstrapCustomFields = useCallback(async () => {
-    if (!dealerId) {
-      logger.warn("Dealer ID missing in global headers");
-      throw new Error("Dealer ID not found in Global Headers.");
-    }
+  const fetchBootstrapCustomFields = useCallback(
+    async (headersOverride?: Record<string, string>): Promise<CustomFieldRow[]> => {
+      if (!dealerId) {
+        throw new Error("Dealer ID not found in Global Headers or Service Context.");
+      }
 
-    const payload = {
-      requestInfo: [
+      const payload = {
+        requestInfo: [
+          {
+            assetType: "customField",
+            dealerMetaDataInfo: [{ dealerId }],
+          },
+        ],
+      };
+
+      const response = (await proxyRequest(
         {
-          assetType: "customField",
-          dealerMetaDataInfo: [{ dealerId }],
+          url: ACCOUNTING_BOOTSTRAP_URL,
+          method: "POST",
+          body: payload,
         },
-      ],
+        headersOverride
+      )) as Record<string, unknown>;
+
+      const customField =
+        ((response as any)?.data?.customField ??
+          (response as any)?.customField ??
+          null) as Record<string, unknown> | null;
+
+      if (!customField) {
+        throw new Error("customField data not found in bootstrap response.");
+      }
+
+      const masterMap = (customField?.masterAssetDocMap ?? {}) as Record<string, CustomFieldRow>;
+      const dealerMap = ((customField?.dealerAssetDocMap as any)?.[dealerId] ??
+        customField?.dealerAssetDocMap ??
+        {}) as Record<string, CustomFieldRow>;
+
+      const mergedMap: Record<string, CustomFieldRow> = { ...masterMap, ...dealerMap };
+      const allFields = Object.values(mergedMap);
+
+      const fields = allFields.filter(
+        (field) => normalize(field?.assetSubType) === "cost_center"
+      );
+
+      setRawBootstrapResponse(response);
+      setCostCenterFields(fields);
+      return fields;
+    },
+    [dealerId, proxyRequest]
+  );
+
+  const runDryRunAudit = useCallback(
+    async (providedFields?: CustomFieldRow[], chipsOverride?: string[]) => {
+      setLoading(true);
+      setConfigureResults([]);
+
+      try {
+        const fields = providedFields ?? (await fetchBootstrapCustomFields());
+        const activeChips = chipsOverride ?? internalChips;
+        const reports: DryRunFieldReport[] = [];
+
+        for (const field of fields) {
+          const key = normalize(field.key);
+          const existing = field.options || [];
+
+          if (key === "REPAIR_ORDER_INTERNAL") {
+            const res = validateAndProcessRepairOrderInternal(existing, activeChips);
+            reports.push({
+              fieldKey: key,
+              fieldName: field.name || "Repair Order Internal",
+              fieldId: field.id || "—",
+              existingCount: existing.length,
+              newOptionsCount: res.addedCount,
+              verdict: res.hasNewOptions ? "WOULD_UPDATE" : "WOULD_SKIP",
+              summary: res.hasNewOptions
+                ? `Will add ${res.addedCount} option(s)`
+                : "Options verified in Tekion",
+              audits: res.audits,
+            });
+          } else if (key === "REPAIR_ORDER_CP_IW_SPLIT") {
+            const res = validateAndProcessCpIwSplit(existing);
+            reports.push({
+              fieldKey: key,
+              fieldName: field.name || "Repair Order CP IW Split",
+              fieldId: field.id || "—",
+              existingCount: existing.length,
+              newOptionsCount: res.addedCount,
+              verdict: res.hasNewOptions ? "WOULD_UPDATE" : "WOULD_SKIP",
+              summary: res.hasNewOptions
+                ? "Will add Service Contracts"
+                : "Matched existing option",
+              audits: res.audits,
+            });
+          } else if (key === "REPAIR_ORDER_WARRANTY") {
+            const res = validateAndProcessWarranty(existing);
+            reports.push({
+              fieldKey: key,
+              fieldName: field.name || "Repair Order Warranty",
+              fieldId: field.id || "—",
+              existingCount: existing.length,
+              newOptionsCount: res.addedCount,
+              verdict: res.hasNewOptions ? "WOULD_UPDATE" : "WOULD_SKIP",
+              summary: res.hasNewOptions
+                ? `Will add ${res.addedCount} option(s)`
+                : "Matched existing options",
+              audits: res.audits,
+            });
+          } else if (key === "PARTS_SALES_ORDER_INTERNAL") {
+            const res = validateAndProcessPartsInternal(existing);
+            reports.push({
+              fieldKey: key,
+              fieldName: field.name || "Parts Sales Order Internal",
+              fieldId: field.id || "—",
+              existingCount: existing.length,
+              newOptionsCount: res.addedCount,
+              verdict: res.hasNewOptions ? "WOULD_UPDATE" : "WOULD_SKIP",
+              summary: res.hasNewOptions
+                ? `Will apply ${res.addedCount} modification(s)`
+                : "All options verified",
+              audits: res.audits,
+            });
+          }
+        }
+
+        setDryRunReports(reports);
+        const updatesCount = reports.filter((r) => r.verdict === "WOULD_UPDATE").length;
+        setMessage({
+          ok: true,
+          text: `Audit finished: ${updatesCount} field(s) require modifications.`,
+        });
+      } catch (e: unknown) {
+        logger.error("Audit dry run failed", e);
+        setMessage({
+          ok: false,
+          text: e instanceof Error ? e.message : "Dry run failed",
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchBootstrapCustomFields, internalChips]
+  );
+
+  const handleSyncAll = useCallback(async () => {
+    const freshHeaders = refreshHeaders();
+    const freshChips = await syncInternalMethodsFromBlueprint();
+    const fields = await fetchBootstrapCustomFields(freshHeaders);
+    await runDryRunAudit(fields, freshChips);
+  }, [fetchBootstrapCustomFields, refreshHeaders, runDryRunAudit, syncInternalMethodsFromBlueprint]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const init = async () => {
+      if (!dealerId) return;
+      try {
+        const freshChips = await syncInternalMethodsFromBlueprint();
+        if (!isMounted) return;
+        const fields = await fetchBootstrapCustomFields();
+        if (!isMounted) return;
+        await runDryRunAudit(fields, freshChips);
+      } catch (e) {
+        logger.error("Initialization failed", e);
+      }
     };
 
-    logger.info("Fetching bootstrap customField data", {
-      dealerId,
-      payload,
-    });
+    void init();
+    return () => {
+      isMounted = false;
+    };
+  }, [dealerId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const response = await proxyRequest({
-      url: ACCOUNTING_BOOTSTRAP_URL,
-      method: "POST",
-      body: payload,
-    });
-
-    logger.debug("Bootstrap response root snapshot", response);
-
-    const customField =
-      (response as any)?.data?.customField ??
-      (response as any)?.customField ??
-      null;
-
-    if (!customField) {
-      logger.error("customField missing in bootstrap response", response);
-      throw new Error("customField data not found in bootstrap response.");
-    }
-
-    logger.info("customField section found", {
-      assetLevel: customField?.assetLevel,
-      typeOfObject: customField?.typeOfObject,
-      masterAssetDocMapKeys: Object.keys(customField?.masterAssetDocMap ?? {}).length,
-      dealerAssetDocMapKeys: Object.keys(customField?.dealerAssetDocMap ?? {}).length,
-    });
-
-    const masterAssetDocMap = customField?.masterAssetDocMap ?? {};
-    const allFields = Object.values(masterAssetDocMap) as CustomFieldRow[];
-
-    logger.info("masterAssetDocMap extracted", {
-      totalFields: allFields.length,
-      sampleKeys: allFields.slice(0, 20).map((x) => ({
-        id: x.id,
-        key: x.key,
-        name: x.name,
-        assetSubType: x.assetSubType,
-        optionCount: Array.isArray(x.options) ? x.options.length : 0,
-      })),
-    });
-
-    const fields = allFields.filter(
-      (field) => normalize(field?.assetSubType) === "cost_center"
-    );
-
-    logger.info("Filtered cost center fields", {
-      count: fields.length,
-      fields: fields.map((field) => ({
-        id: field.id,
-        key: field.key,
-        name: field.name,
-        optionCount: Array.isArray(field.options) ? field.options.length : 0,
-      })),
-    });
-
-    setRawBootstrapResponse(response);
-    setCostCenterFields(fields);
-
-    return fields;
-  }, [dealerId, proxyRequest]);
-
-  const handleGet = useCallback(async () => {
+  const handleApply = useCallback(async () => {
     setLoading(true);
     setMessage(null);
     setConfigureResults([]);
-
-    logger.info("GET flow started");
-
-    try {
-      const fields = await fetchBootstrapCustomFields();
-      logger.info("GET flow success", { fieldCount: fields.length });
-
-      setMessage({
-        ok: true,
-        text: `Fetched ${fields.length} cost center field(s) successfully.`,
-      });
-    } catch (e: unknown) {
-      logger.error("GET flow failed", e);
-      setCostCenterFields([]);
-      setRawBootstrapResponse(null);
-      setMessage({
-        ok: false,
-        text: e instanceof Error ? e.message : "Failed to fetch setup fields",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [fetchBootstrapCustomFields]);
-
-  const handleConfigure = useCallback(async () => {
-    setLoading(true);
-    setMessage(null);
-    setConfigureResults([]);
-
-    logger.info("POST/configure flow started", {
-      dealerId,
-      inputInternal,
-      inputCustomerPay,
-    });
 
     try {
       const fields = await fetchBootstrapCustomFields();
       const results: ConfigureResultRow[] = [];
 
-      logger.info("Beginning sequential configuration", {
-        fieldCount: fields.length,
-      });
-
       for (const field of fields) {
+        const key = normalize(field.key);
+        const existing = field.options || [];
+        let validationResult: {
+          mergedOptions: CustomFieldOption[];
+          hasNewOptions: boolean;
+          addedCount: number;
+        } | null = null;
+
+        if (key === "REPAIR_ORDER_INTERNAL") {
+          validationResult = validateAndProcessRepairOrderInternal(existing, internalChips);
+        } else if (key === "REPAIR_ORDER_CP_IW_SPLIT") {
+          validationResult = validateAndProcessCpIwSplit(existing);
+        } else if (key === "REPAIR_ORDER_WARRANTY") {
+          validationResult = validateAndProcessWarranty(existing);
+        } else if (key === "PARTS_SALES_ORDER_INTERNAL") {
+          validationResult = validateAndProcessPartsInternal(existing);
+        }
+
+        if (validationResult === null) {
+          results.push({
+            field: normalize(field.name) || "Unknown Field",
+            key,
+            status: "skipped",
+            message: "No configuration rule defined",
+          });
+          continue;
+        }
+
+        const { mergedOptions, hasNewOptions, addedCount } = validationResult;
+
+        if (!hasNewOptions) {
+          results.push({
+            field: normalize(field.name) || "Unknown Field",
+            key,
+            status: "skipped",
+            message: `Current configuration valid (${existing.length} options)`,
+          });
+          continue;
+        }
+
         try {
-          logger.info("Processing field", {
-            id: field.id,
-            key: field.key,
-            name: field.name,
-            currentOptionCount: Array.isArray(field.options) ? field.options.length : 0,
-          });
-
-          const validationResult = getOptionsForField(field, inputInternal, inputCustomerPay);
-
-          if (validationResult === null) {
-            logger.info("Field skipped - no automation payload", {
-              key: field.key,
-              name: field.name,
-            });
-
-            results.push({
-              field: normalize(field.name) || "Unknown Field",
-              key: normalize(field.key),
-              status: "skipped",
-              message: "No input provided",
-            });
-            continue;
-          }
-
-          const { options, hasNewOptions, addedCount, existingCount } = validationResult;
-
-          logger.info("Field validation result", {
-            key: field.key,
-            name: field.name,
-            hasNewOptions,
-            addedCount,
-            existingCount,
-            totalAfterMerge: options.length,
-            mergedOptionNames: options.map((x) => x.name),
-          });
-
-          if (!hasNewOptions) {
-            results.push({
-              field: normalize(field.name) || "Unknown Field",
-              key: normalize(field.key),
-              status: "skipped",
-              message: `All ${existingCount} option(s) already configured`,
-            });
-            continue;
-          }
-
           const updatePayload = {
             ...field,
-            options,
+            options: mergedOptions,
             tenantId: null,
             defaultValue: null,
             defaultValueEnabled: false,
           };
-
-          logger.debug("PUT payload for custom field", {
-            fieldId: field.id,
-            fieldKey: field.key,
-            fieldName: field.name,
-            payload: updatePayload,
-          });
 
           await proxyRequest({
             url: `https://preprodapp.tekioncloud.com/api/settings/u/customField/accounts/${field.id}`,
@@ -779,454 +996,984 @@ const SetupFieldsView: React.FC = () => {
             body: updatePayload,
           });
 
-          logger.info("Field configured successfully", {
-            key: field.key,
-            name: field.name,
-            addedCount,
-            totalCount: options.length,
-          });
-
           results.push({
             field: normalize(field.name) || "Unknown Field",
-            key: normalize(field.key),
+            key,
             status: "success",
-            message: `Added ${addedCount} new option(s) (total: ${options.length})`,
+            message: `Updated with ${addedCount} change(s)`,
           });
-        } catch (e: unknown) {
-          logger.error("Field configuration failed", {
-            fieldId: field.id,
-            fieldKey: field.key,
-            fieldName: field.name,
-            error: e,
-          });
-
+        } catch (err: unknown) {
           results.push({
             field: normalize(field.name) || "Unknown Field",
-            key: normalize(field.key),
+            key,
             status: "error",
-            message: e instanceof Error ? e.message : "Update failed",
+            message: err instanceof Error ? err.message : "PUT request failed",
           });
         }
       }
 
-      logger.info("Sequential configuration finished", results);
-
       setConfigureResults(results);
-
       const successCount = results.filter((r) => r.status === "success").length;
       const errorCount = results.filter((r) => r.status === "error").length;
-      const skippedCount = results.filter((r) => r.status === "skipped").length;
-
-      logger.info("POST/configure summary", {
-        successCount,
-        errorCount,
-        skippedCount,
-      });
 
       setMessage({
         ok: errorCount === 0,
-        text: `Configuration complete — ${successCount} configured, ${errorCount} errors, ${skippedCount} skipped.`,
+        text: `Deployment completed: ${successCount} updated, ${errorCount} error(s).`,
       });
+
+      const updatedFields = await fetchBootstrapCustomFields();
+      await runDryRunAudit(updatedFields, internalChips);
     } catch (e: unknown) {
-      logger.error("POST/configure flow failed", e);
+      logger.error("Apply failed", e);
       setMessage({
         ok: false,
-        text: e instanceof Error ? e.message : "Failed to configure setup fields",
+        text: e instanceof Error ? e.message : "Failed to apply configuration",
       });
     } finally {
       setLoading(false);
     }
-  }, [dealerId, fetchBootstrapCustomFields, inputCustomerPay, inputInternal, proxyRequest]);
+  }, [fetchBootstrapCustomFields, internalChips, proxyRequest, runDryRunAudit]);
 
-  const resultStats = useMemo(() => {
-    return {
-      total: configureResults.length,
-      success: configureResults.filter((r) => r.status === "success").length,
-      error: configureResults.filter((r) => r.status === "error").length,
-      skipped: configureResults.filter((r) => r.status === "skipped").length,
-    };
-  }, [configureResults]);
+  const addChip = (name: string) => {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+
+    const lower = normalizeLower(trimmed);
+    if (INVENTORY_COLLAPSE_KEYWORDS.includes(lower)) {
+      setMessage({
+        ok: false,
+        text: `"${trimmed}" is reserved by inventory rules and is handled automatically.`,
+      });
+      return;
+    }
+
+    if (internalChips.some((c) => normalizeLower(c) === lower)) {
+      setMessage({
+        ok: false,
+        text: `"${trimmed}" is already added.`,
+      });
+      return;
+    }
+
+    const updatedChips = [...internalChips, trimmed];
+    setInternalChips(updatedChips);
+    setCustomChipInput("");
+    setChipSearch("");
+    void runDryRunAudit(costCenterFields, updatedChips);
+  };
+
+  const removeChip = (chipToRemove: string) => {
+    const updatedChips = internalChips.filter(
+      (c) => normalizeLower(c) !== normalizeLower(chipToRemove)
+    );
+    setInternalChips(updatedChips);
+    void runDryRunAudit(costCenterFields, updatedChips);
+  };
+
+  const fieldKeyMap = useMemo(() => {
+    const map = new Map<string, CustomFieldRow>();
+    costCenterFields.forEach((f) => map.set(normalize(f.key), f));
+    return map;
+  }, [costCenterFields]);
+
+  const pendingUpdatesCount = useMemo(() => {
+    return dryRunReports.filter((r) => r.verdict === "WOULD_UPDATE").length;
+  }, [dryRunReports]);
+
+  const filteredChips = useMemo(() => {
+    if (!chipSearch.trim()) return internalChips;
+    return internalChips.filter((c) => c.toLowerCase().includes(chipSearch.toLowerCase()));
+  }, [internalChips, chipSearch]);
+
+  const columnsData = useMemo(() => {
+    const fSplit = fieldKeyMap.get("REPAIR_ORDER_CP_IW_SPLIT");
+    const rSplit = dryRunReports.find((x) => x.fieldKey === "REPAIR_ORDER_CP_IW_SPLIT");
+    const isMatchedSplit = rSplit
+      ? rSplit.verdict === "WOULD_SKIP"
+      : fSplit?.options?.some(
+          (o) => !isOptionInactive(o) && cleanString(o.name ?? "").includes("service contract")
+        );
+
+    const fWarr = fieldKeyMap.get("REPAIR_ORDER_WARRANTY");
+    const rWarr = dryRunReports.find((x) => x.fieldKey === "REPAIR_ORDER_WARRANTY");
+    const isMatchedWarr = rWarr
+      ? rWarr.verdict === "WOULD_SKIP"
+      : Boolean(
+          fWarr?.options?.some(
+            (o) => !isOptionInactive(o) && cleanString(o.name ?? "").includes("warranty receivable")
+          ) &&
+          fWarr?.options?.some(
+            (o) => !isOptionInactive(o) && /\bpdi\b/.test(cleanString(o.name ?? ""))
+          )
+        );
+
+    const fParts = fieldKeyMap.get("PARTS_SALES_ORDER_INTERNAL");
+    const rParts = dryRunReports.find((x) => x.fieldKey === "PARTS_SALES_ORDER_INTERNAL");
+    const isMatchedParts = rParts
+      ? rParts.verdict === "WOULD_SKIP"
+      : Boolean(
+          fParts?.options?.some(
+            (o) => !isOptionInactive(o) && cleanString(o.name ?? "").includes("other supplies")
+          ) &&
+          fParts?.options?.some(
+            (o) => !isOptionInactive(o) && cleanString(o.name ?? "").includes("vehicle inventory")
+          )
+        );
+
+    const fInternal = fieldKeyMap.get("REPAIR_ORDER_INTERNAL");
+    const rInternal = dryRunReports.find((x) => x.fieldKey === "REPAIR_ORDER_INTERNAL");
+    const isOkInternal = rInternal
+      ? rInternal.verdict === "WOULD_SKIP"
+      : Boolean(
+          fInternal?.options?.some(
+            (o) => !isOptionInactive(o) && cleanString(o.name ?? "").includes("vehicle inventory")
+          )
+        );
+
+    return [
+      {
+        title: "RO- CP Insur/Warr Split",
+        inSync: Boolean(isMatchedSplit),
+        options: fSplit?.options ?? [],
+        summary: rSplit?.summary ?? "Pending check",
+      },
+      {
+        title: "RO Warranty",
+        inSync: Boolean(isMatchedWarr),
+        options: fWarr?.options ?? [],
+        summary: rWarr?.summary ?? "Pending check",
+      },
+      {
+        title: "Parts Internal",
+        inSync: Boolean(isMatchedParts),
+        options: fParts?.options ?? [],
+        summary: rParts?.summary ?? "Pending check",
+      },
+      {
+        title: "RO Internal",
+        inSync: Boolean(isOkInternal),
+        options: fInternal?.options ?? [],
+        summary: rInternal?.summary ?? "Pending check",
+      },
+    ];
+  }, [fieldKeyMap, dryRunReports]);
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gap: 16,
-        maxHeight: "100%",
-        overflow: "auto",
-      }}
-      className="setup-fields-scroll"
-    >
-      <style>{`
-        .setup-fields-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
-        .setup-fields-scroll::-webkit-scrollbar-track { background: transparent; }
-        .setup-fields-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 8px; }
-        .setup-fields-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.24); }
-      `}</style>
-
-      <div>
-
-      </div>
-
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <span style={badgeStyle}>
-          Dealer ID: <b style={{ color: dealerId ? "#86efac" : "#fca5a5" }}>{dealerId || "Not found"}</b>
-        </span>
-        <span style={badgeStyle}>
-          Global Headers: <b style={{ color: "#f8fafc" }}>{headerCount}</b>
-        </span>
-
-      </div>
-
-      <div style={cardStyle}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            gap: 12,
-            flexWrap: "wrap",
-            marginBottom: 12,
-          }}
-        >
-          <div>
-            <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 800, marginBottom: 4 }}>
-              Operations
-                      </div>
+    <div style={{ display: "grid", gap: 16 }}>
+      {/* ── Control Header & HUD ── */}
+      <div
+        style={{
+          borderRadius: 8,
+          border: "1px solid rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.02)",
+          padding: 16,
+          display: "grid",
+          gap: 14,
+        }}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 16, fontWeight: 600, color: "#f1f5f9" }}>
+              Cost Center Setup Engine
+            </span>
           </div>
 
-          <button className="btn-secondary btn-sm" onClick={refreshHeaders}>
-            ⟳ Refresh Headers
-          </button>
-        </div>
-
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-          <button
-            className={activeView === "get" ? "btn-primary" : "btn-secondary btn-sm"}
-            onClick={() => setActiveView("get")}
-          >
-            📥 GET
-          </button>
-          <button
-            className={activeView === "post" ? "btn-primary" : "btn-secondary btn-sm"}
-            onClick={() => setActiveView("post")}
-          >
-            ⚙️ POST
-          </button>
-        </div>
-
-        {message ? <div style={getStatusTone(message.ok)}>{message.text}</div> : null}
-      </div>
-
-      {activeView === "home" ? (
-        <div style={{ display: "grid", gap: 16 }}>
-          <div style={cardStyle}>
-            <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 10 }}>
-              Quick Actions
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
-              <button
-                className="btn-primary"
-                onClick={() => {
-                  setActiveView("get");
-                  void handleGet();
-                }}
-                disabled={loading || headerCount === 0}
-                style={{ minHeight: 64 }}
-              >
-                {loading ? "Loading..." : "📥 View Setup Fields"}
-              </button>
-
-              <button
-                className="btn-secondary btn-sm"
-                onClick={() => setActiveView("post")}
-                style={{ minHeight: 64 }}
-              >
-                ⚙️ Open Configuration
-              </button>
-            </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <button
+              type="button"
+              className="btn-secondary btn-sm"
+              onClick={() => void handleSyncAll()}
+              disabled={loading || !dealerId}
+            >
+              {loading ? "Syncing..." : "Sync All"}
+            </button>
+            <button
+              type="button"
+              className="btn-primary btn-sm"
+              onClick={() => void handleApply()}
+              disabled={loading || !dealerId}
+            >
+              {loading ? "Deploying..." : pendingUpdatesCount > 0 ? `Deploy (${pendingUpdatesCount})` : "In Sync"}
+            </button>
           </div>
         </div>
-      ) : null}
 
-      {activeView === "get" ? (
-        <div style={{ display: "grid", gap: 16 }}>
-          <div style={cardStyle}>
+        {/* HUD Row */}
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "4px 10px",
+              borderRadius: 4,
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              fontSize: 12,
+              color: "#94a3b8",
+            }}
+          >
+            <span>Dealer:</span>
+            <span style={{ color: "#f1f5f9", fontWeight: 500 }}>{dealerId || "Not detected"}</span>
+          </div>
+
+          {tekionId && (
             <div
               style={{
-                display: "flex",
+                display: "inline-flex",
                 alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-                flexWrap: "wrap",
+                gap: 6,
+                padding: "4px 10px",
+                borderRadius: 4,
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                fontSize: 12,
+                color: "#94a3b8",
               }}
             >
-              <div>
-                <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 4 }}>
-                  View Setup Fields
-                </div>
-                <div style={{ color: "#94a3b8", fontSize: 13 }}>
-                  Reads cost center custom fields from accounting bootstrap.
-                </div>
-              </div>
-
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <button
-                  className="btn-primary"
-                  onClick={() => void handleGet()}
-                  disabled={loading || headerCount === 0}
-                >
-                  {loading ? "Fetching..." : "📥 Get Setup Fields"}
-                </button>
-
-                {rawBootstrapResponse ? (
-                  <button
-                    className="btn-secondary btn-sm"
-                    onClick={() => setShowRawBootstrap((v) => !v)}
-                  >
-                    {showRawBootstrap ? "Hide Raw JSON" : "Show Raw JSON"}
-                  </button>
-                ) : null}
-              </div>
+              <span>Tekion ID:</span>
+              <span style={{ color: "#f1f5f9", fontWeight: 500 }}>{tekionId}</span>
             </div>
+          )}
+
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "4px 10px",
+              borderRadius: 4,
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              fontSize: 12,
+              color: "#94a3b8",
+            }}
+          >
+            <span>Headers:</span>
+            <span style={{ color: "#f1f5f9", fontWeight: 500 }}>{headerCount}</span>
           </div>
 
-          <div style={cardStyle}>
-            <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
-              Cost Center Fields ({costCenterFields.length})
-            </div>
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "4px 10px",
+              borderRadius: 4,
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              fontSize: 12,
+              color: blueprintSynced ? "#cbd5e1" : "#94a3b8",
+            }}
+          >
+            <span>{blueprintSynced ? "Blueprint Linked" : "Blueprint Unlinked"}</span>
+            {blueprintSyncDetail && (
+              <span style={{ fontSize: 11, color: "#64748b" }}>({blueprintSyncDetail})</span>
+            )}
+          </div>
 
-            <div className="setup-fields-scroll" style={tableScrollWrapStyle(480)}>
-              <table className="bx-table" style={tableElementStyle}>
-                <thead>
-                  <tr>
-                    <th style={stickyThStyle}>Field Name</th>
-                    <th style={stickyThStyle}>Key</th>
-                    <th style={stickyThStyle}>Field ID</th>
-                    <th style={stickyThStyle}>Options Count</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {costCenterFields.length > 0 ? (
-                    costCenterFields.map((field, index) => (
-                      <tr key={`${field.id || field.key || "field"}-${index}`} style={zebraRowStyle(index)}>
-                        <td style={tdStyle}>
-                          <div style={{ color: "#f8fafc", fontWeight: 700 }}>
-                            {field.name || "—"}
-                          </div>
-                        </td>
-                        <td style={tdStyle}>
-                          <code style={monoStyle}>{field.key || "—"}</code>
-                        </td>
-                        <td style={tdStyle}>
-                          <code style={monoStyle}>{field.id || "—"}</code>
-                        </td>
-                        <td style={tdStyle}>{Array.isArray(field.options) ? field.options.length : 0}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td style={tdStyle} colSpan={4}>
-                        <div style={{ color: "#94a3b8" }}>No fields loaded yet.</div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {showRawBootstrap && rawBootstrapResponse ? (
-              <div style={{ marginTop: 14 }}>
-                <pre
-                  style={{
-                    ...monoStyle,
-                    margin: 0,
-                    padding: 12,
-                    borderRadius: 12,
-                    background: "#0f172a",
-                    maxHeight: 320,
-                    overflow: "auto",
-                  }}
-                >
-                  {JSON.stringify(rawBootstrapResponse, null, 2)}
-                </pre>
-              </div>
-            ) : null}
+          <div
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              padding: "4px 10px",
+              borderRadius: 4,
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.06)",
+              fontSize: 12,
+              color: pendingUpdatesCount > 0 ? "#e2e8f0" : "#94a3b8",
+              marginLeft: "auto",
+            }}
+          >
+            <span>
+              {pendingUpdatesCount > 0 ? `${pendingUpdatesCount} Updates Required` : "All 4 Cost Centers In Sync"}
+            </span>
           </div>
         </div>
-      ) : null}
+      </div>
 
-      {activeView === "post" ? (
-        <div style={{ display: "grid", gap: 16 }}>
-          <div style={cardStyle}>
-            <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 8 }}>
-              Cost Center Fields Configuration
-            </div>
-            <div style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.6, marginBottom: 14 }}>
-              Automated configuration for supported cost center custom fields.
-            </div>
-
-            <div style={{ display: "grid", gap: 12 }}>
-              <div
+      {/* ── Subheader Navigation Tabs ── */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          paddingBottom: 6,
+          flexWrap: "wrap",
+          gap: 8,
+        }}
+      >
+        <div style={{ display: "flex", gap: 4 }}>
+          <button
+            type="button"
+            onClick={() => setActiveTab("audit")}
+            style={{
+              background: activeTab === "audit" ? "rgba(255,255,255,0.06)" : "transparent",
+              border: "none",
+              color: activeTab === "audit" ? "#f1f5f9" : "#94a3b8",
+              padding: "6px 14px",
+              borderRadius: 4,
+              cursor: "pointer",
+              fontWeight: 500,
+              fontSize: 13,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <span>Diff Audit</span>
+            {dryRunReports.length > 0 && (
+              <span
                 style={{
-                  background: "rgba(255,255,255,0.02)",
-                  border: "1px solid rgba(255,255,255,0.06)",
-                  borderLeft: "4px solid #3b82f6",
-                  borderRadius: 12,
-                  padding: 12,
+                  fontSize: 11,
+                  color: pendingUpdatesCount > 0 ? "#cbd5e1" : "#64748b",
                 }}
               >
-                <div style={{ color: "#f8fafc", fontWeight: 700 }}>
-                  Repair Order CP IW Split
-                </div>
-                <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 4 }}>
-                  REPAIR_ORDER_CP_IW_SPLIT
-                </div>
-                <div style={{ color: "#cbd5e1", fontSize: 13, marginTop: 8 }}>
-                  Default: Service Contracts Receivables
-                </div>
-              </div>
+                ({pendingUpdatesCount})
+              </span>
+            )}
+          </button>
 
+          <button
+            type="button"
+            onClick={() => setActiveTab("configure")}
+            style={{
+              background: activeTab === "configure" ? "rgba(255,255,255,0.06)" : "transparent",
+              border: "none",
+              color: activeTab === "configure" ? "#f1f5f9" : "#94a3b8",
+              padding: "6px 14px",
+              borderRadius: 4,
+              cursor: "pointer",
+              fontWeight: 500,
+              fontSize: 13,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <span>Payment Methods Studio</span>
+            <span style={{ fontSize: 11, color: "#64748b" }}>
+              ({internalChips.length + 1})
+            </span>
+          </button>
+        </div>
+
+        <button
+          type="button"
+          className="btn-secondary btn-sm"
+          onClick={() => void runDryRunAudit()}
+          disabled={loading || !dealerId}
+        >
+          Run Pre-Flight Audit
+        </button>
+      </div>
+
+      {message && (
+        <div
+          style={{
+            padding: "10px 14px",
+            borderRadius: 6,
+            fontSize: 13,
+            fontWeight: 400,
+            background: "rgba(255,255,255,0.03)",
+            color: message.ok ? "#cbd5e1" : "#f87171",
+            border: `1px solid ${message.ok ? "rgba(255,255,255,0.08)" : "rgba(248,113,113,0.2)"}`,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <span>{message.text}</span>
+          <button
+            type="button"
+            onClick={() => setMessage(null)}
+            style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: 13 }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          TAB 1: LIVE VS. TARGET DIFF (4 CLEAN COLUMNS)
+      ───────────────────────────────────────────────────────────── */}
+      {activeTab === "audit" && (
+        <div style={{ display: "grid", gap: 14 }}>
+          {/* Audit Section Header with Unified Info Tip */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ color: "#94a3b8", fontSize: 12, fontWeight: 500 }}>
+              Live DMS Configuration Status
+            </span>
+            <UnifiedRequirementsTip blueprintMethodsCount={internalChips.length} />
+          </div>
+
+          {/* 4 Multi-Column Pane */}
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+              background: "rgba(255,255,255,0.015)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              borderRadius: 6,
+              overflow: "hidden",
+            }}
+          >
+            {columnsData.map((col, idx) => (
               <div
+                key={col.title}
                 style={{
-                  background: "rgba(255,255,255,0.02)",
-                  border: "1px solid rgba(255,255,255,0.06)",
-                  borderLeft: "4px solid #3b82f6",
-                  borderRadius: 12,
-                  padding: 12,
+                  display: "flex",
+                  flexDirection: "column",
+                  borderRight: idx < 3 ? "1px solid rgba(255,255,255,0.08)" : "none",
+                  minWidth: 0,
                 }}
               >
-                <div style={{ color: "#f8fafc", fontWeight: 700 }}>
-                  Repair Order Warranty
-                </div>
-                <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 4 }}>
-                  REPAIR_ORDER_WARRANTY
-                </div>
-                <div style={{ color: "#cbd5e1", fontSize: 13, marginTop: 8 }}>
-                  Default: Warranty Receivable, PDI
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: "block", color: "#f8fafc", fontWeight: 700, marginBottom: 6 }}>
-                  Repair Order Internal
-                  <span style={{ color: "#94a3b8", fontWeight: 400, fontSize: 12, marginLeft: 6 }}>
-                    (REPAIR_ORDER_INTERNAL)
-                  </span>
-                </label>
-                <input
-                  value={inputInternal}
-                  onChange={(e) => setInputInternal(e.target.value)}
-                  placeholder="Enter options separated by commas"
+                {/* Clean Column Header */}
+                <div
                   style={{
-                    width: "100%",
-                    padding: "12px 14px",
-                    borderRadius: 12,
-                    border: "1px solid rgba(255,255,255,0.10)",
+                    padding: "10px 12px",
                     background: "rgba(255,255,255,0.03)",
-                    color: "#f8fafc",
-                    outline: "none",
+                    borderBottom: "1px solid rgba(255,255,255,0.08)",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 6,
                   }}
-                />
-                <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 6 }}>
-                  Enter multiple options separated by commas.
-                </div>
-              </div>
-
-              <div>
-                <label style={{ display: "block", color: "#f8fafc", fontWeight: 700, marginBottom: 6 }}>
-                  Repair Order Customer Pay
-                  <span style={{ color: "#94a3b8", fontWeight: 400, fontSize: 12, marginLeft: 6 }}>
-                    (REPAIR_ORDER_CUSTOMER_PAY)
+                >
+                  <span
+                    style={{
+                      color: "#f1f5f9",
+                      fontWeight: 600,
+                      fontSize: 13,
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
+                    title={col.title}
+                  >
+                    {col.title}
                   </span>
-                </label>
-                <input
-                  value={inputCustomerPay}
-                  onChange={(e) => setInputCustomerPay(e.target.value)}
-                  placeholder="Enter options separated by commas"
+
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      letterSpacing: "0.02em",
+                      color: col.inSync ? "#22c55e" : "#e2e8f0",
+                      background: col.inSync ? "rgba(34, 197, 94, 0.1)" : "rgba(255, 255, 255, 0.05)",
+                      border: `1px solid ${col.inSync ? "rgba(34, 197, 94, 0.25)" : "rgba(255, 255, 255, 0.1)"}`,
+                      padding: "2px 6px",
+                      borderRadius: 3,
+                      flexShrink: 0,
+                    }}
+                  >
+                    {col.inSync ? "IN SYNC" : "UPDATE"}
+                  </span>
+                </div>
+
+                {/* Column Body: Live Options List (Active: Green, Inactive: Crossed-out) */}
+                <div
                   style={{
-                    width: "100%",
-                    padding: "12px 14px",
-                    borderRadius: 12,
-                    border: "1px solid rgba(255,255,255,0.10)",
-                    background: "rgba(255,255,255,0.03)",
-                    color: "#f8fafc",
-                    outline: "none",
+                    padding: "12px",
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 6,
+                    minHeight: 220,
+                    maxHeight: 340,
+                    overflowY: "auto",
                   }}
-                />
-                <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 6 }}>
-                  Enter multiple options separated by commas.
+                >
+                  <div style={{ color: "#64748b", fontSize: 10, textTransform: "uppercase", fontWeight: 600, marginBottom: 4 }}>
+                    Live Options ({col.options.length})
+                  </div>
+
+                  {col.options.length > 0 ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                      {col.options.map((opt, optIdx) => {
+                        const inactive = isOptionInactive(opt);
+                        return (
+                          <div
+                            key={optIdx}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              fontSize: 12,
+                              padding: "2px 0",
+                            }}
+                          >
+                            <span
+                              style={{
+                                color: inactive ? "#64748b" : "#22c55e",
+                                textDecoration: inactive ? "line-through" : "none",
+                                fontWeight: inactive ? 400 : 500,
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                              }}
+                              title={opt.name ?? opt.id}
+                            >
+                              {opt.name ?? opt.id}
+                            </span>
+                            {inactive && (
+                              <span style={{ fontSize: 9, color: "#64748b", flexShrink: 0, marginLeft: 4 }}>
+                                (Inactive)
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div style={{ color: "#64748b", fontSize: 11, fontStyle: "italic" }}>
+                      0 options configured
+                    </div>
+                  )}
+                </div>
+
+                {/* Column Footer: Status / Delta Summary */}
+                <div
+                  style={{
+                    padding: "8px 12px",
+                    background: "rgba(255,255,255,0.02)",
+                    borderTop: "1px solid rgba(255,255,255,0.05)",
+                    fontSize: 11,
+                    color: "#94a3b8",
+                  }}
+                >
+                  {col.summary}
                 </div>
               </div>
-            </div>
+            ))}
+          </div>
 
-            <div style={{ marginTop: 16 }}>
+          {/* Collapsible Dropdown Audit Breakdown */}
+          {dryRunReports.length > 0 && (
+            <div
+              style={{
+                borderRadius: 6,
+                border: "1px solid rgba(255,255,255,0.08)",
+                background: "rgba(255,255,255,0.015)",
+                overflow: "hidden",
+              }}
+            >
+              {/* Dropdown Toggle Bar */}
               <button
-                className="btn-primary"
-                onClick={() => void handleConfigure()}
-                disabled={loading || headerCount === 0}
+                type="button"
+                onClick={() => setShowAuditTrail((prev) => !prev)}
+                style={{
+                  width: "100%",
+                  padding: "12px 14px",
+                  background: "transparent",
+                  border: "none",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  cursor: "pointer",
+                  textAlign: "left",
+                }}
               >
-                {loading ? "Configuring..." : "⚙️ Configure Setup Fields"}
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ color: "#f1f5f9", fontSize: 13, fontWeight: 600 }}>
+                    Pre-Flight Delta Audit Trail
+                  </span>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      color: pendingUpdatesCount > 0 ? "#cbd5e1" : "#64748b",
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      padding: "1px 6px",
+                      borderRadius: 3,
+                    }}
+                  >
+                    {pendingUpdatesCount > 0 ? `${pendingUpdatesCount} Pending` : "All Match"}
+                  </span>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#94a3b8", fontSize: 12 }}>
+                  <span>{showAuditTrail ? "Hide Details" : "Show Details"}</span>
+                  <span style={{ fontSize: 10 }}>{showAuditTrail ? "▲" : "▼"}</span>
+                </div>
+              </button>
+
+              {/* Collapsible Content */}
+              {showAuditTrail && (
+                <div
+                  style={{
+                    padding: "0 14px 14px 14px",
+                    display: "grid",
+                    gap: 8,
+                    borderTop: "1px solid rgba(255,255,255,0.05)",
+                    paddingTop: 12,
+                  }}
+                >
+                  {dryRunReports.map((report) => (
+                    <div
+                      key={report.fieldKey}
+                      style={{
+                        borderRadius: 4,
+                        background: "rgba(255,255,255,0.02)",
+                        border: "1px solid rgba(255,255,255,0.04)",
+                        padding: 10,
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                        <span style={{ color: "#f1f5f9", fontWeight: 500, fontSize: 13 }}>{report.fieldName}</span>
+                        <span style={{ fontSize: 12, color: "#94a3b8" }}>
+                          {report.summary}
+                        </span>
+                      </div>
+
+                      <div style={{ display: "grid", gap: 4 }}>
+                        {report.audits.map((item, idx) => (
+                          <div
+                            key={idx}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              fontSize: 12,
+                              padding: "4px 8px",
+                              borderRadius: 3,
+                              background: "rgba(255,255,255,0.015)",
+                            }}
+                          >
+                            <span style={{ color: "#cbd5e1" }}>{item.candidate}</span>
+                            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                              <span style={{ fontSize: 11, color: "#64748b" }}>{item.detail}</span>
+                              <span
+                                style={{
+                                  fontSize: 10,
+                                  fontWeight: 500,
+                                  padding: "1px 6px",
+                                  borderRadius: 3,
+                                  color: item.status === "EXISTS" ? "#94a3b8" : "#f1f5f9",
+                                  background: "rgba(255,255,255,0.04)",
+                                  border: "1px solid rgba(255,255,255,0.08)",
+                                }}
+                              >
+                                {item.status}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─────────────────────────────────────────────────────────────
+          TAB 2: CONFIGURE & DEPLOY (CHIP STUDIO)
+      ───────────────────────────────────────────────────────────── */}
+      {activeTab === "configure" && (
+        <div style={{ display: "grid", gap: 14 }}>
+          <div
+            style={{
+              borderRadius: 6,
+              border: "1px solid rgba(255,255,255,0.08)",
+              background: "rgba(255,255,255,0.015)",
+              padding: 16,
+              display: "grid",
+              gap: 14,
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ color: "#f1f5f9", fontSize: 15, fontWeight: 600 }}>
+                  RO Internal Payment Methods Studio
+                </span>
+              </div>
+
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  className="btn-secondary btn-xs"
+                  onClick={() => void handleSyncAll()}
+                  title="Re-read from Blueprint and re-audit"
+                >
+                  Reset to Blueprint
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary btn-xs"
+                  onClick={() => {
+                    setInternalChips([]);
+                    void runDryRunAudit(costCenterFields, []);
+                  }}
+                  title="Clears all custom chips"
+                >
+                  Clear All
+                </button>
+              </div>
+            </div>
+
+            {/* Inputs */}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <div style={{ flex: 1, minWidth: 260, display: "flex", gap: 6 }}>
+                <input
+                  type="text"
+                  placeholder="Type payment method and press Enter..."
+                  value={customChipInput}
+                  onChange={(e) => setCustomChipInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addChip(customChipInput);
+                    }
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "8px 12px",
+                    borderRadius: 4,
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    background: "rgba(255,255,255,0.03)",
+                    color: "#f1f5f9",
+                    fontSize: 13,
+                    outline: "none",
+                  }}
+                />
+                <button
+                  type="button"
+                  className="btn-secondary btn-sm"
+                  onClick={() => addChip(customChipInput)}
+                  disabled={!customChipInput.trim()}
+                >
+                  Add
+                </button>
+              </div>
+
+              <div style={{ width: 220 }}>
+                <input
+                  type="text"
+                  placeholder="Filter active methods..."
+                  value={chipSearch}
+                  onChange={(e) => setChipSearch(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    borderRadius: 4,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(255,255,255,0.02)",
+                    color: "#f1f5f9",
+                    fontSize: 12,
+                    outline: "none",
+                    boxSizing: "border-box",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Chips Canvas */}
+            <div
+              style={{
+                padding: 12,
+                borderRadius: 4,
+                background: "rgba(0,0,0,0.2)",
+                border: "1px solid rgba(255,255,255,0.05)",
+                minHeight: 60,
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 6,
+                alignItems: "center",
+              }}
+            >
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "4px 10px",
+                  borderRadius: 3,
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  color: "#f1f5f9",
+                  fontSize: 12,
+                  userSelect: "none",
+                }}
+              >
+                Vehicle Inventory -INVV (Default)
+              </span>
+
+              {filteredChips.map((chip) => (
+                <span
+                  key={chip}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "4px 10px",
+                    borderRadius: 3,
+                    background: "rgba(255,255,255,0.03)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    color: "#cbd5e1",
+                    fontSize: 12,
+                  }}
+                >
+                  <span>{chip}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeChip(chip)}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      color: "#64748b",
+                      cursor: "pointer",
+                      padding: 0,
+                      display: "flex",
+                      alignItems: "center",
+                      fontSize: 11,
+                    }}
+                    title={`Remove ${chip}`}
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
+
+              {internalChips.length === 0 && (
+                <span style={{ color: "#64748b", fontSize: 12 }}>
+                  No extra methods imported. Only <b>Vehicle Inventory -INVV</b> will be enforced.
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Action Footer */}
+          <div
+            style={{
+              padding: 12,
+              borderRadius: 6,
+              border: "1px solid rgba(255,255,255,0.08)",
+              background: "rgba(255,255,255,0.015)",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <span style={{ color: "#f1f5f9", fontWeight: 500, fontSize: 13 }}>Deploy Execution</span>
+
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                type="button"
+                className="btn-secondary btn-sm"
+                onClick={() => {
+                  setActiveTab("audit");
+                  void runDryRunAudit();
+                }}
+                disabled={loading || !dealerId}
+              >
+                Run Dry Run First
+              </button>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => void handleApply()}
+                disabled={loading || !dealerId}
+              >
+                {loading ? "Deploying..." : "Confirm & Deploy to Tekion"}
               </button>
             </div>
           </div>
 
-          {configureResults.length > 0 ? (
-            <>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <span style={badgeStyle}>
-                  Total: <b style={{ color: "#f8fafc" }}>{resultStats.total}</b>
-                </span>
-                <span style={badgeStyle}>
-                  Configured: <b style={{ color: "#86efac" }}>{resultStats.success}</b>
-                </span>
-                <span style={badgeStyle}>
-                  Errors: <b style={{ color: "#fca5a5" }}>{resultStats.error}</b>
-                </span>
-                <span style={badgeStyle}>
-                  Skipped: <b style={{ color: "#fcd34d" }}>{resultStats.skipped}</b>
-                </span>
+          {/* Results Table */}
+          {configureResults.length > 0 && (
+            <div
+              style={{
+                borderRadius: 6,
+                border: "1px solid rgba(255,255,255,0.08)",
+                background: "rgba(255,255,255,0.015)",
+                padding: 14,
+              }}
+            >
+              <div style={{ color: "#f1f5f9", fontSize: 14, fontWeight: 600, marginBottom: 10 }}>
+                Deployment Results
               </div>
 
-              <div style={cardStyle}>
-                <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
-                  Configuration Results
-                </div>
-
-                <div className="setup-fields-scroll" style={tableScrollWrapStyle(420)}>
-                  <table className="bx-table" style={tableElementStyle}>
-                    <thead>
-                      <tr>
-                        <th style={stickyThStyle}>Field</th>
-                        <th style={stickyThStyle}>Key</th>
-                        <th style={stickyThStyle}>Status</th>
-                        <th style={stickyThStyle}>Message</th>
+              <div style={{ overflowX: "auto" }}>
+                <table className="bx-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+                  <thead>
+                    <tr>
+                      <th style={{ textAlign: "left", padding: "8px 10px", color: "#64748b", fontSize: 12 }}>Field</th>
+                      <th style={{ textAlign: "left", padding: "8px 10px", color: "#64748b", fontSize: 12 }}>Key</th>
+                      <th style={{ textAlign: "left", padding: "8px 10px", color: "#64748b", fontSize: 12 }}>Status</th>
+                      <th style={{ textAlign: "left", padding: "8px 10px", color: "#64748b", fontSize: 12 }}>Message</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {configureResults.map((res, i) => (
+                      <tr key={i} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                        <td style={{ padding: "8px 10px", color: "#f1f5f9", fontWeight: 500 }}>{res.field}</td>
+                        <td style={{ padding: "8px 10px" }}>
+                          <code style={{ fontSize: 11, color: "#94a3b8" }}>{res.key}</code>
+                        </td>
+                        <td style={{ padding: "8px 10px" }}>
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 500,
+                              padding: "2px 6px",
+                              borderRadius: 3,
+                              color: "#f1f5f9",
+                              background: "rgba(255,255,255,0.05)",
+                              border: "1px solid rgba(255,255,255,0.08)",
+                            }}
+                          >
+                            {res.status.toUpperCase()}
+                          </span>
+                        </td>
+                        <td style={{ padding: "8px 10px", color: "#94a3b8", fontSize: 13 }}>{res.message}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {configureResults.map((result, index) => (
-                        <tr key={`${result.key}-${index}`} style={zebraRowStyle(index)}>
-                          <td style={tdStyle}>
-                            <div style={{ color: "#f8fafc", fontWeight: 700 }}>
-                              {result.field}
-                            </div>
-                          </td>
-                          <td style={tdStyle}>
-                            <code style={monoStyle}>{result.key}</code>
-                          </td>
-                          <td style={tdStyle}>{getResultPill(result.status)}</td>
-                          <td style={tdStyle}>{result.message}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-            </>
+            </div>
+          )}
+
+          {/* Raw JSON Toggle */}
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            {rawBootstrapResponse && (
+              <button
+                type="button"
+                className="btn-secondary btn-xs"
+                onClick={() => setShowRawBootstrap((v) => !v)}
+              >
+                {showRawBootstrap ? "Hide Raw Bootstrap JSON" : "Show Raw Bootstrap JSON"}
+              </button>
+            )}
+          </div>
+
+          {showRawBootstrap && rawBootstrapResponse ? (
+            <pre
+              style={{
+                margin: 0,
+                padding: 12,
+                borderRadius: 4,
+                background: "#0f172a",
+                maxHeight: 280,
+                overflow: "auto",
+                fontFamily: "monospace",
+                fontSize: 11,
+                color: "#94a3b8",
+                border: "1px solid rgba(255,255,255,0.06)",
+              }}
+            >
+              {JSON.stringify(rawBootstrapResponse, null, 2)}
+            </pre>
           ) : null}
         </div>
-      ) : null}
+      )}
     </div>
   );
 };
