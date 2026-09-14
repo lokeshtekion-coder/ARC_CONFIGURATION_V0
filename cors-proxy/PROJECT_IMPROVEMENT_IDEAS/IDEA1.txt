@@ -1,0 +1,200 @@
+1. ARC Data Sync Bot
+Purpose:
+- pull captured extension data
+- validate token freshness
+- trigger bootstrap/stores sync
+- alert when token expired or missing
+
+Useful for:
+- Tekion headers
+- bootstrap fetch
+- stores dashboard refresh
+- dealer profile sync
+
+---
+
+### 2. GL Validation Bot
+Purpose:
+- automatically compare decoded GL tokens against saved bootstrap GL accounts
+- detect mismatches like your `201` issue
+- produce a report:
+  - matched by account number
+  - matched by id suffix
+  - unmatched
+  - ambiguous matches
+
+This would be very useful for your Accounting module.
+
+---
+
+### 3. Blueprint Decode Bot
+Purpose:
+- auto-fetch forms for selected dealer/module
+- decode blueprint fields
+- save normalized output to IndexedDB / backend
+- flag missing questions or inconsistent mappings
+
+Useful for:
+- Parts
+- Service
+- Accounting
+
+---
+
+### 4. Security Hygiene Bot
+Purpose:
+- scan repo for:
+  - tokens in logs
+  - hardcoded passwords
+  - risky console.log usage
+  - snapshot files committed by mistake
+- generate safe findings only
+
+This is probably the safest and highest-value security bot.
+
+---
+
+### 5. Extension Health Bot
+Purpose:
+- check whether extension is connected
+- verify latest capture timestamps
+- verify required headers exist
+- notify if:
+  - no dealer selected
+  - stale bootstrap headers
+  - Slack token missing
+  - Graph token expired
+
+---
+
+## Best bot for you right now
+Based on your recent work, I’d recommend starting with:
+
+### **GL Validation + Bootstrap Audit Bot**
+Because you already have:
+- bootstrap snapshots
+- GL accounts
+- decoded terms/tokens
+- matching problems
+- saved IndexedDB data
+
+This bot can be built without touching risky auth flows much.
+
+---
+
+## How to build it
+You have 3 options:
+
+### Option A — In-app bot
+Build as a new page inside your React app:
+- `src/pages/BotAudit/BotAudit.tsx`
+
+Pros:
+- easy integration
+- reuse IndexedDB and existing services
+- safe internal UX
+
+---
+
+### Option B — Background Node bot
+Create a local script/service:
+- reads saved JSON/bootstrap snapshots
+- runs audits
+- outputs CSV/JSON reports
+
+Pros:
+- safer for automation
+- easier scheduling
+- no UI dependency
+
+---
+
+### Option C — Hybrid bot
+- Node backend does heavy validation
+- React page shows results
+
+This is the best long-term setup.
+
+---
+
+## Suggested first bot spec
+
+### GL Audit Bot
+Input:
+- saved bootstrap snapshot
+- decoded blueprint/accounting tokens
+- salesChains decoded rows
+
+Logic:
+- match token against:
+  - `accountNumber`
+  - exact `id`
+  - exact `key`
+  - suffix of `id`
+  - suffix of `key`
+- produce:
+  - confidence
+  - matched account
+  - reason
+
+Output:
+- UI table
+- downloadable CSV
+- summary counts
+
+Example statuses:
+- Exact Account Number Match
+- ID Suffix Match
+- Key Suffix Match
+- No Match
+- Multiple Matches
+
+---
+
+## Security note
+If you build a bot for this project:
+
+### Safe
+- process bootstrap snapshots
+- process normalized data
+- audit mappings
+- report missing fields
+
+### Be careful
+- don’t make the bot dump raw tokens
+- don’t log auth headers
+- don’t persist secrets unnecessarily
+- don’t let the bot act on Slack/Graph/Tekion credentials unless required
+
+---
+
+## My recommendation
+Start with one of these:
+
+1. **GL Validation Bot** ← best next step
+2. **Bootstrap Audit Bot**
+3. **Security Scan Bot**
+
+---
+
+## If you want, I can build the starter for you
+I can give you either:
+
+### A. New React page bot
+Example:
+- `src/pages/AuditBot/AuditBot.tsx`
+- integrated into your app nav
+
+or
+
+### B. Node script bot
+Example:
+- `scripts/gl-audit-bot.ts`
+
+or
+
+### C. Chrome-extension-aware helper bot
+- reads latest capture safely
+- validates freshness
+- reports health
+
