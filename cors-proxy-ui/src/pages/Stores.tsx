@@ -13,7 +13,7 @@ import {
   getStoredStatusVault,
   saveStatusToVault,
 } from "../services/storesDb";
-import type { StoreRecord, CustomPhaseStatus } from "../services/storesDb";
+import type { StoreRecord, CustomPhaseStatus, StoreSetupData } from "../services/storesDb";
 import type {
   OnboardingStatus,
   StoreBlueprintStatuses,
@@ -29,6 +29,7 @@ import {
   type SlackRecipientCandidate,
   type SlackDirectoryUser,
 } from "../services/storeSlackHelper";
+import { fetchSetupDataForStore, hasSetupData } from "../services/storeSetupDataService";
 
 interface Props {
   onBack: () => void;
@@ -340,7 +341,6 @@ function buildDealerPopupRows(
               fontSize: 11,
               fontWeight: 700,
               textDecoration: "none",
-              transition: "all 0.15s ease",
             }}
           >
             Open Tasks{trackingIdValues.length > 1 ? ` ${index + 1}` : ""} ↗
@@ -362,53 +362,13 @@ function buildDealerPopupRows(
     {
       label: "Consumer Scheduling (Pre-Prod)",
       value: (
-        <a
-          href={preprodSchedulingUrl}
-          target="_blank"
-          rel="noreferrer"
-          title="Open Pre-Prod Consumer Scheduling"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 4,
-            color: "#00f0ff",
-            background: "rgba(0, 240, 255, 0.08)",
-            border: "1px solid rgba(0, 240, 255, 0.3)",
-            borderRadius: 6,
-            padding: "2px 8px",
-            fontSize: 11,
-            fontWeight: 700,
-            textDecoration: "none",
-          }}
-        >
-          Open Pre-Prod Scheduling ↗
-        </a>
+        <a href={preprodSchedulingUrl} target="_blank" rel="noreferrer">Open Pre-Prod Scheduling ↗</a>
       ),
     },
     {
       label: "Consumer Scheduling (Prod)",
       value: (
-        <a
-          href={prodSchedulingUrl}
-          target="_blank"
-          rel="noreferrer"
-          title="Open Production Consumer Scheduling"
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 4,
-            color: "#4ade80",
-            background: "rgba(74, 222, 128, 0.08)",
-            border: "1px solid rgba(74, 222, 128, 0.3)",
-            borderRadius: 6,
-            padding: "2px 8px",
-            fontSize: 11,
-            fontWeight: 700,
-            textDecoration: "none",
-          }}
-        >
-          Open Prod Scheduling ↗
-        </a>
+        <a href={prodSchedulingUrl} target="_blank" rel="noreferrer">Open Prod Scheduling ↗</a>
       ),
     },
   ];
@@ -438,8 +398,6 @@ const StatusChip: React.FC<{
         fontWeight: 700,
         lineHeight: 1,
         whiteSpace: "nowrap",
-        userSelect: "none",
-        cursor: "default",
       }}
     >
       <span>{short}</span>
@@ -508,21 +466,12 @@ const CustomStatusSelect: React.FC<{
           fontSize: 11,
           fontWeight: 700,
           cursor: "pointer",
-          outline: "none",
           appearance: "none",
-          textAlign: "left",
-          whiteSpace: "nowrap",
         }}
       >
-        <option value="TO DO" style={{ background: "#1c1c1e", color: "#fff" }}>
-          TO DO
-        </option>
-        <option value="WIP" style={{ background: "#1c1c1e", color: "#fff" }}>
-          WIP
-        </option>
-        <option value="Completed" style={{ background: "#1c1c1e", color: "#fff" }}>
-          Completed
-        </option>
+        <option value="TO DO">TO DO</option>
+        <option value="WIP">WIP</option>
+        <option value="Completed">Completed</option>
       </select>
       <span
         style={{
@@ -572,38 +521,21 @@ const SlackRecipientRow: React.FC<{
   const isAvailable = Boolean(candidate.matchedUser?.userId);
 
   return (
-    <label
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "8px 10px",
-        borderRadius: 8,
-        border: `1px solid ${checked ? "rgba(59,130,246,0.3)" : "rgba(255,255,255,0.06)"}`,
-        background: checked ? "rgba(59,130,246,0.08)" : "rgba(255,255,255,0.02)",
-        cursor: isAvailable ? "pointer" : "not-allowed",
-        opacity: isAvailable ? 1 : 0.5,
-        transition: "all 0.15s ease",
-      }}
-    >
+    <label style={{ display: "flex", alignItems: "center", gap: 10 }}>
       <input
         type="checkbox"
         checked={checked}
         disabled={!isAvailable}
         onChange={onToggle}
-        style={{ cursor: isAvailable ? "pointer" : "default" }}
       />
-
       <div style={{ minWidth: 0, flex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ color: "#f8fafc", fontSize: 12, fontWeight: 700 }}>
-            {candidate.label}
-          </span>
-          <span style={{ color: "#94a3b8", fontSize: 11 }}>
+        <div>
+          <span>{candidate.label}</span>{" "}
+          <span style={{ color: "#94a3b8" }}>
             ({candidate.matchedUser?.fullName || "Not found"})
           </span>
         </div>
-        <div style={{ color: "#64748b", fontSize: 11, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        <div style={{ color: "#64748b", fontSize: 11 }}>
           {candidate.normalizedEmail || candidate.matchedUser?.userId || "No ID"}
         </div>
       </div>
@@ -611,23 +543,43 @@ const SlackRecipientRow: React.FC<{
   );
 };
 
+const SetupDataCell: React.FC<{ row: StoreRecord }> = ({ row }) => {
+  if (row.setup_data_error) {
+    return <div style={{ color: "#f87171", fontSize: 11 }}>Error</div>;
+  }
+
+  if (!row.setup_data) {
+    return <div style={{ color: "#94a3b8", fontSize: 11 }}>Not fetched</div>;
+  }
+
+  return (
+    <div style={{ fontSize: 11, lineHeight: 1.4 }}>
+      <div><b>Codes:</b> {row.setup_data.oemDealerCodes?.join(", ") || "—"}</div>
+      <div>Journals: {row.setup_data.journalsAccessibleDealerCount ?? 0}</div>
+      <div>Sales Chains: {row.setup_data.salesChainsAccessibleDealerCount ?? 0}</div>
+      <div>COA: {row.setup_data.coaAccessibleDealerCount ?? 0}</div>
+    </div>
+  );
+};
+
 const DealerMetaModal: React.FC<{
   row: StoreRecord | null;
   onClose: () => void;
   onToast: (message: string) => void;
-}> = ({ row, onClose, onToast }) => {
+  onSetupFetched: (tekionId: string, setupData: StoreSetupData) => void;
+}> = ({ row, onClose, onToast, onSetupFetched }) => {
   const draftContext = useMemo(() => {
     return row ? buildStoreSlackDraftContext(row) : null;
   }, [row]);
 
   const slackSession = useMemo(() => getSlackSession(), [row]);
-
   const [selectedRecipientKeys, setSelectedRecipientKeys] = useState<string[]>([]);
   const [messageText, setMessageText] = useState("");
   const [sendingKey, setSendingKey] = useState("");
   const [isSendingAll, setIsSendingAll] = useState(false);
   const [editorMode, setEditorMode] = useState<"edit" | "preview">("edit");
   const [slackEmailMap, setSlackEmailMap] = useState<Map<string, SlackDirectoryUser>>(STATIC_SLACK_MAP);
+  const [loadingSetup, setLoadingSetup] = useState(false);
 
   useEffect(() => {
     const merged = new Map(slackEmailMap);
@@ -645,31 +597,7 @@ const DealerMetaModal: React.FC<{
       }
     }
 
-    if (merged.size === 0) {
-      fetch("/src/pages/DATA/Slack.csv")
-        .then((res) => (res.ok ? res.text() : ""))
-        .then((text) => {
-          if (text) {
-            const fetchedMap = parseSlackCsv(text);
-            if (draftContext?.recipients) {
-              for (const r of draftContext.recipients) {
-                if (r.normalizedEmail && r.matchedUser) {
-                  fetchedMap.set(r.normalizedEmail.toLowerCase(), {
-                    userId: r.matchedUser.userId,
-                    fullName: r.matchedUser.fullName,
-                    email: r.matchedUser.email || r.normalizedEmail,
-                    jobTitle: r.matchedUser.jobTitle || "",
-                  });
-                }
-              }
-            }
-            setSlackEmailMap(fetchedMap);
-          }
-        })
-        .catch(() => {});
-    } else {
-      setSlackEmailMap(merged);
-    }
+    setSlackEmailMap(merged);
   }, [draftContext]);
 
   const allRecipients = useMemo(() => {
@@ -776,9 +704,8 @@ const DealerMetaModal: React.FC<{
           text: messageText,
         });
         successCount++;
-      } catch (err: unknown) {
+      } catch {
         failCount++;
-        logger.error("Failed batch Slack send", err);
       }
     }
 
@@ -790,49 +717,27 @@ const DealerMetaModal: React.FC<{
     }
   };
 
+  const handleFetchSetup = async () => {
+    if (!row) return;
+
+    setLoadingSetup(true);
+    try {
+      const setupData = await fetchSetupDataForStore(row);
+      onSetupFetched(row.tekion_id, setupData);
+      onToast("✅ Setup data fetched");
+    } catch (error: unknown) {
+      onToast(`❌ ${error instanceof Error ? error.message : "Failed to fetch setup data"}`);
+    } finally {
+      setLoadingSetup(false);
+    }
+  };
+
   const hasSlackSession = Boolean(slackSession.slackToken && slackSession.slackDCookie);
 
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.7)",
-        backdropFilter: "blur(4px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 24,
-        zIndex: 9999,
-      }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: "100%",
-          maxWidth: 1040,
-          maxHeight: "90vh",
-          display: "flex",
-          flexDirection: "column",
-          background: "#151922",
-          border: "1px solid rgba(255,255,255,0.12)",
-          borderRadius: 16,
-          boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)",
-          overflow: "hidden",
-        }}
-      >
-        {/* Modal Top Header */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "16px 20px",
-            borderBottom: "1px solid rgba(255,255,255,0.08)",
-            background: "#11151d",
-          }}
-        >
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, zIndex: 9999 }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 1040, maxHeight: "90vh", display: "flex", flexDirection: "column", background: "#151922", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 16, overflow: "hidden" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "#11151d" }}>
           <div>
             <div style={{ fontSize: 17, fontWeight: 800, color: "#fff" }}>
               {row.dba_name || "Store Details"}
@@ -842,83 +747,36 @@ const DealerMetaModal: React.FC<{
             </div>
           </div>
 
-          <button
-            className="btn-secondary btn-sm"
-            onClick={onClose}
-            style={{ padding: "4px 10px", fontSize: 12 }}
-          >
-            ✕ Close
-          </button>
+          <button className="btn-secondary btn-sm" onClick={onClose}>✕ Close</button>
         </div>
 
-        {/* Modal Content Scroll Area */}
         <div style={{ overflowY: "auto", padding: 20, display: "grid", gap: 16 }}>
-          {/* Metadata Compact Card */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
-              gap: 10,
-              padding: 12,
-              borderRadius: 12,
-              background: "#0d1117",
-              border: "1px solid rgba(255,255,255,0.06)",
-            }}
-          >
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, padding: 12, borderRadius: 12, background: "#0d1117" }}>
             {popupRows.map((item) => (
               <div key={item.label}>
                 <div style={{ color: "#64748b", fontSize: 11, fontWeight: 700 }}>
                   {item.label}
                 </div>
-                <div
-                  style={{
-                    color: "#f1f5f9",
-                    fontSize: 12,
-                    fontWeight: 600,
-                    marginTop: 2,
-                    wordBreak: "break-word",
-                  }}
-                >
+                <div style={{ color: "#f1f5f9", fontSize: 12, fontWeight: 600, marginTop: 2 }}>
                   {item.value ?? "—"}
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Two-Column Editor & Recipient Layout */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(280px, 340px) minmax(0, 1fr)",
-              gap: 16,
-              alignItems: "start",
-            }}
-          >
-            {/* Left Column: Recipients */}
-            <div
-              style={{
-                display: "grid",
-                gap: 10,
-                padding: 14,
-                borderRadius: 12,
-                background: "#11151d",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
+          <div>
+            <button className="btn-postman" onClick={() => void handleFetchSetup()} disabled={loadingSetup}>
+              {loadingSetup ? "⏳ Loading..." : "🧩 Get Setup Data"}
+            </button>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 340px) minmax(0, 1fr)", gap: 16 }}>
+            <div style={{ display: "grid", gap: 10, padding: 14, borderRadius: 12, background: "#11151d" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ color: "#f8fafc", fontSize: 13, fontWeight: 800 }}>
                   Recipients ({selectedRecipients.length})
                 </span>
-                <span
-                  style={{
-                    fontSize: 11,
-                    padding: "2px 8px",
-                    borderRadius: 999,
-                    background: hasSlackSession ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)",
-                    color: hasSlackSession ? "#4ade80" : "#f87171",
-                    fontWeight: 700,
-                  }}
-                >
+                <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 999, background: hasSlackSession ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)", color: hasSlackSession ? "#4ade80" : "#f87171", fontWeight: 700 }}>
                   {hasSlackSession ? "Session Active" : "No Session"}
                 </span>
               </div>
@@ -938,25 +796,13 @@ const DealerMetaModal: React.FC<{
                 Individual Dispatches:
                 <div style={{ display: "grid", gap: 4, marginTop: 6 }}>
                   {selectedRecipients.map((rec) => (
-                    <div
-                      key={rec.key}
-                      style={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        fontSize: 11,
-                        color: "#94a3b8",
-                      }}
-                    >
-                      <span style={{ textOverflow: "ellipsis", overflow: "hidden", whiteSpace: "nowrap", maxWidth: 160 }}>
-                        {rec.matchedUser?.fullName}
-                      </span>
+                    <div key={rec.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, color: "#94a3b8" }}>
+                      <span>{rec.matchedUser?.fullName}</span>
                       <button
                         type="button"
                         className="btn-secondary btn-sm"
                         disabled={!hasSlackSession || sendingKey === rec.key || isSendingAll}
                         onClick={() => void handleSendSingle(rec)}
-                        style={{ padding: "2px 8px", fontSize: 10 }}
                       >
                         {sendingKey === rec.key ? "..." : "Send"}
                       </button>
@@ -966,65 +812,15 @@ const DealerMetaModal: React.FC<{
               </div>
             </div>
 
-            {/* Right Column: Message Composer */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 12,
-                padding: 14,
-                borderRadius: 12,
-                background: "#11151d",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: 14, borderRadius: 12, background: "#11151d" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ color: "#f8fafc", fontSize: 13, fontWeight: 800 }}>
                   Slack Message Draft
                 </span>
 
-                {/* Segmented Write/Preview Control */}
-                <div
-                  style={{
-                    display: "inline-flex",
-                    background: "#0b0f15",
-                    padding: 2,
-                    borderRadius: 6,
-                    border: "1px solid rgba(255,255,255,0.08)",
-                  }}
-                >
-                  <button
-                    type="button"
-                    onClick={() => setEditorMode("edit")}
-                    style={{
-                      background: editorMode === "edit" ? "#1e293b" : "transparent",
-                      color: editorMode === "edit" ? "#f8fafc" : "#94a3b8",
-                      border: "none",
-                      borderRadius: 4,
-                      padding: "3px 10px",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                    }}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setEditorMode("preview")}
-                    style={{
-                      background: editorMode === "preview" ? "#1e293b" : "transparent",
-                      color: editorMode === "preview" ? "#f8fafc" : "#94a3b8",
-                      border: "none",
-                      borderRadius: 4,
-                      padding: "3px 10px",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      cursor: "pointer",
-                    }}
-                  >
-                    Preview
-                  </button>
+                <div style={{ display: "inline-flex", background: "#0b0f15", padding: 2, borderRadius: 6 }}>
+                  <button type="button" onClick={() => setEditorMode("edit")}>Edit</button>
+                  <button type="button" onClick={() => setEditorMode("preview")}>Preview</button>
                 </div>
               </div>
 
@@ -1033,54 +829,20 @@ const DealerMetaModal: React.FC<{
                   className="stores-input"
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
-                  style={{
-                    width: "100%",
-                    minHeight: 220,
-                    resize: "vertical",
-                    borderRadius: 8,
-                    padding: 12,
-                    background: "#0b0f15",
-                    color: "#f8fafc",
-                    border: "1px solid rgba(255,255,255,0.10)",
-                    boxSizing: "border-box",
-                    lineHeight: 1.5,
-                    fontSize: 12,
-                    fontFamily: "monospace",
-                  }}
+                  style={{ width: "100%", minHeight: 220, resize: "vertical" }}
                 />
               ) : (
-                <div
-                  style={{
-                    minHeight: 220,
-                    borderRadius: 8,
-                    padding: 12,
-                    background: "#0b0f15",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    color: "#e2e8f0",
-                    whiteSpace: "pre-wrap",
-                    lineHeight: 1.5,
-                    fontSize: 12,
-                  }}
-                >
+                <div style={{ minHeight: 220, whiteSpace: "pre-wrap" }}>
                   {messageText || "Empty draft."}
                 </div>
               )}
 
-              {/* Primary Batch Send Action */}
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 4 }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: 10 }}>
                 <button
                   type="button"
                   className="btn-postman"
                   disabled={!hasSlackSession || selectedRecipients.length === 0 || isSendingAll}
                   onClick={() => void handleSendAll()}
-                  style={{
-                    padding: "8px 18px",
-                    fontWeight: 800,
-                    fontSize: 12,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                  }}
                 >
                   {isSendingAll ? "⏳ Dispatched..." : `Send to Selected (${selectedRecipients.length})`}
                 </button>
@@ -1097,6 +859,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
   const [records, setRecords] = useState<StoreRecord[]>([]);
   const [loadingStores, setLoadingStores] = useState(false);
   const [syncingExcel, setSyncingExcel] = useState(false);
+  const [loadingSetupAll, setLoadingSetupAll] = useState(false);
   const [error, setError] = useState("");
   const [tokenExpiredMessage, setTokenExpiredMessage] = useState("");
   const [toastMessage, setToastMessage] = useState("");
@@ -1196,6 +959,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                   blueprint_statuses: existing?.blueprint_statuses,
                   signoff_statuses: existing?.signoff_statuses,
                   onboarding_status_fetched_at: existing?.onboarding_status_fetched_at,
+                  setup_data: existing?.setup_data,
+                  setup_data_fetched_at: existing?.setup_data_fetched_at,
+                  setup_data_error: existing?.setup_data_error,
                 },
               ];
             })
@@ -1260,10 +1026,8 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       setRecords(uniqueData);
       showToast(`Loaded ${uniqueData.length} stores from local cache`);
 
-      if (shouldAutoFetchStatuses(uniqueData)) {
-        if (uniqueData.length > 0) {
-          void loadStatusesForStores(uniqueData);
-        }
+      if (shouldAutoFetchStatuses(uniqueData) && uniqueData.length > 0) {
+        void loadStatusesForStores(uniqueData);
       }
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load IndexedDB data");
@@ -1368,6 +1132,52 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       });
   }, [records, search, superpodId, implementationType, productType, selectedMonth, fromDate, toDate]);
 
+  const persistSetupData = useCallback(async (tekionId: string, setupData: StoreSetupData) => {
+    const latest = await getStores();
+    const updated = latest.map((row) =>
+      row.tekion_id === tekionId
+        ? {
+            ...row,
+            setup_data: setupData,
+            setup_data_fetched_at: setupData.fetchedAt,
+            setup_data_error: "",
+          }
+        : row
+    );
+
+    setRecords(updated);
+    await saveStores(updated);
+  }, []);
+
+  const handleFetchSetupVisible = useCallback(async () => {
+    setLoadingSetupAll(true);
+    try {
+      const latest = await getStores();
+      const latestMap = new Map(latest.map((r) => [r.tekion_id, r]));
+
+      for (const row of filtered) {
+        const current = latestMap.get(row.tekion_id) ?? row;
+
+        try {
+          const setupData = await fetchSetupDataForStore(current);
+          await persistSetupData(current.tekion_id, setupData);
+        } catch (error: unknown) {
+          logger.error("Failed setup data fetch for row", {
+            dealerId: current.dealer_id,
+            tekionId: current.tekion_id,
+            message: error instanceof Error ? error.message : "Unknown error",
+          });
+        }
+      }
+
+      showToast("✅ Setup data fetch completed for visible stores");
+    } catch (error: unknown) {
+      showToast(`❌ ${error instanceof Error ? error.message : "Failed setup fetch"}`);
+    } finally {
+      setLoadingSetupAll(false);
+    }
+  }, [filtered, persistSetupData, showToast]);
+
   const exportJson = () => {
     const blob = new Blob([JSON.stringify(filtered, null, 2)], {
       type: "application/json",
@@ -1422,7 +1232,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
   return (
     <div className="stores-shell">
-      {/* Top Bar Navigation */}
       <div className="stores-topbar">
         <div className="stores-topbar-left">
           <button className="btn-secondary btn-sm" onClick={onBack}>
@@ -1437,23 +1246,15 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         </div>
 
         <div className="stores-topbar-right" style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <button className="btn-secondary btn-sm" onClick={() => void handleLoadIndexedDb()} title="Reload from IndexedDB">
+          <button className="btn-secondary btn-sm" onClick={() => void handleLoadIndexedDb()}>
             Cache
           </button>
 
           <div style={{ display: "inline-flex", borderRadius: 6, overflow: "hidden", border: "1px solid rgba(255,255,255,0.12)" }}>
-            <button
-              className="btn-secondary btn-sm"
-              onClick={handleExportExcel}
-              style={{ borderRadius: 0, border: "none", borderRight: "1px solid rgba(255,255,255,0.12)" }}
-            >
+            <button className="btn-secondary btn-sm" onClick={handleExportExcel}>
               Export Excel
             </button>
-            <button
-              className="btn-secondary btn-sm"
-              onClick={exportJson}
-              style={{ borderRadius: 0, border: "none" }}
-            >
+            <button className="btn-secondary btn-sm" onClick={exportJson}>
               JSON
             </button>
           </div>
@@ -1467,6 +1268,14 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           </button>
 
           <button
+            className="btn-secondary btn-sm"
+            onClick={() => void handleFetchSetupVisible()}
+            disabled={loadingSetupAll}
+          >
+            {loadingSetupAll ? "⏳ Setup..." : "🧩 Fetch Setup Data"}
+          </button>
+
+          <button
             className="btn-postman"
             onClick={() => void handleFetch(true)}
             disabled={loadingStores}
@@ -1477,52 +1286,21 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         </div>
       </div>
 
-      {/* Floating Toast Notification (Zero CLS) */}
       {toastMessage && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: 24,
-            right: 24,
-            zIndex: 10000,
-            background: "#1e293b",
-            color: "#f8fafc",
-            border: "1px solid rgba(255,255,255,0.15)",
-            borderRadius: 8,
-            padding: "10px 18px",
-            boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
-            fontSize: 13,
-            fontWeight: 700,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
+        <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 10000 }}>
           {toastMessage}
         </div>
       )}
 
-      {/* Token Expiration Banner */}
       {tokenExpiredMessage && (
         <div className="bx-error" style={{ marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span>⚠ {tokenExpiredMessage}</span>
-          <a
-            href={tapWorkordersUrl}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              color: "#93c5fd",
-              textDecoration: "underline",
-              fontWeight: 700,
-              fontSize: 12,
-            }}
-          >
+          <a href={tapWorkordersUrl} target="_blank" rel="noreferrer">
             Open TAP to recapture API ↗
           </a>
         </div>
       )}
 
-      {/* Main Grid Layout */}
       <div
         className="stores-layout"
         style={{
@@ -1532,26 +1310,12 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           alignItems: "start",
         }}
       >
-        {/* Sidebar Filters */}
         {!filtersCollapsed && (
           <aside className="stores-sidebar" style={{ minWidth: 0 }}>
             <div className="stores-panel" style={{ display: "grid", gap: 14 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span className="stores-panel-title" style={{ margin: 0 }}>Filters</span>
-                <button
-                  type="button"
-                  onClick={clearFilters}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    color: "#94a3b8",
-                    fontSize: 11,
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                  }}
-                >
-                  Reset all
-                </button>
+                <button type="button" onClick={clearFilters}>Reset all</button>
               </div>
 
               <div className="stores-field">
@@ -1573,7 +1337,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                       type="button"
                       className={range === days ? "btn-postman" : "btn-secondary btn-sm"}
                       onClick={() => setRange(days as TRange)}
-                      style={{ padding: "4px 0", fontSize: 11, textAlign: "center" }}
                     >
                       T-{days}
                     </button>
@@ -1584,83 +1347,47 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
               <div className="stores-field">
                 <label className="stores-label">Launch Window</label>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                  <input
-                    type="date"
-                    className="stores-input"
-                    value={fromDate}
-                    onChange={(e) => setFromDate(e.target.value)}
-                    style={{ fontSize: 11, padding: "4px 6px" }}
-                  />
-                  <input
-                    type="date"
-                    className="stores-input"
-                    value={toDate}
-                    onChange={(e) => setToDate(e.target.value)}
-                    style={{ fontSize: 11, padding: "4px 6px" }}
-                  />
+                  <input type="date" className="stores-input" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+                  <input type="date" className="stores-input" value={toDate} onChange={(e) => setToDate(e.target.value)} />
                 </div>
               </div>
 
               <div className="stores-field">
                 <label className="stores-label">Go-Live Month</label>
-                <select
-                  className="stores-input"
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                >
+                <select className="stores-input" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
                   <option value="">All Months</option>
                   {monthOptions.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
+                    <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
               </div>
 
               <div className="stores-field">
                 <label className="stores-label">Pre-Prod POD</label>
-                <select
-                  className="stores-input"
-                  value={superpodId}
-                  onChange={(e) => setSuperpodId(e.target.value)}
-                >
+                <select className="stores-input" value={superpodId} onChange={(e) => setSuperpodId(e.target.value)}>
                   <option value="">All PODs</option>
                   {superpodOptions.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
+                    <option key={item} value={item}>{item}</option>
                   ))}
                 </select>
               </div>
 
               <div className="stores-field">
                 <label className="stores-label">Implementation Type</label>
-                <select
-                  className="stores-input"
-                  value={implementationType}
-                  onChange={(e) => setImplementationType(e.target.value)}
-                >
+                <select className="stores-input" value={implementationType} onChange={(e) => setImplementationType(e.target.value)}>
                   <option value="">All Types</option>
                   {implementationTypeOptions.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
+                    <option key={item} value={item}>{item}</option>
                   ))}
                 </select>
               </div>
 
               <div className="stores-field">
                 <label className="stores-label">Product Type</label>
-                <select
-                  className="stores-input"
-                  value={productType}
-                  onChange={(e) => setProductType(e.target.value)}
-                >
+                <select className="stores-input" value={productType} onChange={(e) => setProductType(e.target.value)}>
                   <option value="">All Products</option>
                   {productTypeOptions.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
+                    <option key={item} value={item}>{item}</option>
                   ))}
                 </select>
               </div>
@@ -1670,10 +1397,8 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           </aside>
         )}
 
-        {/* Content Table Card */}
         <section className="stores-content" style={{ minWidth: 0 }}>
           <div className="stores-table-card">
-            {/* Table Header Controls */}
             <div
               className="stores-table-header"
               style={{
@@ -1691,230 +1416,31 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                 <span style={{ fontSize: 12, color: "#94a3b8" }}>
                   Showing <strong style={{ color: "#f8fafc" }}>{filtered.length}</strong> of {records.length} stores
                 </span>
-
-                {/* Quick Access Badges */}
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginLeft: 4, flexWrap: "wrap" }}>
-                  <a
-                    href={tapWorkordersUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open TAP Workorders"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 28,
-                      height: 28,
-                      borderRadius: 6,
-                      background: "rgba(255, 255, 255, 0.05)",
-                      border: "1px solid rgba(255, 255, 255, 0.1)",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    <img
-                      src="https://com-tekioncloud-tap-assets.s3.us-west-1.amazonaws.com/assets/common/toc-logo.svg"
-                      alt="TAP Workorders"
-                      style={{ width: 17, height: 17, objectFit: "contain", display: "block" }}
-                    />
-                  </a>
-
-                  <a
-                    href="https://app.slack.com/client/E08DG6QMMDG"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open Slack Workspace"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 28,
-                      height: 28,
-                      borderRadius: 6,
-                      background: "rgba(255, 255, 255, 0.05)",
-                      border: "1px solid rgba(255, 255, 255, 0.1)",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    <img
-                      src="https://cdn.brandfetch.io/idJ_HhtG0Z/theme/dark/symbol.svg?c=1dxbfHSJFAPEGdCLU4o5B"
-                      alt="Slack"
-                      style={{ width: 17, height: 17, objectFit: "contain", display: "block" }}
-                    />
-                  </a>
-
-                  <a
-                    href="https://app.tekioncloud.com/internal/approval-management/dashboard/requests"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open Production Approval Management"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      height: 28,
-                      padding: "0 9px",
-                      borderRadius: 6,
-                      fontSize: 11,
-                      fontWeight: 700,
-                      letterSpacing: "0.5px",
-                      textDecoration: "none",
-                      color: "#4ade80",
-                      background: "rgba(74, 222, 128, 0.08)",
-                      border: "1px solid rgba(74, 222, 128, 0.25)",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    PROD
-                  </a>
-
-                  <a
-                    href="http://outlook.office365.com/mail/inbox"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open Outlook Inbox"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      width: 28,
-                      height: 28,
-                      borderRadius: 6,
-                      background: "rgba(255, 255, 255, 0.05)",
-                      border: "1px solid rgba(255, 255, 255, 0.1)",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    <img
-                      src="https://cdn.brandfetch.io/idgdw68PEO/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B"
-                      alt="Outlook"
-                      style={{ width: 17, height: 17, objectFit: "contain", display: "block" }}
-                    />
-                  </a>
-
-                  <a
-                    href="https://preprodapp.tekioncloud.com/accounting/chartOfAccounts/list"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open Pre-Prod Chart of Accounts"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      height: 28,
-                      padding: "0 9px",
-                      borderRadius: 6,
-                      fontSize: 11,
-                      fontWeight: 700,
-                      letterSpacing: "0.5px",
-                      textDecoration: "none",
-                      color: "#38bdf8",
-                      background: "rgba(56, 189, 248, 0.08)",
-                      border: "1px solid rgba(56, 189, 248, 0.25)",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    PRE-PROD
-                  </a>
-
-                  <a
-                    href="https://preprod-map.tekioncloud.com/map/blueprintValidation"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open PreProd MAP Blueprint Validation"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      height: 28,
-                      padding: "0 9px",
-                      borderRadius: 6,
-                      fontSize: 11,
-                      fontWeight: 700,
-                      letterSpacing: "0.5px",
-                      textDecoration: "none",
-                      color: "#c084fc",
-                      background: "rgba(192, 132, 252, 0.08)",
-                      border: "1px solid rgba(192, 132, 252, 0.25)",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    PreProd MAP
-                  </a>
-
-                  <a
-                    href="https://tap.tekioncloud.com/timetracker/employee-view"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open TAP Time Tracker Employee View"
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      height: 28,
-                      padding: "0 9px",
-                      borderRadius: 6,
-                      fontSize: 11,
-                      fontWeight: 700,
-                      letterSpacing: "0.5px",
-                      textDecoration: "none",
-                      color: "#fbbf24",
-                      background: "rgba(251, 191, 36, 0.08)",
-                      border: "1px solid rgba(251, 191, 36, 0.25)",
-                      transition: "all 0.15s ease",
-                    }}
-                  >
-                    Time Sheet
-                  </a>
-                </div>
               </div>
 
-              <button
-                className="btn-secondary btn-sm"
-                onClick={() => setFiltersCollapsed((prev) => !prev)}
-                style={{ fontSize: 11 }}
-              >
+              <button className="btn-secondary btn-sm" onClick={() => setFiltersCollapsed((prev) => !prev)}>
                 {filtersCollapsed ? "☰ Show Filters" : "✕ Hide Filters"}
               </button>
             </div>
 
-            {/* Scroll Container with Sticky Header */}
             <div className="stores-table-wrap stores-table-wrap-tall" style={{ maxHeight: "calc(100vh - 180px)", overflow: "auto" }}>
               <table className="stores-table" style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0 }}>
                 <thead>
-                  <tr style={{ position: "sticky", top: 0, zIndex: 10, background: "#11151d", boxShadow: "0 1px 0 rgba(255,255,255,0.1)" }}>
-                    <th style={{ padding: "10px 8px", width: 95 }}>Tekion ID</th>
-                    <th style={{ padding: "10px 8px", width: 140 }}>Dealer ID</th>
-
-                    <th style={{ padding: "10px 10px", width: "100%", minWidth: 240, textAlign: "left" }}>
-                      Dealership
-                    </th>
-
-                    <th style={{ padding: "10px 4px 10px 6px", width: 110, maxWidth: 110, whiteSpace: "nowrap" }}>
-                      Go Live
-                    </th>
-
-                    <th style={{ padding: "10px 6px 10px 4px", width: 80, maxWidth: 80, whiteSpace: "nowrap" }}>
-                      IMP Type
-                    </th>
-
-                    <th style={{ padding: "10px 8px", width: 95 }}>Products</th>
-                    <th style={{ padding: "10px 8px", width: 85 }}>Pre-Prod</th>
-                    <th style={{ padding: "10px 8px", width: 65, textAlign: "center" }}>POD</th>
-                    <th style={{ padding: "10px 8px" }}>Blueprint</th>
-
-                    <th style={{ padding: "10px 8px", width: 120, minWidth: 120, whiteSpace: "nowrap", textAlign: "center" }}>
-                      Fixed Ops
-                    </th>
-
-                    <th style={{ padding: "10px 8px", width: 120, minWidth: 120, whiteSpace: "nowrap", textAlign: "center" }}>
-                      Variable Ops
-                    </th>
-
-                    <th style={{ padding: "10px 8px" }}>Sign_Off</th>
-
-                    <th style={{ padding: "10px 8px", width: 120, minWidth: 120, whiteSpace: "nowrap", textAlign: "center" }}>
-                      Testing
-                    </th>
+                  <tr>
+                    <th>Tekion ID</th>
+                    <th>Dealer ID</th>
+                    <th>Dealership</th>
+                    <th>Go Live</th>
+                    <th>IMP Type</th>
+                    <th>Products</th>
+                    <th>Pre-Prod</th>
+                    <th>POD</th>
+                    <th>Blueprint</th>
+                    <th>Setup Data</th>
+                    <th>Fixed Ops</th>
+                    <th>Variable Ops</th>
+                    <th>Sign_Off</th>
+                    <th>Testing</th>
                   </tr>
                 </thead>
 
@@ -1927,37 +1453,22 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     const cleanedImp = cleanImpType(row.implementation_type);
 
                     return (
-                      <tr key={row.tekion_id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
-                        {/* Tekion ID */}
-                        <td style={{ width: 95, whiteSpace: "nowrap", padding: "8px" }}>
-                          <button
-                            type="button"
-                            className="stores-copy-btn"
-                            onClick={() => handleCopy(row.tekion_id, `tek-${row.tekion_id}`)}
-                            title="Click to copy Tekion ID"
-                            style={{ fontSize: 12 }}
-                          >
+                      <tr key={row.tekion_id}>
+                        <td>
+                          <button type="button" className="stores-copy-btn" onClick={() => handleCopy(row.tekion_id, `tek-${row.tekion_id}`)}>
                             {copiedKey === `tek-${row.tekion_id}` ? "Copied!" : row.tekion_id}
                           </button>
                         </td>
 
-                        {/* Dealer ID with Slack Trigger */}
-                        <td style={{ width: 140, whiteSpace: "nowrap", padding: "8px" }}>
+                        <td>
                           <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                            <button
-                              type="button"
-                              className="stores-copy-btn"
-                              onClick={() => handleCopy(row.dealer_id, `dlr-${row.tekion_id}`)}
-                              title="Click to copy Dealer ID"
-                              style={{ fontWeight: 700, fontSize: 12 }}
-                            >
+                            <button type="button" className="stores-copy-btn" onClick={() => handleCopy(row.dealer_id, `dlr-${row.tekion_id}`)}>
                               {copiedKey === `dlr-${row.tekion_id}` ? "Copied!" : row.dealer_id}
                             </button>
 
                             <button
                               type="button"
                               onClick={() => setActiveDealerPopup(row)}
-                              title="Open details and draft Slack message"
                               style={{
                                 background: "rgba(59,130,246,0.12)",
                                 color: "#60a5fa",
@@ -1974,61 +1485,24 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                           </div>
                         </td>
 
-                        {/* Dealership */}
-                        <td style={{ width: "100%", minWidth: 240, padding: "8px 10px" }}>
-                          <button
-                            type="button"
-                            className="stores-copy-btn"
-                            onClick={() => handleCopy(row.dba_name, `dba-${row.tekion_id}`)}
-                            title={`Click to copy: ${row.dba_name}`}
-                            style={{
-                              textAlign: "left",
-                              fontSize: 12,
-                              fontWeight: 600,
-                              lineHeight: 1.35,
-                              whiteSpace: "normal",
-                              wordBreak: "break-word",
-                              display: "inline-block",
-                              maxWidth: "100%",
-                            }}
-                          >
-                            {copiedKey === `dba-${row.tekion_id}` ? (
-                              <span style={{ color: "#4ade80", fontWeight: 700 }}>Copied!</span>
-                            ) : (
-                              row.dba_name || "—"
-                            )}
+                        <td>
+                          <button type="button" className="stores-copy-btn" onClick={() => handleCopy(row.dba_name, `dba-${row.tekion_id}`)}>
+                            {copiedKey === `dba-${row.tekion_id}` ? "Copied!" : row.dba_name || "—"}
                           </button>
                         </td>
 
-                        {/* Go Live */}
-                        <td style={{ width: 110, maxWidth: 110, whiteSpace: "nowrap", padding: "8px 4px 8px 6px" }}>
-                          <div className="stores-date-cell" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                            <div className="stores-date-main" style={{ fontSize: 11, fontWeight: 700 }}>
-                              {formatLaunchDate(row.launch_date)}
-                            </div>
-                            <div className={`stores-date-sub stores-date-${tLabel.tone}`} style={{ fontSize: 10, alignSelf: "flex-start" }}>
-                              {tLabel.label}
-                            </div>
+                        <td>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                            <div>{formatLaunchDate(row.launch_date)}</div>
+                            <div>{tLabel.label}</div>
                           </div>
                         </td>
 
-                        {/* IMP Type */}
-                        <td style={{ width: 80, maxWidth: 80, whiteSpace: "nowrap", fontSize: 11, color: "#cbd5e1", padding: "8px 6px 8px 4px" }}>
-                          {cleanedImp || "—"}
-                        </td>
+                        <td>{cleanedImp || "—"}</td>
+                        <td>{row.product_types || "—"}</td>
+                        <td>{row.pre_production_environment_status || "—"}</td>
 
-                        {/* Products */}
-                        <td style={{ width: 95, fontSize: 11, whiteSpace: "normal", padding: "8px" }}>
-                          {row.product_types || "—"}
-                        </td>
-
-                        {/* Pre-production */}
-                        <td style={{ width: 85, fontSize: 11, whiteSpace: "nowrap", padding: "8px" }}>
-                          {row.pre_production_environment_status || "—"}
-                        </td>
-
-                        {/* Superpod */}
-                        <td style={{ width: 65, textAlign: "center", padding: "8px" }}>
+                        <td>
                           <span
                             style={{
                               display: "inline-flex",
@@ -2040,15 +1514,13 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                               background: podStyle.bg,
                               color: podStyle.color,
                               border: `1px solid ${podStyle.border}`,
-                              whiteSpace: "nowrap",
                             }}
                           >
                             {row.superpod_id || "—"}
                           </span>
                         </td>
 
-                        {/* Blueprint Status Chips */}
-                        <td style={{ padding: "8px" }}>
+                        <td>
                           <StatusChipGroup
                             items={[
                               { short: "P", fullName: "Blueprint - Parts", status: blueprint?.parts ?? "UNKNOWN" },
@@ -2060,24 +1532,25 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                           />
                         </td>
 
-                        {/* Fixed Ops Status Dropdown */}
-                        <td style={{ width: 120, minWidth: 120, whiteSpace: "nowrap", textAlign: "center", padding: "8px 4px" }}>
+                        <td>
+                          <SetupDataCell row={row} />
+                        </td>
+
+                        <td>
                           <CustomStatusSelect
                             value={row.fixed_ops_status}
                             onChange={(val) => void updateCustomStatus(row.tekion_id, "fixed_ops_status", val)}
                           />
                         </td>
 
-                        {/* Variable Ops Status Dropdown */}
-                        <td style={{ width: 120, minWidth: 120, whiteSpace: "nowrap", textAlign: "center", padding: "8px 4px" }}>
+                        <td>
                           <CustomStatusSelect
                             value={row.variable_ops_status}
                             onChange={(val) => void updateCustomStatus(row.tekion_id, "variable_ops_status", val)}
                           />
                         </td>
 
-                        {/* Operational Sign-Off Status Chips */}
-                        <td style={{ padding: "8px" }}>
+                        <td>
                           <StatusChipGroup
                             items={[
                               { short: "P", fullName: "Parts Operational Sign-Off", status: signoff?.parts ?? "UNKNOWN" },
@@ -2087,8 +1560,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                           />
                         </td>
 
-                        {/* Testing Status Dropdown */}
-                        <td style={{ width: 120, minWidth: 120, whiteSpace: "nowrap", textAlign: "center", padding: "8px 4px" }}>
+                        <td>
                           <CustomStatusSelect
                             value={row.testing_status}
                             onChange={(val) => void updateCustomStatus(row.tekion_id, "testing_status", val)}
@@ -2102,11 +1574,11 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
               {!loadingStores && filtered.length === 0 && (
                 <div className="stores-empty" style={{ padding: 40, textAlign: "center" }}>
-                  <div className="stores-empty-icon" style={{ fontSize: 32 }}>🏬</div>
-                  <div className="stores-empty-title" style={{ fontSize: 16, fontWeight: 700, marginTop: 8 }}>
+                  <div style={{ fontSize: 32 }}>🏬</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, marginTop: 8 }}>
                     No records found
                   </div>
-                  <div className="stores-empty-sub" style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>
+                  <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>
                     Try clearing filters or adjusting your date window
                   </div>
                 </div>
@@ -2116,11 +1588,13 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         </section>
       </div>
 
-      {/* Slack & Dealer Info Modal */}
       <DealerMetaModal
         row={activeDealerPopup}
         onClose={() => setActiveDealerPopup(null)}
         onToast={showToast}
+        onSetupFetched={(tekionId, setupData) => {
+          void persistSetupData(tekionId, setupData);
+        }}
       />
     </div>
   );

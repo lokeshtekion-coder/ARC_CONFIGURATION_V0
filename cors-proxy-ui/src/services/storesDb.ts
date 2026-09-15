@@ -1,14 +1,21 @@
+import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 import type {
   StoreBlueprintStatuses,
   StoreSignoffStatuses,
 } from "./storeOnboardingStatusApi";
-import {
-  ensureStoreExists,
-  getArcConfigDbMeta,
-  openArcConfigDb,
-} from "./arcConfigDb";
 
 export type CustomPhaseStatus = "TO DO" | "WIP" | "Completed";
+
+export interface StoreSetupData {
+  oemDealerCodes: string[];
+  journalsAccessibleDealerCount: number;
+  salesChainsAccessibleDealerCount: number;
+  coaAccessibleDealerCount: number;
+  sourceUsername: string;
+  siteId: string;
+  userId: string;
+  fetchedAt: string;
+}
 
 export interface StoreRecord {
   tekion_id: string;
@@ -19,16 +26,6 @@ export interface StoreRecord {
   pre_production_environment_status: string;
   superpod_id: string;
   product_types?: string;
-
-  blueprint_statuses?: StoreBlueprintStatuses;
-  signoff_statuses?: StoreSignoffStatuses;
-  onboarding_status_fetched_at?: string;
-
-  // Split into Fixed Ops and Variable Ops
-  configuration_status?: CustomPhaseStatus; // Kept for legacy backward compatibility
-  fixed_ops_status?: CustomPhaseStatus;
-  variable_ops_status?: CustomPhaseStatus;
-  testing_status?: CustomPhaseStatus;
 
   workorder_consolidated_pdl?: string;
   dealer_pdl?: string;
@@ -45,128 +42,96 @@ export interface StoreRecord {
 
   tenant_code?: string;
   tenant_id?: string;
-}
 
-const { STORES_STORE: STORE_NAME } = getArcConfigDbMeta();
-const STATUS_VAULT_KEY = "TEKION_STORES_STATUS_VAULT_V1";
-
-export interface StoreStatusOverride {
+  configuration_status?: CustomPhaseStatus;
   fixed_ops_status?: CustomPhaseStatus;
   variable_ops_status?: CustomPhaseStatus;
   testing_status?: CustomPhaseStatus;
+
+  blueprint_statuses?: StoreBlueprintStatuses;
+  signoff_statuses?: StoreSignoffStatuses;
+  onboarding_status_fetched_at?: string;
+
+  setup_data?: StoreSetupData;
+  setup_data_fetched_at?: string;
+  setup_data_error?: string;
 }
 
-/**
- * Bulletproof synchronous backup in localStorage.
- * Survives IndexedDB crashes, drops, or backend API wipes.
- */
-export function getStoredStatusVault(): Record<string, StoreStatusOverride> {
+interface StoresDbSchema extends DBSchema {
+  stores: {
+    key: string;
+    value: StoreRecord;
+  };
+}
+
+const DB_NAME = "arc-stores-db";
+const STORE_NAME = "stores";
+const DB_VERSION = 2;
+const STATUS_VAULT_KEY = "arc_store_status_vault_v1";
+
+let dbPromise: Promise<IDBPDatabase<StoresDbSchema>> | null = null;
+
+function getDb() {
+  if (!dbPromise) {
+    dbPromise = openDB<StoresDbSchema>(DB_NAME, DB_VERSION, {
+      upgrade(db) {
+        if (!db.objectStoreNames.contains(STORE_NAME)) {
+          db.createObjectStore(STORE_NAME, { keyPath: "tekion_id" });
+        }
+      },
+    });
+  }
+  return dbPromise;
+}
+
+export async function saveStores(records: StoreRecord[]): Promise<void> {
+  const db = await getDb();
+  const tx = db.transaction(STORE_NAME, "readwrite");
+  await tx.store.clear();
+
+  for (const record of records) {
+    await tx.store.put(record);
+  }
+
+  await tx.done;
+}
+
+export async function getStores(): Promise<StoreRecord[]> {
+  const db = await getDb();
+  return db.getAll(STORE_NAME);
+}
+
+type StoredStatusVault = Record<
+  string,
+  Partial<
+    Pick<
+      StoreRecord,
+      "fixed_ops_status" | "variable_ops_status" | "testing_status"
+    >
+  >
+>;
+
+export function getStoredStatusVault(): StoredStatusVault {
   try {
     const raw = localStorage.getItem(STATUS_VAULT_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch (e) {
-    console.error("Failed to read from localStorage status vault", e);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as StoredStatusVault;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
     return {};
   }
 }
 
 export function saveStatusToVault(
-  tekion_id: string,
+  tekionId: string,
   field: "fixed_ops_status" | "variable_ops_status" | "testing_status",
   value: CustomPhaseStatus
 ): void {
-  try {
-    const vault = getStoredStatusVault();
-    vault[tekion_id] = {
-      ...vault[tekion_id],
-      [field]: value,
-    };
-    localStorage.setItem(STATUS_VAULT_KEY, JSON.stringify(vault));
-  } catch (e) {
-    console.error("Failed to write to localStorage status vault", e);
-  }
-}
+  const current = getStoredStatusVault();
+  current[tekionId] = {
+    ...(current[tekionId] ?? {}),
+    [field]: value,
+  };
 
-export async function saveStores(records: StoreRecord[]): Promise<void> {
-  const db = await openArcConfigDb();
-
-  return new Promise<void>((resolve, reject) => {
-    ensureStoreExists(db, STORE_NAME);
-
-    const tx = db.transaction(STORE_NAME, "readwrite");
-    const store = tx.objectStore(STORE_NAME);
-
-    store.clear();
-
-    for (const record of records) {
-      store.put(record);
-    }
-
-    tx.oncomplete = () => {
-      console.log(`💾 Successfully saved ${records.length} stores to local memory.`);
-      db.close();
-      resolve();
-    };
-
-    tx.onerror = () => {
-      console.error("❌ Failed to save stores to local memory.", tx.error);
-      db.close();
-      reject(tx.error);
-    };
-
-    tx.onabort = () => {
-      console.warn("⚠️ Save operation was aborted.");
-      db.close();
-      reject(new Error("Save transaction aborted."));
-    };
-  });
-}
-
-export async function getStores(): Promise<StoreRecord[]> {
-  const db = await openArcConfigDb();
-
-  return new Promise<StoreRecord[]>((resolve, reject) => {
-    ensureStoreExists(db, STORE_NAME);
-
-    const tx = db.transaction(STORE_NAME, "readonly");
-    const store = tx.objectStore(STORE_NAME);
-    const req = store.getAll();
-
-    req.onsuccess = () => {
-      const rows = (req.result as StoreRecord[]) ?? [];
-      console.log(`📂 Loaded ${rows.length} stores from local memory.`);
-      db.close();
-      resolve(rows);
-    };
-
-    req.onerror = () => {
-      console.error("❌ Failed to load stores from local memory.", req.error);
-      db.close();
-      reject(req.error);
-    };
-  });
-}
-
-export async function clearStores(): Promise<void> {
-  const db = await openArcConfigDb();
-
-  return new Promise<void>((resolve, reject) => {
-    ensureStoreExists(db, STORE_NAME);
-
-    const tx = db.transaction(STORE_NAME, "readwrite");
-    const store = tx.objectStore(STORE_NAME);
-    const req = store.clear();
-
-    req.onsuccess = () => {
-      console.log("🧹 Successfully cleared all stores from local memory.");
-      db.close();
-      resolve();
-    };
-
-    req.onerror = () => {
-      console.error("❌ Failed to clear stores.", req.error);
-      db.close();
-      reject(req.error);
-    };
-  });
+  localStorage.setItem(STATUS_VAULT_KEY, JSON.stringify(current));
 }
