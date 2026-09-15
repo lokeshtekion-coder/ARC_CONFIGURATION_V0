@@ -1416,7 +1416,190 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                 <span style={{ fontSize: 12, color: "#94a3b8" }}>
                   Showing <strong style={{ color: "#f8fafc" }}>{filtered.length}</strong> of {records.length} stores
                 </span>
+
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    marginLeft: 4,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <a
+                    href={tapWorkordersUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open TAP Workorders"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 28,
+                      height: 28,
+                      borderRadius: 6,
+                      background: "rgba(255, 255, 255, 0.05)",
+                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    <img
+                      src="https://com-tekioncloud-tap-assets.s3.us-west-1.amazonaws.com/assets/common/toc-logo.svg"
+                      alt="TAP Workorders"
+                      style={{ width: 17, height: 17, objectFit: "contain", display: "block" }}
+                    />
+                  </a>
+
+                  <a
+                    href="https://app.slack.com/client/E08DG6QMMDG"
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open Slack Workspace"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 28,
+                      height: 28,
+                      borderRadius: 6,
+                      background: "rgba(255, 255, 255, 0.05)",
+                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    <img
+                      src="https://cdn.brandfetch.io/idJ_HhtG0Z/theme/dark/symbol.svg?c=1dxbfHSJFAPEGdCLU4o5B"
+                      alt="Slack"
+                      style={{ width: 17, height: 17, objectFit: "contain", display: "block" }}
+                    />
+                  </a>
+
+                  <a
+                    href="https://app.tekioncloud.com/internal/approval-management/dashboard/requests"
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open Production Approval Management"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: 28,
+                      padding: "0 9px",
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "0.5px",
+                      textDecoration: "none",
+                      color: "#4ade80",
+                      background: "rgba(74, 222, 128, 0.08)",
+                      border: "1px solid rgba(74, 222, 128, 0.25)",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    PROD
+                  </a>
+
+                  <a
+                    href="http://outlook.office365.com/mail/inbox"
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open Outlook Inbox"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 28,
+                      height: 28,
+                      borderRadius: 6,
+                      background: "rgba(255, 255, 255, 0.05)",
+                      border: "1px solid rgba(255, 255, 255, 0.1)",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    <img
+                      src="https://cdn.brandfetch.io/idgdw68PEO/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B"
+                      alt="Outlook"
+                      style={{ width: 17, height: 17, objectFit: "contain", display: "block" }}
+                    />
+                  </a>
+
+                  <a
+                    href="https://preprodapp.tekioncloud.com/accounting/chartOfAccounts/list"
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open Pre-Prod Chart of Accounts"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: 28,
+                      padding: "0 9px",
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "0.5px",
+                      textDecoration: "none",
+                      color: "#38bdf8",
+                      background: "rgba(56, 189, 248, 0.08)",
+                      border: "1px solid rgba(56, 189, 248, 0.25)",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    PRE-PROD
+                  </a>
+
+                  <a
+                    href="https://preprod-map.tekioncloud.com/map/blueprintValidation"
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open PreProd MAP Blueprint Validation"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: 28,
+                      padding: "0 9px",
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "0.5px",
+                      textDecoration: "none",
+                      color: "#c084fc",
+                      background: "rgba(192, 132, 252, 0.08)",
+                      border: "1px solid rgba(192, 132, 252, 0.25)",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    PreProd MAP
+                  </a>
+
+                  <a
+                    href="https://tap.tekioncloud.com/timetracker/employee-view"
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Open TAP Time Tracker Employee View"
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      height: 28,
+                      padding: "0 9px",
+                      borderRadius: 6,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      letterSpacing: "0.5px",
+                      textDecoration: "none",
+                      color: "#fbbf24",
+                      background: "rgba(251, 191, 36, 0.08)",
+                      border: "1px solid rgba(251, 191, 36, 0.25)",
+                      transition: "all 0.15s ease",
+                    }}
+                  >
+                    Time Sheet
+                  </a>
+                </div>
               </div>
+
 
               <button className="btn-secondary btn-sm" onClick={() => setFiltersCollapsed((prev) => !prev)}>
                 {filtersCollapsed ? "☰ Show Filters" : "✕ Hide Filters"}
