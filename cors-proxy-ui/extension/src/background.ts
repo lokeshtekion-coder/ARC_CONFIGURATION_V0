@@ -1,20 +1,31 @@
+import type {
+  HeaderMap,
+  ArcLatestCaptureState,
+  ArcTekionProfile,
+  ArcCustomWatchRule,
+  ArcCustomCapturedApi,
+  ArcDecodedTokenInfo,
+} from "./types";
+
 const STORAGE_KEY = "arcLatestCaptureState";
 const CUSTOM_RULES_STORAGE_KEY = "arcCustomWatchedApis";
 const DEFAULT_CUSTOM_EXPIRY_HOURS = 48;
 
+const TENANT_ID = "861aedbb-44b4-4bcf-a125-49fa7baf1e26";
+const SPF_CLIENT_ID = "08e18876-6177-487e-b8b5-cf950c1e598c";
+const SHAREPOINT_TARGET_DOC_URL =
+  "https://tekion.sharepoint.com/:x:/r/sites/configteam/_layouts/15/Doc.aspx?sourcedoc=%7B5888FB41-2664-43BE-A422-A79E7D2E7FB6%7D&file=T-90%20Arc%20Dealerss.xlsx&action=default&mobileredirect=true";
+
+// Matches any port on localhost
 const LOCALHOST_APP_MATCHES = [
-  "http://localhost:5174/*",
-  "http://127.0.0.1:5174/*",
+  "http://localhost/*",
+  "http://127.0.0.1/*",
 ];
 
 const REQUEST_FILTER: chrome.webRequest.RequestFilter = {
   urls: ["<all_urls>"],
   types: ["xmlhttprequest"],
 };
-
-const GRAPH_ALLOWED_INITIATORS = new Set<string>([
-  "https://webshell.suite.office.com",
-]);
 
 const DROP_TEKION_HEADERS = new Set<string>([
   "accept-encoding",
@@ -39,10 +50,7 @@ const DROP_CUSTOM_CAPTURE_HEADERS = new Set<string>([
   "host",
 ]);
 
-type HeaderMap = Record<string, string>;
-
 type CaptureKind =
-  | "graph"
   | "tekionImplementation"
   | "tekionBootstrap"
   | "tekionProdTechMotors"
@@ -72,78 +80,6 @@ type RequestBodyCaptureDetails = {
   requestBody?: RequestBodyShape;
 };
 
-interface ArcDecodedTokenInfo {
-  email?: string;
-  originalTenantId?: string;
-  exp?: number;
-  iat?: number;
-  expiresAt?: string;
-  issuedAt?: string;
-  isExpired?: boolean;
-}
-
-interface ArcTekionProfile {
-  id: string;
-  profileKey: string;
-  capturedAt: string;
-  sourceUrl?: string;
-  dealerId?: string;
-  tenantName?: string;
-  tekSiteId?: string;
-  roleId?: string;
-  applicationId?: string;
-  clientId?: string;
-  locale?: string;
-  token?: string;
-  decodedToken?: ArcDecodedTokenInfo;
-  bootstrapHeaders: HeaderMap;
-}
-
-interface ArcCustomWatchRule {
-  id: string;
-  label: string;
-  pattern: string;
-  matchMode: "includes" | "exact";
-  expiryHours: number;
-  createdAt: string;
-}
-
-interface ArcCustomCapturedApi {
-  id: string;
-  label: string;
-  pattern: string;
-  matchMode: "includes" | "exact";
-  expiryHours: number;
-  matchedUrl: string;
-  capturedAt: string;
-  lastSeenAt: string;
-  token?: string;
-  headers: HeaderMap;
-}
-
-interface ArcLatestCaptureState {
-  graphApiToken?: string;
-  tapDuoApiToken?: string;
-  slackToken?: string;
-  slackDCookie?: string;
-  lastSlackSourceUrl?: string;
-  lastSlackCaptureAt?: string;
-  graphHeaders?: HeaderMap;
-  tekionImplementationHeaders?: HeaderMap;
-  tekionBootstrapHeaders?: HeaderMap;
-  tekionProdTechMotorsHeaders?: HeaderMap;
-  lastGraphSourceUrl?: string;
-  lastGraphCaptureAt?: string;
-  lastTekionImplementationSourceUrl?: string;
-  lastTekionImplementationCaptureAt?: string;
-  lastTekionBootstrapSourceUrl?: string;
-  lastTekionBootstrapCaptureAt?: string;
-  lastTekionProdTechMotorsSourceUrl?: string;
-  lastTekionProdTechMotorsCaptureAt?: string;
-  tekionProfiles?: ArcTekionProfile[];
-  customCaptures?: Record<string, ArcCustomCapturedApi>;
-}
-
 interface PendingSlackRequest {
   url: string;
   bodyText: string;
@@ -153,8 +89,19 @@ interface PendingSlackRequest {
 let cachedCustomRules: ArcCustomWatchRule[] = [];
 const pendingSlackRequests = new Map<string, PendingSlackRequest>();
 
+// Logs to service worker AND relays to React console
 function log(...args: unknown[]) {
   console.log("[ARC BG]", ...args);
+  void queryLocalhostTabs().then((tabs) => {
+    tabs.forEach((tab) => {
+      if (tab.id) {
+        chrome.tabs.sendMessage(tab.id, {
+          type: "ARC_LOG_RELAY",
+          payload: args,
+        }).catch(() => {});
+      }
+    });
+  });
 }
 
 function parseUrl(raw: string): URL | null {
@@ -165,13 +112,11 @@ function parseUrl(raw: string): URL | null {
   }
 }
 
-function getOrigin(value?: string): string | null {
-  if (!value) return null;
-  try {
-    return new URL(value).origin;
-  } catch {
-    return null;
-  }
+// Drops query string/fragment before a URL ever reaches a log() call - some
+// captured endpoints could carry tokens or ids in the query string.
+function stripQuery(raw: string): string {
+  const url = parseUrl(raw);
+  return url ? `${url.origin}${url.pathname}` : raw;
 }
 
 function normalizeHeaders(
@@ -261,20 +206,6 @@ function decodeJwt(token?: string): ArcDecodedTokenInfo | undefined {
   }
 }
 
-function isAllowedGraphInitiator(details: RequestHeaderDetails): boolean {
-  const origin = getOrigin(details.initiator);
-  return origin ? GRAPH_ALLOWED_INITIATORS.has(origin) : false;
-}
-
-function isGraphPhotoRequest(rawUrl: string): boolean {
-  const url = parseUrl(rawUrl);
-  return Boolean(
-    url &&
-      url.origin === "https://graph.microsoft.com" &&
-      url.pathname === "/v1.0/users/tlreddy@tekion.com/photo/$value"
-  );
-}
-
 function isTekionImplementationRequest(rawUrl: string): boolean {
   const url = parseUrl(rawUrl);
   return Boolean(
@@ -304,19 +235,21 @@ function isTekionProdTechMotorsProfileRequest(rawUrl: string): boolean {
   );
 }
 
+// Matches any authenticated Slack web-client API call (edgeapi.slack.com/api/*
+// or a workspace/enterprise subdomain's /api/* path) instead of only
+// /permissions/info. Slack's client fires dozens of these per session and
+// every one carries the xoxc token + "d" session cookie, so watching the
+// whole family is far more reliable than pinning to one specific endpoint
+// that may not fire on every reload (root cause of "Not Detected" in the UI).
 function isSlackPermissionsInfoRequest(rawUrl: string): boolean {
   const url = parseUrl(rawUrl);
-  return Boolean(
-    url &&
-      url.origin === "https://edgeapi.slack.com" &&
-      /\/permissions\/info$/i.test(url.pathname)
-  );
+  if (!url) return false;
+  const isSlackHost =
+    url.hostname === "edgeapi.slack.com" || url.hostname.endsWith(".slack.com");
+  return Boolean(isSlackHost && /\/api\//i.test(url.pathname));
 }
 
 function detectCaptureKind(details: RequestHeaderDetails): CaptureKind | null {
-  if (isGraphPhotoRequest(details.url)) {
-    return isAllowedGraphInitiator(details) ? "graph" : null;
-  }
   if (isTekionImplementationRequest(details.url)) return "tekionImplementation";
   if (isTekionBootstrapRequest(details.url)) return "tekionBootstrap";
   if (isTekionProdTechMotorsProfileRequest(details.url)) return "tekionProdTechMotors";
@@ -467,6 +400,9 @@ function comparableSnapshot(state: ArcLatestCaptureState): string {
 
   return JSON.stringify({
     graphApiToken: state.graphApiToken ?? "",
+    graphExpiresAt: state.graphExpiresAt ?? 0,
+    spfxRefreshToken: state.spfxRefreshToken ?? "",
+    spfxRefreshTokenExpiresAt: state.spfxRefreshTokenExpiresAt ?? 0,
     tapDuoApiToken: state.tapDuoApiToken ?? "",
     slackToken: state.slackToken ?? "",
     slackDCookie: state.slackDCookie ?? "",
@@ -524,19 +460,51 @@ function setStorageValue(key: string, value: unknown): Promise<void> {
 }
 
 async function loadStoredState(): Promise<ArcLatestCaptureState> {
-  const state =
-    (await getStorageValue<ArcLatestCaptureState>(STORAGE_KEY)) ?? {};
+  const state = (await getStorageValue<ArcLatestCaptureState>(STORAGE_KEY)) ?? {};
   return {
     ...state,
     customCaptures: pruneExpiredCustomCaptures(state.customCaptures),
   };
 }
 
+// Same "missing/expiring/expired" thresholds as the web app's Data Sync Bot
+// banner, mirrored here since the extension can't import frontend code.
+const BADGE_EXPIRY_WARN_WINDOW_MS = 5 * 60 * 1000;
+
+function updateActionBadge(state: ArcLatestCaptureState): void {
+  let criticalCount = 0;
+  let warnCount = 0;
+
+  if (!state.graphApiToken) {
+    criticalCount += 1;
+  } else if (typeof state.graphExpiresAt === "number") {
+    const remainingMs = state.graphExpiresAt - Date.now();
+    if (remainingMs <= 0) criticalCount += 1;
+    else if (remainingMs <= BADGE_EXPIRY_WARN_WINDOW_MS) warnCount += 1;
+  }
+
+  if (!state.slackToken || !state.slackDCookie) {
+    warnCount += 1;
+  }
+
+  if (criticalCount > 0) {
+    void chrome.action.setBadgeBackgroundColor({ color: "#ef4444" });
+    void chrome.action.setBadgeText({ text: String(criticalCount + warnCount) });
+  } else if (warnCount > 0) {
+    void chrome.action.setBadgeBackgroundColor({ color: "#f59e0b" });
+    void chrome.action.setBadgeText({ text: String(warnCount) });
+  } else {
+    void chrome.action.setBadgeText({ text: "" });
+  }
+}
+
 async function persistState(state: ArcLatestCaptureState): Promise<void> {
-  await setStorageValue(STORAGE_KEY, {
+  const next: ArcLatestCaptureState = {
     ...state,
     customCaptures: pruneExpiredCustomCaptures(state.customCaptures),
-  });
+  };
+  await setStorageValue(STORAGE_KEY, next);
+  updateActionBadge(next);
 }
 
 function queryLocalhostTabs(): Promise<chrome.tabs.Tab[]> {
@@ -553,18 +521,13 @@ function sendMessageToTab(tabId: number, message: unknown): Promise<void> {
   });
 }
 
-async function pushStateToLocalhostTabs(
-  state: ArcLatestCaptureState
-): Promise<void> {
+async function pushStateToLocalhostTabs(state: ArcLatestCaptureState): Promise<void> {
   const tabs = await queryLocalhostTabs();
   const message = { type: "ARC_PUSH_CAPTURE", payload: state };
 
   await Promise.allSettled(
     tabs
-      .filter(
-        (tab): tab is chrome.tabs.Tab & { id: number } =>
-          typeof tab.id === "number"
-      )
+      .filter((tab): tab is chrome.tabs.Tab & { id: number } => typeof tab.id === "number")
       .map((tab) => sendMessageToTab(tab.id, message))
   );
 }
@@ -632,6 +595,39 @@ function decodeRequestBodyToText(requestBody?: RequestBodyShape): string {
   return "";
 }
 
+// Exchange captured SPFx refresh token for Graph access token
+async function exchangeSpfxRefreshToken(refreshToken: string): Promise<string | null> {
+  try {
+    const res = await fetch(`https://login.microsoftonline.com/${TENANT_ID}/oauth2/v2.0/token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Origin": "https://tekion.sharepoint.com",
+      },
+      body: new URLSearchParams({
+        client_id: SPF_CLIENT_ID,
+        grant_type: "refresh_token",
+        scope: "https://graph.microsoft.com/.default",
+        refresh_token: refreshToken,
+      }),
+    });
+
+    if (!res.ok) {
+      log("Exchange token failed:", await res.text());
+      return null;
+    }
+
+    const data = await res.json();
+    if (data.access_token) {
+      log("✅ Successfully minted Graph token with Files.ReadWrite.All!");
+      return data.access_token;
+    }
+  } catch (err) {
+    console.error("[ARC BG] Network exchange error:", err);
+  }
+  return null;
+}
+
 function mergeCapture(
   current: ArcLatestCaptureState,
   kind: CaptureKind,
@@ -641,16 +637,6 @@ function mergeCapture(
 ): ArcLatestCaptureState | null {
   const now = new Date().toISOString();
   const next: ArcLatestCaptureState = { ...current };
-
-  if (kind === "graph") {
-    const token = extractBearerToken(normalizedHeaders["authorization"]);
-    if (!token) return null;
-    next.graphApiToken = token;
-    next.graphHeaders = { authorization: `Bearer ${token}` };
-    next.lastGraphSourceUrl = url;
-    next.lastGraphCaptureAt = now;
-    return next;
-  }
 
   if (kind === "slackPermissionsInfo") {
     const token = parseSlackBodyToken(slackBodyText ?? "");
@@ -662,6 +648,7 @@ function mergeCapture(
     if (dCookie) next.slackDCookie = dCookie;
     next.lastSlackSourceUrl = url;
     next.lastSlackCaptureAt = now;
+    log("✅ Synced Slack Session Credentials!");
     return next;
   }
 
@@ -753,8 +740,7 @@ function normalizeRuleList(input: unknown): ArcCustomWatchRule[] {
         Number.isFinite(expiryHoursRaw) && expiryHoursRaw > 0
           ? expiryHoursRaw
           : DEFAULT_CUSTOM_EXPIRY_HOURS;
-      const createdAt =
-        normalizeString(raw.createdAt) || new Date().toISOString();
+      const createdAt = normalizeString(raw.createdAt) || new Date().toISOString();
 
       if (!id || !pattern) return null;
 
@@ -803,39 +789,88 @@ chrome.storage.local.get([CUSTOM_RULES_STORAGE_KEY], (result) => {
 chrome.storage.onChanged.addListener((changes, areaName) => {
   if (areaName !== "local") return;
   if (changes[CUSTOM_RULES_STORAGE_KEY]) {
-    cachedCustomRules = normalizeRuleList(
-      changes[CUSTOM_RULES_STORAGE_KEY].newValue
-    );
+    cachedCustomRules = normalizeRuleList(changes[CUSTOM_RULES_STORAGE_KEY].newValue);
   }
 });
 
+// PURE NETWORK-LAYER ON-BEFORE-REQUEST: Catches Slack Body + Microsoft Refresh Token Body
 chrome.webRequest.onBeforeRequest.addListener(
   (details) => {
     const typed = details as unknown as RequestBodyCaptureDetails;
 
-    if (!isSlackPermissionsInfoRequest(typed.url)) {
+    // 1. Intercept SPFx Refresh Token POST from network wire[cite: 1]
+    if (
+      typed.url.includes("/oauth2/v2.0/token") &&
+      (typed.url.includes("08e18876-6177-487e-b8b5-cf950c1e598c") ||
+       typed.url.includes("spfxsinglesignon.aspx"))
+    ) {
+      const bodyText = decodeRequestBodyToText(typed.requestBody);
+      if (bodyText.includes("refresh_token=")) {
+        const params = new URLSearchParams(bodyText);
+        const refreshToken = params.get("refresh_token");
+
+        if (refreshToken) {
+          log("Intercepted SPFx refresh_token in request body. Exchanging for Graph token...");
+          void (async () => {
+            const graphAccessToken = await exchangeSpfxRefreshToken(refreshToken);
+            const current = await loadStoredState();
+            const now = Date.now();
+
+            const next: ArcLatestCaptureState = {
+              ...current,
+              spfxRefreshToken: refreshToken,
+              spfxRefreshTokenExpiresAt: now + 44875 * 1000,
+              sharepointWorkbookUrl: SHAREPOINT_TARGET_DOC_URL,
+            };
+
+            if (graphAccessToken) {
+              next.graphApiToken = graphAccessToken;
+              next.graphExpiresAt = now + 3599 * 1000;
+              next.graphHeaders = { authorization: `Bearer ${graphAccessToken}` };
+              next.lastGraphSourceUrl = typed.url;
+              next.lastGraphCaptureAt = new Date().toISOString();
+            }
+
+            await persistState(next);
+            await pushStateToLocalhostTabs(next);
+          })();
+        }
+      }
       return undefined;
     }
 
-    const bodyText = decodeRequestBodyToText(typed.requestBody);
-    pendingSlackRequests.set(typed.requestId, {
-      url: typed.url,
-      bodyText,
-      createdAt: Date.now(),
-    });
+    // 2. Intercept Slack Permissions Request Body[cite: 1]
+    if (isSlackPermissionsInfoRequest(typed.url)) {
+      const bodyText = decodeRequestBodyToText(typed.requestBody);
+      pendingSlackRequests.set(typed.requestId, {
+        url: typed.url,
+        bodyText,
+        createdAt: Date.now(),
+      });
 
-    log("captured slack request body", {
-      url: typed.url,
-      hasBody: Boolean(bodyText),
-      preview: bodyText.slice(0, 200),
-    });
+      // Never log bodyText itself - it contains the raw Slack xoxc token.
+      log("Captured Slack permissions body from network", {
+        url: stripQuery(typed.url),
+        bodyLength: bodyText.length,
+      });
+
+      return undefined;
+    }
 
     return undefined;
   },
-  { urls: ["https://edgeapi.slack.com/*"], types: ["xmlhttprequest"] },
+  {
+    urls: [
+      "https://edgeapi.slack.com/*",
+      "https://*.slack.com/*",
+      "https://login.microsoftonline.com/*",
+    ],
+    types: ["xmlhttprequest"],
+  },
   ["requestBody"]
 );
 
+// PURE NETWORK-LAYER ON-BEFORE-SEND-HEADERS: Headers for Slack, Tekion APIs[cite: 1]
 chrome.webRequest.onBeforeSendHeaders.addListener(
   (details) => {
     void (async () => {
@@ -859,7 +894,7 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
           pendingSlack?.bodyText
         );
       } else if (kind) {
-        log("matched known request", { kind, url: details.url });
+        log("Matched known request", { kind, url: stripQuery(details.url) });
         next = mergeCapture(current, kind, details.url, normalizedHeaders);
       } else {
         const customRule = matchCustomRule(details.url);
@@ -890,7 +925,12 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
   ["requestHeaders", "extraHeaders"]
 );
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+// React app runtime communication (relayed only through our own content
+// script - reject anything else defensively even though
+// externally_connectable already blocks external web-page senders).
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (sender.id !== chrome.runtime.id) return false;
+
   if (message?.type === "ARC_GET_LATEST_CAPTURE") {
     void (async () => {
       await cleanupExpiredCustomCapturesAndSync();
@@ -924,11 +964,22 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 });
 
 chrome.alarms.create("arc-custom-capture-cleanup", { periodInMinutes: 60 });
+// Badge needs a much shorter cadence than cleanup - a token can go from
+// "fine" to "expiring soon" to "expired" purely by the clock ticking, with
+// no network event to trigger a recompute otherwise.
+chrome.alarms.create("arc-badge-refresh", { periodInMinutes: 1 });
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "arc-custom-capture-cleanup") {
     void cleanupExpiredCustomCapturesAndSync();
   }
+  if (alarm.name === "arc-badge-refresh") {
+    void loadStoredState().then(updateActionBadge);
+  }
 });
+
+// Recompute the badge immediately on service worker startup too, so it's
+// accurate right away rather than waiting up to a minute for the alarm.
+void loadStoredState().then(updateActionBadge);
 
 setInterval(() => {
   const cutoff = Date.now() - 60_000;

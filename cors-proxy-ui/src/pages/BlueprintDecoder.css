@@ -758,6 +758,13 @@ body {
   margin-bottom: 6px;
 }
 
+/* Blueprint Decode Bot: flag a question whose answer is missing by turning
+   its own label red, independent of the row-level muting so it stays
+   readable/obvious even inside a dimmed .bd-row-muted row. */
+.bd-title-missing {
+  color: #f87171 !important;
+}
+
 .bd-title-text {
   font-size: 14px;
   font-weight: 600;

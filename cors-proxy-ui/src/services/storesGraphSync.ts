@@ -1,4 +1,3 @@
-///Users/tlreddy/Desktop/ARC_CONFIGURATION_V0/cors-proxy-ui/src/services/storesGraphSync.ts
 import type { StoreRecord } from "./storesDb";
 import { loadTekionApiSettings } from "./tekionApiSettings";
 import {
@@ -9,9 +8,15 @@ import {
 } from "./storesExcelShared";
 
 const GRAPH_BASE = "https://graph.microsoft.com/v1.0";
-const WORKBOOK_PATH = "T-90 Dealers GoLive - ARC.xlsx";
+
+export const SHAREPOINT_DRIVE_ID = "b!CtlfXMp9l0y0QRmkSWK2oZqgrpwIJwZEtu62RScE-gY47Sr8CDY7S7HPla3fSuMb";
+export const SHAREPOINT_ITEM_ID = "01B46CXZ2B7OEFQZBGXZB2IIVHTZ6S475W";
+export const SHAREPOINT_WORKBOOK_PATH = "T-90 Arc Dealerss.xlsx";
+export const SHAREPOINT_DOC_URL =
+  "https://tekion.sharepoint.com/:x:/r/sites/configteam/_layouts/15/Doc.aspx?sourcedoc=%7B5888FB41-2664-43BE-A422-A79E7D2E7FB6%7D&file=T-90%20Arc%20Dealerss.xlsx&action=default&mobileredirect=true";
+
 const CHUNK_SIZE = 500;
-const FORMAT_CONCURRENCY = 8;
+const FORMAT_CONCURRENCY = 3; // Lowered to prevent Graph workbook 429 / ResourceLocked throttling
 
 const STATUS_HEADERS = [
   "Blueprint Parts",
@@ -59,8 +64,39 @@ export interface GraphSyncResult {
 }
 
 function workbookBaseUrl(): string {
-  const encodedPath = encodeURIComponent(WORKBOOK_PATH).replace(/%2F/g, "/");
-  return `${GRAPH_BASE}/me/drive/root:/${encodedPath}:/workbook`;
+  return `${GRAPH_BASE}/drives/${SHAREPOINT_DRIVE_ID}/items/${SHAREPOINT_ITEM_ID}/workbook`;
+}
+
+function validateGraphTokenScope(token: string): void {
+  const parts = token.split(".");
+  if (parts.length !== 3) return; // not a decodable JWT - let Graph be the source of truth
+
+  let payload: { scp?: string; appid?: string; app_displayname?: string };
+  try {
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64 + "=".repeat((4 - (base64.length % 4 || 4)) % 4);
+    payload = JSON.parse(atob(padded)) as typeof payload;
+  } catch {
+    return; // couldn't decode the claims - don't block, let Graph be the source of truth
+  }
+
+  if (payload.appid === "89bee1f7-5e6e-4d8a-9f3d-ecd601259da7") {
+    throw new Error(
+      "Current Graph Token belongs to 'Office365 Shell' and only has personal OneDrive/profile access. Please open the SharePoint T-90 page in your browser so the extension can auto-capture the SPFx-exchanged token with file permissions."
+    );
+  }
+
+  // Previously this check was skipped entirely for the SPFx client id and any
+  // failure was silently swallowed by an overly broad try/catch, so an
+  // under-scoped token (e.g. missing tenant admin consent for
+  // Files.ReadWrite.All/Sites.ReadWrite.All) sailed through to Graph and
+  // died with a bare "accessDenied" instead of a clear, actionable message.
+  const scp = payload.scp || "";
+  if (!scp.includes("Files.ReadWrite.All") && !scp.includes("Sites.ReadWrite.All")) {
+    throw new Error(
+      `Token lacks required SharePoint permissions (has: "${scp || "none"}"). Requires Files.ReadWrite.All or Sites.ReadWrite.All - re-open the SharePoint T-90 page to refresh the captured token, or confirm tenant admin consent for the SPFx client (${payload.appid ?? "unknown app"}).`
+    );
+  }
 }
 
 async function readErrorMessage(res: Response): Promise<string> {
@@ -70,28 +106,28 @@ async function readErrorMessage(res: Response): Promise<string> {
     const message = data?.error?.message;
     if (code && message) return `${code}: ${message}`;
     if (message) return message;
-  } catch {
-    // ignore
-  }
+  } catch {}
 
   try {
     const text = await res.text();
     if (text) return text;
-  } catch {
-    // ignore
-  }
+  } catch {}
 
   return `${res.status} ${res.statusText}`;
+}
+
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 async function graphRequest<T = unknown>(
   path: string,
   token: string,
   init: RequestInit,
-  sessionId?: string | null
+  sessionId?: string | null,
+  retryCount = 0
 ): Promise<T> {
   const headers = new Headers(init.headers);
-
   headers.set("Authorization", `Bearer ${token}`);
 
   if (init.body != null && !headers.has("Content-Type")) {
@@ -106,6 +142,13 @@ async function graphRequest<T = unknown>(
     ...init,
     headers,
   });
+
+  // Handle transient 429 rate-limiting and 503 lockouts with exponential backoff
+  if ((res.status === 429 || res.status === 503) && retryCount < 3) {
+    const retryAfter = Number(res.headers.get("Retry-After")) || Math.pow(2, retryCount + 1);
+    await sleep(retryAfter * 1000);
+    return graphRequest<T>(path, token, init, sessionId, retryCount + 1);
+  }
 
   if (!res.ok) {
     throw new Error(await readErrorMessage(res));
@@ -123,7 +166,8 @@ async function graphRequest<T = unknown>(
   return JSON.parse(text) as T;
 }
 
-async function createSession(token: string): Promise<string | null> {
+// Throws detailed error instead of returning null
+async function createSession(token: string): Promise<string> {
   try {
     const data = await graphRequest<GraphSessionInfo>(
       "/createSession",
@@ -133,28 +177,26 @@ async function createSession(token: string): Promise<string | null> {
         body: JSON.stringify({ persistChanges: true }),
       }
     );
-
-    return data?.id ?? null;
-  } catch {
-    return null;
+    if (!data?.id) {
+      throw new Error("Microsoft Graph did not return a session identifier.");
+    }
+    return data.id;
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Failed to establish workbook session";
+    throw new Error(`Workbook Session Error (${msg})`);
   }
 }
 
 async function closeSession(token: string, sessionId?: string | null): Promise<void> {
   if (!sessionId) return;
-
   try {
     await graphRequest(
       "/closeSession",
       token,
-      {
-        method: "POST",
-      },
+      { method: "POST" },
       sessionId
     );
-  } catch {
-    // ignore close failures
-  }
+  } catch {}
 }
 
 async function listWorksheetNames(
@@ -197,14 +239,12 @@ async function addWorksheet(
       return;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown worksheet error";
-
       if (
         message.includes("ItemAlreadyExists") ||
         message.toLowerCase().includes("already exists")
       ) {
         return;
       }
-
       lastError = err;
     }
   }
@@ -219,7 +259,6 @@ async function ensureWorksheet(
   sessionId?: string | null
 ): Promise<void> {
   if (knownSheets.has(sheetName)) return;
-
   await addWorksheet(token, sheetName, sessionId);
   knownSheets.add(sheetName);
 }
@@ -236,7 +275,6 @@ async function getUsedRangeRowCount(
       { method: "GET" },
       sessionId
     );
-
     return typeof data?.rowCount === "number" ? data.rowCount : 0;
   } catch {
     return 0;
@@ -542,18 +580,23 @@ export async function syncStoresToGraphWorkbook(
   }
 
   const settings = loadTekionApiSettings();
-  const token = settings.graphApiToken.trim();
+  const token = settings.graphApiToken?.trim();
 
   if (!token) {
-    throw new Error("GRAPH api token missing. Save it in Settings first.");
+    throw new Error(
+      "Microsoft Graph API token missing. Open SharePoint in your browser to auto-capture, or paste a token in Settings."
+    );
   }
 
-  const groups = groupStoresByMonth(records);
+  // Pre-flight check: ensures token has Files.ReadWrite.All before starting workbook work
+  validateGraphTokenScope(token);
 
+  const groups = groupStoresByMonth(records);
   if (groups.length === 0) {
     throw new Error("No monthly groups available to sync");
   }
 
+  // Establishes a dedicated workbook session
   const sessionId = await createSession(token);
 
   try {
@@ -569,6 +612,7 @@ export async function syncStoresToGraphWorkbook(
       const existingRowCount = await getUsedRangeRowCount(token, group.sheetName, sessionId);
       const clearRows = Math.max(existingRowCount, newTotalRows, 1);
 
+      // 1. Clear previous rows
       await clearWorksheetRect(
         token,
         group.sheetName,
@@ -577,6 +621,7 @@ export async function syncStoresToGraphWorkbook(
         sessionId
       );
 
+      // 2. Write headers
       await patchRangeValues(
         token,
         group.sheetName,
@@ -585,6 +630,7 @@ export async function syncStoresToGraphWorkbook(
         sessionId
       );
 
+      // 3. Write data rows
       let currentRow = 2;
       let remaining = dataRows.slice();
 
@@ -595,6 +641,7 @@ export async function syncStoresToGraphWorkbook(
         remaining = remaining.slice(CHUNK_SIZE);
       }
 
+      // 4. Header formatting
       await applyHeaderFormatting(
         token,
         group.sheetName,
@@ -602,6 +649,7 @@ export async function syncStoresToGraphWorkbook(
         sessionId
       );
 
+      // 5. Status styling
       const formatting = await applyStatusFormatting(
         token,
         group.sheetName,
@@ -615,7 +663,7 @@ export async function syncStoresToGraphWorkbook(
     }
 
     return {
-      workbookPath: WORKBOOK_PATH,
+      workbookPath: SHAREPOINT_WORKBOOK_PATH,
       rowCount: records.length,
       sheetCount: groups.length,
       sheets: groups.map((g) => g.sheetName),

@@ -673,7 +673,7 @@ const SectionsView: React.FC<{
                       {field.subsectionName && (
                         <div className="bd-sub-badge">{field.subsectionName}</div>
                       )}
-                      <div className="bd-title-text">
+                      <div className={`bd-title-text ${field.hasUserValue ? "" : "bd-title-missing"}`}>
                         {field.title ?? field.fieldName ?? field.fieldId}
                       </div>
                       <code className="bd-field-subid">{field.fieldId}</code>
@@ -739,7 +739,7 @@ const FlatView: React.FC<{ rows: FlattenedDecodedRow[] }> = ({ rows }) => (
               </td>
               <td className="bd-cell-title" style={{ display: "table-cell", padding: "12px 16px" }}>
                 {row.subsectionName && <div className="bd-sub-badge">{row.subsectionName}</div>}
-                <div className="bd-title-text">{row.title ?? row.fieldId}</div>
+                <div className={`bd-title-text ${row.hasUserValue ? "" : "bd-title-missing"}`}>{row.title ?? row.fieldId}</div>
                 <code className="bd-field-subid">{row.fieldId}</code>
               </td>
               <td className="bd-cell-value" style={{ display: "table-cell", padding: "12px 16px" }}>
@@ -922,7 +922,7 @@ function moduleLabel(module: BlueprintModule): string {
   return "Accounting";
 }
 
-function detectModuleFromFormName(formName: string): BlueprintModule | null {
+export function detectModuleFromFormName(formName: string): BlueprintModule | null {
   const name = formName.toLowerCase();
   if (name.includes("parts")) return "parts";
   if (name.includes("service")) return "service";
@@ -937,7 +937,7 @@ function getExcludedTitleSet(module: BlueprintModule | null): Set<string> {
   return new Set<string>();
 }
 
-function filterDecodedResultByExcludedTitles(
+export function filterDecodedResultByExcludedTitles(
   decoded: RunDecoderResult,
   module: BlueprintModule | null
 ): RunDecoderResult {

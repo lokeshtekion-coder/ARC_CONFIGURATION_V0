@@ -82,6 +82,15 @@ function parsePositiveInteger(value: string): number | null {
  */
 function parseYesNo(val: unknown): boolean | null {
   if (val === null || val === undefined) return null;
+  // MULTIPLE_CHOICE blueprint fields decode to an array of selected option(s)
+  // (e.g. decodedValue: ["Yes"]), not a plain string. Without this, the
+  // array fell through every check below and returned null - which the UI
+  // then rendered as "No" while the reset action treated it as "not false"
+  // (i.e. proceeded as Yes), showing contradictory answers for the same
+  // question. Unwrap it and parse the first selected option instead.
+  if (Array.isArray(val)) {
+    return val.length > 0 ? parseYesNo(val[0]) : null;
+  }
   if (typeof val === "boolean") return val;
   if (typeof val === "number") return val > 0;
   if (typeof val === "string") {
@@ -224,6 +233,13 @@ export const ReturnReasonsView: React.FC = () => {
   }, [chargesRestockFee, extractedBlueprintAmount]);
 
   const handleResetToBlueprint = () => {
+    // Guard against the null ("couldn't determine yes/no") case falling
+    // through to the Yes-branch by accident - only act on a confirmed answer.
+    if (chargesRestockFee === null) {
+      setStatusText("Blueprint answer for the restocking-fee question could not be determined - leaving input unchanged.");
+      setRunState("warning");
+      return;
+    }
     if (chargesRestockFee === false) {
       setAmountInput("0");
     } else {
@@ -466,8 +482,19 @@ export const ReturnReasonsView: React.FC = () => {
             style={{
               padding: "10px 14px",
               borderRadius: 10,
-              background: chargesRestockFee ? "rgba(59, 130, 246, 0.08)" : "rgba(245, 158, 11, 0.08)",
-              border: `1px solid ${chargesRestockFee ? "rgba(59, 130, 246, 0.25)" : "rgba(245, 158, 11, 0.25)"}`,
+              background:
+                chargesRestockFee === null
+                  ? "rgba(248, 113, 113, 0.08)"
+                  : chargesRestockFee
+                    ? "rgba(59, 130, 246, 0.08)"
+                    : "rgba(245, 158, 11, 0.08)",
+              border: `1px solid ${
+                chargesRestockFee === null
+                  ? "rgba(248, 113, 113, 0.3)"
+                  : chargesRestockFee
+                    ? "rgba(59, 130, 246, 0.25)"
+                    : "rgba(245, 158, 11, 0.25)"
+              }`,
               display: "flex",
               justifyContent: "space-between",
               alignItems: "center",
@@ -480,22 +507,29 @@ export const ReturnReasonsView: React.FC = () => {
                 style={{
                   fontSize: 11,
                   fontWeight: 700,
-                  color: chargesRestockFee ? "#60a5fa" : "#fbbf24",
+                  color: chargesRestockFee === null ? "#f87171" : chargesRestockFee ? "#60a5fa" : "#fbbf24",
                   textTransform: "uppercase",
                 }}
               >
                 📋 Blueprint Response:
               </span>
               <div style={{ color: "#f8fafc", fontSize: 12, marginTop: 2 }}>
-                Charge Restocking Fee: <b>{chargesRestockFee ? "Yes" : "No"}</b>
-                {chargesRestockFee && (
+                Charge Restocking Fee:{" "}
+                <b>{chargesRestockFee === null ? "Unknown" : chargesRestockFee ? "Yes" : "No"}</b>
+                {chargesRestockFee === true && (
                   <span>
                     {" "}• Answered Amount: <b>{normalizeText(rawFeeAmountAnswer) || "None (defaulted to 0%)"}</b>
                   </span>
                 )}
-                {!chargesRestockFee && (
+                {chargesRestockFee === false && (
                   <span style={{ color: "#fde68a" }}>
                     {" "}— Dealer does not charge a restock fee. Creation is not needed.
+                  </span>
+                )}
+                {chargesRestockFee === null && (
+                  <span style={{ color: "#f87171" }}>
+                    {" "}— Could not parse a Yes/No answer from the blueprint (raw value:{" "}
+                    {JSON.stringify(rawChargesFeeAnswer)}). Verify manually before resetting.
                   </span>
                 )}
               </div>

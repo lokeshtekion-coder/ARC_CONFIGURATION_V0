@@ -291,6 +291,35 @@ export function getDealers(): string[] {
   return dealers;
 }
 
+// ── Delete a dealer's entire snapshot history (Sync Bot manual cleanup) ──────
+// Only ever called from an explicit, user-confirmed dashboard action - never
+// automatically. dealerId is folder-name-derived from user input via the
+// route, so it's re-derived from the on-disk dealer list rather than trusted
+// directly, and confined to SNAPSHOT_DIR to prevent path traversal.
+export function deleteDealerSnapshots(dealerId: string): number {
+  const knownDealers = getDealers();
+  if (!knownDealers.includes(dealerId)) {
+    log("WARN", `Refusing to delete - unknown dealer snapshot dir : ${dealerId}`);
+    return 0;
+  }
+
+  const dir = path.join(SNAPSHOT_DIR, dealerId);
+  const resolvedDir = path.resolve(dir);
+  const resolvedRoot = path.resolve(SNAPSHOT_DIR);
+  if (!resolvedDir.startsWith(resolvedRoot + path.sep)) {
+    log("ERROR", `Refusing to delete - path escapes snapshot root : ${dealerId}`);
+    return 0;
+  }
+
+  const fileCount = fs.existsSync(dir)
+    ? fs.readdirSync(dir).filter((f) => f.endsWith(".json")).length
+    : 0;
+
+  fs.rmSync(dir, { recursive: true, force: true });
+  log("SUCCESS", `Deleted ${fileCount} snapshot(s) for dealer : ${dealerId}`);
+  return fileCount;
+}
+
 // ── List all timestamps for a dealer (newest first) ───────────────────────────
 export function getTimestamps(dealerId: string): string[] {
   log("INFO", `Listing timestamps for dealer : ${dealerId}`);

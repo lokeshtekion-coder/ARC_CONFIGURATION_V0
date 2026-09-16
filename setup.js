@@ -18,7 +18,7 @@ async function init() {
   console.log("⚡ ARC Configuration Workspace Initializer\n");
 
   const backendPort = await ask("Backend proxy port", "4000");
-  const frontendPort = await ask("Frontend UI port", "5174");
+  const frontendPort = await ask("Frontend UI port", "5175");
   const runInstall = await ask("Run npm install automatically? (y/N)", "N");
 
   rl.close();

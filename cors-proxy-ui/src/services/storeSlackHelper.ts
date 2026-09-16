@@ -34,6 +34,7 @@ interface SlackApiResponse {
 }
 
 const DM_CHANNEL_CACHE_KEY = "arc-slack-dm-channel-cache-v1";
+const DEFAULT_SLACK_ENTERPRISE_ORIGIN = "https://tekion.enterprise.slack.com";
 
 const logger = {
   info: (...args: unknown[]) => console.info("[storeSlackHelper]", ...args),
@@ -69,7 +70,7 @@ function parseCsvLine(line: string): string[] {
     }
 
     if (char === "," && !inQuotes) {
-      result.push(current.trim());
+      result.push(current.trim().replace(/^"|"$/g, ""));
       current = "";
       continue;
     }
@@ -77,7 +78,7 @@ function parseCsvLine(line: string): string[] {
     current += char;
   }
 
-  result.push(current.trim());
+  result.push(current.trim().replace(/^"|"$/g, ""));
   return result;
 }
 
@@ -194,7 +195,7 @@ function buildDefaultSlackMessage(row: StoreRecord): string {
   const tLabel = getTLabel(row.launch_date);
   const blueprintLines = buildBlueprintStatusLines(row.blueprint_statuses);
 
-  const message = [
+  return [
     ":information_source: Blueprint Status Update",
     "",
     `• Dealership: ${dealership}`,
@@ -206,19 +207,6 @@ function buildDefaultSlackMessage(row: StoreRecord): string {
     "",
     "Please look into this. Thank you.",
   ].join("\n");
-
-  logger.debug("Built default Slack message", {
-    dealerId: row.dealer_id,
-    dealership,
-    rawLaunchDate: row.launch_date,
-    formattedGoLive: goLive,
-    tLabel,
-    blueprintStatuses: row.blueprint_statuses,
-    blueprintLines,
-    message,
-  });
-
-  return message;
 }
 
 function buildRecipientCandidates(row: StoreRecord): SlackRecipientCandidate[] {
@@ -246,6 +234,11 @@ function buildRecipientCandidates(row: StoreRecord): SlackRecipientCandidate[] {
       key: "variableOpsPod",
       label: "Variable Ops POD",
       value: normalize(row.accounting_track_lead_1773369945455468395),
+    },
+    {
+      key: "conversionTrackLead",
+      label: "Conversion",
+      value: normalize(row.conversion_track_lead_1773369950325147526),
     },
   ];
 
@@ -279,17 +272,6 @@ function buildRecipientCandidates(row: StoreRecord): SlackRecipientCandidate[] {
     });
   }
 
-  logger.debug("Built Slack recipient candidates", {
-    dealerId: row.dealer_id,
-    recipients: candidates.map((candidate) => ({
-      key: candidate.key,
-      label: candidate.label,
-      email: candidate.normalizedEmail,
-      matchedUserId: candidate.matchedUser?.userId,
-      matchedFullName: candidate.matchedUser?.fullName,
-    })),
-  });
-
   return candidates;
 }
 
@@ -314,21 +296,12 @@ export function getSlackSession(): {
 } {
   const capture = loadLatestExtensionCapture();
 
-  const session = {
+  return {
     slackToken: normalize(capture?.slackToken),
     slackDCookie: normalize(capture?.slackDCookie),
     lastSlackSourceUrl: normalize(capture?.lastSlackSourceUrl) || undefined,
     lastSlackCaptureAt: normalize(capture?.lastSlackCaptureAt) || undefined,
   };
-
-  logger.debug("Resolved Slack session", {
-    hasSlackToken: Boolean(session.slackToken),
-    hasSlackDCookie: Boolean(session.slackDCookie),
-    lastSlackSourceUrl: session.lastSlackSourceUrl,
-    lastSlackCaptureAt: session.lastSlackCaptureAt,
-  });
-
-  return session;
 }
 
 type SlackDmChannelCache = Record<
@@ -367,12 +340,10 @@ function buildDmCacheKeys(input: {
   userId?: string;
   email?: string;
 }): string[] {
-  const keys = [
+  return [
     normalize(input.userId),
     normalizeEmail(input.email || ""),
   ].filter(Boolean);
-
-  return Array.from(new Set(keys));
 }
 
 function getCachedDmChannelId(input: {
@@ -419,13 +390,18 @@ function cacheDmChannel(input: {
   }
 
   saveDmChannelCache(cache);
+}
 
-  logger.info("Cached Slack DM channel", {
-    userId: input.userId,
-    email: input.email,
-    channelId: input.channelId,
-    updatedAt,
-  });
+function resolveSlackOrigin(sourceUrl?: string): string {
+  if (sourceUrl) {
+    try {
+      const parsed = new URL(sourceUrl);
+      if (parsed.hostname.includes("slack.com")) {
+        return parsed.origin;
+      }
+    } catch {}
+  }
+  return DEFAULT_SLACK_ENTERPRISE_ORIGIN;
 }
 
 async function proxySlackRequest(input: {
@@ -435,32 +411,55 @@ async function proxySlackRequest(input: {
   const { slackToken, slackDCookie, lastSlackSourceUrl } = getSlackSession();
 
   if (!slackToken) {
-    throw new Error("Slack token is not available in Settings.");
+    throw new Error("Slack token is not available. Please verify Slack tab is open or re-sync extension.");
   }
 
   if (!slackDCookie) {
-    throw new Error("Slack d cookie is not available in Settings.");
+    throw new Error("Slack 'd' cookie is not available. Please verify Slack tab is logged in.");
   }
 
+  const slackOrigin = resolveSlackOrigin(lastSlackSourceUrl);
+
+  // Reroute generic slack.com URLs to the active enterprise workspace origin
+  let targetUrl = input.url;
+  try {
+    const parsed = new URL(input.url);
+    targetUrl = `${slackOrigin}${parsed.pathname}`;
+  } catch {}
+
+  // Slack xoxc web tokens require form-urlencoded parameters with client identity flags
+  const formPayload = new URLSearchParams();
+  formPayload.set("token", slackToken);
+  formPayload.set("_x_sonic", "true");
+  formPayload.set("_x_app_name", "client");
+
+  for (const [key, value] of Object.entries(input.body)) {
+    if (value !== undefined && value !== null) {
+      formPayload.set(key, typeof value === "object" ? JSON.stringify(value) : String(value));
+    }
+  }
+
+  const cookieHeader = slackDCookie.includes("=")
+    ? slackDCookie
+    : `d=${encodeURIComponent(slackDCookie)}`;
+
   const proxyRequest = {
-    url: input.url,
+    url: targetUrl,
     method: "POST",
     headers: {
-      Authorization: `Bearer ${slackToken}`,
-      "Content-Type": "application/json; charset=utf-8",
-      Cookie: `d=${slackDCookie}`,
-      Referer: "https://app.slack.com/",
-      Origin: "https://app.slack.com",
+      "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
+      "Accept": "*/*",
+      "Cookie": cookieHeader,
+      "Referer": `${slackOrigin}/`,
+      "Origin": slackOrigin,
     },
-    body: JSON.stringify(input.body),
+    body: formPayload.toString(),
     timeout: 60000,
   };
 
-  logger.info("Sending Slack proxy request", {
-    url: input.url,
-    body: input.body,
-    lastSlackSourceUrl,
-    proxyRequestHeaderKeys: Object.keys(proxyRequest.headers).sort(),
+  logger.info("Sending Slack request via proxy", {
+    targetUrl,
+    endpoint: targetUrl.split("/").slice(-2).join("/"),
   });
 
   const response = await fetch("/api/proxy", {
@@ -473,22 +472,10 @@ async function proxySlackRequest(input: {
 
   const rawText = await response.text();
 
-  logger.debug("Slack proxy raw response received", {
-    url: input.url,
-    httpStatus: response.status,
-    httpStatusText: response.statusText,
-    rawTextPreview: rawText.slice(0, 500),
-  });
-
   let proxyJson: Record<string, unknown> = {};
   try {
     proxyJson = rawText ? (JSON.parse(rawText) as Record<string, unknown>) : {};
   } catch (error) {
-    logger.error("Failed to parse Slack proxy response JSON", {
-      url: input.url,
-      rawText,
-      error,
-    });
     throw new Error(`Slack proxy returned non-JSON response: ${rawText.slice(0, 300)}`);
   }
 
@@ -507,36 +494,14 @@ async function proxySlackRequest(input: {
       : ((proxyJson.body as SlackApiResponse | undefined) ??
           (proxyJson as SlackApiResponse));
 
-  logger.info("Slack proxy parsed response", {
-    url: input.url,
-    upstreamStatus,
-    upstreamStatusText: proxyJson.statusText,
-    slackOk: upstreamBody?.ok,
-    slackError: upstreamBody?.error,
-    slackChannel: upstreamBody?.channel,
-    slackTs: upstreamBody?.ts,
-    alreadyOpen: upstreamBody?.already_open,
-    noOp: upstreamBody?.no_op,
-  });
-
-  if (upstreamStatus >= 400) {
-    logger.error("Slack upstream failed", {
-      url: input.url,
+  if (upstreamStatus >= 400 || upstreamBody?.ok !== true) {
+    const errorMsg = upstreamBody?.error || `HTTP ${upstreamStatus}`;
+    logger.error("Slack upstream request failed", {
+      targetUrl,
       upstreamStatus,
-      upstreamStatusText: proxyJson.statusText,
-      upstreamBody,
+      errorMsg,
     });
-    throw new Error(
-      upstreamBody?.error || `Slack API failed with upstream HTTP ${upstreamStatus}`
-    );
-  }
-
-  if (upstreamBody?.ok !== true) {
-    logger.error("Slack API returned ok=false", {
-      url: input.url,
-      upstreamBody,
-    });
-    throw new Error(upstreamBody?.error || "Slack API returned ok=false");
+    throw new Error(`Slack API Error: ${errorMsg}`);
   }
 
   return upstreamBody;
@@ -558,7 +523,6 @@ export async function openSlackConversation(input: {
 
   logger.info("Opening Slack DM conversation", {
     userId: input.userId,
-    email: input.email,
     fullName: input.fullName,
   });
 
@@ -575,10 +539,7 @@ export async function openSlackConversation(input: {
       : normalize(response.channel?.id);
 
   if (!channelId) {
-    logger.error("Slack conversations.open missing channel id", {
-      response,
-    });
-    throw new Error("Slack conversations.open did not return a valid channel id.");
+    throw new Error("Slack conversations.open did not return a valid channel ID.");
   }
 
   cacheDmChannel({
@@ -605,11 +566,8 @@ export async function sendSlackMessage(input: {
 
   logger.info("Sending Slack chat.postMessage", {
     userId: input.userId,
-    email: input.email,
     fullName: input.fullName,
     channelId,
-    textLength: input.text.length,
-    textPreview: input.text.slice(0, 300),
   });
 
   const response = await proxySlackRequest({

@@ -2,7 +2,7 @@ export interface HeaderMap {
   [key: string]: string;
 }
 
-export interface DecodedTokenInfo {
+export interface ArcDecodedTokenInfo {
   exp?: number;
   iat?: number;
   expiresAt?: string;
@@ -12,9 +12,10 @@ export interface DecodedTokenInfo {
   email?: string;
   aud?: string;
   iss?: string;
+  originalTenantId?: string;
 }
 
-export interface CustomWatchRule {
+export interface ArcCustomWatchRule {
   id: string;
   label: string;
   pattern: string;
@@ -23,7 +24,7 @@ export interface CustomWatchRule {
   createdAt: string;
 }
 
-export interface CustomCapturedApi {
+export interface ArcCustomCapturedApi {
   id: string;
   label: string;
   pattern: string;
@@ -33,12 +34,34 @@ export interface CustomCapturedApi {
   capturedAt: string;
   lastSeenAt: string;
   token?: string;
-  decodedToken?: DecodedTokenInfo;
+  decodedToken?: ArcDecodedTokenInfo;
   headers: HeaderMap;
 }
 
-export interface ArcCaptureState {
+export interface ArcTekionProfile {
+  id: string;
+  profileKey: string;
+  capturedAt: string;
+  sourceUrl?: string;
+  dealerId?: string;
+  tenantName?: string;
+  tekSiteId?: string;
+  roleId?: string;
+  applicationId?: string;
+  clientId?: string;
+  locale?: string;
+  token?: string;
+  decodedToken?: ArcDecodedTokenInfo;
+  bootstrapHeaders: HeaderMap;
+}
+
+export interface ArcLatestCaptureState {
   graphApiToken?: string;
+  graphExpiresAt?: number;
+  spfxRefreshToken?: string;
+  spfxRefreshTokenExpiresAt?: number;
+  sharepointWorkbookUrl?: string;
+
   tapDuoApiToken?: string;
 
   slackToken?: string;
@@ -61,12 +84,13 @@ export interface ArcCaptureState {
   lastTekionBootstrapCaptureAt?: string;
   lastTekionProdTechMotorsCaptureAt?: string;
 
-  customCaptures?: Record<string, CustomCapturedApi>;
+  tekionProfiles?: ArcTekionProfile[];
+  customCaptures?: Record<string, ArcCustomCapturedApi>;
 }
 
 export interface ArcPushCaptureMessage {
   type: "ARC_PUSH_CAPTURE";
-  payload: ArcCaptureState;
+  payload: ArcLatestCaptureState;
 }
 
 export interface ArcGetLatestCaptureMessage {
@@ -74,11 +98,9 @@ export interface ArcGetLatestCaptureMessage {
 }
 
 export interface ArcGetLatestCaptureResponse {
-  payload: ArcCaptureState | null;
+  payload: ArcLatestCaptureState | null;
 }
 
 export type RuntimeMessage =
   | ArcPushCaptureMessage
   | ArcGetLatestCaptureMessage;
-
-export {};

@@ -11,24 +11,28 @@ function postMessageToPage(type: string, payload: unknown): void {
   window.postMessage({ type, payload }, window.location.origin);
 }
 
-// 1. Listen for rule changes written directly to chrome.storage (e.g. by the
-//    background script's own cleanup/init logic) and relay them to the page.
+// 1. Storage changes relayed to React web app
 chrome.storage.onChanged.addListener((changes, namespace) => {
   if (namespace !== "local") return;
-
   if (changes[RULES_STORAGE_KEY]) {
     postMessageToPage(PAGE_SYNC_RULES_EVENT, changes[RULES_STORAGE_KEY].newValue);
   }
 });
 
-// 2. Listen for messages pushed from the background service worker
+// 2. Listen for push updates or log relays from background service worker
 chrome.runtime.onMessage.addListener((message) => {
   if (message?.type === "ARC_PUSH_CAPTURE") {
+    console.log("[ARC Extension] Push captured state received:", message.payload);
     postMessageToPage(PAGE_SYNC_EVENT, message.payload);
+  }
+
+  if (message?.type === "ARC_LOG_RELAY") {
+    // Bridges background logs directly into your React DevTools console
+    console.log("%c[ARC Extension]", "color: #38bdf8; font-weight: bold;", ...message.payload);
   }
 });
 
-// 3. Relay requests from the React app to the Chrome background runtime
+// 3. Relay requests from React app to background service worker
 window.addEventListener("message", (event) => {
   if (event.source !== window || event.origin !== window.location.origin) return;
 
@@ -53,14 +57,9 @@ window.addEventListener("message", (event) => {
       { type: "ARC_SAVE_CUSTOM_RULES", payload: event.data.payload },
       (response) => {
         if (chrome.runtime.lastError) {
-          console.error(
-            "[Content Script] Failed to save rules:",
-            chrome.runtime.lastError.message
-          );
+          console.error("[Content Script] Failed to save rules:", chrome.runtime.lastError.message);
           return;
         }
-        // Confirm back to the page with what the background actually persisted,
-        // in case it normalized/rejected any entries.
         if (response?.success) {
           chrome.runtime.sendMessage({ type: "ARC_GET_CUSTOM_RULES" }, (rulesResponse) => {
             if (!chrome.runtime.lastError && rulesResponse?.payload) {

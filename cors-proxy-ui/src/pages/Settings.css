@@ -64,6 +64,36 @@
   color: #cbd5e1;
   font-size: 12px;
   line-height: 1.2;
+  max-width: 100%;
+}
+
+/* Referenced throughout Settings.tsx for header names, preview values, and
+   captured source URLs - was previously undefined, so long unbroken tokens
+   (URLs, header strings) had no wrap/break rule and could overflow their
+   .ui-pill/flex container into neighboring text. */
+.st-req-url {
+  overflow-wrap: anywhere;
+  word-break: break-all;
+}
+
+/* Referenced throughout Settings.tsx (dealer search, watch-rule fields,
+   secret textareas) but previously undefined for this page, so inputs fell
+   back to unstyled browser defaults on the dark theme. */
+.st-input {
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f8fafc;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.st-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .section-card {

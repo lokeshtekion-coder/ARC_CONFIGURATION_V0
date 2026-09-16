@@ -3,7 +3,7 @@ import cors, { CorsOptions } from "cors";
 
 const ALLOWED_ORIGINS: (string | RegExp)[] = [
   "http://localhost:3000",
-  "http://localhost:5174",
+  "http://localhost:5175",
   "http://localhost:8080",
   /^https:\/\/.*\.tekion\.com$/,
 ];

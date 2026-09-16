@@ -11,9 +11,8 @@
   <div class="bg-orb orb-1"></div>
   <div class="bg-orb orb-2"></div>
 
-  <header class="hero">
+  <aside class="sidebar">
     <div class="brand-row">
-      <!-- Custom Vector Arc Logo -->
       <div class="brand-badge">
         <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-svg">
           <path d="M6 24C6 14.0589 14.0589 6 24 6" stroke="url(#arc-grad-1)" stroke-width="3.5" stroke-linecap="round"/>
@@ -22,11 +21,11 @@
           <circle cx="25" cy="11" r="2" fill="#a78bfa" />
           <defs>
             <linearGradient id="arc-grad-1" x1="6" y1="24" x2="24" y2="6" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#3b82f6"/>
+              <stop offset="0" stop-color="#3b82f6"/>
               <stop offset="1" stop-color="#60a5fa"/>
             </linearGradient>
             <linearGradient id="arc-grad-2" x1="11" y1="25" x2="25" y2="11" gradientUnits="userSpaceOnUse">
-              <stop stop-color="#8b5cf6"/>
+              <stop offset="0" stop-color="#8b5cf6"/>
               <stop offset="1" stop-color="#c084fc"/>
             </linearGradient>
           </defs>
@@ -37,66 +36,176 @@
         <p class="subtitle">Proxy & Token Gateway</p>
       </div>
     </div>
-    <div class="version-chip" id="versionChip">v--</div>
-  </header>
 
-  <main class="content">
-    <!-- Collapsible Connection Status -->
-    <section class="card status-card">
-      <details id="statusDetails" open>
-        <summary class="summary-header">
-          <div class="summary-left">
-            <span class="pulse" id="pulseDot"></span>
-            <span class="summary-title" id="summaryTitle">Checking...</span>
-          </div>
-          <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-          </svg>
-        </summary>
+    <nav class="side-nav">
+      <button class="nav-btn active" data-panel="overview" type="button">
+        <span class="nav-icon">🏠</span><span>Overview</span>
+      </button>
+      <button class="nav-btn" data-panel="tokens" type="button">
+        <span class="nav-icon">🔑</span><span>Tokens</span>
+      </button>
+      <button class="nav-btn" data-panel="slack" type="button">
+        <span class="nav-icon">💬</span><span>Slack</span>
+      </button>
+      <button class="nav-btn" data-panel="rules" type="button">
+        <span class="nav-icon">📡</span><span>Watched APIs</span>
+      </button>
+    </nav>
 
-        <div class="status-grid">
-          <div class="status-item">
-            <div class="label">Extension</div>
-            <div class="value ok" id="extensionStatus">Active</div>
-          </div>
-
-          <div class="status-item">
-            <div class="label">ARC App</div>
-            <div class="value" id="appStatus">Checking...</div>
-          </div>
-
-          <div class="status-item full">
-            <div class="label">Detected Target</div>
-            <div class="value mono small" id="detectedUrl">—</div>
-          </div>
-
-          <div class="status-item full">
-            <div class="label">Last Verified</div>
-            <div class="value small" id="lastChecked">—</div>
-          </div>
-        </div>
-      </details>
-    </section>
-
-    <!-- Managed Watch Rules Summary -->
-    <section class="card rules-card">
-      <div class="rules-header">
-        <div class="rules-title-group">
-          <span class="card-title">Watched Endpoints</span>
-          <span class="rules-count-badge" id="rulesCountBadge">0 active</span>
-        </div>
-        <span class="remote-badge">Managed by Web App</span>
-      </div>
-      <p class="info-text">
-        Custom endpoint watching is managed via the ARC web application.
-      </p>
-      <div id="quickRulesList" class="quick-rules-list"></div>
-    </section>
-
-    <div class="actions">
-      <button class="btn btn-primary" id="openAppBtn">Launch ARC Web</button>
-      <button class="btn btn-secondary" id="refreshBtn">Re-check</button>
+    <div class="sidebar-footer">
+      <button class="btn btn-primary btn-block" id="openAppBtn" type="button">Launch ARC Web</button>
+      <button class="btn btn-secondary btn-block" id="refreshBtn" type="button">Recheck</button>
+      <div class="version-chip" id="versionChip">v1.4.0</div>
     </div>
+  </aside>
+
+  <main class="content-area">
+    <!-- PANEL: OVERVIEW -->
+    <section class="panel active" data-panel="overview">
+      <h2 class="panel-title">Overview</h2>
+
+      <section class="card status-card">
+        <details id="statusDetails" open>
+          <summary class="summary-header">
+            <span class="summary-left">
+              <span class="pulse" id="pulseDot"></span>
+              <span class="summary-title" id="summaryTitle">Checking…</span>
+            </span>
+            <svg class="chevron-icon" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+            </svg>
+          </summary>
+
+          <div class="status-grid">
+            <div class="status-item">
+              <div class="label">ARC Web App</div>
+              <div class="value" id="appStatus">Checking…</div>
+            </div>
+            <div class="status-item">
+              <div class="label">Last Sync</div>
+              <div class="value small" id="lastChecked">—</div>
+            </div>
+            <div class="status-item full">
+              <div class="label">Detected Target</div>
+              <div class="value mono small" id="detectedUrl">—</div>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <section class="card">
+        <div class="card-title">Captured Data Summary</div>
+        <div class="summary-tiles">
+          <div class="tile">
+            <div class="tile-value" id="tileGraphStatus">○</div>
+            <div class="tile-label">Graph Token</div>
+          </div>
+          <div class="tile">
+            <div class="tile-value" id="tileSlackStatus">○</div>
+            <div class="tile-label">Slack Session</div>
+          </div>
+          <div class="tile">
+            <div class="tile-value" id="tileProfilesCount">0</div>
+            <div class="tile-label">Tekion Profiles</div>
+          </div>
+          <div class="tile">
+            <div class="tile-value" id="tileRulesCount">0</div>
+            <div class="tile-label">Watched Rules</div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- PANEL: TOKENS -->
+    <section class="panel" data-panel="tokens">
+      <h2 class="panel-title">Microsoft Graph & SharePoint</h2>
+
+      <section class="card">
+        <div class="rules-header">
+          <div class="rules-title-group">
+            <span class="card-title">T-90 SharePoint Workbook</span>
+            <span class="rules-count-badge" id="sheetTabBadge">Checking…</span>
+          </div>
+          <button id="openSheetBtn" class="btn-secondary btn-xs" type="button">Open Sheet ↗</button>
+        </div>
+
+        <div class="token-row">
+          <div class="token-row-head">
+            <span class="label">Graph Token</span>
+            <span class="value small" id="graphTokenStatus">Inactive</span>
+          </div>
+          <div class="token-meta" id="graphTokenMeta">—</div>
+        </div>
+
+        <div class="token-row">
+          <div class="token-row-head">
+            <!-- cspell:disable-next-line -->
+            <span class="label">SPFx Refresh Token</span>
+            <span class="value small" id="spfxTokenStatus">Not Captured</span>
+          </div>
+          <div class="token-meta" id="spfxTokenMeta">—</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-title">Other Captured Tokens</div>
+        <div class="status-grid" style="margin-top: 8px; padding-top: 8px;">
+          <div class="status-item">
+            <div class="label">TapDuo API</div>
+            <div class="value small" id="tapDuoStatus">Not Captured</div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- PANEL: SLACK -->
+    <section class="panel" data-panel="slack">
+      <h2 class="panel-title">Slack Session</h2>
+
+      <section class="card">
+        <div class="rules-header">
+          <div class="rules-title-group">
+            <span class="card-title">Tekion Slack Workspace</span>
+            <span class="rules-count-badge" id="slackStatusBadge">Checking…</span>
+          </div>
+        </div>
+
+        <div class="token-row">
+          <div class="token-row-head">
+            <span class="label">Client Token (xoxc)</span>
+          </div>
+          <div class="token-meta" id="slackTokenMeta">—</div>
+        </div>
+
+        <div class="token-row">
+          <div class="token-row-head">
+            <span class="label">Session Cookie (d)</span>
+          </div>
+          <div class="token-meta" id="slackCookieMeta">—</div>
+        </div>
+
+        <p class="info-text" style="margin-top: 10px;">
+          Credentials are captured automatically whenever a Slack tab calls any authenticated
+          <code>edgeapi.slack.com</code> API. Reload your Slack tab if this stays empty.
+        </p>
+      </section>
+    </section>
+
+    <!-- PANEL: WATCHED APIS -->
+    <section class="panel" data-panel="rules">
+      <h2 class="panel-title">Watched Endpoints</h2>
+
+      <section class="card rules-card">
+        <div class="rules-header">
+          <div class="rules-title-group">
+            <span class="card-title">Custom Rules</span>
+            <span class="rules-count-badge" id="rulesCountBadge">0 active</span>
+          </div>
+          <span class="remote-badge">Managed by Web App</span>
+        </div>
+        <div id="quickRulesList" class="quick-rules-list"></div>
+      </section>
+    </section>
   </main>
 </div>
 

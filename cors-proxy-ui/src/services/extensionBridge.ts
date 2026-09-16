@@ -72,6 +72,11 @@ export interface ArcCustomCapturedApi {
 
 export interface ArcLatestCaptureState {
   graphApiToken?: string;
+  graphExpiresAt?: number;
+  spfxRefreshToken?: string;
+  spfxRefreshTokenExpiresAt?: number;
+  sharepointWorkbookUrl?: string;
+
   tapDuoApiToken?: string;
 
   slackToken?: string;
@@ -108,6 +113,9 @@ export interface HeaderMap {
 
 export interface ArcBrowserCaptureState {
   graphApiToken?: string;
+  graphExpiresAt?: number;
+  spfxRefreshToken?: string;
+  sharepointWorkbookUrl?: string;
   tapDuoApiToken?: string;
   slackToken?: string;
   slackDCookie?: string;
@@ -232,41 +240,25 @@ function normalizeTekionProfiles(input: unknown): ArcTekionProfile[] | undefined
         tenantName: typeof item.tenantName === "string" ? item.tenantName : undefined,
         tekSiteId: typeof item.tekSiteId === "string" ? item.tekSiteId : undefined,
         roleId: typeof item.roleId === "string" ? item.roleId : undefined,
-        applicationId:
-          typeof item.applicationId === "string" ? item.applicationId : undefined,
+        applicationId: typeof item.applicationId === "string" ? item.applicationId : undefined,
         clientId: typeof item.clientId === "string" ? item.clientId : undefined,
         locale: typeof item.locale === "string" ? item.locale : undefined,
         token: typeof item.token === "string" ? item.token : undefined,
         decodedToken: isRecord(item.decodedToken)
           ? {
-              email:
-                typeof item.decodedToken.email === "string"
-                  ? item.decodedToken.email
-                  : undefined,
+              email: typeof item.decodedToken.email === "string" ? item.decodedToken.email : undefined,
               originalTenantId:
                 typeof item.decodedToken.originalTenantId === "string"
                   ? item.decodedToken.originalTenantId
                   : undefined,
-              exp:
-                typeof item.decodedToken.exp === "number"
-                  ? item.decodedToken.exp
-                  : undefined,
-              iat:
-                typeof item.decodedToken.iat === "number"
-                  ? item.decodedToken.iat
-                  : undefined,
+              exp: typeof item.decodedToken.exp === "number" ? item.decodedToken.exp : undefined,
+              iat: typeof item.decodedToken.iat === "number" ? item.decodedToken.iat : undefined,
               expiresAt:
-                typeof item.decodedToken.expiresAt === "string"
-                  ? item.decodedToken.expiresAt
-                  : undefined,
+                typeof item.decodedToken.expiresAt === "string" ? item.decodedToken.expiresAt : undefined,
               issuedAt:
-                typeof item.decodedToken.issuedAt === "string"
-                  ? item.decodedToken.issuedAt
-                  : undefined,
+                typeof item.decodedToken.issuedAt === "string" ? item.decodedToken.issuedAt : undefined,
               isExpired:
-                typeof item.decodedToken.isExpired === "boolean"
-                  ? item.decodedToken.isExpired
-                  : undefined,
+                typeof item.decodedToken.isExpired === "boolean" ? item.decodedToken.isExpired : undefined,
             }
           : undefined,
         bootstrapHeaders: normalizeStringMap(item.bootstrapHeaders),
@@ -301,8 +293,7 @@ function normalizeCustomCaptures(
         : DEFAULT_CUSTOM_EXPIRY_HOURS;
     const matchedUrl = typeof value.matchedUrl === "string" ? value.matchedUrl : "";
     const capturedAt = typeof value.capturedAt === "string" ? value.capturedAt : "";
-    const lastSeenAt =
-      typeof value.lastSeenAt === "string" ? value.lastSeenAt : capturedAt;
+    const lastSeenAt = typeof value.lastSeenAt === "string" ? value.lastSeenAt : capturedAt;
     const headers = normalizeStringMap(value.headers) ?? {};
 
     if (!id || !pattern || !capturedAt) continue;
@@ -311,42 +302,18 @@ function normalizeCustomCaptures(
     const token = tokenFromValue || extractTokenFromHeaders(headers);
     const decodedToken = isRecord(value.decodedToken)
       ? {
-          exp:
-            typeof value.decodedToken.exp === "number"
-              ? value.decodedToken.exp
-              : undefined,
-          iat:
-            typeof value.decodedToken.iat === "number"
-              ? value.decodedToken.iat
-              : undefined,
+          exp: typeof value.decodedToken.exp === "number" ? value.decodedToken.exp : undefined,
+          iat: typeof value.decodedToken.iat === "number" ? value.decodedToken.iat : undefined,
           expiresAt:
-            typeof value.decodedToken.expiresAt === "string"
-              ? value.decodedToken.expiresAt
-              : undefined,
+            typeof value.decodedToken.expiresAt === "string" ? value.decodedToken.expiresAt : undefined,
           issuedAt:
-            typeof value.decodedToken.issuedAt === "string"
-              ? value.decodedToken.issuedAt
-              : undefined,
+            typeof value.decodedToken.issuedAt === "string" ? value.decodedToken.issuedAt : undefined,
           isExpired:
-            typeof value.decodedToken.isExpired === "boolean"
-              ? value.decodedToken.isExpired
-              : undefined,
-          sub:
-            typeof value.decodedToken.sub === "string"
-              ? value.decodedToken.sub
-              : undefined,
-          email:
-            typeof value.decodedToken.email === "string"
-              ? value.decodedToken.email
-              : undefined,
-          aud:
-            typeof value.decodedToken.aud === "string"
-              ? value.decodedToken.aud
-              : undefined,
-          iss:
-            typeof value.decodedToken.iss === "string"
-              ? value.decodedToken.iss
-              : undefined,
+            typeof value.decodedToken.isExpired === "boolean" ? value.decodedToken.isExpired : undefined,
+          sub: typeof value.decodedToken.sub === "string" ? value.decodedToken.sub : undefined,
+          email: typeof value.decodedToken.email === "string" ? value.decodedToken.email : undefined,
+          aud: typeof value.decodedToken.aud === "string" ? value.decodedToken.aud : undefined,
+          iss: typeof value.decodedToken.iss === "string" ? value.decodedToken.iss : undefined,
         }
       : token
       ? decodeJwt(token)
@@ -388,6 +355,22 @@ function normalizeCapture(input: unknown): ArcLatestCaptureState | null {
 
   if (typeof input.graphApiToken === "string" && input.graphApiToken.trim()) {
     out.graphApiToken = input.graphApiToken.trim();
+  }
+
+  if (typeof input.graphExpiresAt === "number") {
+    out.graphExpiresAt = input.graphExpiresAt;
+  }
+
+  if (typeof input.spfxRefreshToken === "string" && input.spfxRefreshToken.trim()) {
+    out.spfxRefreshToken = input.spfxRefreshToken.trim();
+  }
+
+  if (typeof input.spfxRefreshTokenExpiresAt === "number") {
+    out.spfxRefreshTokenExpiresAt = input.spfxRefreshTokenExpiresAt;
+  }
+
+  if (typeof input.sharepointWorkbookUrl === "string" && input.sharepointWorkbookUrl.trim()) {
+    out.sharepointWorkbookUrl = input.sharepointWorkbookUrl.trim();
   }
 
   if (typeof input.tapDuoApiToken === "string" && input.tapDuoApiToken.trim()) {
@@ -455,7 +438,6 @@ export function loadLatestExtensionCapture(): ArcLatestCaptureState | null {
     if (normalized) {
       localStorage.setItem(LOCAL_CAPTURE_STORAGE_KEY, JSON.stringify(normalized));
     }
-
     return normalized;
   } catch {
     return null;
@@ -571,6 +553,9 @@ function normalizeBrowserCaptureState(input: unknown): ArcBrowserCaptureState {
 
   return {
     graphApiToken: normalizeString(raw.graphApiToken),
+    graphExpiresAt: typeof raw.graphExpiresAt === "number" ? raw.graphExpiresAt : undefined,
+    spfxRefreshToken: normalizeString(raw.spfxRefreshToken),
+    sharepointWorkbookUrl: normalizeString(raw.sharepointWorkbookUrl),
     tapDuoApiToken: normalizeString(raw.tapDuoApiToken),
     slackToken: normalizeString(raw.slackToken),
     slackDCookie: normalizeString(raw.slackDCookie),

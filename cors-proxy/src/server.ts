@@ -6,6 +6,7 @@ import settingsRouter from "./routes/settings.route";
 import validationRouter from "./routes/validation.route";
 import bootstrapRouter from "./routes/bootstrap.route";
 import storesSetupRouter from "./routes/storesSetup.route";
+import botHealthRouter from "./routes/botHealth.route";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use("/api/settings", settingsRouter);
 app.use("/api/validation", validationRouter);
 app.use("/api/bootstrap", bootstrapRouter);
 app.use("/api/stores/setup", storesSetupRouter);
+app.use("/api/bot", botHealthRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: "Route not found" });

@@ -29,7 +29,7 @@ import {
   type SlackRecipientCandidate,
   type SlackDirectoryUser,
 } from "../services/storeSlackHelper";
-import { fetchSetupDataForStore, hasSetupData } from "../services/storeSetupDataService";
+import { fetchSetupDataForStore } from "../services/storeSetupDataService";
 
 interface Props {
   onBack: () => void;
@@ -425,6 +425,124 @@ const StatusChipGroup: React.FC<{
   </div>
 );
 
+const SetupDataChip: React.FC<{
+  label: string;
+  value: string | number;
+  hasData: boolean;
+  title: string;
+}> = ({ label, value, hasData, title }) => (
+  <span
+    title={title}
+    style={{
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: 3,
+      padding: "3px 6px",
+      borderRadius: 6,
+      background: hasData ? "rgba(56, 189, 248, 0.14)" : "rgba(148, 163, 184, 0.12)",
+      color: hasData ? "#38bdf8" : "#94a3b8",
+      border: `1px solid ${hasData ? "rgba(56, 189, 248, 0.28)" : "rgba(148, 163, 184, 0.22)"}`,
+      fontSize: 10,
+      fontWeight: 700,
+      lineHeight: 1,
+      whiteSpace: "nowrap",
+    }}
+  >
+    <span style={{ opacity: 0.85 }}>{label}</span>
+    <span style={{ fontSize: 9 }}>{value}</span>
+  </span>
+);
+
+const SetupDataCell: React.FC<{ row: StoreRecord }> = ({ row }) => {
+  if (row.setup_data_error) {
+    return (
+      <span
+        title={row.setup_data_error}
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 4,
+          padding: "3px 7px",
+          borderRadius: 6,
+          background: "rgba(239, 68, 68, 0.14)",
+          color: "#f87171",
+          border: "1px solid rgba(239, 68, 68, 0.30)",
+          fontSize: 10,
+          fontWeight: 700,
+          lineHeight: 1,
+          whiteSpace: "nowrap",
+        }}
+      >
+        <span>⚠</span>
+        <span>Error</span>
+      </span>
+    );
+  }
+
+  if (!row.setup_data) {
+    return (
+      <span
+        title="Setup data has not been fetched yet"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          padding: "3px 8px",
+          borderRadius: 6,
+          background: "rgba(148, 163, 184, 0.10)",
+          color: "#64748b",
+          border: "1px solid rgba(148, 163, 184, 0.20)",
+          fontSize: 10,
+          fontWeight: 600,
+          lineHeight: 1,
+          whiteSpace: "nowrap",
+        }}
+      >
+        — Not Fetched
+      </span>
+    );
+  }
+
+  const oemCodes = row.setup_data.oemDealerCodes || [];
+  const hasOem = oemCodes.length > 0;
+  const firstCode = oemCodes[0] || "—";
+  const oemDisplay = oemCodes.length > 1 ? `${firstCode} (+${oemCodes.length - 1})` : firstCode;
+  const oemFull = hasOem ? oemCodes.join(", ") : "None";
+
+  const journalsCount = row.setup_data.journalsAccessibleDealerCount ?? 0;
+  const salesChainsCount = row.setup_data.salesChainsAccessibleDealerCount ?? 0;
+  const coaCount = row.setup_data.coaAccessibleDealerCount ?? 0;
+
+  return (
+    <div style={{ display: "inline-flex", gap: 4, flexWrap: "nowrap", alignItems: "center" }}>
+      <SetupDataChip
+        label="OEM"
+        value={oemDisplay}
+        hasData={hasOem}
+        title={`OEM Codes: ${oemFull}`}
+      />
+      <SetupDataChip
+        label="JRN"
+        value={journalsCount}
+        hasData={journalsCount > 0}
+        title={`Accessible Journals: ${journalsCount}`}
+      />
+      <SetupDataChip
+        label="SC"
+        value={salesChainsCount}
+        hasData={salesChainsCount > 0}
+        title={`Sales Chains: ${salesChainsCount}`}
+      />
+      <SetupDataChip
+        label="COA"
+        value={coaCount}
+        hasData={coaCount > 0}
+        title={`Chart of Accounts: ${coaCount}`}
+      />
+    </div>
+  );
+};
+
 const CustomStatusSelect: React.FC<{
   value?: CustomPhaseStatus;
   onChange: (newVal: CustomPhaseStatus) => void;
@@ -540,25 +658,6 @@ const SlackRecipientRow: React.FC<{
         </div>
       </div>
     </label>
-  );
-};
-
-const SetupDataCell: React.FC<{ row: StoreRecord }> = ({ row }) => {
-  if (row.setup_data_error) {
-    return <div style={{ color: "#f87171", fontSize: 11 }}>Error</div>;
-  }
-
-  if (!row.setup_data) {
-    return <div style={{ color: "#94a3b8", fontSize: 11 }}>Not fetched</div>;
-  }
-
-  return (
-    <div style={{ fontSize: 11, lineHeight: 1.4 }}>
-      <div><b>Codes:</b> {row.setup_data.oemDealerCodes?.join(", ") || "—"}</div>
-      <div>Journals: {row.setup_data.journalsAccessibleDealerCount ?? 0}</div>
-      <div>Sales Chains: {row.setup_data.salesChainsAccessibleDealerCount ?? 0}</div>
-      <div>COA: {row.setup_data.coaAccessibleDealerCount ?? 0}</div>
-    </div>
   );
 };
 
@@ -722,7 +821,14 @@ const DealerMetaModal: React.FC<{
 
     setLoadingSetup(true);
     try {
-      const setupData = await fetchSetupDataForStore(row);
+      // Pass a clone with setup_data undefined to bypass any cache checks
+      // and force a fresh fetch from the Tekion endpoint
+      const targetStore: StoreRecord = {
+        ...row,
+        setup_data: undefined,
+      };
+
+      const setupData = await fetchSetupDataForStore(targetStore);
       onSetupFetched(row.tekion_id, setupData);
       onToast("✅ Setup data fetched");
     } catch (error: unknown) {
@@ -764,10 +870,38 @@ const DealerMetaModal: React.FC<{
             ))}
           </div>
 
-          <div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
             <button className="btn-postman" onClick={() => void handleFetchSetup()} disabled={loadingSetup}>
               {loadingSetup ? "⏳ Loading..." : "🧩 Get Setup Data"}
             </button>
+
+            {row.setup_data ? (
+              <div style={{ fontSize: 11, color: "#94a3b8", display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                <span>
+                  OEM: <strong style={{ color: "#38bdf8" }}>{row.setup_data.oemDealerCodes?.join(", ") || "—"}</strong>
+                </span>
+                <span>•</span>
+                <span>
+                  Journals: <strong style={{ color: "#38bdf8" }}>{row.setup_data.journalsAccessibleDealerCount ?? 0}</strong>
+                </span>
+                <span>•</span>
+                <span>
+                  Sales Chains: <strong style={{ color: "#38bdf8" }}>{row.setup_data.salesChainsAccessibleDealerCount ?? 0}</strong>
+                </span>
+                <span>•</span>
+                <span>
+                  COA: <strong style={{ color: "#38bdf8" }}>{row.setup_data.coaAccessibleDealerCount ?? 0}</strong>
+                </span>
+              </div>
+            ) : row.setup_data_error ? (
+              <span style={{ fontSize: 11, color: "#f87171" }}>
+                ⚠ {row.setup_data_error}
+              </span>
+            ) : (
+              <span style={{ fontSize: 11, color: "#64748b" }}>
+                Setup data not fetched yet
+              </span>
+            )}
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 340px) minmax(0, 1fr)", gap: 16 }}>
@@ -1600,7 +1734,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                 </div>
               </div>
 
-
               <button className="btn-secondary btn-sm" onClick={() => setFiltersCollapsed((prev) => !prev)}>
                 {filtersCollapsed ? "☰ Show Filters" : "✕ Hide Filters"}
               </button>
@@ -1776,6 +1909,16 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         onClose={() => setActiveDealerPopup(null)}
         onToast={showToast}
         onSetupFetched={(tekionId, setupData) => {
+          setActiveDealerPopup((prev) =>
+            prev && prev.tekion_id === tekionId
+              ? {
+                  ...prev,
+                  setup_data: setupData,
+                  setup_data_fetched_at: setupData.fetchedAt,
+                  setup_data_error: "",
+                }
+              : prev
+          );
           void persistSetupData(tekionId, setupData);
         }}
       />

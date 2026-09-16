@@ -21,6 +21,10 @@ export const STORE_EXPORT_HEADERS = [
   "Blueprint CRM Last Released Time",
   "Blueprint Analytics",
   "Blueprint Analytics Last Released Time",
+  "OEM Dealer Codes",
+  "Journals Accessible Count",
+  "Sales Chains Accessible Count",
+  "COA Accessible Count",
   "Fixed Ops",
   "Variable Ops",
   "SignOff Parts",
@@ -31,6 +35,7 @@ export const STORE_EXPORT_HEADERS = [
   "SignOff Accounting Last Released Time",
   "Testing",
   "Status Fetched At",
+  "Setup Data Fetched At",
 ] as const;
 
 export type StoreExportHeader = (typeof STORE_EXPORT_HEADERS)[number];
@@ -142,6 +147,9 @@ export function sortStoresByGoLive(records: StoreRecord[]): StoreRecord[] {
 }
 
 export function mapStoreToExcelRow(store: StoreRecord): StoreExcelRow {
+  const setupError = store.setup_data_error ? `Error: ${store.setup_data_error}` : "";
+  const oemCodes = store.setup_data?.oemDealerCodes?.join(", ") || setupError;
+
   return {
     "Tekion ID": store.tekion_id || "",
     "Dealer ID": store.dealer_id || "",
@@ -162,6 +170,19 @@ export function mapStoreToExcelRow(store: StoreRecord): StoreExcelRow {
     "Blueprint CRM Last Released Time": formatDateTime(store.blueprint_statuses?.crm_last_released_time),
     "Blueprint Analytics": toStatusText(store.blueprint_statuses?.analytics),
     "Blueprint Analytics Last Released Time": formatDateTime(store.blueprint_statuses?.analytics_last_released_time),
+    "OEM Dealer Codes": oemCodes,
+    "Journals Accessible Count":
+      store.setup_data?.journalsAccessibleDealerCount != null
+        ? String(store.setup_data.journalsAccessibleDealerCount)
+        : "",
+    "Sales Chains Accessible Count":
+      store.setup_data?.salesChainsAccessibleDealerCount != null
+        ? String(store.setup_data.salesChainsAccessibleDealerCount)
+        : "",
+    "COA Accessible Count":
+      store.setup_data?.coaAccessibleDealerCount != null
+        ? String(store.setup_data.coaAccessibleDealerCount)
+        : "",
     "Fixed Ops": store.fixed_ops_status || store.configuration_status || "TO DO",
     "Variable Ops": store.variable_ops_status || "TO DO",
     "SignOff Parts": toStatusText(store.signoff_statuses?.parts),
@@ -172,6 +193,9 @@ export function mapStoreToExcelRow(store: StoreRecord): StoreExcelRow {
     "SignOff Accounting Last Released Time": formatDateTime(store.signoff_statuses?.accounting_last_released_time),
     Testing: store.testing_status || "TO DO",
     "Status Fetched At": formatDateTime(store.onboarding_status_fetched_at),
+    "Setup Data Fetched At": formatDateTime(
+      store.setup_data_fetched_at || store.setup_data?.fetchedAt
+    ),
   };
 }
 

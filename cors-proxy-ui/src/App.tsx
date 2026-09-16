@@ -11,6 +11,8 @@ import { Accounting } from "./pages/Accounting/Accounting";
 import { Analytics } from "./pages/Analytics/Analytics";
 import { Adhoc } from "./pages/Adhoc/Adhoc";
 import { TGPT } from "./pages/TGPT/TGPT";
+import { SyncBotDashboard } from "./pages/SyncBotDashboard";
+import { SyncHealthBanner } from "./components/SyncHealthBanner";
 import "./app.css";
 
 export type PageId =
@@ -25,7 +27,8 @@ export type PageId =
   | "accounting"
   | "analytics"
   | "adhoc"
-  | "tgpt";
+  | "tgpt"
+  | "syncbot";
 
 export interface NavItem {
   id: Exclude<PageId, "home" | "settings">;
@@ -48,6 +51,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: "blueprint", label: "Blueprint", icon: "🧬", category: "utility" },
   { id: "bootstrap", label: "Bootstrap", icon: "📦", category: "utility" },
   { id: "validation", label: "GL Validation", icon: "✅", category: "utility" },
+  { id: "syncbot", label: "Sync Bot", icon: "🤖", category: "utility" },
 ];
 
 export default function App() {
@@ -63,6 +67,11 @@ export default function App() {
         activePage={page}
         onNavigate={setPage}
         onLogoClick={goHome}
+      />
+
+      <SyncHealthBanner
+        onOpenSettings={() => setPage("settings")}
+        onOpenDashboard={() => setPage("syncbot")}
       />
 
       <main className="app-shell-content">
@@ -190,6 +199,8 @@ function renderPage(
       return <Adhoc onBack={onBack} />;
     case "tgpt":
       return <TGPT onBack={onBack} />;
+    case "syncbot":
+      return <SyncBotDashboard onBack={onBack} />;
     default:
       return null;
   }

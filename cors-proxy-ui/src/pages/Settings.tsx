@@ -31,6 +31,12 @@ import { JwtDebugger } from "../components/JwtDebugger";
 import { GlobalHeadersPanel } from "../components/GlobalHeadersPanel";
 import { SelectableHeaderMap } from "../components/SelectableHeaderMap";
 import type { KeyValuePair } from "../types/proxy.types";
+import { getStores } from "../services/storesDb";
+import {
+  decodeBlueprintsForDealer,
+  persistBlueprintDecodeResult,
+  ALL_BLUEPRINT_MODULES,
+} from "../services/blueprintDecodeBot";
 
 const MAX_PROFILE_AGE_MS = 48 * 60 * 60 * 1000;
 const TOC_API_ENDPOINT = "https://us-west1-tapapi.tekioncloud.com/tapapi/v2/usermanagement/getuserprofile";
@@ -125,29 +131,31 @@ const TOKEN_FIELDS: TokenFieldConfig[] = [
       "Legacy field preserved for older flows. Stores dashboard now uses TOC API captured request headers automatically.",
   },
   {
-    key: "graphApiToken",
-    icon: "☁️",
-    title: "Microsoft Graph API Token",
-    label: "GRAPH API Token",
-    placeholder: "Paste Microsoft Graph bearer token here",
-    rows: 8,
-    authType: "bearer",
-    extraPreviewLines: [
-      "Workbook: /T-90 Dealers GoLive - ARC.xlsx",
-      "Sheets: month-wise like Jul 2026",
-    ],
-    validate: (value: string) => {
-      const trimmed = value.trim();
-      if (!trimmed) return undefined;
-      const parts = trimmed.split(".");
-      const looksLikeJwt =
-        parts.length === 3 && parts.every((part) => part.trim().length > 0);
-      return looksLikeJwt
-        ? undefined
-        : "This token does not look like a JWT bearer token. Please verify the pasted value.";
+      key: "graphApiToken",
+      icon: "☁️",
+      title: "Microsoft Graph API Token",
+      label: "GRAPH API Token",
+      placeholder: "Auto-captured via SPFx or paste Microsoft Graph bearer token here",
+      rows: 8,
+      authType: "bearer",
+      extraPreviewLines: [
+        "Target: T-90 Arc Dealerss.xlsx",
+        "Site: tekion.sharepoint.com/sites/configteam",
+        "Auto-Sniffed: Via SPFx single sign-on",
+      ],
+      validate: (value: string) => {
+        const trimmed = value.trim();
+        if (!trimmed) return undefined;
+        const parts = trimmed.split(".");
+        const looksLikeJwt =
+          parts.length === 3 && parts.every((part) => part.trim().length > 0);
+        return looksLikeJwt
+          ? undefined
+          : "This token does not look like a JWT bearer token. Please verify the pasted value.";
+      },
+      infoText:
+        "Captured automatically by the ARC extension when visiting the SharePoint T-90 Arc Dealerss workbook, or paste manually.",
     },
-    infoText: "Paste a valid bearer token with Files.ReadWrite access.",
-  },
 ];
 
 function buildEmptyTokens(): Record<TokenFieldKey, string> {
@@ -514,10 +522,10 @@ const DealerProfileCard: React.FC<DealerProfileCardProps> = React.memo(
           }}
         >
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ color: "#f8fafc", fontSize: 15, fontWeight: 800 }}>
+            <div style={{ color: "#f8fafc", fontSize: 15, fontWeight: 800, wordBreak: "break-word" }}>
               🏬 {profile.dealerId || "Unknown Dealer"}
             </div>
-            <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 4 }}>
+            <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 4, wordBreak: "break-word" }}>
               {profile.tenantName || "Unknown Tenant"}
             </div>
           </div>
@@ -768,9 +776,9 @@ const WatchRulesManager: React.FC = () => {
             <div
               key={rule.id}
               className="compact-card"
-              style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}
             >
-              <div>
+              <div style={{ minWidth: 0, flex: 1, wordBreak: "break-word" }}>
                 <div style={{ color: "#f8fafc", fontWeight: 700, fontSize: 14 }}>{rule.label}</div>
                 <div style={{ color: "#94a3b8", fontSize: 12, fontFamily: "monospace" }}>{rule.pattern}</div>
                 <div style={{ color: "#64748b", fontSize: 11, marginTop: 4 }}>
@@ -781,7 +789,7 @@ const WatchRulesManager: React.FC = () => {
                 type="button"
                 className="btn-cancel-bulk"
                 onClick={() => removeRule(rule.id)}
-                style={{ padding: "6px 12px", fontSize: 12 }}
+                style={{ padding: "6px 12px", fontSize: 12, flexShrink: 0 }}
               >
                 Remove
               </button>
@@ -976,6 +984,58 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
 
   const warningCount = Object.keys(warnings).length;
 
+  // Blueprint Decode Bot: auto-fetch + decode Parts/Service/Accounting
+  // blueprints for whichever dealer was just selected. Bridges the two
+  // separate "selected dealer" identities in this app - the profile here
+  // only has dealerId/tenantName, while the blueprint APIs need the
+  // matching StoreRecord's tekion_id - by looking up the Stores IndexedDB
+  // for a record whose dealer_id matches. Fire-and-forget: never blocks or
+  // fails the header-apply action above, and stays silent if no matching
+  // store is found (not every profile will have one).
+  const autoDecodeBlueprintsForProfile = useCallback(async (profile: ArcTekionProfile) => {
+    const dealerId = profile.dealerId?.trim();
+    if (!dealerId) return;
+
+    try {
+      const stores = await getStores();
+      const store = stores.find((s) => s.dealer_id === dealerId);
+      if (!store?.tekion_id) return;
+
+      const results = await decodeBlueprintsForDealer(
+        store.tekion_id,
+        ALL_BLUEPRINT_MODULES,
+        store.dba_name
+      );
+
+      if (results.length === 0) {
+        showMessage("warning", `No blueprint forms found for Dealer ${dealerId} (Parts/Service/Accounting).`);
+        return;
+      }
+
+      await Promise.all(
+        results.map((item) => persistBlueprintDecodeResult(store.tekion_id, dealerId, item))
+      );
+
+      const totalMissing = results.reduce((sum, r) => sum + r.missingCount, 0);
+      const moduleSummary = results
+        .map((r) => `${r.module} (${r.missingCount}/${r.totalCount} missing)`)
+        .join(", ");
+
+      showMessage(
+        totalMissing > 0 ? "warning" : "success",
+        `Blueprint Decode Bot: decoded ${results.length} form(s) for Dealer ${dealerId} - ${moduleSummary}.`
+      );
+    } catch (err: unknown) {
+      logger.warn("Blueprint Decode Bot auto-fetch failed", err);
+      showMessage(
+        "warning",
+        `Blueprint Decode Bot could not auto-fetch for Dealer ${dealerId}: ${
+          err instanceof Error ? err.message : "unknown error"
+        }`
+      );
+    }
+  }, [showMessage]);
+
   const handleSelectDealerProfile = useCallback(
     (profile: ArcTekionProfile) => {
       const pairs = toKeyValuePairs(profile.bootstrapHeaders);
@@ -984,8 +1044,9 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
       setGlobalHeaders(pairs);
       saveGlobalHeaders(pairs);
       showMessage("success", `Applied ${pairs.length} headers from Dealer ${profile.dealerId}`);
+      void autoDecodeBlueprintsForProfile(profile);
     },
-    [showMessage]
+    [showMessage, autoDecodeBlueprintsForProfile]
   );
 
   const handleSelectStoresProfileCapture = useCallback(
