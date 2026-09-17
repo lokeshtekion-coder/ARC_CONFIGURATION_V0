@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { logError } from "../utils/logger";
 
 const router = Router();
 
@@ -63,6 +64,7 @@ router.post("/tekion-token", async (req: Request, res: Response) => {
     return res.json({ token, expiresAt });
 
   } catch (err: unknown) {
+    logError("settings", "POST /tekion-token failed", err, { endpoint: url });
     return res.status(500).json({
       error: err instanceof Error ? err.message : "Token fetch failed",
     });
@@ -110,6 +112,7 @@ router.get("/ms-photo", async (req: Request, res: Response) => {
     return res.send(buffer);
 
   } catch (err: unknown) {
+    logError("settings", "GET /ms-photo failed", err, { email });
     return res.status(500).json({
       error: err instanceof Error ? err.message : "Photo fetch failed",
     });

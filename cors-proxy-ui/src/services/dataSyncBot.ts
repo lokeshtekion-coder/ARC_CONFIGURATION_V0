@@ -8,7 +8,23 @@ export interface SyncHealthAlert {
   severity: SyncHealthSeverity;
   title: string;
   detail: string;
+  // Exact page to open to re-trigger the capture, when known. Rendered as a
+  // clickable link in the banner/dashboard instead of just telling the user
+  // which page to go find themselves.
+  actionUrl?: string;
+  actionLabel?: string;
 }
+
+// Real page URLs used to re-trigger each capture, kept in one place so the
+// alert text and the "Open Page" links can't drift apart from each other.
+const RECAPTURE_URLS = {
+  sharePointT90:
+    "https://tekion.sharepoint.com/:x:/r/sites/configteam/_layouts/15/Doc.aspx?sourcedoc=%7B5888FB41-2664-43BE-A422-A79E7D2E7FB6%7D&file=T-90%20Arc%20Dealerss.xlsx&action=default&mobileredirect=true",
+  slack: "https://tekion.enterprise.slack.com",
+  // TOC API (/getuserprofile) auto-captures from this page - see Settings.tsx.
+  tapWorkorders: "https://tap.tekioncloud.com/workorders/list",
+  techMotorsEmployeeProfile: "https://app.tekioncloud.com",
+} as const;
 
 export interface SyncHealthReport {
   alerts: SyncHealthAlert[];
@@ -57,16 +73,18 @@ function checkTokenFreshness(
   token: string | undefined,
   expiresAt: number | undefined,
   missingSeverity: SyncHealthSeverity,
-  missingDetail: string
+  missingDetail: string,
+  actionUrl?: string,
+  actionLabel?: string
 ): SyncHealthAlert | null {
   if (!token) {
-    return { id: `${idPrefix}-missing`, severity: missingSeverity, title: `${label} missing`, detail: missingDetail };
+    return { id: `${idPrefix}-missing`, severity: missingSeverity, title: `${label} missing`, detail: missingDetail, actionUrl, actionLabel };
   }
 
   if (typeof expiresAt === "number") {
     const remainingMs = expiresAt - Date.now();
     if (remainingMs <= 0) {
-      return { id: `${idPrefix}-expired`, severity: "critical", title: `${label} expired`, detail: missingDetail };
+      return { id: `${idPrefix}-expired`, severity: "critical", title: `${label} expired`, detail: missingDetail, actionUrl, actionLabel };
     }
     if (remainingMs <= EXPIRY_WARN_WINDOW_MS) {
       return {
@@ -74,6 +92,8 @@ function checkTokenFreshness(
         severity: "warn",
         title: `${label} expiring soon`,
         detail: `Expires in ~${Math.max(1, Math.round(remainingMs / 60000))}m - ${missingDetail}`,
+        actionUrl,
+        actionLabel,
       };
     }
   }
@@ -92,21 +112,37 @@ function checkHeaderMapJwtFreshness(
   label: string,
   idPrefix: string,
   headers: Record<string, string> | undefined,
-  missingDetail: string
+  missingDetail: string,
+  actionUrl?: string,
+  actionLabel?: string
 ): SyncHealthAlert | null {
   const token = extractBearerToken(headers?.authorization);
   if (!token) {
-    return { id: `${idPrefix}-missing`, severity: "warn", title: `${label} missing`, detail: missingDetail };
+    return { id: `${idPrefix}-missing`, severity: "warn", title: `${label} missing`, detail: missingDetail, actionUrl, actionLabel };
   }
 
   const decoded = decodeJwt(token);
   if (decoded.error) return null; // not a decodable JWT - can't say anything useful, don't guess
 
   if (decoded.isExpired) {
-    return { id: `${idPrefix}-expired`, severity: "critical", title: `${label} expired`, detail: missingDetail };
+    return { id: `${idPrefix}-expired`, severity: "critical", title: `${label} expired`, detail: missingDetail, actionUrl, actionLabel };
   }
 
   return null;
+}
+
+// TOC API (/getuserprofile custom capture, see Settings.tsx) is now the
+// primary auth source for Blueprint fetching and Stores onboarding status.
+// TapDuo/Implementation headers are only a legacy fallback the code checks
+// *after* TOC API - so they're only worth alerting on when TOC API is ALSO
+// missing; otherwise the fallback is simply unused and the alert is noise.
+function hasTocApiCapture(capture: { customCaptures?: Record<string, { pattern?: string; matchedUrl?: string }> }): boolean {
+  const captures = Object.values(capture.customCaptures ?? {});
+  return captures.some((c) => {
+    const pattern = (c.pattern || "").toLowerCase();
+    const url = (c.matchedUrl || "").toLowerCase();
+    return pattern.includes("getuserprofile") || url.includes("getuserprofile");
+  });
 }
 
 async function fetchBotHealth(): Promise<BotHealthData | null> {
@@ -115,8 +151,11 @@ async function fetchBotHealth(): Promise<BotHealthData | null> {
     if (!res.ok) return null;
     const json = (await res.json()) as BotHealthResponse;
     return json.success && json.data ? json.data : null;
-  } catch {
-    // Backend not reachable - don't fail the whole report over it, just skip.
+  } catch (err) {
+    // Backend not reachable - don't fail the whole report over it, just skip,
+    // but still log it once so "why is bootstrap data missing" is answerable
+    // from the console instead of failing completely silently.
+    console.warn("[dataSyncBot] Backend /api/bot/health unreachable:", err instanceof Error ? err.message : err);
     return null;
   }
 }
@@ -150,19 +189,14 @@ export async function deleteStaleSnapshots(dealerIds: string[]): Promise<DeleteS
   return json.data;
 }
 
+// Only ever warns about staleness/expiry of snapshots that already exist -
+// "no snapshots yet" is not itself a problem (a dealer profile existing in
+// Settings doesn't imply a bootstrap sync has been run, or needs to have
+// been), so it's intentionally not flagged here.
 function checkBootstrapFreshness(data: BotHealthData | null): SyncHealthAlert | null {
   if (!data) return null;
 
-  const { totalDealers, staleDealerCount, staleDealerIds, newestSnapshotAgeHours, staleThresholdHours } = data;
-
-  if (totalDealers === 0) {
-    return {
-      id: "bootstrap-none",
-      severity: "warn",
-      title: "No bootstrap snapshots captured yet",
-      detail: "Run a bootstrap/stores sync at least once to establish a baseline.",
-    };
-  }
+  const { staleDealerCount, staleDealerIds, newestSnapshotAgeHours, staleThresholdHours } = data;
 
   if (staleDealerCount > 0) {
     return {
@@ -188,7 +222,9 @@ export async function runDataSyncHealthCheck(): Promise<SyncHealthReport> {
     capture.graphApiToken,
     capture.graphExpiresAt,
     "critical",
-    "open the SharePoint T-90 page in your browser so the extension can auto-capture a fresh one."
+    "open the SharePoint T-90 page in your browser so the extension can auto-capture a fresh one.",
+    RECAPTURE_URLS.sharePointT90,
+    "Open T-90 SharePoint"
   );
   if (graphAlert) alerts.push(graphAlert);
 
@@ -199,34 +235,39 @@ export async function runDataSyncHealthCheck(): Promise<SyncHealthReport> {
       severity: "warn",
       title: "Slack session not detected",
       detail: "Open or reload a Slack tab so the extension can capture your session.",
+      actionUrl: RECAPTURE_URLS.slack,
+      actionLabel: "Open Slack",
     });
   }
 
-  if (!capture.tapDuoApiToken) {
+  // TapDuo API token and the Tekion Implementation header are both legacy
+  // fallbacks - Blueprint fetching and Stores onboarding status now prefer
+  // the TOC API (/getuserprofile) custom capture (auto-selected as default
+  // in Settings > TOC API). Only alert on these if TOC API is ALSO missing,
+  // otherwise they're an unused fallback and the alert is just noise.
+  const tocCaptured = hasTocApiCapture(capture);
+
+  if (!tocCaptured && !capture.tapDuoApiToken) {
     alerts.push({
       id: "tapduo-missing",
       severity: "warn",
       title: "TapDuo API token missing",
-      // Captured as a byproduct of the Tekion Implementation/Bootstrap
-      // header captures below (background.ts reads the "tap-duo-api-token"
-      // header off those requests) - not from a dedicated TapDuo endpoint.
-      // Used by blueprintFormsApi.ts (Blueprint Decode Bot) and
-      // storeOnboardingStatusApi.ts (Stores onboarding status) as a
-      // fallback auth header.
-      detail: "Not captured yet - it piggybacks on the Tekion Implementation/Bootstrap header captures below, so visiting either of those pages will also populate this. Needed by Blueprint fetching and the Stores onboarding-status check.",
+      detail: "Not captured yet, and TOC API (/getuserprofile) hasn't been captured either - open TAP Workorders so the extension can capture TOC API, which covers Blueprint fetching and the Stores onboarding-status check.",
+      actionUrl: RECAPTURE_URLS.tapWorkorders,
+      actionLabel: "Open TAP Workorders",
     });
   }
 
-  const implementationAlert = checkHeaderMapJwtFreshness(
-    "Tekion Implementation header",
-    "tekion-implementation",
-    capture.tekionImplementationHeaders,
-    // Real consumers: blueprintFormsApi.ts (Blueprint Decode Bot fallback
-    // headers) and storeOnboardingStatusApi.ts (Stores onboarding status).
-    // Captured from any request to us-west1-tapapi.tekioncloud.com's
-    // implementation-dealer-st endpoint.
-    "used as a fallback auth header for Blueprint fetching and Stores onboarding status - reopen a Tekion Implementation/Dealer Setup page so the extension can re-capture it."
-  );
+  const implementationAlert = tocCaptured
+    ? null
+    : checkHeaderMapJwtFreshness(
+        "Tekion Implementation header",
+        "tekion-implementation",
+        capture.tekionImplementationHeaders,
+        "TOC API (/getuserprofile) hasn't been captured either - open TAP Workorders so the extension can capture it; that covers Blueprint fetching and Stores onboarding status without needing this fallback header.",
+        RECAPTURE_URLS.tapWorkorders,
+        "Open TAP Workorders"
+      );
   if (implementationAlert) alerts.push(implementationAlert);
 
   const bootstrapHeaderAlert = checkHeaderMapJwtFreshness(
@@ -247,7 +288,9 @@ export async function runDataSyncHealthCheck(): Promise<SyncHealthReport> {
     // Real consumers: Parts > Dealer Configuration and Parts > OEM ID
     // request views. Captured from app.tekioncloud.com's employee profile
     // endpoint specifically.
-    "used by Parts > Dealer Configuration and Parts > OEM ID Request - reopen the Tekion employee profile page (app.tekioncloud.com) so the extension can re-capture a fresh header."
+    "used by Parts > Dealer Configuration and Parts > OEM ID Request - reopen the Tekion employee profile page (app.tekioncloud.com) so the extension can re-capture a fresh header.",
+    RECAPTURE_URLS.techMotorsEmployeeProfile,
+    "Open app.tekioncloud.com"
   );
   if (techMotorsAlert) alerts.push(techMotorsAlert);
 

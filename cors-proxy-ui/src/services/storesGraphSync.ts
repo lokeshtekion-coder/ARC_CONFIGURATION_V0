@@ -9,14 +9,15 @@ import {
 
 const GRAPH_BASE = "https://graph.microsoft.com/v1.0";
 
-export const SHAREPOINT_DRIVE_ID = "b!CtlfXMp9l0y0QRmkSWK2oZqgrpwIJwZEtu62RScE-gY47Sr8CDY7S7HPla3fSuMb";
+export const SHAREPOINT_DRIVE_ID =
+  "b!CtlfXMp9l0y0QRmkSWK2oZqgrpwIJwZEtu62RScE-gY47Sr8CDY7S7HPla3fSuMb";
 export const SHAREPOINT_ITEM_ID = "01B46CXZ2B7OEFQZBGXZB2IIVHTZ6S475W";
 export const SHAREPOINT_WORKBOOK_PATH = "T-90 Arc Dealerss.xlsx";
 export const SHAREPOINT_DOC_URL =
   "https://tekion.sharepoint.com/:x:/r/sites/configteam/_layouts/15/Doc.aspx?sourcedoc=%7B5888FB41-2664-43BE-A422-A79E7D2E7FB6%7D&file=T-90%20Arc%20Dealerss.xlsx&action=default&mobileredirect=true";
 
 const CHUNK_SIZE = 500;
-const FORMAT_CONCURRENCY = 3; // Lowered to prevent Graph workbook 429 / ResourceLocked throttling
+const FORMAT_CONCURRENCY = 3;
 
 const STATUS_HEADERS = [
   "Blueprint Parts",
@@ -63,13 +64,24 @@ export interface GraphSyncResult {
   formattedCellCount: number;
 }
 
+export interface MergedGraphSyncResult extends GraphSyncResult {
+  updatedStores: StoreRecord[];
+}
+
+interface RemoteExcelRowData {
+  tekionId: string;
+  fixedOpsStatus?: string;
+  variableOpsStatus?: string;
+  testingStatus?: string;
+}
+
 function workbookBaseUrl(): string {
   return `${GRAPH_BASE}/drives/${SHAREPOINT_DRIVE_ID}/items/${SHAREPOINT_ITEM_ID}/workbook`;
 }
 
 function validateGraphTokenScope(token: string): void {
   const parts = token.split(".");
-  if (parts.length !== 3) return; // not a decodable JWT - let Graph be the source of truth
+  if (parts.length !== 3) return;
 
   let payload: { scp?: string; appid?: string; app_displayname?: string };
   try {
@@ -77,7 +89,7 @@ function validateGraphTokenScope(token: string): void {
     const padded = base64 + "=".repeat((4 - (base64.length % 4 || 4)) % 4);
     payload = JSON.parse(atob(padded)) as typeof payload;
   } catch {
-    return; // couldn't decode the claims - don't block, let Graph be the source of truth
+    return;
   }
 
   if (payload.appid === "89bee1f7-5e6e-4d8a-9f3d-ecd601259da7") {
@@ -86,11 +98,6 @@ function validateGraphTokenScope(token: string): void {
     );
   }
 
-  // Previously this check was skipped entirely for the SPFx client id and any
-  // failure was silently swallowed by an overly broad try/catch, so an
-  // under-scoped token (e.g. missing tenant admin consent for
-  // Files.ReadWrite.All/Sites.ReadWrite.All) sailed through to Graph and
-  // died with a bare "accessDenied" instead of a clear, actionable message.
   const scp = payload.scp || "";
   if (!scp.includes("Files.ReadWrite.All") && !scp.includes("Sites.ReadWrite.All")) {
     throw new Error(
@@ -101,7 +108,7 @@ function validateGraphTokenScope(token: string): void {
 
 async function readErrorMessage(res: Response): Promise<string> {
   try {
-    const data = await res.json();
+    const data = (await res.json()) as { error?: { code?: string; message?: string } };
     const code = data?.error?.code;
     const message = data?.error?.message;
     if (code && message) return `${code}: ${message}`;
@@ -143,7 +150,6 @@ async function graphRequest<T = unknown>(
     headers,
   });
 
-  // Handle transient 429 rate-limiting and 503 lockouts with exponential backoff
   if ((res.status === 429 || res.status === 503) && retryCount < 3) {
     const retryAfter = Number(res.headers.get("Retry-After")) || Math.pow(2, retryCount + 1);
     await sleep(retryAfter * 1000);
@@ -166,7 +172,6 @@ async function graphRequest<T = unknown>(
   return JSON.parse(text) as T;
 }
 
-// Throws detailed error instead of returning null
 async function createSession(token: string): Promise<string> {
   try {
     const data = await graphRequest<GraphSessionInfo>(
@@ -190,19 +195,11 @@ async function createSession(token: string): Promise<string> {
 async function closeSession(token: string, sessionId?: string | null): Promise<void> {
   if (!sessionId) return;
   try {
-    await graphRequest(
-      "/closeSession",
-      token,
-      { method: "POST" },
-      sessionId
-    );
+    await graphRequest("/closeSession", token, { method: "POST" }, sessionId);
   } catch {}
 }
 
-async function listWorksheetNames(
-  token: string,
-  sessionId?: string | null
-): Promise<string[]> {
+async function listWorksheetNames(token: string, sessionId?: string | null): Promise<string[]> {
   const data = await graphRequest<{ value?: Array<{ name?: string }> }>(
     "/worksheets",
     token,
@@ -222,20 +219,11 @@ async function addWorksheet(
 ): Promise<void> {
   const payload = JSON.stringify({ name: sheetName });
   const candidatePaths = ["/worksheets/add", "/worksheets"];
-
   let lastError: unknown = null;
 
   for (const path of candidatePaths) {
     try {
-      await graphRequest(
-        path,
-        token,
-        {
-          method: "POST",
-          body: payload,
-        },
-        sessionId
-      );
+      await graphRequest(path, token, { method: "POST", body: payload }, sessionId);
       return;
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Unknown worksheet error";
@@ -328,7 +316,6 @@ async function patchRangeValues(
   sessionId?: string | null
 ): Promise<void> {
   if (values.length === 0) return;
-
   const columnCount = values[0]?.length ?? 0;
   if (columnCount === 0) return;
 
@@ -337,10 +324,7 @@ async function patchRangeValues(
   await graphRequest(
     `/worksheets/${encodeURIComponent(sheetName)}/range(address='${address}')`,
     token,
-    {
-      method: "PATCH",
-      body: JSON.stringify({ values }),
-    },
+    { method: "PATCH", body: JSON.stringify({ values }) },
     sessionId
   );
 }
@@ -364,7 +348,6 @@ async function clearWorksheetRect(
     );
 
     await patchRangeValues(token, sheetName, currentRow, blankRows, sessionId);
-
     currentRow += take;
     remaining -= take;
   }
@@ -385,19 +368,13 @@ async function patchRangeFillAndFont(
     graphRequest(
       `${base}/fill`,
       token,
-      {
-        method: "PATCH",
-        body: JSON.stringify({ color: fillColor }),
-      },
+      { method: "PATCH", body: JSON.stringify({ color: fillColor }) },
       sessionId
     ),
     graphRequest(
       `${base}/font`,
       token,
-      {
-        method: "PATCH",
-        body: JSON.stringify({ color: fontColor, bold }),
-      },
+      { method: "PATCH", body: JSON.stringify({ color: fontColor, bold }) },
       sessionId
     ),
   ]);
@@ -434,7 +411,7 @@ function getStatusPalette(rawValue?: string): StatusPalette {
     };
   }
 
-  if (value === "IN_PROGRESS") {
+  if (value === "IN_PROGRESS" || value === "WIP") {
     return {
       key: "in_progress",
       fillColor: "#FEF3C7",
@@ -455,11 +432,7 @@ async function resetStatusFormattingArea(
   totalRowCount: number,
   sessionId?: string | null
 ): Promise<void> {
-  if (
-    STATUS_START_COLUMN_INDEX < 0 ||
-    STATUS_END_COLUMN_INDEX < 0 ||
-    totalRowCount < 2
-  ) {
+  if (STATUS_START_COLUMN_INDEX < 0 || STATUS_END_COLUMN_INDEX < 0 || totalRowCount < 2) {
     return;
   }
 
@@ -483,7 +456,6 @@ async function resetStatusFormattingArea(
 
 function buildStatusFormatOps(rows: StoreExcelRow[]): RangeFormatOp[] {
   if (rows.length === 0) return [];
-
   const ops: RangeFormatOp[] = [];
 
   for (const header of STATUS_HEADERS) {
@@ -544,14 +516,10 @@ async function applyStatusFormatting(
   sessionId?: string | null
 ): Promise<FormatStats> {
   if (rows.length === 0) {
-    return {
-      rangeCount: 0,
-      cellCount: 0,
-    };
+    return { rangeCount: 0, cellCount: 0 };
   }
 
   await resetStatusFormattingArea(token, sheetName, totalRowsCleared, sessionId);
-
   const ops = buildStatusFormatOps(rows);
 
   await runWithConcurrency(ops, FORMAT_CONCURRENCY, async (op) => {
@@ -572,9 +540,174 @@ async function applyStatusFormatting(
   };
 }
 
+function resolveStatusPriority(
+  localStatus?: string,
+  remoteStatus?: string
+): "TO DO" | "WIP" | "Completed" {
+  const normalize = (val?: string): "TO DO" | "WIP" | "Completed" => {
+    const s = (val || "").trim().toUpperCase();
+    if (s === "COMPLETED") return "Completed";
+    if (s === "WIP" || s === "IN_PROGRESS") return "WIP";
+    return "TO DO";
+  };
+
+  const l = normalize(localStatus);
+  const r = normalize(remoteStatus);
+
+  const priorityScore: Record<string, number> = {
+    Completed: 3,
+    WIP: 2,
+    "TO DO": 1,
+  };
+
+  return (priorityScore[r] ?? 1) > (priorityScore[l] ?? 1) ? r : l;
+}
+
+async function fetchExistingWorkbookData(
+  token: string,
+  sheetNames: string[],
+  sessionId?: string | null
+): Promise<Map<string, RemoteExcelRowData>> {
+  const remoteMap = new Map<string, RemoteExcelRowData>();
+
+  for (const sheetName of sheetNames) {
+    try {
+      const data = await graphRequest<{ values?: string[][] }>(
+        `/worksheets/${encodeURIComponent(sheetName)}/usedRange`,
+        token,
+        { method: "GET" },
+        sessionId
+      );
+
+      const rows = data?.values;
+      if (!rows || rows.length < 2) continue;
+
+      const headerRow = rows[0].map((h) => String(h || "").trim().toLowerCase());
+
+      const tekionIdIdx = headerRow.findIndex((h) => h === "tekion id");
+      const fixedOpsIdx = headerRow.findIndex((h) => h === "fixed ops");
+      const variableOpsIdx = headerRow.findIndex((h) => h === "variable ops");
+      const testingIdx = headerRow.findIndex((h) => h === "testing");
+
+      if (tekionIdIdx === -1) continue;
+
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const tekionId = String(row[tekionIdIdx] || "").trim();
+        if (!tekionId) continue;
+
+        remoteMap.set(tekionId, {
+          tekionId,
+          fixedOpsStatus: fixedOpsIdx !== -1 ? String(row[fixedOpsIdx] || "").trim() : undefined,
+          variableOpsStatus:
+            variableOpsIdx !== -1 ? String(row[variableOpsIdx] || "").trim() : undefined,
+          testingStatus: testingIdx !== -1 ? String(row[testingIdx] || "").trim() : undefined,
+        });
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  return remoteMap;
+}
+
+function mergeLocalAndRemoteStores(
+  localStores: StoreRecord[],
+  remoteMap: Map<string, RemoteExcelRowData>
+): StoreRecord[] {
+  return localStores.map((local) => {
+    const remote = remoteMap.get(local.tekion_id);
+    if (!remote) return local;
+
+    const fixed_ops_status = resolveStatusPriority(
+      local.fixed_ops_status,
+      remote.fixedOpsStatus
+    );
+    const variable_ops_status = resolveStatusPriority(
+      local.variable_ops_status,
+      remote.variableOpsStatus
+    );
+    const testing_status = resolveStatusPriority(
+      local.testing_status,
+      remote.testingStatus
+    );
+
+    return {
+      ...local,
+      fixed_ops_status,
+      variable_ops_status,
+      testing_status,
+    };
+  });
+}
+
+/**
+ * Lightweight Background Reader:
+ * Pulls current Excel state without writing or reformatting.
+ * Validates tekion_id, checks for changes, and returns updated records.
+ */
+export async function pullStatusUpdatesFromGraph(
+  currentRecords: StoreRecord[]
+): Promise<{ updatedStores: StoreRecord[]; hasChanges: boolean }> {
+  if (!currentRecords.length) {
+    return { updatedStores: currentRecords, hasChanges: false };
+  }
+
+  const settings = loadTekionApiSettings();
+  const token = settings.graphApiToken?.trim();
+  if (!token) {
+    return { updatedStores: currentRecords, hasChanges: false };
+  }
+
+  try {
+    const sheetNames = await listWorksheetNames(token);
+    const remoteDataMap = await fetchExistingWorkbookData(token, sheetNames);
+
+    let hasChanges = false;
+
+    const updatedStores = currentRecords.map((local) => {
+      const remote = remoteDataMap.get(local.tekion_id);
+      if (!remote) return local;
+
+      const nextFixed = resolveStatusPriority(local.fixed_ops_status, remote.fixedOpsStatus);
+      const nextVar = resolveStatusPriority(local.variable_ops_status, remote.variableOpsStatus);
+      const nextTesting = resolveStatusPriority(local.testing_status, remote.testingStatus);
+
+      if (
+        nextFixed !== local.fixed_ops_status ||
+        nextVar !== local.variable_ops_status ||
+        nextTesting !== local.testing_status
+      ) {
+        hasChanges = true;
+        return {
+          ...local,
+          fixed_ops_status: nextFixed,
+          variable_ops_status: nextVar,
+          testing_status: nextTesting,
+        };
+      }
+
+      return local;
+    });
+
+    return { updatedStores, hasChanges };
+  } catch (err: unknown) {
+    console.debug("[storesGraphSync] Silent poll skipped:", err);
+    return { updatedStores: currentRecords, hasChanges: false };
+  }
+}
+
+/**
+ * Authoritative Two-Way Sync:
+ * 1. Reads remote Excel records
+ * 2. Merges with local records (escalating Completed > WIP > TO DO)
+ * 3. Rewrites and styles the sheets
+ * 4. Returns merged records for local state/vault update
+ */
 export async function syncStoresToGraphWorkbook(
   records: StoreRecord[]
-): Promise<GraphSyncResult> {
+): Promise<MergedGraphSyncResult> {
   if (!records.length) {
     throw new Error("No store records available to sync");
   }
@@ -588,31 +721,35 @@ export async function syncStoresToGraphWorkbook(
     );
   }
 
-  // Pre-flight check: ensures token has Files.ReadWrite.All before starting workbook work
   validateGraphTokenScope(token);
-
-  const groups = groupStoresByMonth(records);
-  if (groups.length === 0) {
-    throw new Error("No monthly groups available to sync");
-  }
-
-  // Establishes a dedicated workbook session
   const sessionId = await createSession(token);
 
   try {
-    const existingSheets = new Set(await listWorksheetNames(token, sessionId));
+    const existingSheets = await listWorksheetNames(token, sessionId);
+
+    // Read current operational statuses from Excel
+    const remoteDataMap = await fetchExistingWorkbookData(token, existingSheets, sessionId);
+
+    // Merge remote statuses with local records (Completed > WIP > TO DO)
+    const mergedRecords = mergeLocalAndRemoteStores(records, remoteDataMap);
+
+    const groups = groupStoresByMonth(mergedRecords);
+    if (groups.length === 0) {
+      throw new Error("No monthly groups available to sync");
+    }
+
+    const existingSheetSet = new Set(existingSheets);
     let formattedRangeCount = 0;
     let formattedCellCount = 0;
 
     for (const group of groups) {
-      await ensureWorksheet(token, group.sheetName, existingSheets, sessionId);
+      await ensureWorksheet(token, group.sheetName, existingSheetSet, sessionId);
 
       const dataRows = rowsToMatrix(group.rows);
       const newTotalRows = dataRows.length + 1;
       const existingRowCount = await getUsedRangeRowCount(token, group.sheetName, sessionId);
       const clearRows = Math.max(existingRowCount, newTotalRows, 1);
 
-      // 1. Clear previous rows
       await clearWorksheetRect(
         token,
         group.sheetName,
@@ -621,7 +758,6 @@ export async function syncStoresToGraphWorkbook(
         sessionId
       );
 
-      // 2. Write headers
       await patchRangeValues(
         token,
         group.sheetName,
@@ -630,7 +766,6 @@ export async function syncStoresToGraphWorkbook(
         sessionId
       );
 
-      // 3. Write data rows
       let currentRow = 2;
       let remaining = dataRows.slice();
 
@@ -641,7 +776,6 @@ export async function syncStoresToGraphWorkbook(
         remaining = remaining.slice(CHUNK_SIZE);
       }
 
-      // 4. Header formatting
       await applyHeaderFormatting(
         token,
         group.sheetName,
@@ -649,7 +783,6 @@ export async function syncStoresToGraphWorkbook(
         sessionId
       );
 
-      // 5. Status styling
       const formatting = await applyStatusFormatting(
         token,
         group.sheetName,
@@ -664,11 +797,12 @@ export async function syncStoresToGraphWorkbook(
 
     return {
       workbookPath: SHAREPOINT_WORKBOOK_PATH,
-      rowCount: records.length,
+      rowCount: mergedRecords.length,
       sheetCount: groups.length,
       sheets: groups.map((g) => g.sheetName),
       formattedRangeCount,
       formattedCellCount,
+      updatedStores: mergedRecords,
     };
   } finally {
     await closeSession(token, sessionId);

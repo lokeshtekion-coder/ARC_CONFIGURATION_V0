@@ -1,4 +1,5 @@
 import type { StoreRecord } from "./storesDb";
+import { getStatusTimeline } from "./storesDb";
 import type { OnboardingStatus } from "./storeOnboardingStatusApi";
 
 export const STORE_EXPORT_HEADERS = [
@@ -36,6 +37,7 @@ export const STORE_EXPORT_HEADERS = [
   "Testing",
   "Status Fetched At",
   "Setup Data Fetched At",
+  "Status Tracking",
 ] as const;
 
 export type StoreExportHeader = (typeof STORE_EXPORT_HEADERS)[number];
@@ -196,7 +198,33 @@ export function mapStoreToExcelRow(store: StoreRecord): StoreExcelRow {
     "Setup Data Fetched At": formatDateTime(
       store.setup_data_fetched_at || store.setup_data?.fetchedAt
     ),
+    "Status Tracking": buildStatusTrackingText(store.tekion_id),
   };
+}
+
+// Excel-only history column - never rendered in the dashboard. Consolidates
+// the WIP/Completed timestamps for all three custom phases into one cell,
+// e.g. "Fixed Ops: WIP 09/10/26 | 02:15 PM, Completed 09/14/26 | 10:05 AM;
+// Variable Ops: WIP 09/11/26 | 09:00 AM; Testing: —"
+function buildStatusTrackingText(tekionId: string): string {
+  const timeline = getStatusTimeline()[tekionId];
+  if (!timeline) return "";
+
+  const labels: Array<[label: string, field: "fixed_ops_status" | "variable_ops_status" | "testing_status"]> = [
+    ["Fixed Ops", "fixed_ops_status"],
+    ["Variable Ops", "variable_ops_status"],
+    ["Testing", "testing_status"],
+  ];
+
+  const parts = labels.map(([label, field]) => {
+    const timing = timeline[field];
+    const segments: string[] = [];
+    if (timing?.wipAt) segments.push(`WIP ${formatDateTime(timing.wipAt)}`);
+    if (timing?.completedAt) segments.push(`Completed ${formatDateTime(timing.completedAt)}`);
+    return `${label}: ${segments.length ? segments.join(", ") : "—"}`;
+  });
+
+  return parts.join("; ");
 }
 
 export function groupStoresByMonth(records: StoreRecord[]): Array<{

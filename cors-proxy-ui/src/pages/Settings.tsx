@@ -827,6 +827,7 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
   );
 
   const messageTimerRef = useRef<number | null>(null);
+  const lastFailedDecodeProfileRef = useRef<ArcTekionProfile | null>(null);
 
   const latestStateRef = useRef({
     tokens,
@@ -1016,15 +1017,23 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
         results.map((item) => persistBlueprintDecodeResult(store.tekion_id, dealerId, item))
       );
 
-      const totalMissing = results.reduce((sum, r) => sum + r.missingCount, 0);
+      const totalMissingRequired = results.reduce((sum, r) => sum + r.missingRequiredCount, 0);
       const moduleSummary = results
-        .map((r) => `${r.module} (${r.missingCount}/${r.totalCount} missing)`)
+        .map((r) => `${r.module} (${r.missingRequiredCount} required missing)`)
         .join(", ");
+      // Lead with actual question titles, not just a count, so you don't have
+      // to separately open Blueprint Decoder to find what's missing.
+      const titleHint = results
+        .flatMap((r) => r.missingRequiredTitles)
+        .slice(0, 5)
+        .join("; ");
 
       showMessage(
-        totalMissing > 0 ? "warning" : "success",
-        `Blueprint Decode Bot: decoded ${results.length} form(s) for Dealer ${dealerId} - ${moduleSummary}.`
+        totalMissingRequired > 0 ? "warning" : "success",
+        `Blueprint Decode Bot: decoded ${results.length} form(s) for Dealer ${dealerId} - ${moduleSummary}.` +
+          (titleHint ? ` Missing: ${titleHint}${totalMissingRequired > 5 ? "…" : ""}` : "")
       );
+      lastFailedDecodeProfileRef.current = null;
     } catch (err: unknown) {
       logger.warn("Blueprint Decode Bot auto-fetch failed", err);
       showMessage(
@@ -1033,8 +1042,26 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
           err instanceof Error ? err.message : "unknown error"
         }`
       );
+      // Remembered so a fresh extension capture (e.g. the token this failed
+      // on getting re-captured) can retry automatically - see the effect
+      // below - instead of requiring the dealer profile to be re-selected
+      // by hand.
+      lastFailedDecodeProfileRef.current = profile;
     }
   }, [showMessage]);
+
+  // Retries the auto-decode above once new capture data comes in, but only
+  // for the profile that actually failed - avoids re-decoding on every
+  // unrelated token refresh.
+  useEffect(() => {
+    const unsubscribe = subscribeToExtensionCapture(() => {
+      const pending = lastFailedDecodeProfileRef.current;
+      if (!pending) return;
+      lastFailedDecodeProfileRef.current = null;
+      void autoDecodeBlueprintsForProfile(pending);
+    });
+    return () => unsubscribe();
+  }, [autoDecodeBlueprintsForProfile]);
 
   const handleSelectDealerProfile = useCallback(
     (profile: ArcTekionProfile) => {

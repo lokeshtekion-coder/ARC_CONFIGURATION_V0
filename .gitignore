@@ -4,3 +4,4 @@ downloads/
 downloads.json
 settings.json
 .DS_Store
+.arc-update-status.json

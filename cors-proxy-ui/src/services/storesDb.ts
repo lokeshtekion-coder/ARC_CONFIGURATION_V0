@@ -135,3 +135,55 @@ export function saveStatusToVault(
 
   localStorage.setItem(STATUS_VAULT_KEY, JSON.stringify(current));
 }
+
+// Excel-only history, never rendered in the dashboard: the moment each
+// custom phase (Fixed Ops / Variable Ops / Testing) was first moved to WIP
+// and the moment it was marked Completed. Kept as raw ISO strings here -
+// storesExcelShared.ts formats them into the single "Status Tracking"
+// export column.
+type CustomPhaseField = "fixed_ops_status" | "variable_ops_status" | "testing_status";
+
+interface PhaseTiming {
+  wipAt?: string;
+  completedAt?: string;
+}
+
+type StatusTimeline = Record<string, Partial<Record<CustomPhaseField, PhaseTiming>>>;
+
+const STATUS_TIMELINE_KEY = "arc_store_status_timeline_v1";
+
+export function getStatusTimeline(): StatusTimeline {
+  try {
+    const raw = localStorage.getItem(STATUS_TIMELINE_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as StatusTimeline;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+// Called every time a phase status changes. Only WIP and Completed are
+// timestamped (matches the ask: "track what time user changed the status
+// to WIP & finally when marked Complete"); TO DO is not tracked.
+export function recordStatusTransition(
+  tekionId: string,
+  field: CustomPhaseField,
+  value: CustomPhaseStatus
+): void {
+  if (value !== "WIP" && value !== "Completed") return;
+
+  const timeline = getStatusTimeline();
+  const now = new Date().toISOString();
+  const existing = timeline[tekionId]?.[field] ?? {};
+
+  timeline[tekionId] = {
+    ...(timeline[tekionId] ?? {}),
+    [field]: {
+      ...existing,
+      ...(value === "WIP" ? { wipAt: now } : { completedAt: now }),
+    },
+  };
+
+  localStorage.setItem(STATUS_TIMELINE_KEY, JSON.stringify(timeline));
+}

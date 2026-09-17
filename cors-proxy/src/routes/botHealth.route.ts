@@ -1,6 +1,7 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { getDealers, getTimestamps, deleteDealerSnapshots } from "../services/storage.service";
+import { logError } from "../utils/logger";
 
 const router = Router();
 
@@ -65,6 +66,7 @@ router.get("/health", (_req: Request, res: Response) => {
       },
     });
   } catch (err: unknown) {
+    logError("botHealth", "GET /health failed", err);
     res.status(500).json({
       success: false,
       error: err instanceof Error ? err.message : "Health check failed",
@@ -108,6 +110,7 @@ router.delete("/health/snapshots", (req: Request, res: Response) => {
       },
     });
   } catch (err: unknown) {
+    logError("botHealth", "DELETE /health/snapshots failed", err);
     res.status(500).json({
       success: false,
       error: err instanceof Error ? err.message : "Cleanup failed",

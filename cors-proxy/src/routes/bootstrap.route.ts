@@ -1,5 +1,6 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
+import { logWarn } from "../utils/logger";
 
 const router = Router();
 
@@ -106,6 +107,11 @@ router.post("/extract", (req: Request, res: Response) => {
     const result = extract(data);
     res.json({ success: true, data: result });
   } catch (err: unknown) {
+    // 400, not 500 - this is almost always malformed/unexpected input shape,
+    // not a system failure, so it's a warn rather than an error.
+    logWarn("bootstrap", "POST /extract rejected input", {
+      message: err instanceof Error ? err.message : String(err),
+    });
     res.status(400).json({
       success: false,
       error: err instanceof Error ? err.message : "Extraction failed",

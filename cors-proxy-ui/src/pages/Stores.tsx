@@ -12,6 +12,7 @@ import {
   saveStores,
   getStoredStatusVault,
   saveStatusToVault,
+  recordStatusTransition,
 } from "../services/storesDb";
 import type { StoreRecord, CustomPhaseStatus, StoreSetupData } from "../services/storesDb";
 import type {
@@ -21,7 +22,10 @@ import type {
 } from "../services/storeOnboardingStatusApi";
 import { fetchStoreOnboardingStatuses } from "../services/storeOnboardingStatusApi";
 import { exportStoresToExcel } from "../services/storesExcelExport";
-import { syncStoresToGraphWorkbook } from "../services/storesGraphSync";
+import {
+  syncStoresToGraphWorkbook,
+  pullStatusUpdatesFromGraph,
+} from "../services/storesGraphSync";
 import {
   buildStoreSlackDraftContext,
   getSlackSession,
@@ -362,13 +366,17 @@ function buildDealerPopupRows(
     {
       label: "Consumer Scheduling (Pre-Prod)",
       value: (
-        <a href={preprodSchedulingUrl} target="_blank" rel="noreferrer">Open Pre-Prod Scheduling ↗</a>
+        <a href={preprodSchedulingUrl} target="_blank" rel="noreferrer">
+          Open Pre-Prod Scheduling ↗
+        </a>
       ),
     },
     {
       label: "Consumer Scheduling (Prod)",
       value: (
-        <a href={prodSchedulingUrl} target="_blank" rel="noreferrer">Open Prod Scheduling ↗</a>
+        <a href={prodSchedulingUrl} target="_blank" rel="noreferrer">
+          Open Prod Scheduling ↗
+        </a>
       ),
     },
   ];
@@ -821,8 +829,6 @@ const DealerMetaModal: React.FC<{
 
     setLoadingSetup(true);
     try {
-      // Pass a clone with setup_data undefined to bypass any cache checks
-      // and force a fresh fetch from the Tekion endpoint
       const targetStore: StoreRecord = {
         ...row,
         setup_data: undefined,
@@ -841,29 +847,82 @@ const DealerMetaModal: React.FC<{
   const hasSlackSession = Boolean(slackSession.slackToken && slackSession.slackDCookie);
 
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24, zIndex: 9999 }}>
-      <div onClick={(e) => e.stopPropagation()} style={{ width: "100%", maxWidth: 1040, maxHeight: "90vh", display: "flex", flexDirection: "column", background: "#151922", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 16, overflow: "hidden" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)", background: "#11151d" }}>
+    <div
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        background: "rgba(0,0,0,0.7)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+        zIndex: 9999,
+      }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "100%",
+          maxWidth: 1040,
+          maxHeight: "90vh",
+          display: "flex",
+          flexDirection: "column",
+          background: "#151922",
+          border: "1px solid rgba(255,255,255,0.12)",
+          borderRadius: 16,
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "16px 20px",
+            borderBottom: "1px solid rgba(255,255,255,0.08)",
+            background: "#11151d",
+          }}
+        >
           <div>
             <div style={{ fontSize: 17, fontWeight: 800, color: "#fff" }}>
               {row.dba_name || "Store Details"}
             </div>
             <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>
-              Dealer ID: <span style={{ color: "#f8fafc", fontWeight: 700 }}>{row.dealer_id}</span> • Tekion ID: {row.tekion_id}
+              Dealer ID: <span style={{ color: "#f8fafc", fontWeight: 700 }}>{row.dealer_id}</span>{" "}
+              • Tekion ID: {row.tekion_id}
             </div>
           </div>
 
-          <button className="btn-secondary btn-sm" onClick={onClose}>✕ Close</button>
+          <button className="btn-secondary btn-sm" onClick={onClose}>
+            ✕ Close
+          </button>
         </div>
 
         <div style={{ overflowY: "auto", padding: 20, display: "grid", gap: 16 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10, padding: 12, borderRadius: 12, background: "#0d1117" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              gap: 10,
+              padding: 12,
+              borderRadius: 12,
+              background: "#0d1117",
+            }}
+          >
             {popupRows.map((item) => (
               <div key={item.label}>
                 <div style={{ color: "#64748b", fontSize: 11, fontWeight: 700 }}>
                   {item.label}
                 </div>
-                <div style={{ color: "#f1f5f9", fontSize: 12, fontWeight: 600, marginTop: 2 }}>
+                <div
+                  style={{
+                    color: "#f1f5f9",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    marginTop: 2,
+                  }}
+                >
                   {item.value ?? "—"}
                 </div>
               </div>
@@ -871,26 +930,51 @@ const DealerMetaModal: React.FC<{
           </div>
 
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-            <button className="btn-postman" onClick={() => void handleFetchSetup()} disabled={loadingSetup}>
+            <button
+              className="btn-postman"
+              onClick={() => void handleFetchSetup()}
+              disabled={loadingSetup}
+            >
               {loadingSetup ? "⏳ Loading..." : "🧩 Get Setup Data"}
             </button>
 
             {row.setup_data ? (
-              <div style={{ fontSize: 11, color: "#94a3b8", display: "inline-flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+              <div
+                style={{
+                  fontSize: 11,
+                  color: "#94a3b8",
+                  display: "inline-flex",
+                  gap: 8,
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
                 <span>
-                  OEM: <strong style={{ color: "#38bdf8" }}>{row.setup_data.oemDealerCodes?.join(", ") || "—"}</strong>
+                  OEM:{" "}
+                  <strong style={{ color: "#38bdf8" }}>
+                    {row.setup_data.oemDealerCodes?.join(", ") || "—"}
+                  </strong>
                 </span>
                 <span>•</span>
                 <span>
-                  Journals: <strong style={{ color: "#38bdf8" }}>{row.setup_data.journalsAccessibleDealerCount ?? 0}</strong>
+                  Journals:{" "}
+                  <strong style={{ color: "#38bdf8" }}>
+                    {row.setup_data.journalsAccessibleDealerCount ?? 0}
+                  </strong>
                 </span>
                 <span>•</span>
                 <span>
-                  Sales Chains: <strong style={{ color: "#38bdf8" }}>{row.setup_data.salesChainsAccessibleDealerCount ?? 0}</strong>
+                  Sales Chains:{" "}
+                  <strong style={{ color: "#38bdf8" }}>
+                    {row.setup_data.salesChainsAccessibleDealerCount ?? 0}
+                  </strong>
                 </span>
                 <span>•</span>
                 <span>
-                  COA: <strong style={{ color: "#38bdf8" }}>{row.setup_data.coaAccessibleDealerCount ?? 0}</strong>
+                  COA:{" "}
+                  <strong style={{ color: "#38bdf8" }}>
+                    {row.setup_data.coaAccessibleDealerCount ?? 0}
+                  </strong>
                 </span>
               </div>
             ) : row.setup_data_error ? (
@@ -904,13 +988,44 @@ const DealerMetaModal: React.FC<{
             )}
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(280px, 340px) minmax(0, 1fr)", gap: 16 }}>
-            <div style={{ display: "grid", gap: 10, padding: 14, borderRadius: 12, background: "#11151d" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(280px, 340px) minmax(0, 1fr)",
+              gap: 16,
+            }}
+          >
+            <div
+              style={{
+                display: "grid",
+                gap: 10,
+                padding: 14,
+                borderRadius: 12,
+                background: "#11151d",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <span style={{ color: "#f8fafc", fontSize: 13, fontWeight: 800 }}>
                   Recipients ({selectedRecipients.length})
                 </span>
-                <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 999, background: hasSlackSession ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)", color: hasSlackSession ? "#4ade80" : "#f87171", fontWeight: 700 }}>
+                <span
+                  style={{
+                    fontSize: 11,
+                    padding: "2px 8px",
+                    borderRadius: 999,
+                    background: hasSlackSession
+                      ? "rgba(34,197,94,0.12)"
+                      : "rgba(239,68,68,0.12)",
+                    color: hasSlackSession ? "#4ade80" : "#f87171",
+                    fontWeight: 700,
+                  }}
+                >
                   {hasSlackSession ? "Session Active" : "No Session"}
                 </span>
               </div>
@@ -926,11 +1041,27 @@ const DealerMetaModal: React.FC<{
                 ))}
               </div>
 
-              <div style={{ paddingTop: 6, borderTop: "1px solid rgba(255,255,255,0.06)", fontSize: 11, color: "#64748b" }}>
+              <div
+                style={{
+                  paddingTop: 6,
+                  borderTop: "1px solid rgba(255,255,255,0.06)",
+                  fontSize: 11,
+                  color: "#64748b",
+                }}
+              >
                 Individual Dispatches:
                 <div style={{ display: "grid", gap: 4, marginTop: 6 }}>
                   {selectedRecipients.map((rec) => (
-                    <div key={rec.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, color: "#94a3b8" }}>
+                    <div
+                      key={rec.key}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        fontSize: 11,
+                        color: "#94a3b8",
+                      }}
+                    >
                       <span>{rec.matchedUser?.fullName}</span>
                       <button
                         type="button"
@@ -946,15 +1077,41 @@ const DealerMetaModal: React.FC<{
               </div>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: 12, padding: 14, borderRadius: 12, background: "#11151d" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+                padding: 14,
+                borderRadius: 12,
+                background: "#11151d",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <span style={{ color: "#f8fafc", fontSize: 13, fontWeight: 800 }}>
                   Slack Message Draft
                 </span>
 
-                <div style={{ display: "inline-flex", background: "#0b0f15", padding: 2, borderRadius: 6 }}>
-                  <button type="button" onClick={() => setEditorMode("edit")}>Edit</button>
-                  <button type="button" onClick={() => setEditorMode("preview")}>Preview</button>
+                <div
+                  style={{
+                    display: "inline-flex",
+                    background: "#0b0f15",
+                    padding: 2,
+                    borderRadius: 6,
+                  }}
+                >
+                  <button type="button" onClick={() => setEditorMode("edit")}>
+                    Edit
+                  </button>
+                  <button type="button" onClick={() => setEditorMode("preview")}>
+                    Preview
+                  </button>
                 </div>
               </div>
 
@@ -978,7 +1135,9 @@ const DealerMetaModal: React.FC<{
                   disabled={!hasSlackSession || selectedRecipients.length === 0 || isSendingAll}
                   onClick={() => void handleSendAll()}
                 >
-                  {isSendingAll ? "⏳ Dispatched..." : `Send to Selected (${selectedRecipients.length})`}
+                  {isSendingAll
+                    ? "⏳ Dispatched..."
+                    : `Send to Selected (${selectedRecipients.length})`}
                 </button>
               </div>
             </div>
@@ -1183,6 +1342,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     setRecords(updatedRecords);
 
     saveStatusToVault(tekion_id, field, value);
+    recordStatusTransition(tekion_id, field, value);
 
     try {
       await saveStores(updatedRecords);
@@ -1191,6 +1351,58 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     }
   };
 
+  // Near-instant background sync:
+  // Polls Excel periodically (every 12 seconds) and immediately upon tab refocus
+  useEffect(() => {
+    let isCancelled = false;
+
+    const checkForExcelUpdates = async () => {
+      if (records.length === 0 || syncingExcel) return;
+
+      const { updatedStores, hasChanges } = await pullStatusUpdatesFromGraph(records);
+
+      if (!isCancelled && hasChanges) {
+        // 1. Instantly reflect in UI
+        setRecords(updatedStores);
+
+        // 2. Persist to local IndexedDB
+        void saveStores(updatedStores);
+
+        // 3. Persist to status vault so API refresh/reload preserves it
+        for (const store of updatedStores) {
+          if (store.fixed_ops_status) {
+            saveStatusToVault(store.tekion_id, "fixed_ops_status", store.fixed_ops_status);
+          }
+          if (store.variable_ops_status) {
+            saveStatusToVault(store.tekion_id, "variable_ops_status", store.variable_ops_status);
+          }
+          if (store.testing_status) {
+            saveStatusToVault(store.tekion_id, "testing_status", store.testing_status);
+          }
+        }
+
+        showToast("⚡ Auto-synced status updates from Excel");
+      }
+    };
+
+    const interval = setInterval(() => {
+      void checkForExcelUpdates();
+    }, 12000);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        void checkForExcelUpdates();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      isCancelled = true;
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [records, syncingExcel, showToast]);
+
   const superpodOptions = useMemo(
     () => Array.from(new Set(records.map((r) => r.superpod_id).filter(Boolean))).sort(),
     [records]
@@ -1198,7 +1410,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
   const implementationTypeOptions = useMemo(
     () =>
-      Array.from(new Set(records.map((r) => cleanImpType(r.implementation_type)).filter(Boolean))).sort(),
+      Array.from(
+        new Set(records.map((r) => cleanImpType(r.implementation_type)).filter(Boolean))
+      ).sort(),
     [records]
   );
 
@@ -1237,7 +1451,8 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         const matchesImplementationType =
           !implementationType || normalizedImp === implementationType;
         const matchesProductType =
-          !productType || (item.product_types || "").toLowerCase().includes(productType.toLowerCase());
+          !productType ||
+          (item.product_types || "").toLowerCase().includes(productType.toLowerCase());
         const matchesMonth =
           !selectedMonth || getMonthYearString(item.launch_date) === selectedMonth;
 
@@ -1344,8 +1559,26 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
     try {
       const result = await syncStoresToGraphWorkbook(records);
+
+      if (result.updatedStores && result.updatedStores.length > 0) {
+        setRecords(result.updatedStores);
+        await saveStores(result.updatedStores);
+
+        for (const store of result.updatedStores) {
+          if (store.fixed_ops_status) {
+            saveStatusToVault(store.tekion_id, "fixed_ops_status", store.fixed_ops_status);
+          }
+          if (store.variable_ops_status) {
+            saveStatusToVault(store.tekion_id, "variable_ops_status", store.variable_ops_status);
+          }
+          if (store.testing_status) {
+            saveStatusToVault(store.tekion_id, "testing_status", store.testing_status);
+          }
+        }
+      }
+
       showToast(
-        `✅ Synced ${result.rowCount} stores (${result.sheetCount} sheets)`
+        `✅ Synced & merged ${result.rowCount} stores (${result.sheetCount} sheets)`
       );
     } catch (err: unknown) {
       showToast(`❌ ${err instanceof Error ? err.message : "Graph sync failed"}`);
@@ -1379,12 +1612,22 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           </div>
         </div>
 
-        <div className="stores-topbar-right" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div
+          className="stores-topbar-right"
+          style={{ display: "flex", gap: 8, alignItems: "center" }}
+        >
           <button className="btn-secondary btn-sm" onClick={() => void handleLoadIndexedDb()}>
             Cache
           </button>
 
-          <div style={{ display: "inline-flex", borderRadius: 6, overflow: "hidden", border: "1px solid rgba(255,255,255,0.12)" }}>
+          <div
+            style={{
+              display: "inline-flex",
+              borderRadius: 6,
+              overflow: "hidden",
+              border: "1px solid rgba(255,255,255,0.12)",
+            }}
+          >
             <button className="btn-secondary btn-sm" onClick={handleExportExcel}>
               Export Excel
             </button>
@@ -1427,7 +1670,15 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       )}
 
       {tokenExpiredMessage && (
-        <div className="bx-error" style={{ marginBottom: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div
+          className="bx-error"
+          style={{
+            marginBottom: 12,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <span>⚠ {tokenExpiredMessage}</span>
           <a href={tapWorkordersUrl} target="_blank" rel="noreferrer">
             Open TAP to recapture API ↗
@@ -1447,9 +1698,19 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         {!filtersCollapsed && (
           <aside className="stores-sidebar" style={{ minWidth: 0 }}>
             <div className="stores-panel" style={{ display: "grid", gap: 14 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span className="stores-panel-title" style={{ margin: 0 }}>Filters</span>
-                <button type="button" onClick={clearFilters}>Reset all</button>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
+                <span className="stores-panel-title" style={{ margin: 0 }}>
+                  Filters
+                </span>
+                <button type="button" onClick={clearFilters}>
+                  Reset all
+                </button>
               </div>
 
               <div className="stores-field">
@@ -1481,47 +1742,81 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
               <div className="stores-field">
                 <label className="stores-label">Launch Window</label>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
-                  <input type="date" className="stores-input" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
-                  <input type="date" className="stores-input" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+                  <input
+                    type="date"
+                    className="stores-input"
+                    value={fromDate}
+                    onChange={(e) => setFromDate(e.target.value)}
+                  />
+                  <input
+                    type="date"
+                    className="stores-input"
+                    value={toDate}
+                    onChange={(e) => setToDate(e.target.value)}
+                  />
                 </div>
               </div>
 
               <div className="stores-field">
                 <label className="stores-label">Go-Live Month</label>
-                <select className="stores-input" value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
+                <select
+                  className="stores-input"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                >
                   <option value="">All Months</option>
                   {monthOptions.map((m) => (
-                    <option key={m} value={m}>{m}</option>
+                    <option key={m} value={m}>
+                      {m}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div className="stores-field">
                 <label className="stores-label">Pre-Prod POD</label>
-                <select className="stores-input" value={superpodId} onChange={(e) => setSuperpodId(e.target.value)}>
+                <select
+                  className="stores-input"
+                  value={superpodId}
+                  onChange={(e) => setSuperpodId(e.target.value)}
+                >
                   <option value="">All PODs</option>
                   {superpodOptions.map((item) => (
-                    <option key={item} value={item}>{item}</option>
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div className="stores-field">
                 <label className="stores-label">Implementation Type</label>
-                <select className="stores-input" value={implementationType} onChange={(e) => setImplementationType(e.target.value)}>
+                <select
+                  className="stores-input"
+                  value={implementationType}
+                  onChange={(e) => setImplementationType(e.target.value)}
+                >
                   <option value="">All Types</option>
                   {implementationTypeOptions.map((item) => (
-                    <option key={item} value={item}>{item}</option>
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
                   ))}
                 </select>
               </div>
 
               <div className="stores-field">
                 <label className="stores-label">Product Type</label>
-                <select className="stores-input" value={productType} onChange={(e) => setProductType(e.target.value)}>
+                <select
+                  className="stores-input"
+                  value={productType}
+                  onChange={(e) => setProductType(e.target.value)}
+                >
                   <option value="">All Products</option>
                   {productTypeOptions.map((item) => (
-                    <option key={item} value={item}>{item}</option>
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -1548,7 +1843,8 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                   Store Records
                 </span>
                 <span style={{ fontSize: 12, color: "#94a3b8" }}>
-                  Showing <strong style={{ color: "#f8fafc" }}>{filtered.length}</strong> of {records.length} stores
+                  Showing <strong style={{ color: "#f8fafc" }}>{filtered.length}</strong> of{" "}
+                  {records.length} stores
                 </span>
 
                 <div
@@ -1734,13 +2030,22 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                 </div>
               </div>
 
-              <button className="btn-secondary btn-sm" onClick={() => setFiltersCollapsed((prev) => !prev)}>
+              <button
+                className="btn-secondary btn-sm"
+                onClick={() => setFiltersCollapsed((prev) => !prev)}
+              >
                 {filtersCollapsed ? "☰ Show Filters" : "✕ Hide Filters"}
               </button>
             </div>
 
-            <div className="stores-table-wrap stores-table-wrap-tall" style={{ maxHeight: "calc(100vh - 180px)", overflow: "auto" }}>
-              <table className="stores-table" style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0 }}>
+            <div
+              className="stores-table-wrap stores-table-wrap-tall"
+              style={{ maxHeight: "calc(100vh - 180px)", overflow: "auto" }}
+            >
+              <table
+                className="stores-table"
+                style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0 }}
+              >
                 <thead>
                   <tr>
                     <th>Tekion ID</th>
@@ -1771,14 +2076,32 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     return (
                       <tr key={row.tekion_id}>
                         <td>
-                          <button type="button" className="stores-copy-btn" onClick={() => handleCopy(row.tekion_id, `tek-${row.tekion_id}`)}>
+                          <button
+                            type="button"
+                            className="stores-copy-btn"
+                            onClick={() =>
+                              handleCopy(row.tekion_id, `tek-${row.tekion_id}`)
+                            }
+                          >
                             {copiedKey === `tek-${row.tekion_id}` ? "Copied!" : row.tekion_id}
                           </button>
                         </td>
 
                         <td>
-                          <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                            <button type="button" className="stores-copy-btn" onClick={() => handleCopy(row.dealer_id, `dlr-${row.tekion_id}`)}>
+                          <div
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 6,
+                            }}
+                          >
+                            <button
+                              type="button"
+                              className="stores-copy-btn"
+                              onClick={() =>
+                                handleCopy(row.dealer_id, `dlr-${row.tekion_id}`)
+                              }
+                            >
                               {copiedKey === `dlr-${row.tekion_id}` ? "Copied!" : row.dealer_id}
                             </button>
 
@@ -1802,7 +2125,13 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                         </td>
 
                         <td>
-                          <button type="button" className="stores-copy-btn" onClick={() => handleCopy(row.dba_name, `dba-${row.tekion_id}`)}>
+                          <button
+                            type="button"
+                            className="stores-copy-btn"
+                            onClick={() =>
+                              handleCopy(row.dba_name, `dba-${row.tekion_id}`)
+                            }
+                          >
                             {copiedKey === `dba-${row.tekion_id}` ? "Copied!" : row.dba_name || "—"}
                           </button>
                         </td>
@@ -1839,11 +2168,31 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                         <td>
                           <StatusChipGroup
                             items={[
-                              { short: "P", fullName: "Blueprint - Parts", status: blueprint?.parts ?? "UNKNOWN" },
-                              { short: "S", fullName: "Blueprint - Service", status: blueprint?.service ?? "UNKNOWN" },
-                              { short: "A", fullName: "Blueprint - Accounting", status: blueprint?.accounting ?? "UNKNOWN" },
-                              { short: "C", fullName: "Blueprint - CRM", status: blueprint?.crm ?? "UNKNOWN" },
-                              { short: "AN", fullName: "Blueprint - Analytics", status: blueprint?.analytics ?? "UNKNOWN" },
+                              {
+                                short: "P",
+                                fullName: "Blueprint - Parts",
+                                status: blueprint?.parts ?? "UNKNOWN",
+                              },
+                              {
+                                short: "S",
+                                fullName: "Blueprint - Service",
+                                status: blueprint?.service ?? "UNKNOWN",
+                              },
+                              {
+                                short: "A",
+                                fullName: "Blueprint - Accounting",
+                                status: blueprint?.accounting ?? "UNKNOWN",
+                              },
+                              {
+                                short: "C",
+                                fullName: "Blueprint - CRM",
+                                status: blueprint?.crm ?? "UNKNOWN",
+                              },
+                              {
+                                short: "AN",
+                                fullName: "Blueprint - Analytics",
+                                status: blueprint?.analytics ?? "UNKNOWN",
+                              },
                             ]}
                           />
                         </td>
@@ -1855,23 +2204,39 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                         <td>
                           <CustomStatusSelect
                             value={row.fixed_ops_status}
-                            onChange={(val) => void updateCustomStatus(row.tekion_id, "fixed_ops_status", val)}
+                            onChange={(val) =>
+                              void updateCustomStatus(row.tekion_id, "fixed_ops_status", val)
+                            }
                           />
                         </td>
 
                         <td>
                           <CustomStatusSelect
                             value={row.variable_ops_status}
-                            onChange={(val) => void updateCustomStatus(row.tekion_id, "variable_ops_status", val)}
+                            onChange={(val) =>
+                              void updateCustomStatus(row.tekion_id, "variable_ops_status", val)
+                            }
                           />
                         </td>
 
                         <td>
                           <StatusChipGroup
                             items={[
-                              { short: "P", fullName: "Parts Operational Sign-Off", status: signoff?.parts ?? "UNKNOWN" },
-                              { short: "S", fullName: "Service Operational Sign-Off", status: signoff?.service ?? "UNKNOWN" },
-                              { short: "A", fullName: "Accounting Operational Sign-Off", status: signoff?.accounting ?? "UNKNOWN" },
+                              {
+                                short: "P",
+                                fullName: "Parts Operational Sign-Off",
+                                status: signoff?.parts ?? "UNKNOWN",
+                              },
+                              {
+                                short: "S",
+                                fullName: "Service Operational Sign-Off",
+                                status: signoff?.service ?? "UNKNOWN",
+                              },
+                              {
+                                short: "A",
+                                fullName: "Accounting Operational Sign-Off",
+                                status: signoff?.accounting ?? "UNKNOWN",
+                              },
                             ]}
                           />
                         </td>
@@ -1879,7 +2244,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                         <td>
                           <CustomStatusSelect
                             value={row.testing_status}
-                            onChange={(val) => void updateCustomStatus(row.tekion_id, "testing_status", val)}
+                            onChange={(val) =>
+                              void updateCustomStatus(row.tekion_id, "testing_status", val)
+                            }
                           />
                         </td>
                       </tr>

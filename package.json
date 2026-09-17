@@ -1,10 +1,15 @@
 {
   "name": "arc-configuration-v0",
   "private": true,
+  "engines": {
+    "node": ">=18.18.0"
+  },
   "scripts": {
+    "predev": "node scripts/auto-update.cjs",
     "backend": "cd cors-proxy && npm run dev",
     "frontend": "cd cors-proxy-ui && npm run dev",
-    "dev": "concurrently \"npm run backend\" \"npm run frontend\""
+    "dev": "concurrently \"npm run backend\" \"npm run frontend\"",
+    "update": "node scripts/auto-update.cjs"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",

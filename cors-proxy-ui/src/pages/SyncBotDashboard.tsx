@@ -122,6 +122,16 @@ export function SyncBotDashboard({ onBack }: Props) {
                   {alert.title}
                 </div>
                 <div style={{ fontSize: 12, color: "#cbd5e1", marginTop: 2 }}>{alert.detail}</div>
+                {alert.actionUrl && (
+                  <a
+                    href={alert.actionUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ display: "inline-block", marginTop: 6, fontSize: 12, color: "#60a5fa", fontWeight: 700 }}
+                  >
+                    {alert.actionLabel || "Open page"} →
+                  </a>
+                )}
               </div>
             ))}
           </div>

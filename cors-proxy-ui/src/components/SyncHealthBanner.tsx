@@ -84,6 +84,17 @@ export function SyncHealthBanner({ onOpenSettings, onOpenDashboard }: Props) {
             <li key={alert.id} className={`sync-health-banner-item sync-health-banner-item--${alert.severity}`}>
               <span className="sync-health-banner-item-title">{alert.title}</span>
               <span className="sync-health-banner-item-detail">{alert.detail}</span>
+              {alert.actionUrl && (
+                <a
+                  className="sync-health-banner-link"
+                  href={alert.actionUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ display: "inline-block", marginTop: 4 }}
+                >
+                  {alert.actionLabel || "Open page"} →
+                </a>
+              )}
             </li>
           ))}
         </ul>

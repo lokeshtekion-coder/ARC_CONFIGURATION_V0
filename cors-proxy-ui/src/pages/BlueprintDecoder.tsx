@@ -673,7 +673,11 @@ const SectionsView: React.FC<{
                       {field.subsectionName && (
                         <div className="bd-sub-badge">{field.subsectionName}</div>
                       )}
-                      <div className={`bd-title-text ${field.hasUserValue ? "" : "bd-title-missing"}`}>
+                      <div
+                        className={`bd-title-text ${
+                          field.hasUserValue ? "" : field.required ? "bd-title-missing" : "bd-title-missing-optional"
+                        }`}
+                      >
                         {field.title ?? field.fieldName ?? field.fieldId}
                       </div>
                       <code className="bd-field-subid">{field.fieldId}</code>
@@ -739,7 +743,13 @@ const FlatView: React.FC<{ rows: FlattenedDecodedRow[] }> = ({ rows }) => (
               </td>
               <td className="bd-cell-title" style={{ display: "table-cell", padding: "12px 16px" }}>
                 {row.subsectionName && <div className="bd-sub-badge">{row.subsectionName}</div>}
-                <div className={`bd-title-text ${row.hasUserValue ? "" : "bd-title-missing"}`}>{row.title ?? row.fieldId}</div>
+                <div
+                  className={`bd-title-text ${
+                    row.hasUserValue ? "" : row.required ? "bd-title-missing" : "bd-title-missing-optional"
+                  }`}
+                >
+                  {row.title ?? row.fieldId}
+                </div>
                 <code className="bd-field-subid">{row.fieldId}</code>
               </td>
               <td className="bd-cell-value" style={{ display: "table-cell", padding: "12px 16px" }}>

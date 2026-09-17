@@ -765,6 +765,12 @@ body {
   color: #f87171 !important;
 }
 
+/* Missing but not required - still worth noting, but not the same urgency
+   as a missing required answer, so it gets a calmer amber instead of red. */
+.bd-title-missing-optional {
+  color: #fbbf24 !important;
+}
+
 .bd-title-text {
   font-size: 14px;
   font-weight: 600;

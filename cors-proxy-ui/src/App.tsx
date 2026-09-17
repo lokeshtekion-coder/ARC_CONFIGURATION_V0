@@ -13,6 +13,7 @@ import { Adhoc } from "./pages/Adhoc/Adhoc";
 import { TGPT } from "./pages/TGPT/TGPT";
 import { SyncBotDashboard } from "./pages/SyncBotDashboard";
 import { SyncHealthBanner } from "./components/SyncHealthBanner";
+import { UpdateStatusBanner } from "./components/UpdateStatusBanner";
 import "./app.css";
 
 export type PageId =
@@ -69,6 +70,7 @@ export default function App() {
         onLogoClick={goHome}
       />
 
+      <UpdateStatusBanner />
       <SyncHealthBanner
         onOpenSettings={() => setPage("settings")}
         onOpenDashboard={() => setPage("syncbot")}

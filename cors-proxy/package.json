@@ -1,6 +1,9 @@
 {
   "name": "cors-proxy",
   "version": "1.0.0",
+  "engines": {
+    "node": ">=18.18.0"
+  },
   "scripts": {
     "dev": "ts-node-dev --respawn src/server.ts",
     "build": "tsc",

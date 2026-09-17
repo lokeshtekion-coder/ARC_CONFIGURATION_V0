@@ -226,12 +226,17 @@ function isTekionBootstrapRequest(rawUrl: string): boolean {
   );
 }
 
+// Loosened from an exact pathname match to "hostname matches + path contains
+// employee/profile" - Tekion has changed API path prefixes/versions before
+// (e.g. userservice/u vs userservice/v2/u), and an exact match silently stops
+// capturing the moment that happens, with no visible error anywhere. Host is
+// still checked exactly so we never capture headers from an unrelated origin.
 function isTekionProdTechMotorsProfileRequest(rawUrl: string): boolean {
   const url = parseUrl(rawUrl);
   return Boolean(
     url &&
-      url.origin === "https://app.tekioncloud.com" &&
-      url.pathname === "/api/userservice/u/employee/profile"
+      url.hostname === "app.tekioncloud.com" &&
+      /employee\/profile/i.test(url.pathname)
   );
 }
 
@@ -254,6 +259,16 @@ function detectCaptureKind(details: RequestHeaderDetails): CaptureKind | null {
   if (isTekionBootstrapRequest(details.url)) return "tekionBootstrap";
   if (isTekionProdTechMotorsProfileRequest(details.url)) return "tekionProdTechMotors";
   if (isSlackPermissionsInfoRequest(details.url)) return "slackPermissionsInfo";
+
+  // Diagnostic only - narrowly scoped to "profile"-ish calls on
+  // app.tekioncloud.com so it doesn't spam the log for unrelated traffic.
+  // If TechMotors capture ever silently breaks again (e.g. another path
+  // change), this line shows the real URL to compare against the matcher
+  // above, instead of the extension just going quiet with no error.
+  const url = parseUrl(details.url);
+  if (url && url.hostname === "app.tekioncloud.com" && /profile/i.test(url.pathname)) {
+    log("[near-miss] app.tekioncloud.com profile-like call did not match TechMotors capture:", stripQuery(details.url));
+  }
   return null;
 }
 

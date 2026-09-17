@@ -30,7 +30,15 @@ export interface BlueprintDecodeBotResult {
   saveKey: string;
   totalCount: number;
   missingCount: number;
+  // Split out so callers (Sync Bot alerts, Settings toast) can lead with
+  // what actually needs attention instead of one undifferentiated number -
+  // a required question with no answer is a real gap, an optional one
+  // usually isn't.
+  missingRequiredCount: number;
+  missingRequiredTitles: string[];
 }
+
+const MAX_MISSING_TITLES = 5;
 
 // Fetches + decodes blueprint forms for one dealer across the given
 // modules. Does not persist anything - see persistBlueprintDecodeResult for
@@ -74,9 +82,24 @@ export async function decodeBlueprintsForDealer(
     const saveKey = `${trimmedId}-${formName}`.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_\-]/g, "");
 
     const totalCount = decoded.allFields.length;
-    const missingCount = decoded.allFields.filter((f) => !f.hasUserValue).length;
+    const missingFields = decoded.allFields.filter((f) => !f.hasUserValue);
+    const missingRequiredFields = missingFields.filter((f) => f.required);
+    const missingRequiredTitles = missingRequiredFields
+      .slice(0, MAX_MISSING_TITLES)
+      .map((f) => f.title || f.fieldId);
 
-    results.push({ module, form, decoded, dealerName, formName, saveKey, totalCount, missingCount });
+    results.push({
+      module,
+      form,
+      decoded,
+      dealerName,
+      formName,
+      saveKey,
+      totalCount,
+      missingCount: missingFields.length,
+      missingRequiredCount: missingRequiredFields.length,
+      missingRequiredTitles,
+    });
   }
 
   return results;

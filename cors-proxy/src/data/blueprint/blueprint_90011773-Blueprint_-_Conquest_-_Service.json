@@ -1,0 +1,4948 @@
+{
+  "key": "90011773-Blueprint_-_Conquest_-_Service",
+  "tekionId": "90011773",
+  "dealerId": "8180",
+  "dealerName": "Davenport Autopark",
+  "formName": "Blueprint - Conquest - Service",
+  "formId": "0efe7ff5-1920-4fd5-87e4-b354185d195e",
+  "releaseId": "06f04174-fd53-4c4a-b998-e799faeb1212",
+  "status": "IN_PROGRESS",
+  "decodedResponse": {
+    "decodedSections": [
+      {
+        "sectionId": "f19e443a-f070-4371-885c-e4be10731d4e",
+        "sectionName": "Dispatching Workflows",
+        "sectionOrder": 8,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "f19e443a-f070-4371-885c-e4be10731d4e",
+            "sectionName": "Dispatching Workflows",
+            "sectionOrder": 8,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "2440391a-3470-48ae-a17b-2f39882a8955",
+            "fieldName": null,
+            "title": "Additional Notes",
+            "type": "LONG_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 8,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "sectionName": "Labor Pricing",
+        "sectionOrder": 7,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600142",
+            "fieldName": null,
+            "title": "What is your default Customer labor rate?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 1,
+            "rawValue": "195 GM AND 175 HONDA",
+            "decodedValue": "195 GM AND 175 HONDA",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600143",
+            "fieldName": null,
+            "title": "What is your default Warranty labor rate?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 2,
+            "rawValue": "$173.17 HONDA AND $176.06 GM",
+            "decodedValue": "$173.17 HONDA AND $176.06 GM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "76a5a130-c4c6-41a8-9f3e-5c02dcbdb07c",
+            "fieldName": null,
+            "title": "Do you want to automatically close RO when warranty claim is submitted?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "47c91292-5e8f-4221-a072-c2315de2da0a"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "2b0eebdf-9762-495d-925e-6bd00fc416ab",
+            "fieldName": null,
+            "title": "What is you default Warranty G/L Account?",
+            "type": "DROPDOWN",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "946f3c09-9d3b-472d-a80a-8b891a1d9b61",
+            "decodedValue": "Warranty Claim",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "fc686ad7-90df-4494-9e31-0b96d840332d",
+            "fieldName": null,
+            "title": "What is your warranty parts markup percentage?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "87.5% GM AND 78% HONDA",
+            "decodedValue": "87.5% GM AND 78% HONDA",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600144",
+            "fieldName": null,
+            "title": "What is your default Internal labor rate?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 3,
+            "rawValue": "195 GM AND 175 HONDA",
+            "decodedValue": "195 GM AND 175 HONDA",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 6,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "68bbe771-502c-4f94-933d-6b0aaf452f46",
+            "fieldName": null,
+            "title": "Do you have an internal pay limit? (If so, please put the limit below)",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "NO",
+            "decodedValue": "NO",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 7,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600145",
+            "fieldName": null,
+            "title": "In which scenarios do you utilize a different labor rate than the default?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 4,
+            "rawValue": [
+              "Service contract / Extended warranty"
+            ],
+            "decodedValue": [
+              "Service contract / Extended warranty"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 8,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "0150295c-cfc7-4c6a-bd33-b855ed0563e7",
+            "fieldName": null,
+            "title": "Please describe Bodyshop specific labor rates",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103600145",
+                  "operator": "IS",
+                  "value": "b3722d60-a6ed-41a4-be47-1c9fb0bd201c"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 9,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600146",
+            "fieldName": null,
+            "title": "Please describe vehicle make specific labor rates",
+            "type": "LONG_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103600145",
+                  "operator": "IS",
+                  "value": "Different labor rate by vehicle make"
+                }
+              ]
+            },
+            "fieldOrder": 5,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 10,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600147",
+            "fieldName": null,
+            "title": "Please describe service contract specific labor rates",
+            "type": "LONG_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103600145",
+                  "operator": "IS",
+                  "value": "Service contract / Extended warranty"
+                }
+              ]
+            },
+            "fieldOrder": 6,
+            "rawValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+            "decodedValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 11,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "14956175-b883-460e-b161-8d055ea14ac5",
+            "fieldName": null,
+            "title": "Please describe EV specific labor rates",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103600145",
+                  "operator": "IS",
+                  "value": "15cb445d-9f88-402e-a366-2aeb569fea67"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 12,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "defb2ebf-ff1f-4d02-8aac-9bc217d59cbf",
+            "fieldName": null,
+            "title": "Please describe Diesel specific labor rates",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103600145",
+                  "operator": "IS",
+                  "value": "1d3a7454-a25f-4b53-aec2-0f468a233d8a"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 13,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600148",
+            "fieldName": null,
+            "title": "Do you utilize a labor matrix?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 7,
+            "rawValue": [
+              "No"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 14,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "68b24c8c-2cae-477e-a2f5-803c13cfdb30",
+            "fieldName": null,
+            "title": null,
+            "type": "PARAGRAPH",
+            "required": false,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103600148",
+                  "operator": "IS",
+                  "value": "Yes"
+                },
+                {
+                  "fieldId": "103600148",
+                  "operator": "IS",
+                  "value": "Not currently, but we would like to"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 16,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "6b496322-6cae-4c99-b6dc-c709f990ab04",
+            "fieldName": null,
+            "title": "Additional Information",
+            "type": "LONG_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 21,
+            "rawValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
+            "decodedValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "cbdb97ac-92fe-4043-a445-05a07602a879",
+        "sectionName": "General Service Information",
+        "sectionOrder": 3,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "cbdb97ac-92fe-4043-a445-05a07602a879",
+            "sectionName": "General Service Information",
+            "sectionOrder": 3,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600091",
+            "fieldName": null,
+            "title": "Do you have a bodyshop or collision center?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": [
+              "No"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "cbdb97ac-92fe-4043-a445-05a07602a879",
+            "sectionName": "General Service Information",
+            "sectionOrder": 3,
+            "sectionType": "MAIN",
+            "rowIndex": 7,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103602239",
+            "fieldName": null,
+            "title": "Additional Notes",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 45,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "sectionName": "Department Hours and Appointments",
+        "sectionOrder": 6,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103602276",
+            "fieldName": null,
+            "title": "Department Hour Notes (if needed)",
+            "type": "LONG_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "7:30AM-6:00PM IS OPERATING HOURS\n7:30AM-4:00PM ARE OPEN FOR APPOINTMENTS WITH A BREAK AT 12:00PM FOR LUNCH",
+            "decodedValue": "7:30AM-6:00PM IS OPERATING HOURS\n7:30AM-4:00PM ARE OPEN FOR APPOINTMENTS WITH A BREAK AT 12:00PM FOR LUNCH",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600120",
+            "fieldName": null,
+            "title": "Monday (Operating Hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "7:30AM-6:00PM ",
+            "decodedValue": "7:30AM-6:00PM ",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600121",
+            "fieldName": null,
+            "title": "Monday (Appointment Hours - can be same as operating hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 3,
+            "rawValue": "7:30AM-4:00PM",
+            "decodedValue": "7:30AM-4:00PM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600123",
+            "fieldName": null,
+            "title": "Tuesday (Operating Hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 5,
+            "rawValue": "7:30AM-6:00PM ",
+            "decodedValue": "7:30AM-6:00PM ",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600124",
+            "fieldName": null,
+            "title": "Tuesday (Appointment Hours - can be same as operating hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 6,
+            "rawValue": "7:30AM-4:00PM",
+            "decodedValue": "7:30AM-4:00PM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600126",
+            "fieldName": null,
+            "title": "Wednesday (Operating Hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 8,
+            "rawValue": "7:30AM-6:00PM ",
+            "decodedValue": "7:30AM-6:00PM ",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 6,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600127",
+            "fieldName": null,
+            "title": "Wednesday (Appointment Hours - can be same as operating hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 9,
+            "rawValue": "7:30AM-4:00PM",
+            "decodedValue": "7:30AM-4:00PM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 7,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600129",
+            "fieldName": null,
+            "title": "Thursday (Operating Hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 11,
+            "rawValue": "7:30AM-6:00PM ",
+            "decodedValue": "7:30AM-6:00PM ",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 8,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600130",
+            "fieldName": null,
+            "title": "Thursday (Appointment Hours - can be same as operating hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 12,
+            "rawValue": "7:30AM-4:00PM",
+            "decodedValue": "7:30AM-4:00PM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 9,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600132",
+            "fieldName": null,
+            "title": "Friday (Operating Hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 14,
+            "rawValue": "7:30AM-6:00PM ",
+            "decodedValue": "7:30AM-6:00PM ",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 10,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600133",
+            "fieldName": null,
+            "title": "Friday (Appointment Hours - can be same as operating hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 15,
+            "rawValue": "7:30AM-4:00PM",
+            "decodedValue": "7:30AM-4:00PM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 11,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600135",
+            "fieldName": null,
+            "title": "Saturday (Operating Hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 17,
+            "rawValue": "8:00AM-1:00PM",
+            "decodedValue": "8:00AM-1:00PM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 12,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600136",
+            "fieldName": null,
+            "title": "Saturday (Appointment Hours - can be same as operating hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 18,
+            "rawValue": "8:00 AM-12:00PM",
+            "decodedValue": "8:00 AM-12:00PM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 13,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600138",
+            "fieldName": null,
+            "title": "Sunday (Operating Hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 20,
+            "rawValue": "CLOSED",
+            "decodedValue": "CLOSED",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 14,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600139",
+            "fieldName": null,
+            "title": "Sunday (Appointment Hours - can be same as operating hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 21,
+            "rawValue": "CLOSED",
+            "decodedValue": "CLOSED",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 15,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "c1e9c67a-f34d-4ba2-86bb-1f70a673e423",
+            "fieldName": null,
+            "title": "In what frequency do you currently schedule service appointments?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "47c91292-5e8f-4221-a072-c2315de2da0a"
+            ],
+            "decodedValue": [
+              "Every 30 minutes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 16,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "a0dff874-11d5-4a33-bf5b-429f11d4ce04",
+            "fieldName": null,
+            "title": "What modes of transportation do you provide for customers? (select all that apply)",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "47c91292-5e8f-4221-a072-c2315de2da0a",
+              "a56b35c4-0273-46e5-b4fa-c2f673f56272",
+              "27fe1e18-90b7-4177-b351-c8acf9fe138d",
+              "c79092f4-dc3b-4736-8787-e589568ba6ce",
+              "5d83c601-ca2e-4d0f-927f-006ee24bcd20"
+            ],
+            "decodedValue": [
+              "Waiter",
+              "Drop-Off",
+              "Loaner",
+              "Shuttle",
+              "Valet"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 19,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "9a9d6e7a-873e-4e5c-8088-832710bd1314",
+            "fieldName": null,
+            "title": "Additional Information",
+            "type": "LONG_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 23,
+            "rawValue": "SCHEDULING IN TEKION BUT NEED TO KNOW EXACTLY WHAT YOU WANT FOR THE SCHEDULING SETTINGS",
+            "decodedValue": "SCHEDULING IN TEKION BUT NEED TO KNOW EXACTLY WHAT YOU WANT FOR THE SCHEDULING SETTINGS",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "cafdb95d-d4c1-4567-8b8d-0da22a0c5d34",
+        "sectionName": "Document Upload",
+        "sectionOrder": 9,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "cafdb95d-d4c1-4567-8b8d-0da22a0c5d34",
+            "sectionName": "Document Upload",
+            "sectionOrder": 9,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600217",
+            "fieldName": null,
+            "title": "This is the final step. Once you begin uploading these documents, you will not be able to Save and Resume Later. Please upload as many as possible, but if you are unable to upload them all then please either e-mail them to Implementations@Tekion.com or save them to provide to the Implementation Manager during the Strategy and Process visit.\nThank you!",
+            "type": "PARAGRAPH",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "cafdb95d-d4c1-4567-8b8d-0da22a0c5d34",
+            "sectionName": "Document Upload",
+            "sectionOrder": 9,
+            "sectionType": "MAIN",
+            "rowIndex": 6,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "cb748402-f495-4adc-9d1c-35d60124ea0b",
+            "fieldName": null,
+            "title": null,
+            "type": "PARAGRAPH",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "cafdb95d-d4c1-4567-8b8d-0da22a0c5d34",
+            "sectionName": "Document Upload",
+            "sectionOrder": 9,
+            "sectionType": "MAIN",
+            "rowIndex": 8,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "5a5ffcea-c8c5-4ec6-bc90-ed84fbb9de7e",
+            "fieldName": null,
+            "title": "Tekion Notes",
+            "type": "LONG_TEXT",
+            "required": false,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "766a7c0f-9e0e-4441-98a0-1219dcec75c5",
+                  "operator": "IS",
+                  "value": "b00e48b1-2531-4dc8-861a-240c68acaae5"
+                }
+              ]
+            },
+            "fieldOrder": 10,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "sectionName": "Fees",
+        "sectionOrder": 5,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "114564970",
+            "fieldName": null,
+            "title": "Please add all codes that increase the sale price of the RO. Every DMS handles this differently so this should reflect how you currently use these. Examples:Battery tax Tire disposal Tire storage fee Gas",
+            "type": "PARAGRAPH",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+            "fieldName": null,
+            "title": "Do you charge for Shop Supplies?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "42facdef-9d76-4336-ad53-fccd9b164956",
+            "fieldName": null,
+            "title": "On what basis are Shop Supplies calculated? (check all that apply)",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+                  "operator": "IS",
+                  "value": "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": [
+              "47c91292-5e8f-4221-a072-c2315de2da0a",
+              "592b5cbf-6fce-4c8e-b597-3ce89b8a168c"
+            ],
+            "decodedValue": [
+              "Parts",
+              "Labor"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "5f0de099-3f39-4ef1-939c-da433b5d12e2",
+            "fieldName": null,
+            "title": "Description (Fee Name)",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+                  "operator": "IS",
+                  "value": "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "SHOP CHARGE",
+            "decodedValue": "SHOP CHARGE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "9e0d2408-0922-4490-94f8-64971357e8af",
+            "fieldName": null,
+            "title": "Shop Supply Amount- % or Flat ",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+                  "operator": "IS",
+                  "value": "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "% UP TO MAX $60",
+            "decodedValue": "% UP TO MAX $60",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "c9896c0a-c070-4b7d-b200-67c146649a83",
+            "fieldName": null,
+            "title": "Shop Supply G/L Account ",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+                  "operator": "IS",
+                  "value": "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "61D FOR GM AND 61DH FOR HONDA",
+            "decodedValue": "61D FOR GM AND 61DH FOR HONDA",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 6,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "40306740-1eae-4769-9481-0f8609bc7819",
+            "fieldName": null,
+            "title": "Shop Supply Min. / Max. amounts",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+                  "operator": "IS",
+                  "value": "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "$0/$60",
+            "decodedValue": "$0/$60",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 7,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "005a4c87-c1ba-4a0c-917b-4c8850c30324",
+            "fieldName": null,
+            "title": "What pay types do you charge Shop Supplies on?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+                  "operator": "IS",
+                  "value": "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": [
+              "2dcdf988-d90d-4160-a350-c22e1bdd9ff8",
+              "b9c5c6dc-14f0-44fa-abb1-3a2921cd8f9d"
+            ],
+            "decodedValue": [
+              "Customer Pay",
+              "Internal"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 8,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "d6ec157a-56e9-4c0f-9e84-3572a4e753e2",
+            "fieldName": null,
+            "title": "Are Shop Supplies taxable?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+                  "operator": "IS",
+                  "value": "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": [
+              "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 9,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "2012e1e5-1bcd-4117-abe2-466abe94d1c5",
+            "fieldName": null,
+            "title": "Do you charge for Tire Storage?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "109453229",
+                  "operator": "IS",
+                  "value": "Canada"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 10,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "a8f56fe8-49c8-4a9d-b4c7-eb8fd605c29d",
+            "fieldName": null,
+            "title": "Description (Fee Name)",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "2012e1e5-1bcd-4117-abe2-466abe94d1c5",
+                  "operator": "IS",
+                  "value": "063db6cf-e265-4bda-a17a-6133b8a74e79"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 11,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "77b2e593-8de3-4548-b5dc-14da36d987e6",
+            "fieldName": null,
+            "title": "Tire Storage Amount- % or Flat",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "2012e1e5-1bcd-4117-abe2-466abe94d1c5",
+                  "operator": "IS",
+                  "value": "063db6cf-e265-4bda-a17a-6133b8a74e79"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 12,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "a692c1fc-5bcd-46f5-b1c4-57214ad249b7",
+            "fieldName": null,
+            "title": "Tire Storage G/L Account",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "2012e1e5-1bcd-4117-abe2-466abe94d1c5",
+                  "operator": "IS",
+                  "value": "063db6cf-e265-4bda-a17a-6133b8a74e79"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 13,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "859385d7-5f6e-4cc4-9b26-5ffcc073b934",
+            "fieldName": null,
+            "title": "Tire Storage Min. / Max. amounts",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "2012e1e5-1bcd-4117-abe2-466abe94d1c5",
+                  "operator": "IS",
+                  "value": "063db6cf-e265-4bda-a17a-6133b8a74e79"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 14,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "e62bb440-9c84-4812-a79d-b3aeb2b23312",
+            "fieldName": null,
+            "title": "Is your Tire Storage fee taxable?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "2012e1e5-1bcd-4117-abe2-466abe94d1c5",
+                  "operator": "IS",
+                  "value": "063db6cf-e265-4bda-a17a-6133b8a74e79"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 15,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "48dbe550-4e17-4a11-a183-fe2eeebd226a",
+            "fieldName": null,
+            "title": "Do you charge a Fuel Fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "9f236c8b-966e-4488-bd0b-19c9b69d934d"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 16,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "8e644ff6-62ed-4877-bb41-d97e924d764c",
+            "fieldName": null,
+            "title": "Description (Fee Name)",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "48dbe550-4e17-4a11-a183-fe2eeebd226a",
+                  "operator": "IS",
+                  "value": "063db6cf-e265-4bda-a17a-6133b8a74e79"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 17,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "f6918299-5ced-4b6f-8c82-ca6a16d9f216",
+            "fieldName": null,
+            "title": "Fuel Fee Amount- % or Flat",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "48dbe550-4e17-4a11-a183-fe2eeebd226a",
+                  "operator": "IS",
+                  "value": "063db6cf-e265-4bda-a17a-6133b8a74e79"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 18,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "7af88aec-c869-46ce-a941-904a89fa0f34",
+            "fieldName": null,
+            "title": "Fuel Fee G/L Account ",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "48dbe550-4e17-4a11-a183-fe2eeebd226a",
+                  "operator": "IS",
+                  "value": "063db6cf-e265-4bda-a17a-6133b8a74e79"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 19,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "014b73f3-1243-4a78-a82d-dad579f5221a",
+            "fieldName": null,
+            "title": "Fuel Fee Min. / Max. amounts",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "48dbe550-4e17-4a11-a183-fe2eeebd226a",
+                  "operator": "IS",
+                  "value": "063db6cf-e265-4bda-a17a-6133b8a74e79"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 20,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "973498a4-d594-43fb-bdf3-d0d941e2b269",
+            "fieldName": null,
+            "title": "Is your Fuel Fee taxable?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "48dbe550-4e17-4a11-a183-fe2eeebd226a",
+                  "operator": "IS",
+                  "value": "063db6cf-e265-4bda-a17a-6133b8a74e79"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 21,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "114565043",
+            "fieldName": null,
+            "title": "Please list any additional fees you may use",
+            "type": "LONG_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "DISPOSAL FEE FOR TIRES",
+            "decodedValue": "DISPOSAL FEE FOR TIRES",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "fbf24ac1-6d91-43c2-81dd-5e1983f97971",
+        "sectionName": "Discounts/Coupons",
+        "sectionOrder": 4,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "fbf24ac1-6d91-43c2-81dd-5e1983f97971",
+            "sectionName": "Discounts/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "114564953",
+            "fieldName": null,
+            "title": "Please add all codes that reduce the sale price of the RO. Every DMS handles this differently so this should reflect how you currently use these. Examples: Coupons - ($10 off oil change) Discounts - (10% military discount) Policy - (service policy account) Warranty split - (Goodwill) OEM rewards. ",
+            "type": "PARAGRAPH",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "fbf24ac1-6d91-43c2-81dd-5e1983f97971",
+            "sectionName": "Discounts/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "114565042",
+            "fieldName": null,
+            "title": "Please list all discounts (put \"None\" if you don't use discounts)",
+            "type": "LONG_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+            "decodedValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "6bc52eef-2b6b-4283-9070-b90395ef2419",
+        "sectionName": null,
+        "sectionOrder": 0,
+        "sectionType": "WELCOME",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "6bc52eef-2b6b-4283-9070-b90395ef2419",
+            "sectionName": null,
+            "sectionOrder": 0,
+            "sectionType": "WELCOME",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "6e1e6fa6-2c63-4e08-8345-9192392b31bd",
+            "fieldName": null,
+            "title": null,
+            "type": "LOGO",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "6bc52eef-2b6b-4283-9070-b90395ef2419",
+            "sectionName": null,
+            "sectionOrder": 0,
+            "sectionType": "WELCOME",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "5ffcc4fb-fe33-43d0-bc37-d8063d3e398e",
+            "fieldName": null,
+            "title": "To begin, click Next.\n\nIf you are unable to finish in one sitting, feel free to save your work and revisit later through your onboarding link. You will generate a temporary link through the link in your original onboarding email. \n\nIf you have any questions, feel free to reach out to your Tekion Implementation Manager.",
+            "type": "PARAGRAPH",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "1cbfe9b2-16b8-498b-b19f-c0b64d974383",
+        "sectionName": null,
+        "sectionOrder": 999,
+        "sectionType": "SUBMISSION",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "1cbfe9b2-16b8-498b-b19f-c0b64d974383",
+            "sectionName": null,
+            "sectionOrder": 999,
+            "sectionType": "SUBMISSION",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "2dd688a8-05ae-4911-b891-0f32fc067381",
+            "fieldName": null,
+            "title": null,
+            "type": "LOGO",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "1cbfe9b2-16b8-498b-b19f-c0b64d974383",
+            "sectionName": null,
+            "sectionOrder": 999,
+            "sectionType": "SUBMISSION",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "b0eab3a2-bcd1-42ad-bc1e-251ef51531ca",
+            "fieldName": null,
+            "title": null,
+            "type": "PARAGRAPH",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "e2eacde6-bdbf-4aea-854e-0e57991b504d",
+        "sectionName": "Submitter Information",
+        "sectionOrder": 10,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "e2eacde6-bdbf-4aea-854e-0e57991b504d",
+            "sectionName": "Submitter Information",
+            "sectionOrder": 10,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "ed3517fa-9a14-4c02-a872-236b377b604b",
+            "fieldName": null,
+            "title": "Is there anything else we need to know about your service department?",
+            "type": "LONG_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "b9b9ea7a-ec9b-474a-a5da-16244330fda4",
+        "sectionName": "Pre Go-live Training",
+        "sectionOrder": 2,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "b9b9ea7a-ec9b-474a-a5da-16244330fda4",
+            "sectionName": "Pre Go-live Training",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "ce7699ff-e085-40ce-8a7a-6c823479583d",
+            "fieldName": null,
+            "title": null,
+            "type": "PARAGRAPH",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      }
+    ],
+    "allFields": [
+      {
+        "sectionName": "Dispatching Workflows",
+        "subsectionName": null,
+        "sectionId": "f19e443a-f070-4371-885c-e4be10731d4e",
+        "fieldId": "2440391a-3470-48ae-a17b-2f39882a8955",
+        "title": "Additional Notes",
+        "type": "LONG_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600142",
+        "title": "What is your default Customer labor rate?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "195 GM AND 175 HONDA",
+        "decodedValue": "195 GM AND 175 HONDA",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600143",
+        "title": "What is your default Warranty labor rate?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$173.17 HONDA AND $176.06 GM",
+        "decodedValue": "$173.17 HONDA AND $176.06 GM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "76a5a130-c4c6-41a8-9f3e-5c02dcbdb07c",
+        "title": "Do you want to automatically close RO when warranty claim is submitted?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "47c91292-5e8f-4221-a072-c2315de2da0a"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "2b0eebdf-9762-495d-925e-6bd00fc416ab",
+        "title": "What is you default Warranty G/L Account?",
+        "type": "DROPDOWN",
+        "required": true,
+        "rawValue": "946f3c09-9d3b-472d-a80a-8b891a1d9b61",
+        "decodedValue": "Warranty Claim",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "fc686ad7-90df-4494-9e31-0b96d840332d",
+        "title": "What is your warranty parts markup percentage?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "87.5% GM AND 78% HONDA",
+        "decodedValue": "87.5% GM AND 78% HONDA",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600144",
+        "title": "What is your default Internal labor rate?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "195 GM AND 175 HONDA",
+        "decodedValue": "195 GM AND 175 HONDA",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "68bbe771-502c-4f94-933d-6b0aaf452f46",
+        "title": "Do you have an internal pay limit? (If so, please put the limit below)",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "NO",
+        "decodedValue": "NO",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600145",
+        "title": "In which scenarios do you utilize a different labor rate than the default?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "Service contract / Extended warranty"
+        ],
+        "decodedValue": [
+          "Service contract / Extended warranty"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "0150295c-cfc7-4c6a-bd33-b855ed0563e7",
+        "title": "Please describe Bodyshop specific labor rates",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600146",
+        "title": "Please describe vehicle make specific labor rates",
+        "type": "LONG_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600147",
+        "title": "Please describe service contract specific labor rates",
+        "type": "LONG_TEXT",
+        "required": true,
+        "rawValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+        "decodedValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "14956175-b883-460e-b161-8d055ea14ac5",
+        "title": "Please describe EV specific labor rates",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "defb2ebf-ff1f-4d02-8aac-9bc217d59cbf",
+        "title": "Please describe Diesel specific labor rates",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600148",
+        "title": "Do you utilize a labor matrix?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "No"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "68b24c8c-2cae-477e-a2f5-803c13cfdb30",
+        "title": null,
+        "type": "PARAGRAPH",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "6b496322-6cae-4c99-b6dc-c709f990ab04",
+        "title": "Additional Information",
+        "type": "LONG_TEXT",
+        "required": false,
+        "rawValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
+        "decodedValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Service Information",
+        "subsectionName": null,
+        "sectionId": "cbdb97ac-92fe-4043-a445-05a07602a879",
+        "fieldId": "103600091",
+        "title": "Do you have a bodyshop or collision center?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "No"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Service Information",
+        "subsectionName": null,
+        "sectionId": "cbdb97ac-92fe-4043-a445-05a07602a879",
+        "fieldId": "103602239",
+        "title": "Additional Notes",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103602276",
+        "title": "Department Hour Notes (if needed)",
+        "type": "LONG_TEXT",
+        "required": false,
+        "rawValue": "7:30AM-6:00PM IS OPERATING HOURS\n7:30AM-4:00PM ARE OPEN FOR APPOINTMENTS WITH A BREAK AT 12:00PM FOR LUNCH",
+        "decodedValue": "7:30AM-6:00PM IS OPERATING HOURS\n7:30AM-4:00PM ARE OPEN FOR APPOINTMENTS WITH A BREAK AT 12:00PM FOR LUNCH",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600120",
+        "title": "Monday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-6:00PM ",
+        "decodedValue": "7:30AM-6:00PM ",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600121",
+        "title": "Monday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-4:00PM",
+        "decodedValue": "7:30AM-4:00PM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600123",
+        "title": "Tuesday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-6:00PM ",
+        "decodedValue": "7:30AM-6:00PM ",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600124",
+        "title": "Tuesday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-4:00PM",
+        "decodedValue": "7:30AM-4:00PM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600126",
+        "title": "Wednesday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-6:00PM ",
+        "decodedValue": "7:30AM-6:00PM ",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600127",
+        "title": "Wednesday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-4:00PM",
+        "decodedValue": "7:30AM-4:00PM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600129",
+        "title": "Thursday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-6:00PM ",
+        "decodedValue": "7:30AM-6:00PM ",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600130",
+        "title": "Thursday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-4:00PM",
+        "decodedValue": "7:30AM-4:00PM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600132",
+        "title": "Friday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-6:00PM ",
+        "decodedValue": "7:30AM-6:00PM ",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600133",
+        "title": "Friday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-4:00PM",
+        "decodedValue": "7:30AM-4:00PM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600135",
+        "title": "Saturday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "8:00AM-1:00PM",
+        "decodedValue": "8:00AM-1:00PM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600136",
+        "title": "Saturday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "8:00 AM-12:00PM",
+        "decodedValue": "8:00 AM-12:00PM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600138",
+        "title": "Sunday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "CLOSED",
+        "decodedValue": "CLOSED",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600139",
+        "title": "Sunday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "CLOSED",
+        "decodedValue": "CLOSED",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "c1e9c67a-f34d-4ba2-86bb-1f70a673e423",
+        "title": "In what frequency do you currently schedule service appointments?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "47c91292-5e8f-4221-a072-c2315de2da0a"
+        ],
+        "decodedValue": [
+          "Every 30 minutes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "a0dff874-11d5-4a33-bf5b-429f11d4ce04",
+        "title": "What modes of transportation do you provide for customers? (select all that apply)",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "47c91292-5e8f-4221-a072-c2315de2da0a",
+          "a56b35c4-0273-46e5-b4fa-c2f673f56272",
+          "27fe1e18-90b7-4177-b351-c8acf9fe138d",
+          "c79092f4-dc3b-4736-8787-e589568ba6ce",
+          "5d83c601-ca2e-4d0f-927f-006ee24bcd20"
+        ],
+        "decodedValue": [
+          "Waiter",
+          "Drop-Off",
+          "Loaner",
+          "Shuttle",
+          "Valet"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "9a9d6e7a-873e-4e5c-8088-832710bd1314",
+        "title": "Additional Information",
+        "type": "LONG_TEXT",
+        "required": false,
+        "rawValue": "SCHEDULING IN TEKION BUT NEED TO KNOW EXACTLY WHAT YOU WANT FOR THE SCHEDULING SETTINGS",
+        "decodedValue": "SCHEDULING IN TEKION BUT NEED TO KNOW EXACTLY WHAT YOU WANT FOR THE SCHEDULING SETTINGS",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Document Upload",
+        "subsectionName": null,
+        "sectionId": "cafdb95d-d4c1-4567-8b8d-0da22a0c5d34",
+        "fieldId": "103600217",
+        "title": "This is the final step. Once you begin uploading these documents, you will not be able to Save and Resume Later. Please upload as many as possible, but if you are unable to upload them all then please either e-mail them to Implementations@Tekion.com or save them to provide to the Implementation Manager during the Strategy and Process visit.\nThank you!",
+        "type": "PARAGRAPH",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Document Upload",
+        "subsectionName": null,
+        "sectionId": "cafdb95d-d4c1-4567-8b8d-0da22a0c5d34",
+        "fieldId": "cb748402-f495-4adc-9d1c-35d60124ea0b",
+        "title": null,
+        "type": "PARAGRAPH",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Document Upload",
+        "subsectionName": null,
+        "sectionId": "cafdb95d-d4c1-4567-8b8d-0da22a0c5d34",
+        "fieldId": "5a5ffcea-c8c5-4ec6-bc90-ed84fbb9de7e",
+        "title": "Tekion Notes",
+        "type": "LONG_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "114564970",
+        "title": "Please add all codes that increase the sale price of the RO. Every DMS handles this differently so this should reflect how you currently use these. Examples:Battery tax Tire disposal Tire storage fee Gas",
+        "type": "PARAGRAPH",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+        "title": "Do you charge for Shop Supplies?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "42facdef-9d76-4336-ad53-fccd9b164956",
+        "title": "On what basis are Shop Supplies calculated? (check all that apply)",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "47c91292-5e8f-4221-a072-c2315de2da0a",
+          "592b5cbf-6fce-4c8e-b597-3ce89b8a168c"
+        ],
+        "decodedValue": [
+          "Parts",
+          "Labor"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "5f0de099-3f39-4ef1-939c-da433b5d12e2",
+        "title": "Description (Fee Name)",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "SHOP CHARGE",
+        "decodedValue": "SHOP CHARGE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "9e0d2408-0922-4490-94f8-64971357e8af",
+        "title": "Shop Supply Amount- % or Flat ",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "% UP TO MAX $60",
+        "decodedValue": "% UP TO MAX $60",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "c9896c0a-c070-4b7d-b200-67c146649a83",
+        "title": "Shop Supply G/L Account ",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "61D FOR GM AND 61DH FOR HONDA",
+        "decodedValue": "61D FOR GM AND 61DH FOR HONDA",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "40306740-1eae-4769-9481-0f8609bc7819",
+        "title": "Shop Supply Min. / Max. amounts",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$0/$60",
+        "decodedValue": "$0/$60",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "005a4c87-c1ba-4a0c-917b-4c8850c30324",
+        "title": "What pay types do you charge Shop Supplies on?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "2dcdf988-d90d-4160-a350-c22e1bdd9ff8",
+          "b9c5c6dc-14f0-44fa-abb1-3a2921cd8f9d"
+        ],
+        "decodedValue": [
+          "Customer Pay",
+          "Internal"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "d6ec157a-56e9-4c0f-9e84-3572a4e753e2",
+        "title": "Are Shop Supplies taxable?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "2012e1e5-1bcd-4117-abe2-466abe94d1c5",
+        "title": "Do you charge for Tire Storage?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "a8f56fe8-49c8-4a9d-b4c7-eb8fd605c29d",
+        "title": "Description (Fee Name)",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "77b2e593-8de3-4548-b5dc-14da36d987e6",
+        "title": "Tire Storage Amount- % or Flat",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "a692c1fc-5bcd-46f5-b1c4-57214ad249b7",
+        "title": "Tire Storage G/L Account",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "859385d7-5f6e-4cc4-9b26-5ffcc073b934",
+        "title": "Tire Storage Min. / Max. amounts",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "e62bb440-9c84-4812-a79d-b3aeb2b23312",
+        "title": "Is your Tire Storage fee taxable?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "48dbe550-4e17-4a11-a183-fe2eeebd226a",
+        "title": "Do you charge a Fuel Fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "9f236c8b-966e-4488-bd0b-19c9b69d934d"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "8e644ff6-62ed-4877-bb41-d97e924d764c",
+        "title": "Description (Fee Name)",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "f6918299-5ced-4b6f-8c82-ca6a16d9f216",
+        "title": "Fuel Fee Amount- % or Flat",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "7af88aec-c869-46ce-a941-904a89fa0f34",
+        "title": "Fuel Fee G/L Account ",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "014b73f3-1243-4a78-a82d-dad579f5221a",
+        "title": "Fuel Fee Min. / Max. amounts",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "973498a4-d594-43fb-bdf3-d0d941e2b269",
+        "title": "Is your Fuel Fee taxable?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "114565043",
+        "title": "Please list any additional fees you may use",
+        "type": "LONG_TEXT",
+        "required": true,
+        "rawValue": "DISPOSAL FEE FOR TIRES",
+        "decodedValue": "DISPOSAL FEE FOR TIRES",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Discounts/Coupons",
+        "subsectionName": null,
+        "sectionId": "fbf24ac1-6d91-43c2-81dd-5e1983f97971",
+        "fieldId": "114564953",
+        "title": "Please add all codes that reduce the sale price of the RO. Every DMS handles this differently so this should reflect how you currently use these. Examples: Coupons - ($10 off oil change) Discounts - (10% military discount) Policy - (service policy account) Warranty split - (Goodwill) OEM rewards. ",
+        "type": "PARAGRAPH",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Discounts/Coupons",
+        "subsectionName": null,
+        "sectionId": "fbf24ac1-6d91-43c2-81dd-5e1983f97971",
+        "fieldId": "114565042",
+        "title": "Please list all discounts (put \"None\" if you don't use discounts)",
+        "type": "LONG_TEXT",
+        "required": true,
+        "rawValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+        "decodedValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": null,
+        "subsectionName": null,
+        "sectionId": "6bc52eef-2b6b-4283-9070-b90395ef2419",
+        "fieldId": "6e1e6fa6-2c63-4e08-8345-9192392b31bd",
+        "title": null,
+        "type": "LOGO",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": null,
+        "subsectionName": null,
+        "sectionId": "6bc52eef-2b6b-4283-9070-b90395ef2419",
+        "fieldId": "5ffcc4fb-fe33-43d0-bc37-d8063d3e398e",
+        "title": "To begin, click Next.\n\nIf you are unable to finish in one sitting, feel free to save your work and revisit later through your onboarding link. You will generate a temporary link through the link in your original onboarding email. \n\nIf you have any questions, feel free to reach out to your Tekion Implementation Manager.",
+        "type": "PARAGRAPH",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": null,
+        "subsectionName": null,
+        "sectionId": "1cbfe9b2-16b8-498b-b19f-c0b64d974383",
+        "fieldId": "2dd688a8-05ae-4911-b891-0f32fc067381",
+        "title": null,
+        "type": "LOGO",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": null,
+        "subsectionName": null,
+        "sectionId": "1cbfe9b2-16b8-498b-b19f-c0b64d974383",
+        "fieldId": "b0eab3a2-bcd1-42ad-bc1e-251ef51531ca",
+        "title": null,
+        "type": "PARAGRAPH",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Submitter Information",
+        "subsectionName": null,
+        "sectionId": "e2eacde6-bdbf-4aea-854e-0e57991b504d",
+        "fieldId": "ed3517fa-9a14-4c02-a872-236b377b604b",
+        "title": "Is there anything else we need to know about your service department?",
+        "type": "LONG_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Pre Go-live Training",
+        "subsectionName": null,
+        "sectionId": "b9b9ea7a-ec9b-474a-a5da-16244330fda4",
+        "fieldId": "ce7699ff-e085-40ce-8a7a-6c823479583d",
+        "title": null,
+        "type": "PARAGRAPH",
+        "required": false,
+        "hasUserValue": false
+      }
+    ],
+    "populatedSections": [
+      {
+        "sectionId": "f19e443a-f070-4371-885c-e4be10731d4e",
+        "sectionName": "Dispatching Workflows",
+        "sectionOrder": 8,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "f19e443a-f070-4371-885c-e4be10731d4e",
+            "sectionName": "Dispatching Workflows",
+            "sectionOrder": 8,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "111494939",
+            "fieldName": null,
+            "title": "Allow Techs to Log on to Multiple Jobs?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 1,
+            "rawValue": [
+              "Yes"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "f19e443a-f070-4371-885c-e4be10731d4e",
+            "sectionName": "Dispatching Workflows",
+            "sectionOrder": 8,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "111494950",
+            "fieldName": null,
+            "title": "For which job types can the techs log on to multiple jobs?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "111494939",
+                  "operator": "IS",
+                  "value": "Yes"
+                }
+              ]
+            },
+            "fieldOrder": 2,
+            "rawValue": [
+              "Customer Pay",
+              "Internal",
+              "Warranty"
+            ],
+            "decodedValue": [
+              "Customer Pay",
+              "Internal",
+              "Warranty"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "f19e443a-f070-4371-885c-e4be10731d4e",
+            "sectionName": "Dispatching Workflows",
+            "sectionOrder": 8,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "111494959",
+            "fieldName": null,
+            "title": "What criteria do you use to pay technicians?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 3,
+            "rawValue": [
+              "By job, when each job is completed"
+            ],
+            "decodedValue": [
+              "By job, when each job is completed"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "f19e443a-f070-4371-885c-e4be10731d4e",
+            "sectionName": "Dispatching Workflows",
+            "sectionOrder": 8,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "111494979",
+            "fieldName": null,
+            "title": "How are RO's dispatched to technicians?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 4,
+            "rawValue": [
+              "A shop foreman dispatches the work"
+            ],
+            "decodedValue": [
+              "A shop foreman dispatches the work"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "sectionName": "Labor Pricing",
+        "sectionOrder": 7,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600142",
+            "fieldName": null,
+            "title": "What is your default Customer labor rate?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 1,
+            "rawValue": "195 GM AND 175 HONDA",
+            "decodedValue": "195 GM AND 175 HONDA",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600143",
+            "fieldName": null,
+            "title": "What is your default Warranty labor rate?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 2,
+            "rawValue": "$173.17 HONDA AND $176.06 GM",
+            "decodedValue": "$173.17 HONDA AND $176.06 GM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "76a5a130-c4c6-41a8-9f3e-5c02dcbdb07c",
+            "fieldName": null,
+            "title": "Do you want to automatically close RO when warranty claim is submitted?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "47c91292-5e8f-4221-a072-c2315de2da0a"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "2b0eebdf-9762-495d-925e-6bd00fc416ab",
+            "fieldName": null,
+            "title": "What is you default Warranty G/L Account?",
+            "type": "DROPDOWN",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "946f3c09-9d3b-472d-a80a-8b891a1d9b61",
+            "decodedValue": "Warranty Claim",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "fc686ad7-90df-4494-9e31-0b96d840332d",
+            "fieldName": null,
+            "title": "What is your warranty parts markup percentage?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "87.5% GM AND 78% HONDA",
+            "decodedValue": "87.5% GM AND 78% HONDA",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600144",
+            "fieldName": null,
+            "title": "What is your default Internal labor rate?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 3,
+            "rawValue": "195 GM AND 175 HONDA",
+            "decodedValue": "195 GM AND 175 HONDA",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 6,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "68bbe771-502c-4f94-933d-6b0aaf452f46",
+            "fieldName": null,
+            "title": "Do you have an internal pay limit? (If so, please put the limit below)",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "NO",
+            "decodedValue": "NO",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 7,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600145",
+            "fieldName": null,
+            "title": "In which scenarios do you utilize a different labor rate than the default?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 4,
+            "rawValue": [
+              "Service contract / Extended warranty"
+            ],
+            "decodedValue": [
+              "Service contract / Extended warranty"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 10,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600147",
+            "fieldName": null,
+            "title": "Please describe service contract specific labor rates",
+            "type": "LONG_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103600145",
+                  "operator": "IS",
+                  "value": "Service contract / Extended warranty"
+                }
+              ]
+            },
+            "fieldOrder": 6,
+            "rawValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+            "decodedValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 13,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600148",
+            "fieldName": null,
+            "title": "Do you utilize a labor matrix?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 7,
+            "rawValue": [
+              "No"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+            "sectionName": "Labor Pricing",
+            "sectionOrder": 7,
+            "sectionType": "MAIN",
+            "rowIndex": 16,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "6b496322-6cae-4c99-b6dc-c709f990ab04",
+            "fieldName": null,
+            "title": "Additional Information",
+            "type": "LONG_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 21,
+            "rawValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
+            "decodedValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "cbdb97ac-92fe-4043-a445-05a07602a879",
+        "sectionName": "General Service Information",
+        "sectionOrder": 3,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "cbdb97ac-92fe-4043-a445-05a07602a879",
+            "sectionName": "General Service Information",
+            "sectionOrder": 3,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "17ab9d66-c41d-468f-b6f2-de02a52abbe8",
+            "fieldName": null,
+            "title": "What type of vehicles do you service?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "853c8c36-c5d8-442e-afcb-6ef201c91649",
+              "4afacdd0-236d-47f2-b233-ed8ccf5e06f2"
+            ],
+            "decodedValue": [
+              "Cars / Pickup trucks",
+              "Heavy duty trucks"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "cbdb97ac-92fe-4043-a445-05a07602a879",
+            "sectionName": "General Service Information",
+            "sectionOrder": 3,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "6e904149-e46f-401b-b5b3-f5183c32c95c",
+            "fieldName": null,
+            "title": "What is your Service Department Direct Phone Number For Customers to Call?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "252-302-4616",
+            "decodedValue": "252-302-4616",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "cbdb97ac-92fe-4043-a445-05a07602a879",
+            "sectionName": "General Service Information",
+            "sectionOrder": 3,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "5566999a-2d0f-442f-b970-ac844be5c664",
+            "fieldName": null,
+            "title": "Do you Have a Service Department Email Address?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "chris.brandt@davenportauto.com",
+            "decodedValue": "chris.brandt@davenportauto.com",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "cbdb97ac-92fe-4043-a445-05a07602a879",
+            "sectionName": "General Service Information",
+            "sectionOrder": 3,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600091",
+            "fieldName": null,
+            "title": "Do you have a bodyshop or collision center?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": [
+              "No"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "cbdb97ac-92fe-4043-a445-05a07602a879",
+            "sectionName": "General Service Information",
+            "sectionOrder": 3,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600100",
+            "fieldName": null,
+            "title": "Do you present a service menu with set pricing to your customers?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 11,
+            "rawValue": [
+              "Yes"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "cbdb97ac-92fe-4043-a445-05a07602a879",
+            "sectionName": "General Service Information",
+            "sectionOrder": 3,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "ada37d85-154c-47d5-ac52-d3d9d8ebb658",
+            "fieldName": null,
+            "title": "If yes, do you present custom service packages or OEM packages only?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103600100",
+                  "operator": "IS",
+                  "value": "Yes"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "Both",
+            "decodedValue": "Both",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "cbdb97ac-92fe-4043-a445-05a07602a879",
+            "sectionName": "General Service Information",
+            "sectionOrder": 3,
+            "sectionType": "MAIN",
+            "rowIndex": 6,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600101",
+            "fieldName": null,
+            "title": "Do you use a service pricing guide in your current DMS?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 12,
+            "rawValue": [
+              "Yes"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "sectionName": "Department Hours and Appointments",
+        "sectionOrder": 6,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103602276",
+            "fieldName": null,
+            "title": "Department Hour Notes (if needed)",
+            "type": "LONG_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "7:30AM-6:00PM IS OPERATING HOURS\n7:30AM-4:00PM ARE OPEN FOR APPOINTMENTS WITH A BREAK AT 12:00PM FOR LUNCH",
+            "decodedValue": "7:30AM-6:00PM IS OPERATING HOURS\n7:30AM-4:00PM ARE OPEN FOR APPOINTMENTS WITH A BREAK AT 12:00PM FOR LUNCH",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600120",
+            "fieldName": null,
+            "title": "Monday (Operating Hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "7:30AM-6:00PM ",
+            "decodedValue": "7:30AM-6:00PM ",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600121",
+            "fieldName": null,
+            "title": "Monday (Appointment Hours - can be same as operating hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 3,
+            "rawValue": "7:30AM-4:00PM",
+            "decodedValue": "7:30AM-4:00PM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600123",
+            "fieldName": null,
+            "title": "Tuesday (Operating Hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 5,
+            "rawValue": "7:30AM-6:00PM ",
+            "decodedValue": "7:30AM-6:00PM ",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600124",
+            "fieldName": null,
+            "title": "Tuesday (Appointment Hours - can be same as operating hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 6,
+            "rawValue": "7:30AM-4:00PM",
+            "decodedValue": "7:30AM-4:00PM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600126",
+            "fieldName": null,
+            "title": "Wednesday (Operating Hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 8,
+            "rawValue": "7:30AM-6:00PM ",
+            "decodedValue": "7:30AM-6:00PM ",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 6,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600127",
+            "fieldName": null,
+            "title": "Wednesday (Appointment Hours - can be same as operating hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 9,
+            "rawValue": "7:30AM-4:00PM",
+            "decodedValue": "7:30AM-4:00PM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 7,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600129",
+            "fieldName": null,
+            "title": "Thursday (Operating Hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 11,
+            "rawValue": "7:30AM-6:00PM ",
+            "decodedValue": "7:30AM-6:00PM ",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 8,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600130",
+            "fieldName": null,
+            "title": "Thursday (Appointment Hours - can be same as operating hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 12,
+            "rawValue": "7:30AM-4:00PM",
+            "decodedValue": "7:30AM-4:00PM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 9,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600132",
+            "fieldName": null,
+            "title": "Friday (Operating Hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 14,
+            "rawValue": "7:30AM-6:00PM ",
+            "decodedValue": "7:30AM-6:00PM ",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 10,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600133",
+            "fieldName": null,
+            "title": "Friday (Appointment Hours - can be same as operating hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 15,
+            "rawValue": "7:30AM-4:00PM",
+            "decodedValue": "7:30AM-4:00PM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 11,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600135",
+            "fieldName": null,
+            "title": "Saturday (Operating Hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 17,
+            "rawValue": "8:00AM-1:00PM",
+            "decodedValue": "8:00AM-1:00PM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 12,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600136",
+            "fieldName": null,
+            "title": "Saturday (Appointment Hours - can be same as operating hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 18,
+            "rawValue": "8:00 AM-12:00PM",
+            "decodedValue": "8:00 AM-12:00PM",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 13,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600138",
+            "fieldName": null,
+            "title": "Sunday (Operating Hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 20,
+            "rawValue": "CLOSED",
+            "decodedValue": "CLOSED",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 14,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600139",
+            "fieldName": null,
+            "title": "Sunday (Appointment Hours - can be same as operating hours):",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 21,
+            "rawValue": "CLOSED",
+            "decodedValue": "CLOSED",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 15,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "c1e9c67a-f34d-4ba2-86bb-1f70a673e423",
+            "fieldName": null,
+            "title": "In what frequency do you currently schedule service appointments?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "47c91292-5e8f-4221-a072-c2315de2da0a"
+            ],
+            "decodedValue": [
+              "Every 30 minutes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 16,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "a0dff874-11d5-4a33-bf5b-429f11d4ce04",
+            "fieldName": null,
+            "title": "What modes of transportation do you provide for customers? (select all that apply)",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "47c91292-5e8f-4221-a072-c2315de2da0a",
+              "a56b35c4-0273-46e5-b4fa-c2f673f56272",
+              "27fe1e18-90b7-4177-b351-c8acf9fe138d",
+              "c79092f4-dc3b-4736-8787-e589568ba6ce",
+              "5d83c601-ca2e-4d0f-927f-006ee24bcd20"
+            ],
+            "decodedValue": [
+              "Waiter",
+              "Drop-Off",
+              "Loaner",
+              "Shuttle",
+              "Valet"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 17,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "1adc5dbb-e39f-46c9-a194-b6cf1b446524",
+            "fieldName": null,
+            "title": "Where will you schedule service appointments when switching to Tekion?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "OTHERS_OPTION"
+            ],
+            "decodedValue": [
+              "Others"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+            "sectionName": "Department Hours and Appointments",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 19,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "9a9d6e7a-873e-4e5c-8088-832710bd1314",
+            "fieldName": null,
+            "title": "Additional Information",
+            "type": "LONG_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 23,
+            "rawValue": "SCHEDULING IN TEKION BUT NEED TO KNOW EXACTLY WHAT YOU WANT FOR THE SCHEDULING SETTINGS",
+            "decodedValue": "SCHEDULING IN TEKION BUT NEED TO KNOW EXACTLY WHAT YOU WANT FOR THE SCHEDULING SETTINGS",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "sectionName": "Fees",
+        "sectionOrder": 5,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+            "fieldName": null,
+            "title": "Do you charge for Shop Supplies?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "42facdef-9d76-4336-ad53-fccd9b164956",
+            "fieldName": null,
+            "title": "On what basis are Shop Supplies calculated? (check all that apply)",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+                  "operator": "IS",
+                  "value": "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": [
+              "47c91292-5e8f-4221-a072-c2315de2da0a",
+              "592b5cbf-6fce-4c8e-b597-3ce89b8a168c"
+            ],
+            "decodedValue": [
+              "Parts",
+              "Labor"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "5f0de099-3f39-4ef1-939c-da433b5d12e2",
+            "fieldName": null,
+            "title": "Description (Fee Name)",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+                  "operator": "IS",
+                  "value": "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "SHOP CHARGE",
+            "decodedValue": "SHOP CHARGE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "9e0d2408-0922-4490-94f8-64971357e8af",
+            "fieldName": null,
+            "title": "Shop Supply Amount- % or Flat ",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+                  "operator": "IS",
+                  "value": "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "% UP TO MAX $60",
+            "decodedValue": "% UP TO MAX $60",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "c9896c0a-c070-4b7d-b200-67c146649a83",
+            "fieldName": null,
+            "title": "Shop Supply G/L Account ",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+                  "operator": "IS",
+                  "value": "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "61D FOR GM AND 61DH FOR HONDA",
+            "decodedValue": "61D FOR GM AND 61DH FOR HONDA",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 6,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "40306740-1eae-4769-9481-0f8609bc7819",
+            "fieldName": null,
+            "title": "Shop Supply Min. / Max. amounts",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+                  "operator": "IS",
+                  "value": "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "$0/$60",
+            "decodedValue": "$0/$60",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 7,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "005a4c87-c1ba-4a0c-917b-4c8850c30324",
+            "fieldName": null,
+            "title": "What pay types do you charge Shop Supplies on?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+                  "operator": "IS",
+                  "value": "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": [
+              "2dcdf988-d90d-4160-a350-c22e1bdd9ff8",
+              "b9c5c6dc-14f0-44fa-abb1-3a2921cd8f9d"
+            ],
+            "decodedValue": [
+              "Customer Pay",
+              "Internal"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 8,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "d6ec157a-56e9-4c0f-9e84-3572a4e753e2",
+            "fieldName": null,
+            "title": "Are Shop Supplies taxable?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+                  "operator": "IS",
+                  "value": "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": [
+              "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 15,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "48dbe550-4e17-4a11-a183-fe2eeebd226a",
+            "fieldName": null,
+            "title": "Do you charge a Fuel Fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "9f236c8b-966e-4488-bd0b-19c9b69d934d"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+            "sectionName": "Fees",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 21,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "114565043",
+            "fieldName": null,
+            "title": "Please list any additional fees you may use",
+            "type": "LONG_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "DISPOSAL FEE FOR TIRES",
+            "decodedValue": "DISPOSAL FEE FOR TIRES",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "fbf24ac1-6d91-43c2-81dd-5e1983f97971",
+        "sectionName": "Discounts/Coupons",
+        "sectionOrder": 4,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "fbf24ac1-6d91-43c2-81dd-5e1983f97971",
+            "sectionName": "Discounts/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "114565042",
+            "fieldName": null,
+            "title": "Please list all discounts (put \"None\" if you don't use discounts)",
+            "type": "LONG_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+            "decodedValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "b9b9ea7a-ec9b-474a-a5da-16244330fda4",
+        "sectionName": "Pre Go-live Training",
+        "sectionOrder": 2,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "b9b9ea7a-ec9b-474a-a5da-16244330fda4",
+            "sectionName": "Pre Go-live Training",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "3820f001-f1af-46cf-bb40-07336e547257",
+            "fieldName": null,
+            "title": "Please provide Parts & Service training room details and logistical information:",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "Honda conference room located on second floor of Honda building.",
+            "decodedValue": "Honda conference room located on second floor of Honda building.",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      }
+    ],
+    "populatedFlatRows": [
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600142",
+        "title": "What is your default Customer labor rate?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "195 GM AND 175 HONDA",
+        "decodedValue": "195 GM AND 175 HONDA",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600143",
+        "title": "What is your default Warranty labor rate?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$173.17 HONDA AND $176.06 GM",
+        "decodedValue": "$173.17 HONDA AND $176.06 GM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "76a5a130-c4c6-41a8-9f3e-5c02dcbdb07c",
+        "title": "Do you want to automatically close RO when warranty claim is submitted?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "47c91292-5e8f-4221-a072-c2315de2da0a"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "2b0eebdf-9762-495d-925e-6bd00fc416ab",
+        "title": "What is you default Warranty G/L Account?",
+        "type": "DROPDOWN",
+        "required": true,
+        "rawValue": "946f3c09-9d3b-472d-a80a-8b891a1d9b61",
+        "decodedValue": "Warranty Claim",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "fc686ad7-90df-4494-9e31-0b96d840332d",
+        "title": "What is your warranty parts markup percentage?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "87.5% GM AND 78% HONDA",
+        "decodedValue": "87.5% GM AND 78% HONDA",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600144",
+        "title": "What is your default Internal labor rate?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "195 GM AND 175 HONDA",
+        "decodedValue": "195 GM AND 175 HONDA",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "68bbe771-502c-4f94-933d-6b0aaf452f46",
+        "title": "Do you have an internal pay limit? (If so, please put the limit below)",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "NO",
+        "decodedValue": "NO",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600145",
+        "title": "In which scenarios do you utilize a different labor rate than the default?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "Service contract / Extended warranty"
+        ],
+        "decodedValue": [
+          "Service contract / Extended warranty"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600147",
+        "title": "Please describe service contract specific labor rates",
+        "type": "LONG_TEXT",
+        "required": true,
+        "rawValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+        "decodedValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600148",
+        "title": "Do you utilize a labor matrix?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "No"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "subsectionName": null,
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "6b496322-6cae-4c99-b6dc-c709f990ab04",
+        "title": "Additional Information",
+        "type": "LONG_TEXT",
+        "required": false,
+        "rawValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
+        "decodedValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Service Information",
+        "subsectionName": null,
+        "sectionId": "cbdb97ac-92fe-4043-a445-05a07602a879",
+        "fieldId": "103600091",
+        "title": "Do you have a bodyshop or collision center?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "No"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103602276",
+        "title": "Department Hour Notes (if needed)",
+        "type": "LONG_TEXT",
+        "required": false,
+        "rawValue": "7:30AM-6:00PM IS OPERATING HOURS\n7:30AM-4:00PM ARE OPEN FOR APPOINTMENTS WITH A BREAK AT 12:00PM FOR LUNCH",
+        "decodedValue": "7:30AM-6:00PM IS OPERATING HOURS\n7:30AM-4:00PM ARE OPEN FOR APPOINTMENTS WITH A BREAK AT 12:00PM FOR LUNCH",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600120",
+        "title": "Monday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-6:00PM ",
+        "decodedValue": "7:30AM-6:00PM ",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600121",
+        "title": "Monday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-4:00PM",
+        "decodedValue": "7:30AM-4:00PM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600123",
+        "title": "Tuesday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-6:00PM ",
+        "decodedValue": "7:30AM-6:00PM ",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600124",
+        "title": "Tuesday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-4:00PM",
+        "decodedValue": "7:30AM-4:00PM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600126",
+        "title": "Wednesday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-6:00PM ",
+        "decodedValue": "7:30AM-6:00PM ",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600127",
+        "title": "Wednesday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-4:00PM",
+        "decodedValue": "7:30AM-4:00PM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600129",
+        "title": "Thursday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-6:00PM ",
+        "decodedValue": "7:30AM-6:00PM ",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600130",
+        "title": "Thursday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-4:00PM",
+        "decodedValue": "7:30AM-4:00PM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600132",
+        "title": "Friday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-6:00PM ",
+        "decodedValue": "7:30AM-6:00PM ",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600133",
+        "title": "Friday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7:30AM-4:00PM",
+        "decodedValue": "7:30AM-4:00PM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600135",
+        "title": "Saturday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "8:00AM-1:00PM",
+        "decodedValue": "8:00AM-1:00PM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600136",
+        "title": "Saturday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "8:00 AM-12:00PM",
+        "decodedValue": "8:00 AM-12:00PM",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600138",
+        "title": "Sunday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "CLOSED",
+        "decodedValue": "CLOSED",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600139",
+        "title": "Sunday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "CLOSED",
+        "decodedValue": "CLOSED",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "c1e9c67a-f34d-4ba2-86bb-1f70a673e423",
+        "title": "In what frequency do you currently schedule service appointments?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "47c91292-5e8f-4221-a072-c2315de2da0a"
+        ],
+        "decodedValue": [
+          "Every 30 minutes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "a0dff874-11d5-4a33-bf5b-429f11d4ce04",
+        "title": "What modes of transportation do you provide for customers? (select all that apply)",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "47c91292-5e8f-4221-a072-c2315de2da0a",
+          "a56b35c4-0273-46e5-b4fa-c2f673f56272",
+          "27fe1e18-90b7-4177-b351-c8acf9fe138d",
+          "c79092f4-dc3b-4736-8787-e589568ba6ce",
+          "5d83c601-ca2e-4d0f-927f-006ee24bcd20"
+        ],
+        "decodedValue": [
+          "Waiter",
+          "Drop-Off",
+          "Loaner",
+          "Shuttle",
+          "Valet"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "subsectionName": null,
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "9a9d6e7a-873e-4e5c-8088-832710bd1314",
+        "title": "Additional Information",
+        "type": "LONG_TEXT",
+        "required": false,
+        "rawValue": "SCHEDULING IN TEKION BUT NEED TO KNOW EXACTLY WHAT YOU WANT FOR THE SCHEDULING SETTINGS",
+        "decodedValue": "SCHEDULING IN TEKION BUT NEED TO KNOW EXACTLY WHAT YOU WANT FOR THE SCHEDULING SETTINGS",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+        "title": "Do you charge for Shop Supplies?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "42facdef-9d76-4336-ad53-fccd9b164956",
+        "title": "On what basis are Shop Supplies calculated? (check all that apply)",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "47c91292-5e8f-4221-a072-c2315de2da0a",
+          "592b5cbf-6fce-4c8e-b597-3ce89b8a168c"
+        ],
+        "decodedValue": [
+          "Parts",
+          "Labor"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "5f0de099-3f39-4ef1-939c-da433b5d12e2",
+        "title": "Description (Fee Name)",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "SHOP CHARGE",
+        "decodedValue": "SHOP CHARGE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "9e0d2408-0922-4490-94f8-64971357e8af",
+        "title": "Shop Supply Amount- % or Flat ",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "% UP TO MAX $60",
+        "decodedValue": "% UP TO MAX $60",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "c9896c0a-c070-4b7d-b200-67c146649a83",
+        "title": "Shop Supply G/L Account ",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "61D FOR GM AND 61DH FOR HONDA",
+        "decodedValue": "61D FOR GM AND 61DH FOR HONDA",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "40306740-1eae-4769-9481-0f8609bc7819",
+        "title": "Shop Supply Min. / Max. amounts",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$0/$60",
+        "decodedValue": "$0/$60",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "005a4c87-c1ba-4a0c-917b-4c8850c30324",
+        "title": "What pay types do you charge Shop Supplies on?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "2dcdf988-d90d-4160-a350-c22e1bdd9ff8",
+          "b9c5c6dc-14f0-44fa-abb1-3a2921cd8f9d"
+        ],
+        "decodedValue": [
+          "Customer Pay",
+          "Internal"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "d6ec157a-56e9-4c0f-9e84-3572a4e753e2",
+        "title": "Are Shop Supplies taxable?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "2dcdf988-d90d-4160-a350-c22e1bdd9ff8"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "48dbe550-4e17-4a11-a183-fe2eeebd226a",
+        "title": "Do you charge a Fuel Fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "9f236c8b-966e-4488-bd0b-19c9b69d934d"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees",
+        "subsectionName": null,
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "114565043",
+        "title": "Please list any additional fees you may use",
+        "type": "LONG_TEXT",
+        "required": true,
+        "rawValue": "DISPOSAL FEE FOR TIRES",
+        "decodedValue": "DISPOSAL FEE FOR TIRES",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Discounts/Coupons",
+        "subsectionName": null,
+        "sectionId": "fbf24ac1-6d91-43c2-81dd-5e1983f97971",
+        "fieldId": "114565042",
+        "title": "Please list all discounts (put \"None\" if you don't use discounts)",
+        "type": "LONG_TEXT",
+        "required": true,
+        "rawValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+        "decodedValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+        "hasUserValue": true
+      }
+    ],
+    "csvReadyRows": [
+      {
+        "sectionName": "Labor Pricing",
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600142",
+        "title": "What is your default Customer labor rate?",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "195 GM AND 175 HONDA"
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600143",
+        "title": "What is your default Warranty labor rate?",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "$173.17 HONDA AND $176.06 GM"
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "76a5a130-c4c6-41a8-9f3e-5c02dcbdb07c",
+        "title": "Do you want to automatically close RO when warranty claim is submitted?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"Yes\"]"
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "2b0eebdf-9762-495d-925e-6bd00fc416ab",
+        "title": "What is you default Warranty G/L Account?",
+        "type": "DROPDOWN",
+        "required": "true",
+        "decodedValue": "Warranty Claim"
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "fc686ad7-90df-4494-9e31-0b96d840332d",
+        "title": "What is your warranty parts markup percentage?",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "87.5% GM AND 78% HONDA"
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600144",
+        "title": "What is your default Internal labor rate?",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "195 GM AND 175 HONDA"
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "68bbe771-502c-4f94-933d-6b0aaf452f46",
+        "title": "Do you have an internal pay limit? (If so, please put the limit below)",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "NO"
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600145",
+        "title": "In which scenarios do you utilize a different labor rate than the default?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"Service contract / Extended warranty\"]"
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600147",
+        "title": "Please describe service contract specific labor rates",
+        "type": "LONG_TEXT",
+        "required": "true",
+        "decodedValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE"
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "103600148",
+        "title": "Do you utilize a labor matrix?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"No\"]"
+      },
+      {
+        "sectionName": "Labor Pricing",
+        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
+        "fieldId": "6b496322-6cae-4c99-b6dc-c709f990ab04",
+        "title": "Additional Information",
+        "type": "LONG_TEXT",
+        "required": "false",
+        "decodedValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE"
+      },
+      {
+        "sectionName": "General Service Information",
+        "sectionId": "cbdb97ac-92fe-4043-a445-05a07602a879",
+        "fieldId": "103600091",
+        "title": "Do you have a bodyshop or collision center?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"No\"]"
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103602276",
+        "title": "Department Hour Notes (if needed)",
+        "type": "LONG_TEXT",
+        "required": "false",
+        "decodedValue": "7:30AM-6:00PM IS OPERATING HOURS\n7:30AM-4:00PM ARE OPEN FOR APPOINTMENTS WITH A BREAK AT 12:00PM FOR LUNCH"
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600120",
+        "title": "Monday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "7:30AM-6:00PM "
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600121",
+        "title": "Monday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "7:30AM-4:00PM"
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600123",
+        "title": "Tuesday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "7:30AM-6:00PM "
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600124",
+        "title": "Tuesday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "7:30AM-4:00PM"
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600126",
+        "title": "Wednesday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "7:30AM-6:00PM "
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600127",
+        "title": "Wednesday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "7:30AM-4:00PM"
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600129",
+        "title": "Thursday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "7:30AM-6:00PM "
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600130",
+        "title": "Thursday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "7:30AM-4:00PM"
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600132",
+        "title": "Friday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "7:30AM-6:00PM "
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600133",
+        "title": "Friday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "7:30AM-4:00PM"
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600135",
+        "title": "Saturday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "8:00AM-1:00PM"
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600136",
+        "title": "Saturday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "8:00 AM-12:00PM"
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600138",
+        "title": "Sunday (Operating Hours):",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "CLOSED"
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "103600139",
+        "title": "Sunday (Appointment Hours - can be same as operating hours):",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "CLOSED"
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "c1e9c67a-f34d-4ba2-86bb-1f70a673e423",
+        "title": "In what frequency do you currently schedule service appointments?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"Every 30 minutes\"]"
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "a0dff874-11d5-4a33-bf5b-429f11d4ce04",
+        "title": "What modes of transportation do you provide for customers? (select all that apply)",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"Waiter\",\"Drop-Off\",\"Loaner\",\"Shuttle\",\"Valet\"]"
+      },
+      {
+        "sectionName": "Department Hours and Appointments",
+        "sectionId": "d92e79db-4933-411c-96ea-a9a0442860ca",
+        "fieldId": "9a9d6e7a-873e-4e5c-8088-832710bd1314",
+        "title": "Additional Information",
+        "type": "LONG_TEXT",
+        "required": "false",
+        "decodedValue": "SCHEDULING IN TEKION BUT NEED TO KNOW EXACTLY WHAT YOU WANT FOR THE SCHEDULING SETTINGS"
+      },
+      {
+        "sectionName": "Fees",
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "3aaa4506-8437-4247-a221-f423bf69a67d",
+        "title": "Do you charge for Shop Supplies?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"Yes\"]"
+      },
+      {
+        "sectionName": "Fees",
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "42facdef-9d76-4336-ad53-fccd9b164956",
+        "title": "On what basis are Shop Supplies calculated? (check all that apply)",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"Parts\",\"Labor\"]"
+      },
+      {
+        "sectionName": "Fees",
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "5f0de099-3f39-4ef1-939c-da433b5d12e2",
+        "title": "Description (Fee Name)",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "SHOP CHARGE"
+      },
+      {
+        "sectionName": "Fees",
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "9e0d2408-0922-4490-94f8-64971357e8af",
+        "title": "Shop Supply Amount- % or Flat ",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "% UP TO MAX $60"
+      },
+      {
+        "sectionName": "Fees",
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "c9896c0a-c070-4b7d-b200-67c146649a83",
+        "title": "Shop Supply G/L Account ",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "61D FOR GM AND 61DH FOR HONDA"
+      },
+      {
+        "sectionName": "Fees",
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "40306740-1eae-4769-9481-0f8609bc7819",
+        "title": "Shop Supply Min. / Max. amounts",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "$0/$60"
+      },
+      {
+        "sectionName": "Fees",
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "005a4c87-c1ba-4a0c-917b-4c8850c30324",
+        "title": "What pay types do you charge Shop Supplies on?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"Customer Pay\",\"Internal\"]"
+      },
+      {
+        "sectionName": "Fees",
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "d6ec157a-56e9-4c0f-9e84-3572a4e753e2",
+        "title": "Are Shop Supplies taxable?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"Yes\"]"
+      },
+      {
+        "sectionName": "Fees",
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "48dbe550-4e17-4a11-a183-fe2eeebd226a",
+        "title": "Do you charge a Fuel Fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"No\"]"
+      },
+      {
+        "sectionName": "Fees",
+        "sectionId": "d156689c-8c42-45e3-8cf5-840628fdcc0e",
+        "fieldId": "114565043",
+        "title": "Please list any additional fees you may use",
+        "type": "LONG_TEXT",
+        "required": "true",
+        "decodedValue": "DISPOSAL FEE FOR TIRES"
+      },
+      {
+        "sectionName": "Discounts/Coupons",
+        "sectionId": "fbf24ac1-6d91-43c2-81dd-5e1983f97971",
+        "fieldId": "114565042",
+        "title": "Please list all discounts (put \"None\" if you don't use discounts)",
+        "type": "LONG_TEXT",
+        "required": "true",
+        "decodedValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES"
+      }
+    ],
+    "humanReadable": "[Labor Pricing > —] What is your default Customer labor rate?: 195 GM AND 175 HONDA\n[Labor Pricing > —] What is your default Warranty labor rate?: $173.17 HONDA AND $176.06 GM\n[Labor Pricing > —] Do you want to automatically close RO when warranty claim is submitted?: Yes\n[Labor Pricing > —] What is you default Warranty G/L Account?: Warranty Claim\n[Labor Pricing > —] What is your warranty parts markup percentage?: 87.5% GM AND 78% HONDA\n[Labor Pricing > —] What is your default Internal labor rate?: 195 GM AND 175 HONDA\n[Labor Pricing > —] Do you have an internal pay limit? (If so, please put the limit below): NO\n[Labor Pricing > —] In which scenarios do you utilize a different labor rate than the default?: Service contract / Extended warranty\n[Labor Pricing > —] Please describe service contract specific labor rates: FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE\n[Labor Pricing > —] Do you utilize a labor matrix?: No\n[Labor Pricing > —] Additional Information: I WILL UPLOAD LABOR MATRIX AT LATER DATE\n[General Service Information > —] Do you have a bodyshop or collision center?: No\n[Department Hours and Appointments > —] Department Hour Notes (if needed): 7:30AM-6:00PM IS OPERATING HOURS\n7:30AM-4:00PM ARE OPEN FOR APPOINTMENTS WITH A BREAK AT 12:00PM FOR LUNCH\n[Department Hours and Appointments > —] Monday (Operating Hours):: 7:30AM-6:00PM\n[Department Hours and Appointments > —] Monday (Appointment Hours - can be same as operating hours):: 7:30AM-4:00PM\n[Department Hours and Appointments > —] Tuesday (Operating Hours):: 7:30AM-6:00PM\n[Department Hours and Appointments > —] Tuesday (Appointment Hours - can be same as operating hours):: 7:30AM-4:00PM\n[Department Hours and Appointments > —] Wednesday (Operating Hours):: 7:30AM-6:00PM\n[Department Hours and Appointments > —] Wednesday (Appointment Hours - can be same as operating hours):: 7:30AM-4:00PM\n[Department Hours and Appointments > —] Thursday (Operating Hours):: 7:30AM-6:00PM\n[Department Hours and Appointments > —] Thursday (Appointment Hours - can be same as operating hours):: 7:30AM-4:00PM\n[Department Hours and Appointments > —] Friday (Operating Hours):: 7:30AM-6:00PM\n[Department Hours and Appointments > —] Friday (Appointment Hours - can be same as operating hours):: 7:30AM-4:00PM\n[Department Hours and Appointments > —] Saturday (Operating Hours):: 8:00AM-1:00PM\n[Department Hours and Appointments > —] Saturday (Appointment Hours - can be same as operating hours):: 8:00 AM-12:00PM\n[Department Hours and Appointments > —] Sunday (Operating Hours):: CLOSED\n[Department Hours and Appointments > —] Sunday (Appointment Hours - can be same as operating hours):: CLOSED\n[Department Hours and Appointments > —] In what frequency do you currently schedule service appointments?: Every 30 minutes\n[Department Hours and Appointments > —] What modes of transportation do you provide for customers? (select all that apply): Waiter, Drop-Off, Loaner, Shuttle, Valet\n[Department Hours and Appointments > —] Additional Information: SCHEDULING IN TEKION BUT NEED TO KNOW EXACTLY WHAT YOU WANT FOR THE SCHEDULING SETTINGS\n[Fees > —] Do you charge for Shop Supplies?: Yes\n[Fees > —] On what basis are Shop Supplies calculated? (check all that apply): Parts, Labor\n[Fees > —] Description (Fee Name): SHOP CHARGE\n[Fees > —] Shop Supply Amount- % or Flat : % UP TO MAX $60\n[Fees > —] Shop Supply G/L Account : 61D FOR GM AND 61DH FOR HONDA\n[Fees > —] Shop Supply Min. / Max. amounts: $0/$60\n[Fees > —] What pay types do you charge Shop Supplies on?: Customer Pay, Internal\n[Fees > —] Are Shop Supplies taxable?: Yes\n[Fees > —] Do you charge a Fuel Fee?: No\n[Fees > —] Please list any additional fees you may use: DISPOSAL FEE FOR TIRES\n[Discounts/Coupons > —] Please list all discounts (put \"None\" if you don't use discounts): DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES"
+  },
+  "savedAt": "2026-09-17T09:38:51.909Z"
+}
