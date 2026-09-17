@@ -1,11 +1,15 @@
-import type { StoreRecord } from "./storesDb";
+import type { StoreRecord, CustomPhaseStatus } from "./storesDb";
+import { recordStatusTransition } from "./storesDb";
 import { loadTekionApiSettings } from "./tekionApiSettings";
 import {
   STORE_EXPORT_HEADERS,
   groupStoresByMonth,
   rowsToMatrix,
+  buildLatestFieldTrackingText,
+  sanitizeExcelTimestamp,
   type StoreExcelRow,
 } from "./storesExcelShared";
+import { isUserAdmin } from "./authHelper";
 
 const GRAPH_BASE = "https://graph.microsoft.com/v1.0";
 
@@ -71,7 +75,9 @@ export interface MergedGraphSyncResult extends GraphSyncResult {
 interface RemoteExcelRowData {
   tekionId: string;
   fixedOpsStatus?: string;
+  fixedOpsTracking?: string;
   variableOpsStatus?: string;
+  variableOpsTracking?: string;
   testingStatus?: string;
 }
 
@@ -269,7 +275,7 @@ async function getUsedRangeRowCount(
   }
 }
 
-function toExcelColumnName(index: number): string {
+export function toExcelColumnName(index: number): string {
   let n = index + 1;
   let label = "";
 
@@ -540,27 +546,34 @@ async function applyStatusFormatting(
   };
 }
 
+function normalizeExcelStatus(val?: string): CustomPhaseStatus | null {
+  if (!val) return null;
+  const s = val.trim().toUpperCase();
+  if (s === "COMPLETED") return "Completed";
+  if (s === "WIP" || s === "IN_PROGRESS" || s === "IN PROGRESS") return "WIP";
+  if (s === "TO DO" || s === "TODO" || s === "NOT STARTED" || s === "NOT_STARTED") return "TO DO";
+  return null;
+}
+
 function resolveStatusPriority(
   localStatus?: string,
-  remoteStatus?: string
+  remoteStatus?: string,
+  isAdmin: boolean = false
 ): "TO DO" | "WIP" | "Completed" {
-  const normalize = (val?: string): "TO DO" | "WIP" | "Completed" => {
-    const s = (val || "").trim().toUpperCase();
-    if (s === "COMPLETED") return "Completed";
-    if (s === "WIP" || s === "IN_PROGRESS") return "WIP";
-    return "TO DO";
-  };
+  const r = normalizeExcelStatus(remoteStatus);
+  const l = normalizeExcelStatus(localStatus) || "TO DO";
 
-  const l = normalize(localStatus);
-  const r = normalize(remoteStatus);
+  if (r) {
+    if (isAdmin) return r;
+    const priorityScore: Record<string, number> = { Completed: 3, WIP: 2, "TO DO": 1 };
+    return (priorityScore[r] ?? 1) >= (priorityScore[l] ?? 1) ? r : l;
+  }
 
-  const priorityScore: Record<string, number> = {
-    Completed: 3,
-    WIP: 2,
-    "TO DO": 1,
-  };
+  return l;
+}
 
-  return (priorityScore[r] ?? 1) > (priorityScore[l] ?? 1) ? r : l;
+function buildTrackingFormula(statusColLetter: string, trackingColLetter: string, rowNum: number): string {
+  return `=IF(${statusColLetter}${rowNum}="","",IF(${trackingColLetter}${rowNum}<>"",${trackingColLetter}${rowNum},TEXT(NOW(),"hh:mm:ss AM/PM")))`;
 }
 
 async function fetchExistingWorkbookData(
@@ -586,7 +599,9 @@ async function fetchExistingWorkbookData(
 
       const tekionIdIdx = headerRow.findIndex((h) => h === "tekion id");
       const fixedOpsIdx = headerRow.findIndex((h) => h === "fixed ops");
+      const fixedOpsTrackingIdx = headerRow.findIndex((h) => h === "fixed ops tracking");
       const variableOpsIdx = headerRow.findIndex((h) => h === "variable ops");
+      const variableOpsTrackingIdx = headerRow.findIndex((h) => h === "variable ops tracking");
       const testingIdx = headerRow.findIndex((h) => h === "testing");
 
       if (tekionIdIdx === -1) continue;
@@ -599,8 +614,9 @@ async function fetchExistingWorkbookData(
         remoteMap.set(tekionId, {
           tekionId,
           fixedOpsStatus: fixedOpsIdx !== -1 ? String(row[fixedOpsIdx] || "").trim() : undefined,
-          variableOpsStatus:
-            variableOpsIdx !== -1 ? String(row[variableOpsIdx] || "").trim() : undefined,
+          fixedOpsTracking: fixedOpsTrackingIdx !== -1 ? String(row[fixedOpsTrackingIdx] || "").trim() : undefined,
+          variableOpsStatus: variableOpsIdx !== -1 ? String(row[variableOpsIdx] || "").trim() : undefined,
+          variableOpsTracking: variableOpsTrackingIdx !== -1 ? String(row[variableOpsTrackingIdx] || "").trim() : undefined,
           testingStatus: testingIdx !== -1 ? String(row[testingIdx] || "").trim() : undefined,
         });
       }
@@ -616,21 +632,26 @@ function mergeLocalAndRemoteStores(
   localStores: StoreRecord[],
   remoteMap: Map<string, RemoteExcelRowData>
 ): StoreRecord[] {
+  const isAdmin = isUserAdmin();
+
   return localStores.map((local) => {
     const remote = remoteMap.get(local.tekion_id);
     if (!remote) return local;
 
     const fixed_ops_status = resolveStatusPriority(
       local.fixed_ops_status,
-      remote.fixedOpsStatus
+      remote.fixedOpsStatus,
+      isAdmin
     );
     const variable_ops_status = resolveStatusPriority(
       local.variable_ops_status,
-      remote.variableOpsStatus
+      remote.variableOpsStatus,
+      isAdmin
     );
     const testing_status = resolveStatusPriority(
       local.testing_status,
-      remote.testingStatus
+      remote.testingStatus,
+      isAdmin
     );
 
     return {
@@ -643,9 +664,111 @@ function mergeLocalAndRemoteStores(
 }
 
 /**
+ * Instantly patches a single status cell and its corresponding tracking formula/time
+ */
+export async function patchSingleStoreStatusInGraph(
+  tekionId: string,
+  field: "fixed_ops_status" | "variable_ops_status" | "testing_status",
+  value: CustomPhaseStatus
+): Promise<boolean> {
+  const settings = loadTekionApiSettings();
+  const token = settings.graphApiToken?.trim();
+  if (!token) return false;
+
+  const headerTitleMap = {
+    fixed_ops_status: { status: "Fixed Ops", tracking: "Fixed Ops Tracking" },
+    variable_ops_status: { status: "Variable Ops", tracking: "Variable Ops Tracking" },
+    testing_status: { status: "Testing", tracking: "" },
+  };
+
+  const targetConfig = headerTitleMap[field];
+  const targetHeader = targetConfig.status;
+  const trackingHeader = targetConfig.tracking;
+
+  try {
+    const sheetNames = await listWorksheetNames(token);
+
+    for (const sheetName of sheetNames) {
+      const data = await graphRequest<{ values?: string[][] }>(
+        `/worksheets/${encodeURIComponent(sheetName)}/usedRange`,
+        token,
+        { method: "GET" }
+      );
+
+      const rows = data?.values;
+      if (!rows || rows.length < 2) continue;
+
+      const headerRow = rows[0].map((h) => String(h || "").trim().toLowerCase());
+      const tekionIdIdx = headerRow.findIndex((h) => h === "tekion id");
+      const targetColIdx = headerRow.findIndex((h) => h === targetHeader.toLowerCase());
+      const trackingColIdx = trackingHeader
+        ? headerRow.findIndex((h) => h === trackingHeader.toLowerCase())
+        : -1;
+
+      if (tekionIdIdx === -1 || targetColIdx === -1) continue;
+
+      for (let i = 1; i < rows.length; i++) {
+        if (String(rows[i][tekionIdIdx] || "").trim() === tekionId) {
+          const colLetter = toExcelColumnName(targetColIdx);
+          const cellRow = i + 1;
+          const cellAddress = `${colLetter}${cellRow}`;
+
+          // 1. Update status cell
+          await graphRequest(
+            `/worksheets/${encodeURIComponent(sheetName)}/range(address='${cellAddress}')`,
+            token,
+            {
+              method: "PATCH",
+              body: JSON.stringify({ values: [[value]] }),
+            }
+          );
+
+          // 2. Update cell styling
+          const palette = getStatusPalette(value);
+          await patchRangeFillAndFont(
+            token,
+            sheetName,
+            cellAddress,
+            palette.fillColor,
+            palette.fontColor,
+            false
+          );
+
+          // 3. Update tracking cell
+          if (trackingColIdx !== -1) {
+            const trackingColLetter = toExcelColumnName(trackingColIdx);
+            const trackingCellAddress = `${trackingColLetter}${cellRow}`;
+            const trackingText = buildLatestFieldTrackingText(tekionId, field, false);
+
+            const trackingPayload =
+              trackingText && trackingText !== "—"
+                ? { values: [[trackingText]] }
+                : { formulas: [[buildTrackingFormula(colLetter, trackingColLetter, cellRow)]] };
+
+            await graphRequest(
+              `/worksheets/${encodeURIComponent(sheetName)}/range(address='${trackingCellAddress}')`,
+              token,
+              {
+                method: "PATCH",
+                body: JSON.stringify(trackingPayload),
+              }
+            );
+          }
+
+          return true;
+        }
+      }
+    }
+    return false;
+  } catch (err) {
+    console.error("[storesGraphSync] Single status patch failed:", err);
+    return false;
+  }
+}
+
+/**
  * Lightweight Background Reader:
- * Pulls current Excel state without writing or reformatting.
- * Validates tekion_id, checks for changes, and returns updated records.
+ * Pulls current Excel state, evaluates formulas, syncs timestamps
  */
 export async function pullStatusUpdatesFromGraph(
   currentRecords: StoreRecord[]
@@ -663,6 +786,7 @@ export async function pullStatusUpdatesFromGraph(
   try {
     const sheetNames = await listWorksheetNames(token);
     const remoteDataMap = await fetchExistingWorkbookData(token, sheetNames);
+    const isAdmin = isUserAdmin();
 
     let hasChanges = false;
 
@@ -670,16 +794,46 @@ export async function pullStatusUpdatesFromGraph(
       const remote = remoteDataMap.get(local.tekion_id);
       if (!remote) return local;
 
-      const nextFixed = resolveStatusPriority(local.fixed_ops_status, remote.fixedOpsStatus);
-      const nextVar = resolveStatusPriority(local.variable_ops_status, remote.variableOpsStatus);
-      const nextTesting = resolveStatusPriority(local.testing_status, remote.testingStatus);
+      const nextFixed = resolveStatusPriority(
+        local.fixed_ops_status,
+        remote.fixedOpsStatus,
+        isAdmin
+      );
+      const nextVar = resolveStatusPriority(
+        local.variable_ops_status,
+        remote.variableOpsStatus,
+        isAdmin
+      );
+      const nextTesting = resolveStatusPriority(
+        local.testing_status,
+        remote.testingStatus,
+        isAdmin
+      );
 
-      if (
-        nextFixed !== local.fixed_ops_status ||
-        nextVar !== local.variable_ops_status ||
-        nextTesting !== local.testing_status
-      ) {
+      const fixedChanged = nextFixed !== local.fixed_ops_status;
+      const varChanged = nextVar !== local.variable_ops_status;
+      const testingChanged = nextTesting !== local.testing_status;
+
+      if (fixedChanged || varChanged || testingChanged) {
         hasChanges = true;
+
+        if (fixedChanged && nextFixed) {
+          // If Excel computed a formula time, use it; otherwise fallback to now
+          const excelTime = sanitizeExcelTimestamp(remote.fixedOpsTracking);
+          const timeToUse = excelTime !== "—" ? excelTime : undefined;
+          recordStatusTransition(local.tekion_id, "fixed_ops_status", nextFixed, timeToUse);
+        }
+
+        if (varChanged && nextVar) {
+          const excelTime = sanitizeExcelTimestamp(remote.variableOpsTracking);
+          const timeToUse = excelTime !== "—" ? excelTime : undefined;
+          recordStatusTransition(local.tekion_id, "variable_ops_status", nextVar, timeToUse);
+        }
+
+        if (testingChanged && nextTesting) {
+          recordStatusTransition(local.tekion_id, "testing_status", nextTesting);
+        }
+
         return {
           ...local,
           fixed_ops_status: nextFixed,
@@ -699,11 +853,7 @@ export async function pullStatusUpdatesFromGraph(
 }
 
 /**
- * Authoritative Two-Way Sync:
- * 1. Reads remote Excel records
- * 2. Merges with local records (escalating Completed > WIP > TO DO)
- * 3. Rewrites and styles the sheets
- * 4. Returns merged records for local state/vault update
+ * Authoritative Two-Way Sync with Formula Injection
  */
 export async function syncStoresToGraphWorkbook(
   records: StoreRecord[]
@@ -726,11 +876,7 @@ export async function syncStoresToGraphWorkbook(
 
   try {
     const existingSheets = await listWorksheetNames(token, sessionId);
-
-    // Read current operational statuses from Excel
     const remoteDataMap = await fetchExistingWorkbookData(token, existingSheets, sessionId);
-
-    // Merge remote statuses with local records (Completed > WIP > TO DO)
     const mergedRecords = mergeLocalAndRemoteStores(records, remoteDataMap);
 
     const groups = groupStoresByMonth(mergedRecords);
@@ -742,11 +888,21 @@ export async function syncStoresToGraphWorkbook(
     let formattedRangeCount = 0;
     let formattedCellCount = 0;
 
+    const fixedOpsIdx = STORE_EXPORT_HEADERS.indexOf("Fixed Ops");
+    const fixedOpsTrackIdx = STORE_EXPORT_HEADERS.indexOf("Fixed Ops Tracking");
+    const varOpsIdx = STORE_EXPORT_HEADERS.indexOf("Variable Ops");
+    const varOpsTrackIdx = STORE_EXPORT_HEADERS.indexOf("Variable Ops Tracking");
+
+    const fixedColLetter = toExcelColumnName(fixedOpsIdx);
+    const fixedTrackColLetter = toExcelColumnName(fixedOpsTrackIdx);
+    const varColLetter = toExcelColumnName(varOpsIdx);
+    const varTrackColLetter = toExcelColumnName(varOpsTrackIdx);
+
     for (const group of groups) {
       await ensureWorksheet(token, group.sheetName, existingSheetSet, sessionId);
 
-      const dataRows = rowsToMatrix(group.rows);
-      const newTotalRows = dataRows.length + 1;
+      const rawRows = rowsToMatrix(group.rows);
+      const newTotalRows = rawRows.length + 1;
       const existingRowCount = await getUsedRangeRowCount(token, group.sheetName, sessionId);
       const clearRows = Math.max(existingRowCount, newTotalRows, 1);
 
@@ -758,6 +914,7 @@ export async function syncStoresToGraphWorkbook(
         sessionId
       );
 
+      // Write Header
       await patchRangeValues(
         token,
         group.sheetName,
@@ -766,12 +923,35 @@ export async function syncStoresToGraphWorkbook(
         sessionId
       );
 
+      // Inject self-locking Excel tracking formulas if empty
+      const dataRowsWithFormulas = rawRows.map((row, index) => {
+        const rowNum = index + 2;
+        const rowCopy = [...row];
+
+        if (!rowCopy[fixedOpsTrackIdx] || rowCopy[fixedOpsTrackIdx] === "—") {
+          rowCopy[fixedOpsTrackIdx] = buildTrackingFormula(fixedColLetter, fixedTrackColLetter, rowNum);
+        }
+        if (!rowCopy[varOpsTrackIdx] || rowCopy[varOpsTrackIdx] === "—") {
+          rowCopy[varOpsTrackIdx] = buildTrackingFormula(varColLetter, varTrackColLetter, rowNum);
+        }
+
+        return rowCopy;
+      });
+
       let currentRow = 2;
-      let remaining = dataRows.slice();
+      let remaining = dataRowsWithFormulas.slice();
 
       while (remaining.length > 0) {
         const chunk = remaining.slice(0, CHUNK_SIZE);
-        await patchRangeValues(token, group.sheetName, currentRow, chunk, sessionId);
+        const address = buildRangeAddress(currentRow, chunk.length, STORE_EXPORT_HEADERS.length);
+
+        await graphRequest(
+          `/worksheets/${encodeURIComponent(group.sheetName)}/range(address='${address}')`,
+          token,
+          { method: "PATCH", body: JSON.stringify({ formulas: chunk }) },
+          sessionId
+        );
+
         currentRow += chunk.length;
         remaining = remaining.slice(CHUNK_SIZE);
       }

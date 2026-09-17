@@ -13,6 +13,7 @@ import {
   getStoredStatusVault,
   saveStatusToVault,
   recordStatusTransition,
+  bulkUpdateStatusVault,
 } from "../services/storesDb";
 import type { StoreRecord, CustomPhaseStatus, StoreSetupData } from "../services/storesDb";
 import type {
@@ -25,7 +26,9 @@ import { exportStoresToExcel } from "../services/storesExcelExport";
 import {
   syncStoresToGraphWorkbook,
   pullStatusUpdatesFromGraph,
+  patchSingleStoreStatusInGraph,
 } from "../services/storesGraphSync";
+import { buildLatestFieldTrackingText } from "../services/storesExcelShared";
 import {
   buildStoreSlackDraftContext,
   getSlackSession,
@@ -34,6 +37,7 @@ import {
   type SlackDirectoryUser,
 } from "../services/storeSlackHelper";
 import { fetchSetupDataForStore } from "../services/storeSetupDataService";
+import { isUserAdmin } from "../services/authHelper";
 
 interface Props {
   onBack: () => void;
@@ -1159,6 +1163,8 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
   const [filtersCollapsed, setFiltersCollapsed] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
+  const [trackingTick, setTrackingTick] = useState(0);
+
   const [range, setRange] = useState<TRange>(90);
   const [search, setSearch] = useState("");
   const [superpodId, setSuperpodId] = useState("");
@@ -1265,6 +1271,28 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         await saveStores(uniqueStores);
         showToast(`✅ Refreshed ${uniqueStores.length} stores`);
 
+        // Pull latest from Excel and update both memory and vault cache
+        void (async () => {
+          try {
+            const { updatedStores, hasChanges } = await pullStatusUpdatesFromGraph(uniqueStores);
+            if (hasChanges) {
+              setRecords(updatedStores);
+              await saveStores(updatedStores);
+              bulkUpdateStatusVault(
+                updatedStores.map((s) => ({
+                  tekionId: s.tekion_id,
+                  fixed_ops_status: s.fixed_ops_status,
+                  variable_ops_status: s.variable_ops_status,
+                  testing_status: s.testing_status,
+                }))
+              );
+              setTrackingTick((prev) => prev + 1);
+            }
+          } catch (e) {
+            logger.debug("Background Excel check skipped on fetch:", e);
+          }
+        })();
+
         if (forceStatusRefresh) {
           void loadStatusesForStores(uniqueStores);
         }
@@ -1317,7 +1345,32 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       );
 
       setRecords(uniqueData);
-      showToast(`Loaded ${uniqueData.length} stores from local cache`);
+
+      if (uniqueData.length > 0) {
+        void (async () => {
+          try {
+            const { updatedStores, hasChanges } = await pullStatusUpdatesFromGraph(uniqueData);
+            if (hasChanges) {
+              setRecords(updatedStores);
+              await saveStores(updatedStores);
+
+              bulkUpdateStatusVault(
+                updatedStores.map((s) => ({
+                  tekionId: s.tekion_id,
+                  fixed_ops_status: s.fixed_ops_status,
+                  variable_ops_status: s.variable_ops_status,
+                  testing_status: s.testing_status,
+                }))
+              );
+
+              setTrackingTick((prev) => prev + 1);
+              showToast("⚡ Refreshed & updated cache from Excel");
+            }
+          } catch (e) {
+            logger.debug("Initial Excel cache pull skipped:", e);
+          }
+        })();
+      }
 
       if (shouldAutoFetchStatuses(uniqueData) && uniqueData.length > 0) {
         void loadStatusesForStores(uniqueData);
@@ -1336,6 +1389,15 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     field: "fixed_ops_status" | "variable_ops_status" | "testing_status",
     value: CustomPhaseStatus
   ) => {
+    const currentRecord = records.find((r) => r.tekion_id === tekion_id);
+    const currentStatus = currentRecord ? currentRecord[field] : "TO DO";
+
+    // Enforce admin permission: Only tlreddy@tekion.com can downgrade Completed back to WIP or TO DO
+    if (!isUserAdmin() && currentStatus === "Completed" && value !== "Completed") {
+      showToast("🔒 Only tlreddy@tekion.com has permission to revert Completed tasks.");
+      return;
+    }
+
     const updatedRecords = records.map((r) =>
       r.tekion_id === tekion_id ? { ...r, [field]: value } : r
     );
@@ -1343,16 +1405,24 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
     saveStatusToVault(tekion_id, field, value);
     recordStatusTransition(tekion_id, field, value);
+    setTrackingTick((prev) => prev + 1);
 
     try {
       await saveStores(updatedRecords);
     } catch (err: unknown) {
       logger.error("Failed to save custom status to IndexedDB", err);
     }
+
+    void (async () => {
+      const success = await patchSingleStoreStatusInGraph(tekion_id, field, value);
+      if (success) {
+        showToast(`✅ Synced ${value} to Excel`);
+      } else {
+        showToast(`⚠️ Updated locally (Excel sync pending)`);
+      }
+    })();
   };
 
-  // Near-instant background sync:
-  // Polls Excel periodically (every 12 seconds) and immediately upon tab refocus
   useEffect(() => {
     let isCancelled = false;
 
@@ -1362,25 +1432,19 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       const { updatedStores, hasChanges } = await pullStatusUpdatesFromGraph(records);
 
       if (!isCancelled && hasChanges) {
-        // 1. Instantly reflect in UI
         setRecords(updatedStores);
-
-        // 2. Persist to local IndexedDB
         void saveStores(updatedStores);
 
-        // 3. Persist to status vault so API refresh/reload preserves it
-        for (const store of updatedStores) {
-          if (store.fixed_ops_status) {
-            saveStatusToVault(store.tekion_id, "fixed_ops_status", store.fixed_ops_status);
-          }
-          if (store.variable_ops_status) {
-            saveStatusToVault(store.tekion_id, "variable_ops_status", store.variable_ops_status);
-          }
-          if (store.testing_status) {
-            saveStatusToVault(store.tekion_id, "testing_status", store.testing_status);
-          }
-        }
+        bulkUpdateStatusVault(
+          updatedStores.map((s) => ({
+            tekionId: s.tekion_id,
+            fixed_ops_status: s.fixed_ops_status,
+            variable_ops_status: s.variable_ops_status,
+            testing_status: s.testing_status,
+          }))
+        );
 
+        setTrackingTick((prev) => prev + 1);
         showToast("⚡ Auto-synced status updates from Excel");
       }
     };
@@ -1564,17 +1628,16 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         setRecords(result.updatedStores);
         await saveStores(result.updatedStores);
 
-        for (const store of result.updatedStores) {
-          if (store.fixed_ops_status) {
-            saveStatusToVault(store.tekion_id, "fixed_ops_status", store.fixed_ops_status);
-          }
-          if (store.variable_ops_status) {
-            saveStatusToVault(store.tekion_id, "variable_ops_status", store.variable_ops_status);
-          }
-          if (store.testing_status) {
-            saveStatusToVault(store.tekion_id, "testing_status", store.testing_status);
-          }
-        }
+        bulkUpdateStatusVault(
+          result.updatedStores.map((s) => ({
+            tekionId: s.tekion_id,
+            fixed_ops_status: s.fixed_ops_status,
+            variable_ops_status: s.variable_ops_status,
+            testing_status: s.testing_status,
+          }))
+        );
+
+        setTrackingTick((prev) => prev + 1);
       }
 
       showToast(
@@ -2073,6 +2136,10 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     const podStyle = getPodStyle(row.superpod_id);
                     const cleanedImp = cleanImpType(row.implementation_type);
 
+                    void trackingTick;
+                    const fixedOpsTime = buildLatestFieldTrackingText(row.tekion_id, "fixed_ops_status", false);
+                    const variableOpsTime = buildLatestFieldTrackingText(row.tekion_id, "variable_ops_status", false);
+
                     return (
                       <tr key={row.tekion_id}>
                         <td>
@@ -2201,22 +2268,54 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                           <SetupDataCell row={row} />
                         </td>
 
+                        {/* FIXED OPS: SELECT DROPDOWN WITH TIMESTAMP DIRECTLY BELOW */}
                         <td>
-                          <CustomStatusSelect
-                            value={row.fixed_ops_status}
-                            onChange={(val) =>
-                              void updateCustomStatus(row.tekion_id, "fixed_ops_status", val)
-                            }
-                          />
+                          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                            <CustomStatusSelect
+                              value={row.fixed_ops_status}
+                              onChange={(val) =>
+                                void updateCustomStatus(row.tekion_id, "fixed_ops_status", val)
+                              }
+                            />
+                            {fixedOpsTime !== "—" && (
+                              <span
+                                style={{
+                                  fontSize: 10,
+                                  color: "#38bdf8",
+                                  fontFamily: "monospace",
+                                  paddingLeft: 2,
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {fixedOpsTime}
+                              </span>
+                            )}
+                          </div>
                         </td>
 
+                        {/* VARIABLE OPS: SELECT DROPDOWN WITH TIMESTAMP DIRECTLY BELOW */}
                         <td>
-                          <CustomStatusSelect
-                            value={row.variable_ops_status}
-                            onChange={(val) =>
-                              void updateCustomStatus(row.tekion_id, "variable_ops_status", val)
-                            }
-                          />
+                          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                            <CustomStatusSelect
+                              value={row.variable_ops_status}
+                              onChange={(val) =>
+                                void updateCustomStatus(row.tekion_id, "variable_ops_status", val)
+                              }
+                            />
+                            {variableOpsTime !== "—" && (
+                              <span
+                                style={{
+                                  fontSize: 10,
+                                  color: "#38bdf8",
+                                  fontFamily: "monospace",
+                                  paddingLeft: 2,
+                                  whiteSpace: "nowrap",
+                                }}
+                              >
+                                {variableOpsTime}
+                              </span>
+                            )}
+                          </div>
                         </td>
 
                         <td>

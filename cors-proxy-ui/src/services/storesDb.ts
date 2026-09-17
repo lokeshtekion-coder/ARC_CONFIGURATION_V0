@@ -1,8 +1,4 @@
 import { openDB, type DBSchema, type IDBPDatabase } from "idb";
-import type {
-  StoreBlueprintStatuses,
-  StoreSignoffStatuses,
-} from "./storeOnboardingStatusApi";
 
 export type CustomPhaseStatus = "TO DO" | "WIP" | "Completed";
 
@@ -11,47 +7,34 @@ export interface StoreSetupData {
   journalsAccessibleDealerCount: number;
   salesChainsAccessibleDealerCount: number;
   coaAccessibleDealerCount: number;
-  sourceUsername: string;
-  siteId: string;
-  userId: string;
   fetchedAt: string;
+  sourceUsername?: string;
+  siteId?: string;
+  userId?: string;
 }
 
 export interface StoreRecord {
   tekion_id: string;
   dealer_id: string;
   dba_name: string;
-  launch_date: string;
-  implementation_type: string;
-  pre_production_environment_status: string;
-  superpod_id: string;
-  product_types?: string;
-
-  workorder_consolidated_pdl?: string;
-  dealer_pdl?: string;
-  arc_pdl?: string;
-
-  project_implementation_tm_sync_status_tracking_id?: string;
-  implementation_tm_sync_status_tracking_id?: string;
-  base_entity_instance_id?: string;
-
-  project_engagement_manager_1781169293313734451?: string;
-  fixed_ops_track_lead_1773369946675032982?: string;
-  conversion_track_lead_1773369950325147526?: string;
-  accounting_track_lead_1773369945455468395?: string;
-
-  tenant_code?: string;
   tenant_id?: string;
-
-  configuration_status?: CustomPhaseStatus;
+  tenant_code?: string;
+  launch_date: string;
+  implementation_type?: string;
+  product_types?: string;
+  pre_production_environment_status?: string;
+  superpod_id?: string;
+  base_entity_instance_id?: string;
+  implementation_tm_sync_status_tracking_id?: string;
+  project_implementation_tm_sync_status_tracking_id?: string;
+  conversion_track_lead_1773369950325147526?: string;
   fixed_ops_status?: CustomPhaseStatus;
   variable_ops_status?: CustomPhaseStatus;
   testing_status?: CustomPhaseStatus;
-
-  blueprint_statuses?: StoreBlueprintStatuses;
-  signoff_statuses?: StoreSignoffStatuses;
+  configuration_status?: CustomPhaseStatus;
+  blueprint_statuses?: any;
+  signoff_statuses?: any;
   onboarding_status_fetched_at?: string;
-
   setup_data?: StoreSetupData;
   setup_data_fetched_at?: string;
   setup_data_error?: string;
@@ -64,19 +47,19 @@ interface StoresDbSchema extends DBSchema {
   };
 }
 
-const DB_NAME = "arc-stores-db";
-const STORE_NAME = "stores";
-const DB_VERSION = 2;
-const STATUS_VAULT_KEY = "arc_store_status_vault_v1";
+const DB_NAME = "stores_database";
+const DB_VERSION = 1;
+const STORE_VAULT_KEY = "stores_status_vault";
+const STATUS_TIMELINE_KEY = "stores_status_timeline";
 
 let dbPromise: Promise<IDBPDatabase<StoresDbSchema>> | null = null;
 
-function getDb() {
+function getDb(): Promise<IDBPDatabase<StoresDbSchema>> {
   if (!dbPromise) {
     dbPromise = openDB<StoresDbSchema>(DB_NAME, DB_VERSION, {
       upgrade(db) {
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          db.createObjectStore(STORE_NAME, { keyPath: "tekion_id" });
+        if (!db.objectStoreNames.contains("stores")) {
+          db.createObjectStore("stores", { keyPath: "tekion_id" });
         }
       },
     });
@@ -84,39 +67,30 @@ function getDb() {
   return dbPromise;
 }
 
-export async function saveStores(records: StoreRecord[]): Promise<void> {
+export async function getStores(): Promise<StoreRecord[]> {
   const db = await getDb();
-  const tx = db.transaction(STORE_NAME, "readwrite");
-  await tx.store.clear();
+  return db.getAll("stores");
+}
 
-  for (const record of records) {
-    await tx.store.put(record);
-  }
-
+export async function saveStores(stores: StoreRecord[]): Promise<void> {
+  const db = await getDb();
+  const tx = db.transaction("stores", "readwrite");
+  const store = tx.objectStore("stores");
+  await Promise.all(stores.map((s) => store.put(s)));
   await tx.done;
 }
 
-export async function getStores(): Promise<StoreRecord[]> {
-  const db = await getDb();
-  return db.getAll(STORE_NAME);
-}
-
-type StoredStatusVault = Record<
+export function getStoredStatusVault(): Record<
   string,
-  Partial<
-    Pick<
-      StoreRecord,
-      "fixed_ops_status" | "variable_ops_status" | "testing_status"
-    >
-  >
->;
-
-export function getStoredStatusVault(): StoredStatusVault {
+  {
+    fixed_ops_status?: CustomPhaseStatus;
+    variable_ops_status?: CustomPhaseStatus;
+    testing_status?: CustomPhaseStatus;
+  }
+> {
   try {
-    const raw = localStorage.getItem(STATUS_VAULT_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as StoredStatusVault;
-    return parsed && typeof parsed === "object" ? parsed : {};
+    const raw = localStorage.getItem(STORE_VAULT_KEY);
+    return raw ? JSON.parse(raw) : {};
   } catch {
     return {};
   }
@@ -127,63 +101,84 @@ export function saveStatusToVault(
   field: "fixed_ops_status" | "variable_ops_status" | "testing_status",
   value: CustomPhaseStatus
 ): void {
-  const current = getStoredStatusVault();
-  current[tekionId] = {
-    ...(current[tekionId] ?? {}),
-    [field]: value,
-  };
-
-  localStorage.setItem(STATUS_VAULT_KEY, JSON.stringify(current));
+  try {
+    const vault = getStoredStatusVault();
+    if (!vault[tekionId]) {
+      vault[tekionId] = {};
+    }
+    vault[tekionId][field] = value;
+    localStorage.setItem(STORE_VAULT_KEY, JSON.stringify(vault));
+  } catch (err) {
+    console.error("[storesDb] Failed to save status to vault", err);
+  }
 }
 
-// Excel-only history, never rendered in the dashboard: the moment each
-// custom phase (Fixed Ops / Variable Ops / Testing) was first moved to WIP
-// and the moment it was marked Completed. Kept as raw ISO strings here -
-// storesExcelShared.ts formats them into the single "Status Tracking"
-// export column.
-type CustomPhaseField = "fixed_ops_status" | "variable_ops_status" | "testing_status";
-
-interface PhaseTiming {
-  wipAt?: string;
-  completedAt?: string;
+/**
+ * Bulk updates the Status Vault cache for multiple stores.
+ * Directly modifies localStorage so cached values match live Excel state.
+ */
+export function bulkUpdateStatusVault(
+  updates: Array<{
+    tekionId: string;
+    fixed_ops_status?: CustomPhaseStatus;
+    variable_ops_status?: CustomPhaseStatus;
+    testing_status?: CustomPhaseStatus;
+  }>
+): void {
+  try {
+    const vault = getStoredStatusVault();
+    for (const item of updates) {
+      if (!vault[item.tekionId]) {
+        vault[item.tekionId] = {};
+      }
+      if (item.fixed_ops_status) vault[item.tekionId].fixed_ops_status = item.fixed_ops_status;
+      if (item.variable_ops_status) vault[item.tekionId].variable_ops_status = item.variable_ops_status;
+      if (item.testing_status) vault[item.tekionId].testing_status = item.testing_status;
+    }
+    localStorage.setItem(STORE_VAULT_KEY, JSON.stringify(vault));
+  } catch (err) {
+    console.error("[storesDb] Failed bulk update status vault", err);
+  }
 }
 
-type StatusTimeline = Record<string, Partial<Record<CustomPhaseField, PhaseTiming>>>;
-
-const STATUS_TIMELINE_KEY = "arc_store_status_timeline_v1";
-
-export function getStatusTimeline(): StatusTimeline {
+export function getStatusTimeline(): Record<
+  string,
+  Record<string, { wipAt?: string; completedAt?: string }>
+> {
   try {
     const raw = localStorage.getItem(STATUS_TIMELINE_KEY);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw) as StatusTimeline;
-    return parsed && typeof parsed === "object" ? parsed : {};
+    return raw ? JSON.parse(raw) : {};
   } catch {
     return {};
   }
 }
 
-// Called every time a phase status changes. Only WIP and Completed are
-// timestamped (matches the ask: "track what time user changed the status
-// to WIP & finally when marked Complete"); TO DO is not tracked.
 export function recordStatusTransition(
   tekionId: string,
-  field: CustomPhaseField,
-  value: CustomPhaseStatus
+  field: "fixed_ops_status" | "variable_ops_status" | "testing_status",
+  value: CustomPhaseStatus,
+  customIsoTime?: string
 ): void {
-  if (value !== "WIP" && value !== "Completed") return;
+  try {
+    const timeline = getStatusTimeline();
+    if (!timeline[tekionId]) {
+      timeline[tekionId] = {};
+    }
+    if (!timeline[tekionId][field]) {
+      timeline[tekionId][field] = {};
+    }
 
-  const timeline = getStatusTimeline();
-  const now = new Date().toISOString();
-  const existing = timeline[tekionId]?.[field] ?? {};
+    const timestamp = customIsoTime || new Date().toISOString();
+    if (value === "WIP") {
+      timeline[tekionId][field].wipAt = timestamp;
+    } else if (value === "Completed") {
+      timeline[tekionId][field].completedAt = timestamp;
+    } else if (value === "TO DO") {
+      timeline[tekionId][field] = {};
+    }
 
-  timeline[tekionId] = {
-    ...(timeline[tekionId] ?? {}),
-    [field]: {
-      ...existing,
-      ...(value === "WIP" ? { wipAt: now } : { completedAt: now }),
-    },
-  };
-
-  localStorage.setItem(STATUS_TIMELINE_KEY, JSON.stringify(timeline));
+    localStorage.setItem(STATUS_TIMELINE_KEY, JSON.stringify(timeline));
+  } catch (err) {
+    console.error("[storesDb] Failed to record status transition", err);
+  }
 }

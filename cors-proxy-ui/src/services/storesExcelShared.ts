@@ -27,7 +27,9 @@ export const STORE_EXPORT_HEADERS = [
   "Sales Chains Accessible Count",
   "COA Accessible Count",
   "Fixed Ops",
+  "Fixed Ops Tracking",
   "Variable Ops",
+  "Variable Ops Tracking",
   "SignOff Parts",
   "SignOff Parts Last Released Time",
   "SignOff Service",
@@ -37,7 +39,6 @@ export const STORE_EXPORT_HEADERS = [
   "Testing",
   "Status Fetched At",
   "Setup Data Fetched At",
-  "Status Tracking",
 ] as const;
 
 export type StoreExportHeader = (typeof STORE_EXPORT_HEADERS)[number];
@@ -106,8 +107,32 @@ function sanitizeSheetName(name: string): string {
   return name.replace(/[\\/*?:[\]]/g, "-").slice(0, 31) || "Sheet";
 }
 
-// FORMATS UNIX TIMESTAMPS AND ISO STRINGS TO: MM/DD/YY | HH:MM AM/PM
-function formatDateTime(value?: string | number): string {
+export function formatTimeOnlyPrecise(value?: string | number): string {
+  if (!value) return "";
+
+  let d: Date;
+  const strValue = String(value).trim();
+
+  if (/^\d+$/.test(strValue)) {
+    d = new Date(Number(strValue));
+  } else {
+    d = new Date(strValue);
+  }
+
+  if (Number.isNaN(d.getTime())) return strValue;
+
+  let hours = d.getHours();
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  const seconds = String(d.getSeconds()).padStart(2, "0");
+
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  hours = hours ? hours : 12;
+
+  return `${hours}:${minutes}:${seconds} ${ampm}`;
+}
+
+export function formatDateTimePrecise(value?: string | number): string {
   if (!value) return "";
 
   let d: Date;
@@ -125,15 +150,72 @@ function formatDateTime(value?: string | number): string {
   const dd = String(d.getDate()).padStart(2, "0");
   const yy = String(d.getFullYear()).slice(-2);
 
-  let hours = d.getHours();
-  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${mm}/${dd}/${yy} | ${formatTimeOnlyPrecise(d.getTime())}`;
+}
 
-  const ampm = hours >= 12 ? "PM" : "AM";
-  hours = hours % 12;
-  hours = hours ? hours : 12;
-  const hh = String(hours).padStart(2, "0");
+/**
+ * Parses raw Excel formula outputs, date strings, or numeric fractional serials
+ * into a uniform high-precision time: e.g. "1:01:10 PM"
+ */
+export function sanitizeExcelTimestamp(rawVal?: string | number): string {
+  if (!rawVal || rawVal === "—") return "—";
 
-  return `${mm}/${dd}/${yy} | ${hh}:${minutes} ${ampm}`;
+  const str = String(rawVal).trim();
+  if (!str) return "—";
+
+  // If it's an unevaluated formula string from a newly injected cell, return placeholder
+  if (str.startsWith("=")) return "—";
+
+  // 1. Already formatted as 12-hour timestamp: e.g. "1:01:10 PM" or "01:01:10 PM"
+  if (/^\d{1,2}:\d{2}:\d{2}\s*(AM|PM)$/i.test(str)) {
+    return str.toUpperCase();
+  }
+
+  // 2. Excel numeric time serial (fraction of a 24-hour day, e.g. 0.54247685)
+  const num = Number(str);
+  if (!isNaN(num) && num > 0 && num < 1) {
+    const totalSeconds = Math.round(num * 86400);
+    const hours24 = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const ampm = hours24 >= 12 ? "PM" : "AM";
+    const hours12 = hours24 % 12 || 12;
+
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${hours12}:${pad(minutes)}:${pad(seconds)} ${ampm}`;
+  }
+
+  // 3. Fallback standard parse
+  const parsed = formatTimeOnlyPrecise(str);
+  return parsed || str;
+}
+
+/**
+ * Returns the latest timestamp recorded locally or returns fallback
+ */
+export function buildLatestFieldTrackingText(
+  tekionId: string,
+  field: "fixed_ops_status" | "variable_ops_status" | "testing_status",
+  includeLabel = true
+): string {
+  const timeline = getStatusTimeline()[tekionId];
+  if (!timeline) return "—";
+
+  const timing = timeline[field];
+  if (!timing) return "—";
+
+  if (timing.completedAt) {
+    const timeStr = formatTimeOnlyPrecise(timing.completedAt);
+    return includeLabel ? `Completed: ${timeStr}` : timeStr;
+  }
+
+  if (timing.wipAt) {
+    const timeStr = formatTimeOnlyPrecise(timing.wipAt);
+    return includeLabel ? `WIP: ${timeStr}` : timeStr;
+  }
+
+  return "—";
 }
 
 export function sortStoresByGoLive(records: StoreRecord[]): StoreRecord[] {
@@ -163,15 +245,15 @@ export function mapStoreToExcelRow(store: StoreRecord): StoreExcelRow {
     "Pre-Prod": store.pre_production_environment_status || "",
     POD: store.superpod_id || "",
     "Blueprint Parts": toStatusText(store.blueprint_statuses?.parts),
-    "Blueprint Parts Last Released Time": formatDateTime(store.blueprint_statuses?.parts_last_released_time),
+    "Blueprint Parts Last Released Time": formatDateTimePrecise(store.blueprint_statuses?.parts_last_released_time),
     "Blueprint Service": toStatusText(store.blueprint_statuses?.service),
-    "Blueprint Service Last Released Time": formatDateTime(store.blueprint_statuses?.service_last_released_time),
+    "Blueprint Service Last Released Time": formatDateTimePrecise(store.blueprint_statuses?.service_last_released_time),
     "Blueprint Accounting": toStatusText(store.blueprint_statuses?.accounting),
-    "Blueprint Accounting Last Released Time": formatDateTime(store.blueprint_statuses?.accounting_last_released_time),
+    "Blueprint Accounting Last Released Time": formatDateTimePrecise(store.blueprint_statuses?.accounting_last_released_time),
     "Blueprint CRM": toStatusText(store.blueprint_statuses?.crm),
-    "Blueprint CRM Last Released Time": formatDateTime(store.blueprint_statuses?.crm_last_released_time),
+    "Blueprint CRM Last Released Time": formatDateTimePrecise(store.blueprint_statuses?.crm_last_released_time),
     "Blueprint Analytics": toStatusText(store.blueprint_statuses?.analytics),
-    "Blueprint Analytics Last Released Time": formatDateTime(store.blueprint_statuses?.analytics_last_released_time),
+    "Blueprint Analytics Last Released Time": formatDateTimePrecise(store.blueprint_statuses?.analytics_last_released_time),
     "OEM Dealer Codes": oemCodes,
     "Journals Accessible Count":
       store.setup_data?.journalsAccessibleDealerCount != null
@@ -186,45 +268,21 @@ export function mapStoreToExcelRow(store: StoreRecord): StoreExcelRow {
         ? String(store.setup_data.coaAccessibleDealerCount)
         : "",
     "Fixed Ops": store.fixed_ops_status || store.configuration_status || "TO DO",
+    "Fixed Ops Tracking": buildLatestFieldTrackingText(store.tekion_id, "fixed_ops_status", false),
     "Variable Ops": store.variable_ops_status || "TO DO",
+    "Variable Ops Tracking": buildLatestFieldTrackingText(store.tekion_id, "variable_ops_status", false),
     "SignOff Parts": toStatusText(store.signoff_statuses?.parts),
-    "SignOff Parts Last Released Time": formatDateTime(store.signoff_statuses?.parts_last_released_time),
+    "SignOff Parts Last Released Time": formatDateTimePrecise(store.signoff_statuses?.parts_last_released_time),
     "SignOff Service": toStatusText(store.signoff_statuses?.service),
-    "SignOff Service Last Released Time": formatDateTime(store.signoff_statuses?.service_last_released_time),
+    "SignOff Service Last Released Time": formatDateTimePrecise(store.signoff_statuses?.service_last_released_time),
     "SignOff Accounting": toStatusText(store.signoff_statuses?.accounting),
-    "SignOff Accounting Last Released Time": formatDateTime(store.signoff_statuses?.accounting_last_released_time),
+    "SignOff Accounting Last Released Time": formatDateTimePrecise(store.signoff_statuses?.accounting_last_released_time),
     Testing: store.testing_status || "TO DO",
-    "Status Fetched At": formatDateTime(store.onboarding_status_fetched_at),
-    "Setup Data Fetched At": formatDateTime(
+    "Status Fetched At": formatDateTimePrecise(store.onboarding_status_fetched_at),
+    "Setup Data Fetched At": formatDateTimePrecise(
       store.setup_data_fetched_at || store.setup_data?.fetchedAt
     ),
-    "Status Tracking": buildStatusTrackingText(store.tekion_id),
   };
-}
-
-// Excel-only history column - never rendered in the dashboard. Consolidates
-// the WIP/Completed timestamps for all three custom phases into one cell,
-// e.g. "Fixed Ops: WIP 09/10/26 | 02:15 PM, Completed 09/14/26 | 10:05 AM;
-// Variable Ops: WIP 09/11/26 | 09:00 AM; Testing: —"
-function buildStatusTrackingText(tekionId: string): string {
-  const timeline = getStatusTimeline()[tekionId];
-  if (!timeline) return "";
-
-  const labels: Array<[label: string, field: "fixed_ops_status" | "variable_ops_status" | "testing_status"]> = [
-    ["Fixed Ops", "fixed_ops_status"],
-    ["Variable Ops", "variable_ops_status"],
-    ["Testing", "testing_status"],
-  ];
-
-  const parts = labels.map(([label, field]) => {
-    const timing = timeline[field];
-    const segments: string[] = [];
-    if (timing?.wipAt) segments.push(`WIP ${formatDateTime(timing.wipAt)}`);
-    if (timing?.completedAt) segments.push(`Completed ${formatDateTime(timing.completedAt)}`);
-    return `${label}: ${segments.length ? segments.join(", ") : "—"}`;
-  });
-
-  return parts.join("; ");
 }
 
 export function groupStoresByMonth(records: StoreRecord[]): Array<{
