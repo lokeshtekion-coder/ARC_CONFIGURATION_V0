@@ -6,6 +6,7 @@ import settingsRouter from "./routes/settings.route";
 import validationRouter from "./routes/validation.route";
 import bootstrapRouter from "./routes/bootstrap.route";
 import storesSetupRouter from "./routes/storesSetup.route";
+import storesBackupRouter from "./routes/storesBackup.route";
 import botHealthRouter from "./routes/botHealth.route";
 import versionRouter from "./routes/version.route";
 import { logError } from "./utils/logger";
@@ -16,8 +17,10 @@ const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 
 app.use(cors());
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true }));
+
+// Increase JSON body parser to 50MB so large store snapshots never get dropped
+app.use(express.json({ limit: "50mb" }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
 app.get("/", (_req, res) => {
   res.json({
@@ -27,11 +30,14 @@ app.get("/", (_req, res) => {
   });
 });
 
+// Mount specific subroutes first, then base route
+app.use("/api/stores/setup", storesSetupRouter);
+app.use("/api/stores", storesBackupRouter);
+
 app.use("/api/proxy", proxyRouter);
 app.use("/api/settings", settingsRouter);
 app.use("/api/validation", validationRouter);
 app.use("/api/bootstrap", bootstrapRouter);
-app.use("/api/stores/setup", storesSetupRouter);
 app.use("/api/bot", botHealthRouter);
 app.use("/api", versionRouter);
 
@@ -39,10 +45,7 @@ app.use((_req, res) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// Catches anything a route handler throws synchronously (or forwards via
-// next(err)) that wasn't already caught locally - without this, Express's
-// default handler swallows the real error and the terminal shows nothing
-// useful about why a request 500'd.
+// Global error handler
 app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
   logError("server", `Unhandled error on ${req.method} ${req.path}`, err);
   res.status(500).json({ error: "Internal server error" });

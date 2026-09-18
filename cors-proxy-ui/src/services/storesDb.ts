@@ -51,6 +51,7 @@ const DB_NAME = "stores_database";
 const DB_VERSION = 1;
 const STORE_VAULT_KEY = "stores_status_vault";
 const STATUS_TIMELINE_KEY = "stores_status_timeline";
+const BACKUP_API_URL = "http://localhost:4000/api/stores/backup";
 
 let dbPromise: Promise<IDBPDatabase<StoresDbSchema>> | null = null;
 
@@ -67,17 +68,79 @@ function getDb(): Promise<IDBPDatabase<StoresDbSchema>> {
   return dbPromise;
 }
 
-export async function getStores(): Promise<StoreRecord[]> {
-  const db = await getDb();
-  return db.getAll("stores");
+/**
+ * Pushes the latest snapshot of stores to the Node.js backend disk.
+ */
+async function pushBackupToBackend(stores: StoreRecord[]): Promise<void> {
+  if (!stores || stores.length === 0) return;
+  try {
+    const res = await fetch(BACKUP_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ stores }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      console.log(`[storesDb] ✅ Backup pushed to backend (port 4000): ${data.count} stores.`);
+    } else {
+      console.warn(`[storesDb] ❌ Backup push returned status: ${res.status}`);
+    }
+  } catch (err) {
+    console.warn("[storesDb] Backend backup push failed:", err);
+  }
 }
 
+/**
+ * Recovers the latest stores snapshot from the Node.js backend disk.
+ */
+async function fetchBackupFromBackend(): Promise<StoreRecord[]> {
+  try {
+    const res = await fetch(BACKUP_API_URL);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data?.stores) ? data.stores : [];
+  } catch (err) {
+    console.warn("[storesDb] Failed to recover backup from backend:", err);
+    return [];
+  }
+}
+
+/**
+ * Reads stores from IndexedDB. If IndexedDB is empty (e.g., cleared on system reboot),
+ * it queries the backend disk backup, populates IndexedDB, and returns the records.
+ */
+export async function getStores(): Promise<StoreRecord[]> {
+  const db = await getDb();
+  let localStores = await db.getAll("stores");
+
+  if (!localStores || localStores.length === 0) {
+    console.info("[storesDb] IndexedDB is empty. Attempting recovery from backend backup...");
+    const recovered = await fetchBackupFromBackend();
+    if (recovered.length > 0) {
+      const tx = db.transaction("stores", "readwrite");
+      const store = tx.objectStore("stores");
+      await Promise.all(recovered.map((s) => store.put(s)));
+      await tx.done;
+      console.info(`[storesDb] Successfully restored ${recovered.length} stores from backend.`);
+      return recovered;
+    }
+  }
+
+  return localStores;
+}
+
+/**
+ * Persists stores into IndexedDB and asynchronously updates the backend backup file.
+ */
 export async function saveStores(stores: StoreRecord[]): Promise<void> {
   const db = await getDb();
   const tx = db.transaction("stores", "readwrite");
   const store = tx.objectStore("stores");
   await Promise.all(stores.map((s) => store.put(s)));
   await tx.done;
+
+  // Asynchronously overwrite the backup on the backend
+  void pushBackupToBackend(stores);
 }
 
 export function getStoredStatusVault(): Record<
