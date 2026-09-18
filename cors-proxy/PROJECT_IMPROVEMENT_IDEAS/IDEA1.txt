@@ -1,200 +1,75 @@
-1. ARC Data Sync Bot
-Purpose:
-- pull captured extension data
-- validate token freshness
-- trigger bootstrap/stores sync
-- alert when token expired or missing
 
-Useful for:
-- Tekion headers
-- bootstrap fetch
-- stores dashboard refresh
-- dealer profile sync
+### 1. Data Sync Bot (`dataSyncBot.ts` & `SyncBotDashboard.tsx`)
 
----
+* **Autonomous Conflict Resolution**:
+* Instead of waiting for manual review when local state and remote Excel diverge,
+enable the bot to resolve non-breaking conflicts automatically based on change timestamps or
+department priority rules.
 
-### 2. GL Validation Bot
-Purpose:
-- automatically compare decoded GL tokens against saved bootstrap GL accounts
-- detect mismatches like your `201` issue
-- produce a report:
-  - matched by account number
-  - matched by id suffix
-  - unmatched
-  - ambiguous matches
+* **Proactive Status Alerts via Slack**:
+* Wire the bot directly to `storeSlackHelper.ts`. Whenever it detects a store moving from `WIP` to `Completed`,
+or when a launch date enters the $T$-7 window, it can automatically draft or dispatch a notification to
+the assigned conversion leads.
 
-This would be very useful for your Accounting module.
+* **Scheduled Cron / Headless Background Sync**:
+* Move execution or triggers to the Express backend (`cors-proxy`) using a lightweight cron job or
+queue so synchronization runs on a schedule even when no user has the frontend browser tab open.
+
+
+* **Automated Rollback & Audit Logging**:
+* Have the bot maintain an append-only transaction log of every cell mutation, letting you run
+a one-click rollback if an accidental bulk edit corrupts a sheet.
 
 ---
 
-### 3. Blueprint Decode Bot
-Purpose:
-- auto-fetch forms for selected dealer/module
-- decode blueprint fields
-- save normalized output to IndexedDB / backend
-- flag missing questions or inconsistent mappings
+### 2. Blueprint Decode Bot (`blueprintDecodeBot.ts`)
 
-Useful for:
-- Parts
-- Service
-- Accounting
+* **Automated Blueprint Validation**:
+* Currently, the bot primarily parses and visualizes question trees. You can expand it to
+run automated assertion checks (e.g., verifying that all required accounting sign-offs, parts price breaks,
+and service opcode prerequisites are completed before allowing a launch status to flip to `Ready`).
 
----
+* **Cross-Store Blueprint Cloner**:
+* Enable the bot to take a validated "Gold Master" blueprint from an established dealership and
+automatically generate the configuration payload for a newly onboarding dealer within the same brand/OEM.
 
-### 4. Security Hygiene Bot
-Purpose:
-- scan repo for:
-  - tokens in logs
-  - hardcoded passwords
-  - risky console.log usage
-  - snapshot files committed by mistake
-- generate safe findings only
 
-This is probably the safest and highest-value security bot.
+* **Live Blueprint-to-GLAM Diffing**:
+* Let the bot cross-reference blueprint responses against active GL accounts (`GLAM.tsx`) and
+automatically highlight missing ledger numbers or unmatched departmental categories.
 
 ---
 
-### 5. Extension Health Bot
-Purpose:
-- check whether extension is connected
-- verify latest capture timestamps
-- verify required headers exist
-- notify if:
-  - no dealer selected
-  - stale bootstrap headers
-  - Slack token missing
-  - Graph token expired
+### 3. TGPT Assistant (`/src/pages/TGPT/`)
+
+* **Tool Calling / Function Calling Agent**:
+* Give TGPT direct tool access to your codebase services. Instead of just answering text prompts,
+let it execute actions like:
+* `"Update dealership 6248 Fixed Ops to Completed"` $\rightarrow$ calls `patchSingleStoreStatusInGraph`.
+
+* `"Show all stores launching in the next 14 days with incomplete parts sign-offs"` $\rightarrow$ queries
+`storesDb.ts`.
+
+* `"Fetch setup data for all T-30 stores"` $\rightarrow$ invokes `fetchSetupDataForStore`.
+
+
+
+* **Automated Slack Follow-Up Writer**:
+* Allow TGPT to generate tailored dealer outreach messages based on missing onboarding tasks,
+formatting the text directly for the `DealerMetaModal` dispatch.
+
 
 ---
 
-## Best bot for you right now
-Based on your recent work, I’d recommend starting with:
+### 4. Bot Health Endpoint (`botHealth.route.ts`)
 
-### **GL Validation + Bootstrap Audit Bot**
-Because you already have:
-- bootstrap snapshots
-- GL accounts
-- decoded terms/tokens
-- matching problems
-- saved IndexedDB data
+* **Dead Token & Session Alerting**:
+* Expand the endpoint to actively probe the expiration time of your captured Graph API and
+Tekion tokens. If a token has less than 30 minutes remaining, it can emit a warning badge or
+send a ping before synchronization fails silently.
 
-This bot can be built without touching risky auth flows much.
 
----
-
-## How to build it
-You have 3 options:
-
-### Option A — In-app bot
-Build as a new page inside your React app:
-- `src/pages/BotAudit/BotAudit.tsx`
-
-Pros:
-- easy integration
-- reuse IndexedDB and existing services
-- safe internal UX
-
----
-
-### Option B — Background Node bot
-Create a local script/service:
-- reads saved JSON/bootstrap snapshots
-- runs audits
-- outputs CSV/JSON reports
-
-Pros:
-- safer for automation
-- easier scheduling
-- no UI dependency
-
----
-
-### Option C — Hybrid bot
-- Node backend does heavy validation
-- React page shows results
-
-This is the best long-term setup.
-
----
-
-## Suggested first bot spec
-
-### GL Audit Bot
-Input:
-- saved bootstrap snapshot
-- decoded blueprint/accounting tokens
-- salesChains decoded rows
-
-Logic:
-- match token against:
-  - `accountNumber`
-  - exact `id`
-  - exact `key`
-  - suffix of `id`
-  - suffix of `key`
-- produce:
-  - confidence
-  - matched account
-  - reason
-
-Output:
-- UI table
-- downloadable CSV
-- summary counts
-
-Example statuses:
-- Exact Account Number Match
-- ID Suffix Match
-- Key Suffix Match
-- No Match
-- Multiple Matches
-
----
-
-## Security note
-If you build a bot for this project:
-
-### Safe
-- process bootstrap snapshots
-- process normalized data
-- audit mappings
-- report missing fields
-
-### Be careful
-- don’t make the bot dump raw tokens
-- don’t log auth headers
-- don’t persist secrets unnecessarily
-- don’t let the bot act on Slack/Graph/Tekion credentials unless required
-
----
-
-## My recommendation
-Start with one of these:
-
-1. **GL Validation Bot** ← best next step
-2. **Bootstrap Audit Bot**
-3. **Security Scan Bot**
-
----
-
-## If you want, I can build the starter for you
-I can give you either:
-
-### A. New React page bot
-Example:
-- `src/pages/AuditBot/AuditBot.tsx`
-- integrated into your app nav
-
-or
-
-### B. Node script bot
-Example:
-- `scripts/gl-audit-bot.ts`
-
-or
-
-### C. Chrome-extension-aware helper bot
-- reads latest capture safely
-- validates freshness
-- reports health
+* **Auto-Recovery**:
+* If a Graph API network call fails due to throttling (HTTP 429/503), have the health monitor
+coordinate an exponential backoff retry rather than abandoning the job.
 

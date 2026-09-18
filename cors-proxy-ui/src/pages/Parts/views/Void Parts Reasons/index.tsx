@@ -8,6 +8,39 @@ const TARGET_REASON_ID = "23";
 const BASE_URL =
   "https://preprodapp.tekioncloud.com/api/parts/proxy/u/settings/void-reason";
 
+// Required default reasons configuration
+const REQUIRED_REASONS: Array<{
+  reasonCode: string;
+  type: "SALES_ORDER" | "RETURN";
+  countInLostSale: boolean;
+}> = [
+  {
+    reasonCode: "Customer Cancelled",
+    type: "SALES_ORDER",
+    countInLostSale: false,
+  },
+  {
+    reasonCode: "Customer Cancelled - with Lost Sale",
+    type: "SALES_ORDER",
+    countInLostSale: true, // Configured with lost sale enabled
+  },
+  {
+    reasonCode: "Part No Longer Available",
+    type: "SALES_ORDER",
+    countInLostSale: false,
+  },
+  {
+    reasonCode: "Invoice Not Needed",
+    type: "SALES_ORDER",
+    countInLostSale: false,
+  },
+  {
+    reasonCode: "Incorrect Credit",
+    type: "RETURN",
+    countInLostSale: false,
+  },
+];
+
 const logger = {
   debug: (...args: unknown[]) => console.debug("[Parts][VoidPartsReasons]", ...args),
   info: (...args: unknown[]) => console.info("[Parts][VoidPartsReasons]", ...args),
@@ -43,7 +76,7 @@ interface VoidReasonsResponse {
   status?: string;
 }
 
-interface VoidReasonUpdatePayload {
+interface VoidReasonPayload {
   active: boolean;
   detail: {
     countInLostSale: boolean;
@@ -89,7 +122,7 @@ function needsFix(item: VoidReasonRecord | null): boolean {
   return item.detail?.countInLostSale !== true;
 }
 
-function buildUpdatePayload(item: VoidReasonRecord): VoidReasonUpdatePayload {
+function buildUpdatePayload(item: VoidReasonRecord): VoidReasonPayload {
   return {
     active: item.active,
     detail: {
@@ -136,12 +169,6 @@ async function fetchVoidReasons(
     headers,
   });
 
-  logger.info("GET response received", {
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText,
-  });
-
   if (!response.ok) {
     const text = await response.text();
     logger.error("GET failed", {
@@ -159,16 +186,40 @@ async function fetchVoidReasons(
     throw new Error("Invalid GET response structure for void reasons");
   }
 
-  logger.info("GET response validated", {
-    rows: json.data.length,
+  return json;
+}
+
+async function createVoidReason(
+  payload: VoidReasonPayload,
+  headers: Record<string, string>
+): Promise<void> {
+  logger.info("POST create void reason started", payload);
+
+  const response = await fetch(BASE_URL, {
+    method: "POST",
+    headers: {
+      ...headers,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(payload),
   });
 
-  return json;
+  if (!response.ok) {
+    const text = await response.text();
+    logger.error("POST failed", {
+      status: response.status,
+      body: text,
+      payload,
+    });
+    throw new Error(`Failed to create reason "${payload.detail.reasonCode}" (${response.status})`);
+  }
+
+  logger.info(`Created reason: ${payload.detail.reasonCode}`);
 }
 
 async function updateVoidReason(
   target: VoidReasonRecord,
-  payload: VoidReasonUpdatePayload,
+  payload: VoidReasonPayload,
   headers: Record<string, string>
 ): Promise<void> {
   const url = `${BASE_URL}/${String(target.id)}`;
@@ -189,12 +240,6 @@ async function updateVoidReason(
     body: JSON.stringify(payload),
   });
 
-  logger.info("PUT response received", {
-    ok: response.ok,
-    status: response.status,
-    statusText: response.statusText,
-  });
-
   if (!response.ok) {
     const text = await response.text();
     logger.error("PUT failed", {
@@ -203,17 +248,12 @@ async function updateVoidReason(
     });
     throw new Error(`PUT failed with status ${response.status}`);
   }
-
-  const json = await response.json();
-  logger.debug("PUT response json", json);
 }
 
 export const VoidPartsReasonsView: React.FC = () => {
   const [rows, setRows] = useState<VoidReasonRecord[]>([]);
   const [runState, setRunState] = useState<RunState>("idle");
-  const [statusText, setStatusText] = useState(
-    "Ready"
-  );
+  const [statusText, setStatusText] = useState("Ready");
   const [errorText, setErrorText] = useState("");
 
   useEffect(() => {
@@ -224,14 +264,13 @@ export const VoidPartsReasonsView: React.FC = () => {
   const handleRun = async (): Promise<void> => {
     logger.info("run button clicked");
     setRunState("loading");
-    setStatusText("Loading void reasons...");
+    setStatusText("Fetching current void reasons...");
     setErrorText("");
 
     try {
       const headers = getEnabledGlobalHeaders();
 
       if (Object.keys(headers).length === 0) {
-        logger.warn("no global headers available from settings");
         setRunState("error");
         setStatusText("Global headers are missing");
         setErrorText(
@@ -240,51 +279,78 @@ export const VoidPartsReasonsView: React.FC = () => {
         return;
       }
 
-      const firstResponse = await fetchVoidReasons(headers);
-      setRows(firstResponse.data);
+      // 1. Fetch current reasons
+      let res = await fetchVoidReasons(headers);
+      let currentItems = res.data;
+      setRows(currentItems);
 
-      const target = findTargetReason(firstResponse.data);
+      let createdCount = 0;
+      let updatedCount = 0;
 
-      if (!target) {
-        logger.warn("target reason not found", {
-          targetId: TARGET_REASON_ID,
-          targetReasonCode: TARGET_REASON_CODE,
-        });
-        setRunState("warning");
-        setStatusText(`Target reason "${TARGET_REASON_CODE}" not found`);
-        return;
-      }
-
-      logger.info("target reason found", target);
-
-      if (!needsFix(target)) {
-        logger.info("target already configured correctly");
-        setRunState("success");
-        setStatusText(
-          `Count In Lost Sale is already enabled for "${TARGET_REASON_CODE}"`
+      // 2. Identify and create any missing reasons
+      for (const req of REQUIRED_REASONS) {
+        const exists = currentItems.some(
+          (item) =>
+            item.detail?.reasonCode?.trim().toLowerCase() ===
+              req.reasonCode.trim().toLowerCase() &&
+            item.type?.trim().toUpperCase() === req.type.trim().toUpperCase()
         );
-        return;
+
+        if (!exists) {
+          setStatusText(`Creating missing reason: "${req.reasonCode}"...`);
+          await createVoidReason(
+            {
+              active: true,
+              detail: {
+                countInLostSale: req.countInLostSale,
+                reasonCode: req.reasonCode,
+                languages: null,
+              },
+              type: req.type,
+            },
+            headers
+          );
+          createdCount++;
+        }
       }
 
-      const payload = buildUpdatePayload(target);
-      logger.info("built PUT payload", payload);
+      // 3. If items were created, re-fetch list to inspect full state with IDs
+      if (createdCount > 0) {
+        setStatusText("Re-fetching void reasons after creation...");
+        res = await fetchVoidReasons(headers);
+        currentItems = res.data;
+        setRows(currentItems);
+      }
 
-      setStatusText(`Fixing "${TARGET_REASON_CODE}"...`);
-      await updateVoidReason(target, payload, headers);
+      // 4. Check if "Customer Cancelled - with Lost Sale" needs countInLostSale enabled
+      const target = findTargetReason(currentItems);
 
-      setStatusText("Fix applied successfully. Refreshing latest data...");
-      const refreshed = await fetchVoidReasons(headers);
-      setRows(refreshed.data);
+      if (target && needsFix(target)) {
+        setStatusText(`Enabling Count in Lost Sale for "${TARGET_REASON_CODE}"...`);
+        const updatePayload = buildUpdatePayload(target);
+        await updateVoidReason(target, updatePayload, headers);
+        updatedCount++;
 
-      logger.info("refresh completed after PUT");
+        // Re-fetch after update
+        res = await fetchVoidReasons(headers);
+        setRows(res.data);
+      }
+
+      // 5. Finalize status presentation
       setRunState("success");
-      setStatusText(
-        `Count In Lost Sale has been fixed for "${TARGET_REASON_CODE}"`
-      );
+      if (createdCount > 0 || updatedCount > 0) {
+        setStatusText(
+          `✅ Successfully created ${createdCount} reason(s) and updated "${TARGET_REASON_CODE}".`
+        );
+      } else {
+        setStatusText(
+          `✅ All void reasons exist and "${TARGET_REASON_CODE}" is already set to Count in Lost Sale.`
+        );
+      }
     } catch (error: unknown) {
       logger.error("run failed", error);
       setRunState("error");
-      setStatusText("Validation / update failed");
+      setStatusText("Process failed");
       setErrorText(error instanceof Error ? error.message : String(error));
     }
   };

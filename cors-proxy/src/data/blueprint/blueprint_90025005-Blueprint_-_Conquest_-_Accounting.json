@@ -530,8 +530,8 @@
             "required": false,
             "logic": null,
             "fieldOrder": 5,
-            "rawValue": "OTHER MAKES",
-            "decodedValue": "OTHER MAKES",
+            "rawValue": "OTHER MAKES - NOTES FOR INVENTORY BELOW USED SALES",
+            "decodedValue": "OTHER MAKES - NOTES FOR INVENTORY BELOW USED SALES",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -749,8 +749,8 @@
             "required": true,
             "logic": null,
             "fieldOrder": 1,
-            "rawValue": "203,203A,203B,203C",
-            "decodedValue": "203,203A,203B,203C",
+            "rawValue": "203,203A,203B,203C (203 and 203A are the accounts used)",
+            "decodedValue": "203,203A,203B,203C (203 and 203A are the accounts used)",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -994,8 +994,8 @@
             "required": false,
             "logic": null,
             "fieldOrder": 7,
-            "rawValue": "067D,014D",
-            "decodedValue": "067D,014D",
+            "rawValue": "014D",
+            "decodedValue": "014D",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -2171,8 +2171,8 @@
               ]
             },
             "fieldOrder": 8,
-            "rawValue": "231A",
-            "decodedValue": "231A",
+            "rawValue": "231A (INVV)",
+            "decodedValue": "231A (INVV)",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -2229,8 +2229,8 @@
               ]
             },
             "fieldOrder": 10,
-            "rawValue": "239,240,252",
-            "decodedValue": "239,240,252",
+            "rawValue": "239,240,252 (INVV)",
+            "decodedValue": "239,240,252 (INVV)",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -2259,7 +2259,9 @@
               ]
             },
             "fieldOrder": 11,
-            "hasUserValue": false,
+            "rawValue": "INVV",
+            "decodedValue": "INVV",
+            "hasUserValue": true,
             "subsectionName": null
           },
           {
@@ -3225,8 +3227,8 @@
             "required": true,
             "logic": null,
             "fieldOrder": 7,
-            "rawValue": "222",
-            "decodedValue": "222",
+            "rawValue": "222 (wholesale receivable 222A)",
+            "decodedValue": "222 (wholesale receivable 222A)",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -4787,8 +4789,6 @@
             "required": false,
             "logic": null,
             "fieldOrder": 43,
-            "rawValue": "",
-            "decodedValue": "",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -6391,7 +6391,7 @@
               "OTHERS_OPTION"
             ],
             "decodedValue": [
-              "Others"
+              "Others: ."
             ],
             "hasUserValue": true,
             "subsectionName": null
@@ -6415,7 +6415,7 @@
               "OTHERS_OPTION"
             ],
             "decodedValue": [
-              "Others"
+              "Others: ."
             ],
             "hasUserValue": true,
             "subsectionName": null
@@ -6973,8 +6973,8 @@
             "required": true,
             "logic": null,
             "fieldOrder": 1,
-            "rawValue": "OTHER CARS (430A,430C,430G)",
-            "decodedValue": "OTHER CARS (430A,430C,430G)",
+            "rawValue": "OTHER CARS (430A - Used retail other franchise cars, 430 B trucks, 430C suv / cuv - ,430G - used retail other franchise hybrid ev)",
+            "decodedValue": "OTHER CARS (430A - Used retail other franchise cars, 430 B trucks, 430C suv / cuv - ,430G - used retail other franchise hybrid ev)",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -6993,8 +6993,8 @@
             "required": false,
             "logic": null,
             "fieldOrder": 2,
-            "rawValue": "442A,442AG,442B,442BG",
-            "decodedValue": "442A,442AG,442B,442BG",
+            "rawValue": "442A (certified car) ,442AG (certified ev/huv) ,442B (certified suv/cuv),442BG (certified hev suv/cuv)",
+            "decodedValue": "442A (certified car) ,442AG (certified ev/huv) ,442B (certified suv/cuv),442BG (certified hev suv/cuv)",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -7013,8 +7013,8 @@
             "required": false,
             "logic": null,
             "fieldOrder": 3,
-            "rawValue": "441A,441AG,441B,441BG",
-            "decodedValue": "441A,441AG,441B,441BG",
+            "rawValue": "441A (non cert car) ,441AG (non cert ev/huv) ,441B (non cert suv/cuv) ,441BG (non cert hev suv/ cuv)",
+            "decodedValue": "441A (non cert car) ,441AG (non cert ev/huv) ,441B (non cert suv/cuv) ,441BG (non cert hev suv/ cuv)",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -7803,7 +7803,9 @@
             "required": false,
             "logic": null,
             "fieldOrder": 1,
-            "hasUserValue": false,
+            "rawValue": "Used Inventory accounts\n\n239 - NON Cert Hyundai\n240 - Other Makes\n252 - CERT Hyundai",
+            "decodedValue": "Used Inventory accounts\n\n239 - NON Cert Hyundai\n240 - Other Makes\n252 - CERT Hyundai",
+            "hasUserValue": true,
             "subsectionName": null
           }
         ]
@@ -7959,8 +7961,8 @@
             "required": false,
             "logic": null,
             "fieldOrder": 2,
-            "rawValue": "244A",
-            "decodedValue": "244A",
+            "rawValue": "324A",
+            "decodedValue": "324A",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -7979,8 +7981,8 @@
             "required": false,
             "logic": null,
             "fieldOrder": 3,
-            "rawValue": "244A",
-            "decodedValue": "244A",
+            "rawValue": "324A (wrapped with tire fee)",
+            "decodedValue": "324A (wrapped with tire fee)",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -8167,8 +8169,8 @@
               ]
             },
             "fieldOrder": 8,
-            "rawValue": "First United 202 M&T 201A",
-            "decodedValue": "First United 202 M&T 201A",
+            "rawValue": "First United (cash and checks) 202 M&T 201A (everything else goes in and out of here)",
+            "decodedValue": "First United (cash and checks) 202 M&T 201A (everything else goes in and out of here)",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -8743,8 +8745,6 @@
             "required": false,
             "logic": null,
             "fieldOrder": 2,
-            "rawValue": "",
-            "decodedValue": "",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -9265,8 +9265,8 @@
             "required": false,
             "logic": null,
             "fieldOrder": 5,
-            "rawValue": "324",
-            "decodedValue": "324",
+            "rawValue": "061C",
+            "decodedValue": "061C",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -11152,8 +11152,6 @@
             "required": false,
             "logic": null,
             "fieldOrder": 0,
-            "rawValue": "",
-            "decodedValue": "",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -11192,8 +11190,6 @@
             "required": false,
             "logic": null,
             "fieldOrder": 0,
-            "rawValue": "",
-            "decodedValue": "",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -14663,8 +14659,8 @@
         "title": "Specify \"Other\" Inventory Name",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "OTHER MAKES",
-        "decodedValue": "OTHER MAKES",
+        "rawValue": "OTHER MAKES - NOTES FOR INVENTORY BELOW USED SALES",
+        "decodedValue": "OTHER MAKES - NOTES FOR INVENTORY BELOW USED SALES",
         "hasUserValue": true
       },
       {
@@ -14745,8 +14741,8 @@
         "title": "Customer Pay GL Account Number",
         "type": "SHORT_TEXT",
         "required": true,
-        "rawValue": "203,203A,203B,203C",
-        "decodedValue": "203,203A,203B,203C",
+        "rawValue": "203,203A,203B,203C (203 and 203A are the accounts used)",
+        "decodedValue": "203,203A,203B,203C (203 and 203A are the accounts used)",
         "hasUserValue": true
       },
       {
@@ -14873,8 +14869,8 @@
         "title": "Parts Policy GL Account",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "067D,014D",
-        "decodedValue": "067D,014D",
+        "rawValue": "014D",
+        "decodedValue": "014D",
         "hasUserValue": true
       },
       {
@@ -15383,8 +15379,8 @@
         "title": "New Car Inventory GL Account Number",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "231A",
-        "decodedValue": "231A",
+        "rawValue": "231A (INVV)",
+        "decodedValue": "231A (INVV)",
         "hasUserValue": true
       },
       {
@@ -15405,8 +15401,8 @@
         "title": "Used Car Inventory GL Account Number",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "239,240,252",
-        "decodedValue": "239,240,252",
+        "rawValue": "239,240,252 (INVV)",
+        "decodedValue": "239,240,252 (INVV)",
         "hasUserValue": true
       },
       {
@@ -15417,7 +15413,9 @@
         "title": "Used Truck Inventory GL Account Number",
         "type": "SHORT_TEXT",
         "required": false,
-        "hasUserValue": false
+        "rawValue": "INVV",
+        "decodedValue": "INVV",
+        "hasUserValue": true
       },
       {
         "sectionName": "Service - Payment Method - Internal",
@@ -15791,8 +15789,8 @@
         "title": "AR Account Number for Vehicle Sales",
         "type": "SHORT_TEXT",
         "required": true,
-        "rawValue": "222",
-        "decodedValue": "222",
+        "rawValue": "222 (wholesale receivable 222A)",
+        "decodedValue": "222 (wholesale receivable 222A)",
         "hasUserValue": true
       },
       {
@@ -16529,8 +16527,6 @@
         "title": "Are there any state/province specific identification numbers that print on every document such as Repair Orders?",
         "type": "LONG_TEXT",
         "required": false,
-        "rawValue": "",
-        "decodedValue": "",
         "hasUserValue": true
       },
       {
@@ -17143,7 +17139,7 @@
           "OTHERS_OPTION"
         ],
         "decodedValue": [
-          "Others"
+          "Others: ."
         ],
         "hasUserValue": true
       },
@@ -17159,7 +17155,7 @@
           "OTHERS_OPTION"
         ],
         "decodedValue": [
-          "Others"
+          "Others: ."
         ],
         "hasUserValue": true
       },
@@ -17391,8 +17387,8 @@
         "title": "Used Car Sale Account",
         "type": "SHORT_TEXT",
         "required": true,
-        "rawValue": "OTHER CARS (430A,430C,430G)",
-        "decodedValue": "OTHER CARS (430A,430C,430G)",
+        "rawValue": "OTHER CARS (430A - Used retail other franchise cars, 430 B trucks, 430C suv / cuv - ,430G - used retail other franchise hybrid ev)",
+        "decodedValue": "OTHER CARS (430A - Used retail other franchise cars, 430 B trucks, 430C suv / cuv - ,430G - used retail other franchise hybrid ev)",
         "hasUserValue": true
       },
       {
@@ -17403,8 +17399,8 @@
         "title": "Used Car Sale Account - Certified",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "442A,442AG,442B,442BG",
-        "decodedValue": "442A,442AG,442B,442BG",
+        "rawValue": "442A (certified car) ,442AG (certified ev/huv) ,442B (certified suv/cuv),442BG (certified hev suv/cuv)",
+        "decodedValue": "442A (certified car) ,442AG (certified ev/huv) ,442B (certified suv/cuv),442BG (certified hev suv/cuv)",
         "hasUserValue": true
       },
       {
@@ -17415,8 +17411,8 @@
         "title": "Used Car Sale Account - Non-Certified",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "441A,441AG,441B,441BG",
-        "decodedValue": "441A,441AG,441B,441BG",
+        "rawValue": "441A (non cert car) ,441AG (non cert ev/huv) ,441B (non cert suv/cuv) ,441BG (non cert hev suv/ cuv)",
+        "decodedValue": "441A (non cert car) ,441AG (non cert ev/huv) ,441B (non cert suv/cuv) ,441BG (non cert hev suv/ cuv)",
         "hasUserValue": true
       },
       {
@@ -17776,7 +17772,9 @@
         "title": "Additional Used Vehicle Details Not Addressed Above ",
         "type": "LONG_TEXT",
         "required": false,
-        "hasUserValue": false
+        "rawValue": "Used Inventory accounts\n\n239 - NON Cert Hyundai\n240 - Other Makes\n252 - CERT Hyundai",
+        "decodedValue": "Used Inventory accounts\n\n239 - NON Cert Hyundai\n240 - Other Makes\n252 - CERT Hyundai",
+        "hasUserValue": true
       },
       {
         "sectionName": "AR Charge - Vehicle Sales",
@@ -17858,8 +17856,8 @@
         "title": "Tire Fee GL Account",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "244A",
-        "decodedValue": "244A",
+        "rawValue": "324A",
+        "decodedValue": "324A",
         "hasUserValue": true
       },
       {
@@ -17870,8 +17868,8 @@
         "title": "Environmental Fee GL Account",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "244A",
-        "decodedValue": "244A",
+        "rawValue": "324A (wrapped with tire fee)",
+        "decodedValue": "324A (wrapped with tire fee)",
         "hasUserValue": true
       },
       {
@@ -17971,8 +17969,8 @@
         "title": "What are the banks that you reconcile and what are the G/L accounts?",
         "type": "SHORT_TEXT",
         "required": true,
-        "rawValue": "First United 202 M&T 201A",
-        "decodedValue": "First United 202 M&T 201A",
+        "rawValue": "First United (cash and checks) 202 M&T 201A (everything else goes in and out of here)",
+        "decodedValue": "First United (cash and checks) 202 M&T 201A (everything else goes in and out of here)",
         "hasUserValue": true
       },
       {
@@ -18231,8 +18229,6 @@
         "title": "Only F&I - After Sale GL Account",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "",
-        "decodedValue": "",
         "hasUserValue": true
       },
       {
@@ -18463,8 +18459,8 @@
         "title": "Other Supplies - GL Account",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "324",
-        "decodedValue": "324",
+        "rawValue": "061C",
+        "decodedValue": "061C",
         "hasUserValue": true
       },
       {
@@ -19288,8 +19284,6 @@
         "title": "Name of Cost Adjustment",
         "type": "LONG_TEXT",
         "required": false,
-        "rawValue": "",
-        "decodedValue": "",
         "hasUserValue": true
       },
       {
@@ -19312,8 +19306,6 @@
         "title": "Cost Adjustment Account #",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "",
-        "decodedValue": "",
         "hasUserValue": true
       },
       {
@@ -21161,8 +21153,8 @@
             "required": false,
             "logic": null,
             "fieldOrder": 5,
-            "rawValue": "OTHER MAKES",
-            "decodedValue": "OTHER MAKES",
+            "rawValue": "OTHER MAKES - NOTES FOR INVENTORY BELOW USED SALES",
+            "decodedValue": "OTHER MAKES - NOTES FOR INVENTORY BELOW USED SALES",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -21190,8 +21182,8 @@
             "required": true,
             "logic": null,
             "fieldOrder": 1,
-            "rawValue": "203,203A,203B,203C",
-            "decodedValue": "203,203A,203B,203C",
+            "rawValue": "203,203A,203B,203C (203 and 203A are the accounts used)",
+            "decodedValue": "203,203A,203B,203C (203 and 203A are the accounts used)",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -21379,8 +21371,8 @@
             "required": false,
             "logic": null,
             "fieldOrder": 7,
-            "rawValue": "067D,014D",
-            "decodedValue": "067D,014D",
+            "rawValue": "014D",
+            "decodedValue": "014D",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -22151,8 +22143,8 @@
               ]
             },
             "fieldOrder": 8,
-            "rawValue": "231A",
-            "decodedValue": "231A",
+            "rawValue": "231A (INVV)",
+            "decodedValue": "231A (INVV)",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -22181,8 +22173,38 @@
               ]
             },
             "fieldOrder": 10,
-            "rawValue": "239,240,252",
-            "decodedValue": "239,240,252",
+            "rawValue": "239,240,252 (INVV)",
+            "decodedValue": "239,240,252 (INVV)",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "80f4b7d4-5cff-4050-996d-e88da4aaa61e",
+            "sectionName": "Service - Payment Method - Internal",
+            "sectionOrder": 95,
+            "sectionType": "MAIN",
+            "rowIndex": 10,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601291",
+            "fieldName": null,
+            "title": "Used Truck Inventory GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103601281",
+                  "operator": "IS",
+                  "value": "Used Truck Inventory"
+                }
+              ]
+            },
+            "fieldOrder": 11,
+            "rawValue": "INVV",
+            "decodedValue": "INVV",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -22666,8 +22688,8 @@
             "required": true,
             "logic": null,
             "fieldOrder": 7,
-            "rawValue": "222",
-            "decodedValue": "222",
+            "rawValue": "222 (wholesale receivable 222A)",
+            "decodedValue": "222 (wholesale receivable 222A)",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -25203,7 +25225,7 @@
               "OTHERS_OPTION"
             ],
             "decodedValue": [
-              "Others"
+              "Others: ."
             ],
             "hasUserValue": true,
             "subsectionName": null
@@ -25227,7 +25249,7 @@
               "OTHERS_OPTION"
             ],
             "decodedValue": [
-              "Others"
+              "Others: ."
             ],
             "hasUserValue": true,
             "subsectionName": null
@@ -25485,8 +25507,8 @@
             "required": true,
             "logic": null,
             "fieldOrder": 1,
-            "rawValue": "OTHER CARS (430A,430C,430G)",
-            "decodedValue": "OTHER CARS (430A,430C,430G)",
+            "rawValue": "OTHER CARS (430A - Used retail other franchise cars, 430 B trucks, 430C suv / cuv - ,430G - used retail other franchise hybrid ev)",
+            "decodedValue": "OTHER CARS (430A - Used retail other franchise cars, 430 B trucks, 430C suv / cuv - ,430G - used retail other franchise hybrid ev)",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -25505,8 +25527,8 @@
             "required": false,
             "logic": null,
             "fieldOrder": 2,
-            "rawValue": "442A,442AG,442B,442BG",
-            "decodedValue": "442A,442AG,442B,442BG",
+            "rawValue": "442A (certified car) ,442AG (certified ev/huv) ,442B (certified suv/cuv),442BG (certified hev suv/cuv)",
+            "decodedValue": "442A (certified car) ,442AG (certified ev/huv) ,442B (certified suv/cuv),442BG (certified hev suv/cuv)",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -25525,8 +25547,8 @@
             "required": false,
             "logic": null,
             "fieldOrder": 3,
-            "rawValue": "441A,441AG,441B,441BG",
-            "decodedValue": "441A,441AG,441B,441BG",
+            "rawValue": "441A (non cert car) ,441AG (non cert ev/huv) ,441B (non cert suv/cuv) ,441BG (non cert hev suv/ cuv)",
+            "decodedValue": "441A (non cert car) ,441AG (non cert ev/huv) ,441B (non cert suv/cuv) ,441BG (non cert hev suv/ cuv)",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -26659,6 +26681,35 @@
         ]
       },
       {
+        "sectionId": "22f14255-dab0-45eb-a280-0bdd2517d4a8",
+        "sectionName": "Used Vehicle Notes",
+        "sectionOrder": 17,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "22f14255-dab0-45eb-a280-0bdd2517d4a8",
+            "sectionName": "Used Vehicle Notes",
+            "sectionOrder": 17,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600867",
+            "fieldName": null,
+            "title": "Additional Used Vehicle Details Not Addressed Above ",
+            "type": "LONG_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "Used Inventory accounts\n\n239 - NON Cert Hyundai\n240 - Other Makes\n252 - CERT Hyundai",
+            "decodedValue": "Used Inventory accounts\n\n239 - NON Cert Hyundai\n240 - Other Makes\n252 - CERT Hyundai",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
         "sectionId": "a216ddab-0362-49b4-b163-5355831c7e92",
         "sectionName": "AR Charge - Vehicle Sales",
         "sectionOrder": 91,
@@ -26809,8 +26860,8 @@
             "required": false,
             "logic": null,
             "fieldOrder": 2,
-            "rawValue": "244A",
-            "decodedValue": "244A",
+            "rawValue": "324A",
+            "decodedValue": "324A",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -26829,8 +26880,8 @@
             "required": false,
             "logic": null,
             "fieldOrder": 3,
-            "rawValue": "244A",
-            "decodedValue": "244A",
+            "rawValue": "324A (wrapped with tire fee)",
+            "decodedValue": "324A (wrapped with tire fee)",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -27065,8 +27116,8 @@
               ]
             },
             "fieldOrder": 8,
-            "rawValue": "First United 202 M&T 201A",
-            "decodedValue": "First United 202 M&T 201A",
+            "rawValue": "First United (cash and checks) 202 M&T 201A (everything else goes in and out of here)",
+            "decodedValue": "First United (cash and checks) 202 M&T 201A (everything else goes in and out of here)",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -28057,8 +28108,8 @@
             "required": false,
             "logic": null,
             "fieldOrder": 5,
-            "rawValue": "324",
-            "decodedValue": "324",
+            "rawValue": "061C",
+            "decodedValue": "061C",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -29577,8 +29628,8 @@
         "title": "Specify \"Other\" Inventory Name",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "OTHER MAKES",
-        "decodedValue": "OTHER MAKES",
+        "rawValue": "OTHER MAKES - NOTES FOR INVENTORY BELOW USED SALES",
+        "decodedValue": "OTHER MAKES - NOTES FOR INVENTORY BELOW USED SALES",
         "hasUserValue": true
       },
       {
@@ -29589,8 +29640,8 @@
         "title": "Customer Pay GL Account Number",
         "type": "SHORT_TEXT",
         "required": true,
-        "rawValue": "203,203A,203B,203C",
-        "decodedValue": "203,203A,203B,203C",
+        "rawValue": "203,203A,203B,203C (203 and 203A are the accounts used)",
+        "decodedValue": "203,203A,203B,203C (203 and 203A are the accounts used)",
         "hasUserValue": true
       },
       {
@@ -29697,8 +29748,8 @@
         "title": "Parts Policy GL Account",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "067D,014D",
-        "decodedValue": "067D,014D",
+        "rawValue": "014D",
+        "decodedValue": "014D",
         "hasUserValue": true
       },
       {
@@ -30047,8 +30098,8 @@
         "title": "New Car Inventory GL Account Number",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "231A",
-        "decodedValue": "231A",
+        "rawValue": "231A (INVV)",
+        "decodedValue": "231A (INVV)",
         "hasUserValue": true
       },
       {
@@ -30059,8 +30110,20 @@
         "title": "Used Car Inventory GL Account Number",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "239,240,252",
-        "decodedValue": "239,240,252",
+        "rawValue": "239,240,252 (INVV)",
+        "decodedValue": "239,240,252 (INVV)",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service - Payment Method - Internal",
+        "subsectionName": null,
+        "sectionId": "80f4b7d4-5cff-4050-996d-e88da4aaa61e",
+        "fieldId": "103601291",
+        "title": "Used Truck Inventory GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "INVV",
+        "decodedValue": "INVV",
         "hasUserValue": true
       },
       {
@@ -30255,8 +30318,8 @@
         "title": "AR Account Number for Vehicle Sales",
         "type": "SHORT_TEXT",
         "required": true,
-        "rawValue": "222",
-        "decodedValue": "222",
+        "rawValue": "222 (wholesale receivable 222A)",
+        "decodedValue": "222 (wholesale receivable 222A)",
         "hasUserValue": true
       },
       {
@@ -31205,7 +31268,7 @@
           "OTHERS_OPTION"
         ],
         "decodedValue": [
-          "Others"
+          "Others: ."
         ],
         "hasUserValue": true
       },
@@ -31221,7 +31284,7 @@
           "OTHERS_OPTION"
         ],
         "decodedValue": [
-          "Others"
+          "Others: ."
         ],
         "hasUserValue": true
       },
@@ -31353,8 +31416,8 @@
         "title": "Used Car Sale Account",
         "type": "SHORT_TEXT",
         "required": true,
-        "rawValue": "OTHER CARS (430A,430C,430G)",
-        "decodedValue": "OTHER CARS (430A,430C,430G)",
+        "rawValue": "OTHER CARS (430A - Used retail other franchise cars, 430 B trucks, 430C suv / cuv - ,430G - used retail other franchise hybrid ev)",
+        "decodedValue": "OTHER CARS (430A - Used retail other franchise cars, 430 B trucks, 430C suv / cuv - ,430G - used retail other franchise hybrid ev)",
         "hasUserValue": true
       },
       {
@@ -31365,8 +31428,8 @@
         "title": "Used Car Sale Account - Certified",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "442A,442AG,442B,442BG",
-        "decodedValue": "442A,442AG,442B,442BG",
+        "rawValue": "442A (certified car) ,442AG (certified ev/huv) ,442B (certified suv/cuv),442BG (certified hev suv/cuv)",
+        "decodedValue": "442A (certified car) ,442AG (certified ev/huv) ,442B (certified suv/cuv),442BG (certified hev suv/cuv)",
         "hasUserValue": true
       },
       {
@@ -31377,8 +31440,8 @@
         "title": "Used Car Sale Account - Non-Certified",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "441A,441AG,441B,441BG",
-        "decodedValue": "441A,441AG,441B,441BG",
+        "rawValue": "441A (non cert car) ,441AG (non cert ev/huv) ,441B (non cert suv/cuv) ,441BG (non cert hev suv/ cuv)",
+        "decodedValue": "441A (non cert car) ,441AG (non cert ev/huv) ,441B (non cert suv/cuv) ,441BG (non cert hev suv/ cuv)",
         "hasUserValue": true
       },
       {
@@ -31681,6 +31744,18 @@
         "hasUserValue": true
       },
       {
+        "sectionName": "Used Vehicle Notes",
+        "subsectionName": null,
+        "sectionId": "22f14255-dab0-45eb-a280-0bdd2517d4a8",
+        "fieldId": "103600867",
+        "title": "Additional Used Vehicle Details Not Addressed Above ",
+        "type": "LONG_TEXT",
+        "required": false,
+        "rawValue": "Used Inventory accounts\n\n239 - NON Cert Hyundai\n240 - Other Makes\n252 - CERT Hyundai",
+        "decodedValue": "Used Inventory accounts\n\n239 - NON Cert Hyundai\n240 - Other Makes\n252 - CERT Hyundai",
+        "hasUserValue": true
+      },
+      {
         "sectionName": "AR Charge - Vehicle Sales",
         "subsectionName": null,
         "sectionId": "a216ddab-0362-49b4-b163-5355831c7e92",
@@ -31760,8 +31835,8 @@
         "title": "Tire Fee GL Account",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "244A",
-        "decodedValue": "244A",
+        "rawValue": "324A",
+        "decodedValue": "324A",
         "hasUserValue": true
       },
       {
@@ -31772,8 +31847,8 @@
         "title": "Environmental Fee GL Account",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "244A",
-        "decodedValue": "244A",
+        "rawValue": "324A (wrapped with tire fee)",
+        "decodedValue": "324A (wrapped with tire fee)",
         "hasUserValue": true
       },
       {
@@ -31873,8 +31948,8 @@
         "title": "What are the banks that you reconcile and what are the G/L accounts?",
         "type": "SHORT_TEXT",
         "required": true,
-        "rawValue": "First United 202 M&T 201A",
-        "decodedValue": "First United 202 M&T 201A",
+        "rawValue": "First United (cash and checks) 202 M&T 201A (everything else goes in and out of here)",
+        "decodedValue": "First United (cash and checks) 202 M&T 201A (everything else goes in and out of here)",
         "hasUserValue": true
       },
       {
@@ -32273,8 +32348,8 @@
         "title": "Other Supplies - GL Account",
         "type": "SHORT_TEXT",
         "required": false,
-        "rawValue": "324",
-        "decodedValue": "324",
+        "rawValue": "061C",
+        "decodedValue": "061C",
         "hasUserValue": true
       },
       {
@@ -32971,7 +33046,7 @@
         "title": "Specify \"Other\" Inventory Name",
         "type": "SHORT_TEXT",
         "required": "false",
-        "decodedValue": "OTHER MAKES"
+        "decodedValue": "OTHER MAKES - NOTES FOR INVENTORY BELOW USED SALES"
       },
       {
         "sectionName": "Service Customer Pay Sales GL Mapping",
@@ -32980,7 +33055,7 @@
         "title": "Customer Pay GL Account Number",
         "type": "SHORT_TEXT",
         "required": "true",
-        "decodedValue": "203,203A,203B,203C"
+        "decodedValue": "203,203A,203B,203C (203 and 203A are the accounts used)"
       },
       {
         "sectionName": "Service Customer Pay Sales GL Mapping",
@@ -33061,7 +33136,7 @@
         "title": "Parts Policy GL Account",
         "type": "SHORT_TEXT",
         "required": "false",
-        "decodedValue": "067D,014D"
+        "decodedValue": "014D"
       },
       {
         "sectionName": "Finance Reserve GL Mapping",
@@ -33304,7 +33379,7 @@
         "title": "New Car Inventory GL Account Number",
         "type": "SHORT_TEXT",
         "required": "false",
-        "decodedValue": "231A"
+        "decodedValue": "231A (INVV)"
       },
       {
         "sectionName": "Service - Payment Method - Internal",
@@ -33313,7 +33388,16 @@
         "title": "Used Car Inventory GL Account Number",
         "type": "SHORT_TEXT",
         "required": "false",
-        "decodedValue": "239,240,252"
+        "decodedValue": "239,240,252 (INVV)"
+      },
+      {
+        "sectionName": "Service - Payment Method - Internal",
+        "sectionId": "80f4b7d4-5cff-4050-996d-e88da4aaa61e",
+        "fieldId": "103601291",
+        "title": "Used Truck Inventory GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "INVV"
       },
       {
         "sectionName": "Service - Payment Method - Internal",
@@ -33457,7 +33541,7 @@
         "title": "AR Account Number for Vehicle Sales",
         "type": "SHORT_TEXT",
         "required": "true",
-        "decodedValue": "222"
+        "decodedValue": "222 (wholesale receivable 222A)"
       },
       {
         "sectionName": "Accounts Receivable Settings",
@@ -34132,7 +34216,7 @@
         "title": "Parts RO Sales Optional Service Departments",
         "type": "MULTIPLE_CHOICE",
         "required": "true",
-        "decodedValue": "[\"Others\"]"
+        "decodedValue": "[\"Others: .\"]"
       },
       {
         "sectionName": "Parts Repair Order Sales Accounts",
@@ -34141,7 +34225,7 @@
         "title": "Do you have taxable and Non-taxable accounts?",
         "type": "MULTIPLE_CHOICE",
         "required": "true",
-        "decodedValue": "[\"Others\"]"
+        "decodedValue": "[\"Others: .\"]"
       },
       {
         "sectionName": "Parts Repair Order Sales Accounts",
@@ -34240,7 +34324,7 @@
         "title": "Used Car Sale Account",
         "type": "SHORT_TEXT",
         "required": "true",
-        "decodedValue": "OTHER CARS (430A,430C,430G)"
+        "decodedValue": "OTHER CARS (430A - Used retail other franchise cars, 430 B trucks, 430C suv / cuv - ,430G - used retail other franchise hybrid ev)"
       },
       {
         "sectionName": "Used Vehicle Personal Purchase",
@@ -34249,7 +34333,7 @@
         "title": "Used Car Sale Account - Certified",
         "type": "SHORT_TEXT",
         "required": "false",
-        "decodedValue": "442A,442AG,442B,442BG"
+        "decodedValue": "442A (certified car) ,442AG (certified ev/huv) ,442B (certified suv/cuv),442BG (certified hev suv/cuv)"
       },
       {
         "sectionName": "Used Vehicle Personal Purchase",
@@ -34258,7 +34342,7 @@
         "title": "Used Car Sale Account - Non-Certified",
         "type": "SHORT_TEXT",
         "required": "false",
-        "decodedValue": "441A,441AG,441B,441BG"
+        "decodedValue": "441A (non cert car) ,441AG (non cert ev/huv) ,441B (non cert suv/cuv) ,441BG (non cert hev suv/ cuv)"
       },
       {
         "sectionName": "Used Vehicle Personal Purchase",
@@ -34459,6 +34543,15 @@
         "decodedValue": "no applicable"
       },
       {
+        "sectionName": "Used Vehicle Notes",
+        "sectionId": "22f14255-dab0-45eb-a280-0bdd2517d4a8",
+        "fieldId": "103600867",
+        "title": "Additional Used Vehicle Details Not Addressed Above ",
+        "type": "LONG_TEXT",
+        "required": "false",
+        "decodedValue": "Used Inventory accounts\n\n239 - NON Cert Hyundai\n240 - Other Makes\n252 - CERT Hyundai"
+      },
+      {
         "sectionName": "AR Charge - Vehicle Sales",
         "sectionId": "a216ddab-0362-49b4-b163-5355831c7e92",
         "fieldId": "103601260",
@@ -34519,7 +34612,7 @@
         "title": "Tire Fee GL Account",
         "type": "SHORT_TEXT",
         "required": "false",
-        "decodedValue": "244A"
+        "decodedValue": "324A"
       },
       {
         "sectionName": "Parts and Service Fees",
@@ -34528,7 +34621,7 @@
         "title": "Environmental Fee GL Account",
         "type": "SHORT_TEXT",
         "required": "false",
-        "decodedValue": "244A"
+        "decodedValue": "324A (wrapped with tire fee)"
       },
       {
         "sectionName": "General Department Information (Part 2)",
@@ -34582,7 +34675,7 @@
         "title": "What are the banks that you reconcile and what are the G/L accounts?",
         "type": "SHORT_TEXT",
         "required": "true",
-        "decodedValue": "First United 202 M&T 201A"
+        "decodedValue": "First United (cash and checks) 202 M&T 201A (everything else goes in and out of here)"
       },
       {
         "sectionName": "Finance Company #6",
@@ -34870,7 +34963,7 @@
         "title": "Other Supplies - GL Account",
         "type": "SHORT_TEXT",
         "required": "false",
-        "decodedValue": "324"
+        "decodedValue": "061C"
       },
       {
         "sectionName": "Fixed Ops Other Accounts",
@@ -35215,7 +35308,7 @@
         "decodedValue": "618A or 638 manually adjusted for product cancellation receivable used as down payment"
       }
     ],
-    "humanReadable": "[Finance Company #10 > —] Finance Company Name: ALLY\n[Finance Company #10 > —] Finance Company GL Account Number: 262D\n[Vehicle Sale Commission GL Accounts > —] Vehicle Sales Salary, Wages & Commission GL Account: 011A, 011B COMMISSION\n[Vehicle Sale Commission GL Accounts > —] Paid Spiffs GL Account Number: 321B\n[Vehicle Sale Commission GL Accounts > —] NEW - Commission Expense Offset GL Account Number: 011A\n[Vehicle Sale Commission GL Accounts > —] NEW - Spiff Expense Offset GL Account Number: 011A\n[Vehicle Sale Commission GL Accounts > —] USED - Commission Offset GL Account Number: 011B\n[Vehicle Sale Commission GL Accounts > —] USED - Spiff Expense Offset GL Account: 011B\n[Vehicle Sale Commission GL Accounts > —] Additional Vehicle Commission Details Not Addressed Above : this is commission for salespeople. manual calculate and post managers at end of month\n[Cash - Vehicle Sales > —] Personal Purchase GL Account : Initially posted to account 222 when the deal was made, then transferred to account 202 after deposit to the bank\n[Cash - Vehicle Sales > —] Only F&I - After Sale GL Account: posted to 222 at time of posting transaction then transferred to account 202\n[Cash - Vehicle Sales > —] Business/Commercial GL Account : account 222 then transferred to account 202\n[Cash - Vehicle Sales > —] DealerTrade GL Account: 222 - controlled on schedule\n[Cash - Vehicle Sales > —] Wholesale GL Account: 222A - controlled on schedule\n[Parts - Credit/Debit Card Payment Method > —] Counter Sales/Retail GL Account: 203A\n[Parts - Credit/Debit Card Payment Method > —] Wholesale GL Account: 203A\n[Used Vehicle Inventory > —] Journal Name and Journal Number: PVU: PURCHASES - USED VEHICLE\n[Used Vehicle Inventory > —] Inventory GL Account (Car): 239 Hyundai non certified\n[Used Vehicle Inventory > —] Inventory GL Account (Truck): 240\n[Used Vehicle Inventory > —] Inventory GL Account (Other): 240\n[Used Vehicle Inventory > —] Specify \"Other\" Inventory Name: OTHER MAKES\n[Service Customer Pay Sales GL Mapping > —] Customer Pay GL Account Number: 203,203A,203B,203C\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Service Contracts: 226A\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Sublet GL Acct: 246\n[Internal Parts Payment Method > —] We Owe GL Account: 314\n[Internal Parts Payment Method > —] Other Supplies GL Account: 061D\n[Internal Parts Payment Method > —] New Car Inventory GL Account: 231A\n[Internal Parts Payment Method > —] Used Car Inventory GL Account: 239,240,252\n[Internal Parts Payment Method > —] New Truck Inventory GL Account: 231A\n[Internal Parts Payment Method > —] Used Truck Inventory GL Account: 240\n[Internal Parts Payment Method > —] Parts Policy GL Account: 067D,014D\n[Finance Reserve GL Mapping > —] How many finance companies with reserves?: 13\n[Finance Company #11 > —] Finance Company Name: HUNTINGTON BANK\n[Finance Company #11 > —] Finance Company GL Account Number: 262\n[Parts Counter Sales > —] Do you have taxable and Non-Taxable Accounts?: Yes\n[Parts Counter Sales > —] Retail Counter Sales GL Acct: 466A\n[Parts Counter Sales > —] Internal Counter Sales GL Acct: 465A\n[Parts Counter Sales > —] Wholesale Counter GL Acct: 467A\n[Check - Vehicle Sales > —] Individual Purchase GL Account : Initially posted to account 222 when the deal was made, then transferred to account 202 after the check was deposited.\n[Check - Vehicle Sales > —] Only F&I - After Sale GL Account: initially posted to account 222 then transferred to account 202\n[Check - Vehicle Sales > —] Business/Commercial GL Account : Initially posted to account 222 when the deal was made, then transferred to account 202 after the check was deposited.\n[Check - Vehicle Sales > —] DealerTrade GL Account: Initially posted to account 222 when the deal was made, then transferred to account 202 after the check was deposited.\n[Check - Vehicle Sales > —] Wholesale GL Account: Initially posted to account 222A when the deal was made, then transferred to account 202 after the check was deposited.\n[Parts - Cash Payment Method > —] Counter Sales/Retail GL Account: 203C\n[Parts - Cash Payment Method > —] Wholesale GL Account: 203C\n[Finance Company #4 > —] Finance Company Name: TD BANK\n[Finance Company #4 > —] Finance Company GL Account Number: 262F\n[New Vehicle Inventory > —] Journal Name and Journal Number: PVI: PURCHASES - NEW VEHICLES (231A)\n[New Vehicle Inventory > —] Inventory GL Account (Car): 231A\n[New Vehicle Inventory > —] Inventory GL Account (Truck): 231A\n[New Vehicle Inventory > —] Inventory GL Account (Rental): 287\n[New Vehicle Inventory > —] Inventory GL Account (Demo): 285\n[New Vehicle Inventory > —] Inventory GL Account (Loaner): 287\n[New Vehicle Inventory > —] Inventory GL Account (Company): 285\n[Fixed Ops Service GL Mapping > —] Departments : Service Department\n[Service - Payment Method - Internal > —] Which internal payment methods do you use?: We Owe / Due Bill, New Car Inventory, PDI, Used Car Inventory, Vehicle Expense, Company Vehicle Service Dept, Company Vehicle Parts Dept, Used Truck Inventory\n[Service - Payment Method - Internal > —] PDI GL Account Number: 252,239,240, 231A\n[Service - Payment Method - Internal > —] New Car Inventory GL Account Number: 231A\n[Service - Payment Method - Internal > —] Used Car Inventory GL Account Number: 239,240,252\n[Service - Payment Method - Internal > —] We Owe GL Account Number: 314\n[Service - Payment Method - Internal > —] Vehicle Expense GL Account Number: 231A,239,252,240\n[Service - Payment Method - Internal > —] Company Vehicle Service Dept GL Account Number: 051C\n[Service - Payment Method - Internal > —] Company Vehicle Parts Dept GL Account Number: 051D\n[Parts - AR Charge Payment Method > —] Counter Sales/Retail GL Account: 220\n[Parts - AR Charge Payment Method > —] Wholesale GL Account: 220\n[Finance Company #2 > —] Finance Company Name: MEMBER 1ST\n[Finance Company #2 > —] Finance Company GL Account Number: 262B\n[Service Internal Sales GL Mapping > —] Internal Pay GL Account Number: 455A\n[Service Internal Sales GL Mapping > —] Internal Pay Sublet GL Account Number: 456\n[Accounts Receivable Settings > —] What date do you typically run your A/R statements?: 25th\n[Accounts Receivable Settings > —] Do you use A/R open item?: Yes\n[Accounts Receivable Settings > —] Which AR GL accounts do you use in the AR open-item feature?: 220\n[Accounts Receivable Settings > —] AR Account Number for Service ROs: 220\n[Accounts Receivable Settings > —] AR Account Number for Parts Tickets: 220\n[Accounts Receivable Settings > —] AR Account Number for Vehicle Sales: 222\n[Accounts Receivable Settings > —] Cash Clearing GL Account Number for AR: 220\n[Accounts Receivable Settings > —] Cash In Bank GL Account Number for AR: 201A\n[Accounts Receivable Settings > —] Do all active employees have an employee A/R account?: Only some do\n[Accounts Receivable Settings > —] What e-mail address do you want A/R statements to come from?: lalvarado@masseyauto.com\n[Accounts Receivable Settings > —] List any other GL accounts you use in AR and how they are used: 220R (parts return/refund-Credit)\n[Accounts Receivable Settings > —] AR Journal Name and Journal Number: 220- Account Receivable\n[Accounts Receivable Settings > —] Do you charge finance charges on AR invoices?: No\n[Accounts Receivable Settings > —] Do you offer customer discounts if they pay early?: No\n[Accounts Receivable Settings > —] AR invoices are delinquent after how many days?: 30 days\n[Accounts Receivable Settings > —] In what order would you like the detail to be on A/R statements?: Due Date - Oldest First, Invoice #, Others: Date, Reference, Description, Charges, Credits\n[Used Vehicle GL Sale Account Mapping > —] Cash Receipt Cash Clearing GL Account Number: 203C\n[Used Vehicle GL Sale Account Mapping > —] Select your Used Vehicle Sale Types: Wholesale, Individual / Personal, Business / Commercial\n[Used Vehicle Business / Commercial > —] Used Car Sale Account: OTHER CARS (430A,430C,430G)\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Certified: 442A,442AG,442B,442BG\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Non-Certified: 441A,441AG,441B,441BG\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account: 430B\n[Service - Payment Methods - Customer Pay > —] Cash GL Account: 203C\n[Service - Payment Methods - Customer Pay > —] Check GL Account: 203C\n[Service - Payment Methods - Customer Pay > —] Credit/Debit Card GL Account: 203A\n[Service - Payment Methods - Customer Pay > —] AR Charge GL Account: 220\n[Service - Payment Methods - Customer Pay > —] Service Contract GL Account: 220B\n[Service - Payment Methods - Customer Pay > —] GM - OEM Reward GL Account: not applicable\n[Service - Payment Methods - Warranty > —] Warranty Claim GL Account: 226A\n[Deal Posting Pack Notes > —] Additional Deal Posting Packs Details Not Addressed Above : 1.Used vehicles on salesperson's commission have a $500 pack. It is not included in the manager's commissions. \n2. MSI expense is posted to inventory cost but moved to reconditioning account at time of deal posting. 632 or 631 or 631\n3. Loaner Vehicles transferred to used inventory, depreciation cost expensed to service company vehicle account 051C\n[Factory Receivables > —] Holdback GL Account Number: 228A\n[Factory Receivables > —] Rebate GL Account Number: 227A\n[Factory Receivables > —] Incentives GL Account Number: 227A\n[General Department Information (Part 1) > —] Please select your country: USA\n[General Department Information (Part 1) > —] What are you retained earnings accounts and how are they used?: shareholder dividend\n[General Department Information (Part 1) > —] What payroll provider do you currently use?: Netchex\n[General Department Information (Part 1) > —] What payroll provider will you use at the time of the Tekion ARC go live date?: Netchex\n[General Department Information (Part 1) > —] Please list all manufacturer dealer codes (and BAC codes for GM dealers): MD010\n[General Department Information (Part 1) > —] Please describe the accounting G/L or Journal restrictions: accounting can see all accounts journals, department managers can view only accounts for their responsibility\n[General Department Information (Part 1) > —] Federal Tax ID / EIN:: 52-1497709\n[General Department Information (Part 1) > —] State Tax ID:: 03974865\n[General Department Information (Part 1) > —] State Dealer Code:: 21469248\n[General Department Information (Part 1) > —] DMV #:: NW10000325\n[General Department Information (Part 1) > —] Please describe your accounting prefixes:: we only have 1 store\n[Parts and Labor Tax Rates > —] Is your tax rate for parts and labor the same?: No\n[Parts and Labor Tax Rates > —] Tax rate on Parts?: yes\n[Parts and Labor Tax Rates > —] Tax rate on labor?: no\n[Parts and Labor Tax Rates > —] Tax rate on sublet?: no\n[Parts and Labor Tax Rates > —] Tax rate on deductible?: no\n[Parts and Labor Tax Rates > —] Do you charge tax on shop supplies?: Yes\n[Finance Company #9 > —] Finance Company Name: M&T BANK\n[Finance Company #9 > —] Finance Company GL Account Number: 262C\n[Vehicle Sales Payables > —] Lien Payoff GL Account: 309\n[Vehicle Sales Payables > —] Title Fee GL Account Number: 301\n[Vehicle Sales Payables > —] Registration GL Account Number: 301\n[Vehicle Sales Payables > —] Emissions GL Account Number: 301\n[Vehicle Sales Payables > —] Documentation Fee GL Account Number: 805A\n[Vehicle Sales Payables > —] Bank or Acquisition Fee GL Account Number : 205\n[Vehicle Sales Payables > —] Lemon Law Fee GL Account Number: not applicable\n[Vehicle Sales Payables > —] Lien Fee GL Account Number: 301\n[Vehicle Sales Payables > —] Environment Protect Fee GL Account Number: 324A\n[Vehicle Sales Payables > —] State Fee GL Account Number: 301\n[Vehicle Sales Payables > —] Waste Tire Fee GL Account Number: 324A\n[Vehicle Sales Payables > —] Tire Fee GL Account Number: 324A\n[Service Warranty Sales GL Mapping > —] Warranty GL Account Number: 226A, 220B\n[Service Warranty Sales GL Mapping > —] Warranty Sublet GL Account Number: 226A, 220B\n[Source Specific RO Parts Sales GL Account > —] Do you have Source Specific RO Parts Sales GL Accounts?: Tires, Gas Oil Grease (GOG)\n[Source Specific RO Parts Sales GL Account > —] Do you have non-taxable GL accounts for source specific RO Sale Accounts?: No\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Customer Pay RO Parts Sales GL Accounts: 491\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Internal RO Parts Sales GL Accounts: 491\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Warranty RO Parts Sales GL Accounts: 491\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Customer Pay RO Parts Sales GL Accounts: 490\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Internal RO Parts Sales GL Accounts: 490\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Warranty RO Parts Sales GL Accounts: 490\n[Parts - Check Payment Method > —] Counter Sales/Retail GL Account: 203C\n[Parts - Check Payment Method > —] Wholesale GL Account: 203C\n[Finance Company #1 > —] Finance Company Name: HYUNDAI MOTOR FINANCE\n[Finance Company #1 > —] Finance Company GL Account Number: 262A\n[Finance Company #5 > —] Finance Company Name: PATRIOT FCU\n[Finance Company #5 > —] Finance Company GL Account Number: 262H\n[Parts Repair Order Sales Accounts > —] Parts RO Sales Optional Service Departments: Others\n[Parts Repair Order Sales Accounts > —] Do you have taxable and Non-taxable accounts?: Others\n[Parts Repair Order Sales Accounts > —] RO Customer Pay Parts Sales GL Account: 460A\n[Parts Repair Order Sales Accounts > —] RO Service Contract Parts Sales GL Account: 460A\n[Parts Repair Order Sales Accounts > —] RO Warranty Parts Sales GL Account: 464A\n[Parts Repair Order Sales Accounts > —] RO Internal Parts Sales GL Account: 465A\n[Used Vehicle Wholesale > —] Used Car Sale Account: 433\n[Used Vehicle Wholesale > —] Used Truck Sale Account: 433\n[Used Vehicle Wholesale > —] Used Car Sale Account - Certified: 433\n[Used Vehicle Wholesale > —] Used Car Sale Account - Non-Certified: 433\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Certified: 433\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Non-Certified: 433\n[Used Vehicle Personal Purchase > —] Used Car Sale Account: OTHER CARS (430A,430C,430G)\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Certified: 442A,442AG,442B,442BG\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Non-Certified: 441A,441AG,441B,441BG\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account: 430B\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account - Non-Certified: 430B\n[Cash Receipts > —] Journal Name and Journal Number for Cash Receipts: CRC-Cash Receipts, 203C\n[Cash Receipts > —] How do you post your day collection from service and parts?: Cash receipts function in my existing DMS, Deposit function in my existing DMS\n[Cash Receipts > —] How do you post customer down payments?: Individual cash receipts\n[Credit/Debit Card - Vehicle Sales > —] Individual Purchase GL Account : Initially posted to account 222 when the deal was made, then transferred to account 201A after reconcile the credit card batches.\n[Credit/Debit Card - Vehicle Sales > —] Only F&I - After Sale GL Account: Initially posted to account 222 when the deal was made, then transferred to account 201A after reconcile the credit card batches.\n[Credit/Debit Card - Vehicle Sales > —] Business/Commercial GL Account : Initially posted to account 222 when the deal was made, then transferred to account 201A after reconcile the credit card batches.\n[Credit/Debit Card - Vehicle Sales > —] DealerTrade GL Account: NA\n[Credit/Debit Card - Vehicle Sales > —] Wholesale GL Account: NA\n[Tekion Blueprint Submission > —] Please upload a sample payroll upload file (if applicable): Sample Payroll File.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90025005/51131684-a780-47e1-8d89-aab12ef72a9a/8f23d70e-fdd5-4fd9-83ee-f65dac53d51e/Sample%20Payroll%20File.xlsx)\n[Tekion Blueprint Submission > —] Are there any state/province, federal or OEM specific reporting which is used daily, weekly, monthly, quarterly or yearly?: Hyundai pulls data. We upload financial monthly. Sales/Use tax, Tire tax we run reports and submit on Maryland portal. All our reporting would be typical for a Maryland Hyundai Dealer.\n[Tekion Blueprint Submission > —] Is there anything else we need to know about your ARC accounting?: Our schedules are very important. Tried to upload with the journal but received error message.\n[Tekion Blueprint Submission > —] Name of Submitter: Sandi Lwin\n[Finance Company #7 > —] Finance Company Name: WELLS FARGO\n[Finance Company #7 > —] Finance Company GL Account Number: 262\n[Finance Company #8 > —] Finance Company Name: CAPITAL ONE AUTO FINANCE\n[Finance Company #8 > —] Finance Company GL Account Number: 262H\n[OEM Reward > —] Counter Sales/Retail GL Account: not applicable\n[OEM Reward > —] Wholesale GL Account: not applicable\n[OEM Reward > —] Internal GL Account: not applicable\n[OEM Reward > —] Repair GL Account: no applicable\n[AR Charge - Vehicle Sales > —] Individual Purchase GL Account : 222\n[AR Charge - Vehicle Sales > —] Only F&I - After Sale GL Account: not applicable\n[AR Charge - Vehicle Sales > —] Business/Commercial GL Account : 222\n[AR Charge - Vehicle Sales > —] DealerTrade GL Account: Initially posted to account 222, then posted to account 202 when we received the check.\n[AR Charge - Vehicle Sales > —] Wholesale GL Account: Initially posted to account 222A, then transferred to account 202 after the check was deposited.\n[Parts and Service Fees > —] Shop Supplies GL Account: 061C\n[Parts and Service Fees > —] Tire Fee GL Account: 244A\n[Parts and Service Fees > —] Environmental Fee GL Account: 244A\n[General Department Information (Part 2) > —] What would you like your first check # in Tekion to be?: 2001\n[General Department Information (Part 2) > —] What would you like your PO # in Tekion to be?: 3005\n[General Department Information (Part 2) > —] Please provide a sample positive pay file. If you don't currently use positive pay, you will need to request a sample file from your bank.: Massey Inc Positive Pay Sample.csv (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90025005/51131684-a780-47e1-8d89-aab12ef72a9a/11c2ca73-3eb5-4fa1-afde-2ef9911ba8c3/Massey%20Inc%20Positive%20Pay%20Sample.csv)\n[General Department Information (Part 2) > —] What banks do / will you send the Positive Pay file to?: M&T Bank\n[General Department Information (Part 2) > —] Do you conduct Bank Reconciliation in your DMS?: Yes\n[General Department Information (Part 2) > —] What are the banks that you reconcile and what are the G/L accounts?: First United 202 M&T 201A\n[Finance Company #6 > —] Finance Company Name: SANTANDER\n[Finance Company #6 > —] Finance Company GL Account Number: 262E\n[Accounts Payable Settings > —] On what date do you typically run your AP batch?: 10th\n[Accounts Payable Settings > —] What is your Invoice cutoff date?: 25th\n[Accounts Payable Settings > —] Which AP GL accounts do you use in the AP open-item feature? : 201a\n[Accounts Payable Settings > —] In what order would you like your Invoices in Batch Payments to display?: Due Date - Earliest First\n[Accounts Payable Settings > —] What type of schedule is your A/P account?: Open Item\n[Accounts Payable Settings > —] AP GL Account Number: 300\n[Accounts Payable Settings > —] AP Discount Account Number: 805G\n[Accounts Payable Settings > —] AP Cash payment Journal Name and Journal Number: CDP - Cash Disbursement Accounts Payable\n[Accounts Payable Settings > —] Purchase Journal: Journal Name and Journal Number: POT - Purchases General\n[Accounts Payable Settings > —] AP Bank Name: M&T\n[Accounts Payable Settings > —] AP Bank Account GL Account Number: 201a\n[Accounts Payable Settings > —] Additional AP Details Not Addressed Above : We multiple due dates. We manually pay vendors not much in batches. \nWe have 2 payable accounts. 1 for all vendors and 1 for Hyundai - OEM 300A which is always a credit and we make a JE.\n[Finance Company #13 > —] Finance Company Name: BANK OF AMERICA\n[Finance Company #13 > —] Finance Company GL Account Number: 262\n[CIT - Receivable - Vehicle Sales > —] Individual Purchase GL Account : 205\n[CIT - Receivable - Vehicle Sales > —] Business/Commercial GL Account : 205\n[CIT - Receivable - Vehicle Sales > —] DealerTrade GL Account: not applicable\n[CIT - Receivable - Vehicle Sales > —] Wholesale GL Account: not applicable\n[Parts Source Specific GL Accounting > —] Do you have source specific inventory GL accounts?: Tires, Gas Oil Grease (GOG), Accessories\n[Parts Source Specific GL Accounting > —] Do you have non-taxable source specific sale GL accounts?: Yes\n[Parts Source Specific GL Accounting > —] Tires Source Specific GL Account: 244A\n[Parts Source Specific GL Accounting > —] Tires Source Specific GL Account - Non-Tax: 244A\n[Parts Source Specific GL Accounting > —] GOG Source Specific GL Account: 244\n[Parts Source Specific GL Accounting > —] GOG Source Specific GL Account - Non-Tax: 244\n[Parts Source Specific GL Accounting > —] Accessories Specific GL Account: 242A\n[Parts Source Specific GL Accounting > —] Accessories Specific GL Account - Non-Tax: 242A\n[Fixed Ops Other Accounts > —] Sales Tax - Labor GL Account: 324\n[Fixed Ops Other Accounts > —] Sales Tax - Parts GL Account: 324\n[Fixed Ops Other Accounts > —] Freight - Non-Taxable - GL Account: 324\n[Fixed Ops Other Accounts > —] Other Supplies - GL Account: 324\n[Fixed Ops Other Accounts > —] Other Supplies - Non-Taxable - GL Account: 061C\n[Fixed Ops Other Accounts > —] Restocking Fee - GL Account: 061D\n[Finance Company #3 > —] Finance Company Name: GLOBAL LENDING\n[Finance Company #3 > —] Finance Company GL Account Number: 262\n[Finance Company #12 > —] Finance Company Name: CHASE BANK\n[Finance Company #12 > —] Finance Company GL Account Number: 262\n[Cost Adjustments #1 > —] Name of Cost Adjustment: Bank Fee\n[Cost Adjustments #1 > —] Cost Adjustment Gross: Back Gross\n[Cost Adjustments #1 > —] Cost Adjustment Account #: finance charge back for new 618A and used 638 if not allowed in deal. In deal depends on model being sold\n[Commissions > —] Does your current DMS calculate sales commissions?: No\n[Commissions > —] Please select the staff for which commissions are calculated in the deal:: Salesperson\n[Commissions > —] Are BDC employees ever added in the commissions screen?: No\n[Commissions > —] Do you remove any packs from the commissionable gross? (please list out all): used has a $500 pack before calculating salesperson commission. it is removed for managers\n[Commissions > —] Please upload documentation containing sales commission details here:: Sales Pay Plans 04012026.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90025005/51131684-a780-47e1-8d89-aab12ef72a9a/74ee1951-929d-4869-817d-0caa1fdf29a1/Sales%20Pay%20Plans%2004012026.xlsx)\n[Commissions > —] Additional Notes about Commissions: we keep manual track of salespeople commission but include the cost in deal\n[Service - Taxes > —] Are coupon discounts taken before or after tax is applied?: Before tax is applied\n[Service - Taxes > —] Is your tax rate the same for Parts, Labor, Sublets and Deductibles?: Yes\n[Service - Taxes > —] Are there any special tax conditions? Examples below: None\n[Service - Taxes > —] Tax rate for Parts and Labor: 6% tax on Parts, NA for labor\n[Service Accounting Settings > —] Do you use Quicklane or Express account sections on your financial statement?: No\n[Service Accounting Settings > —] What is your desired Tekion starting RO #?: 510000\n[Service Accounting Settings > —] How do you track lane/express separately for Accounting?: we don't\n[Service Accounting Settings > —] Do you use a dedicated department in the service application to drive the QL/Express accounting, or specific labor op codes?: Labor Ops/Service Types\n[Service Accounting Settings > —] What is your current RO #?: 417144\n[Service Accounting Settings > —] Do you use a manufacturer reward/gift/loyalty rewards payment option?: N/A\n[Service Accounting Settings > —] Who is your credit card processing company?: Others: Maverick\n[Parts Accounting Settings > —] Please select all that are taxable: : Parts\n[Parts Accounting Settings > —] What is the parts tax rate? : Others: 6%\n[Parts Accounting Settings > —] What is your current parts invoice #? : 103159\n[Parts Accounting Settings > —] What would you like your starting Purchase Order number to be?: 3005\n[Parts Accounting Settings > —] What do you want to start your parts invoice numbers in Tekion?: 20000\n[Vehicle Inventory Pack Notes > —] Additional Vehicle Inventory Posting Packs Details Not Addressed Above : GL ACCOUNT #252 HYUNDAI CERTIFIED\n[Cost Adjustments #2 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments > —] How many Cost Adjustments do you have?: 3\n[Cost Adjustments #4 > —] Cost Adjustment Gross: Back Gross\n[Cost Adjustments #3 > —] Name of Cost Adjustment: Downpayment cancellation of finance products applied to downpayment\n[Cost Adjustments #3 > —] Cost Adjustment Gross: Back Gross\n[Cost Adjustments #3 > —] Cost Adjustment Account #: 618A or 638 manually adjusted for product cancellation receivable used as down payment"
+    "humanReadable": "[Finance Company #10 > —] Finance Company Name: ALLY\n[Finance Company #10 > —] Finance Company GL Account Number: 262D\n[Vehicle Sale Commission GL Accounts > —] Vehicle Sales Salary, Wages & Commission GL Account: 011A, 011B COMMISSION\n[Vehicle Sale Commission GL Accounts > —] Paid Spiffs GL Account Number: 321B\n[Vehicle Sale Commission GL Accounts > —] NEW - Commission Expense Offset GL Account Number: 011A\n[Vehicle Sale Commission GL Accounts > —] NEW - Spiff Expense Offset GL Account Number: 011A\n[Vehicle Sale Commission GL Accounts > —] USED - Commission Offset GL Account Number: 011B\n[Vehicle Sale Commission GL Accounts > —] USED - Spiff Expense Offset GL Account: 011B\n[Vehicle Sale Commission GL Accounts > —] Additional Vehicle Commission Details Not Addressed Above : this is commission for salespeople. manual calculate and post managers at end of month\n[Cash - Vehicle Sales > —] Personal Purchase GL Account : Initially posted to account 222 when the deal was made, then transferred to account 202 after deposit to the bank\n[Cash - Vehicle Sales > —] Only F&I - After Sale GL Account: posted to 222 at time of posting transaction then transferred to account 202\n[Cash - Vehicle Sales > —] Business/Commercial GL Account : account 222 then transferred to account 202\n[Cash - Vehicle Sales > —] DealerTrade GL Account: 222 - controlled on schedule\n[Cash - Vehicle Sales > —] Wholesale GL Account: 222A - controlled on schedule\n[Parts - Credit/Debit Card Payment Method > —] Counter Sales/Retail GL Account: 203A\n[Parts - Credit/Debit Card Payment Method > —] Wholesale GL Account: 203A\n[Used Vehicle Inventory > —] Journal Name and Journal Number: PVU: PURCHASES - USED VEHICLE\n[Used Vehicle Inventory > —] Inventory GL Account (Car): 239 Hyundai non certified\n[Used Vehicle Inventory > —] Inventory GL Account (Truck): 240\n[Used Vehicle Inventory > —] Inventory GL Account (Other): 240\n[Used Vehicle Inventory > —] Specify \"Other\" Inventory Name: OTHER MAKES - NOTES FOR INVENTORY BELOW USED SALES\n[Service Customer Pay Sales GL Mapping > —] Customer Pay GL Account Number: 203,203A,203B,203C (203 and 203A are the accounts used)\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Service Contracts: 226A\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Sublet GL Acct: 246\n[Internal Parts Payment Method > —] We Owe GL Account: 314\n[Internal Parts Payment Method > —] Other Supplies GL Account: 061D\n[Internal Parts Payment Method > —] New Car Inventory GL Account: 231A\n[Internal Parts Payment Method > —] Used Car Inventory GL Account: 239,240,252\n[Internal Parts Payment Method > —] New Truck Inventory GL Account: 231A\n[Internal Parts Payment Method > —] Used Truck Inventory GL Account: 240\n[Internal Parts Payment Method > —] Parts Policy GL Account: 014D\n[Finance Reserve GL Mapping > —] How many finance companies with reserves?: 13\n[Finance Company #11 > —] Finance Company Name: HUNTINGTON BANK\n[Finance Company #11 > —] Finance Company GL Account Number: 262\n[Parts Counter Sales > —] Do you have taxable and Non-Taxable Accounts?: Yes\n[Parts Counter Sales > —] Retail Counter Sales GL Acct: 466A\n[Parts Counter Sales > —] Internal Counter Sales GL Acct: 465A\n[Parts Counter Sales > —] Wholesale Counter GL Acct: 467A\n[Check - Vehicle Sales > —] Individual Purchase GL Account : Initially posted to account 222 when the deal was made, then transferred to account 202 after the check was deposited.\n[Check - Vehicle Sales > —] Only F&I - After Sale GL Account: initially posted to account 222 then transferred to account 202\n[Check - Vehicle Sales > —] Business/Commercial GL Account : Initially posted to account 222 when the deal was made, then transferred to account 202 after the check was deposited.\n[Check - Vehicle Sales > —] DealerTrade GL Account: Initially posted to account 222 when the deal was made, then transferred to account 202 after the check was deposited.\n[Check - Vehicle Sales > —] Wholesale GL Account: Initially posted to account 222A when the deal was made, then transferred to account 202 after the check was deposited.\n[Parts - Cash Payment Method > —] Counter Sales/Retail GL Account: 203C\n[Parts - Cash Payment Method > —] Wholesale GL Account: 203C\n[Finance Company #4 > —] Finance Company Name: TD BANK\n[Finance Company #4 > —] Finance Company GL Account Number: 262F\n[New Vehicle Inventory > —] Journal Name and Journal Number: PVI: PURCHASES - NEW VEHICLES (231A)\n[New Vehicle Inventory > —] Inventory GL Account (Car): 231A\n[New Vehicle Inventory > —] Inventory GL Account (Truck): 231A\n[New Vehicle Inventory > —] Inventory GL Account (Rental): 287\n[New Vehicle Inventory > —] Inventory GL Account (Demo): 285\n[New Vehicle Inventory > —] Inventory GL Account (Loaner): 287\n[New Vehicle Inventory > —] Inventory GL Account (Company): 285\n[Fixed Ops Service GL Mapping > —] Departments : Service Department\n[Service - Payment Method - Internal > —] Which internal payment methods do you use?: We Owe / Due Bill, New Car Inventory, PDI, Used Car Inventory, Vehicle Expense, Company Vehicle Service Dept, Company Vehicle Parts Dept, Used Truck Inventory\n[Service - Payment Method - Internal > —] PDI GL Account Number: 252,239,240, 231A\n[Service - Payment Method - Internal > —] New Car Inventory GL Account Number: 231A (INVV)\n[Service - Payment Method - Internal > —] Used Car Inventory GL Account Number: 239,240,252 (INVV)\n[Service - Payment Method - Internal > —] Used Truck Inventory GL Account Number: INVV\n[Service - Payment Method - Internal > —] We Owe GL Account Number: 314\n[Service - Payment Method - Internal > —] Vehicle Expense GL Account Number: 231A,239,252,240\n[Service - Payment Method - Internal > —] Company Vehicle Service Dept GL Account Number: 051C\n[Service - Payment Method - Internal > —] Company Vehicle Parts Dept GL Account Number: 051D\n[Parts - AR Charge Payment Method > —] Counter Sales/Retail GL Account: 220\n[Parts - AR Charge Payment Method > —] Wholesale GL Account: 220\n[Finance Company #2 > —] Finance Company Name: MEMBER 1ST\n[Finance Company #2 > —] Finance Company GL Account Number: 262B\n[Service Internal Sales GL Mapping > —] Internal Pay GL Account Number: 455A\n[Service Internal Sales GL Mapping > —] Internal Pay Sublet GL Account Number: 456\n[Accounts Receivable Settings > —] What date do you typically run your A/R statements?: 25th\n[Accounts Receivable Settings > —] Do you use A/R open item?: Yes\n[Accounts Receivable Settings > —] Which AR GL accounts do you use in the AR open-item feature?: 220\n[Accounts Receivable Settings > —] AR Account Number for Service ROs: 220\n[Accounts Receivable Settings > —] AR Account Number for Parts Tickets: 220\n[Accounts Receivable Settings > —] AR Account Number for Vehicle Sales: 222 (wholesale receivable 222A)\n[Accounts Receivable Settings > —] Cash Clearing GL Account Number for AR: 220\n[Accounts Receivable Settings > —] Cash In Bank GL Account Number for AR: 201A\n[Accounts Receivable Settings > —] Do all active employees have an employee A/R account?: Only some do\n[Accounts Receivable Settings > —] What e-mail address do you want A/R statements to come from?: lalvarado@masseyauto.com\n[Accounts Receivable Settings > —] List any other GL accounts you use in AR and how they are used: 220R (parts return/refund-Credit)\n[Accounts Receivable Settings > —] AR Journal Name and Journal Number: 220- Account Receivable\n[Accounts Receivable Settings > —] Do you charge finance charges on AR invoices?: No\n[Accounts Receivable Settings > —] Do you offer customer discounts if they pay early?: No\n[Accounts Receivable Settings > —] AR invoices are delinquent after how many days?: 30 days\n[Accounts Receivable Settings > —] In what order would you like the detail to be on A/R statements?: Due Date - Oldest First, Invoice #, Others: Date, Reference, Description, Charges, Credits\n[Used Vehicle GL Sale Account Mapping > —] Cash Receipt Cash Clearing GL Account Number: 203C\n[Used Vehicle GL Sale Account Mapping > —] Select your Used Vehicle Sale Types: Wholesale, Individual / Personal, Business / Commercial\n[Used Vehicle Business / Commercial > —] Used Car Sale Account: OTHER CARS (430A,430C,430G)\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Certified: 442A,442AG,442B,442BG\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Non-Certified: 441A,441AG,441B,441BG\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account: 430B\n[Service - Payment Methods - Customer Pay > —] Cash GL Account: 203C\n[Service - Payment Methods - Customer Pay > —] Check GL Account: 203C\n[Service - Payment Methods - Customer Pay > —] Credit/Debit Card GL Account: 203A\n[Service - Payment Methods - Customer Pay > —] AR Charge GL Account: 220\n[Service - Payment Methods - Customer Pay > —] Service Contract GL Account: 220B\n[Service - Payment Methods - Customer Pay > —] GM - OEM Reward GL Account: not applicable\n[Service - Payment Methods - Warranty > —] Warranty Claim GL Account: 226A\n[Deal Posting Pack Notes > —] Additional Deal Posting Packs Details Not Addressed Above : 1.Used vehicles on salesperson's commission have a $500 pack. It is not included in the manager's commissions. \n2. MSI expense is posted to inventory cost but moved to reconditioning account at time of deal posting. 632 or 631 or 631\n3. Loaner Vehicles transferred to used inventory, depreciation cost expensed to service company vehicle account 051C\n[Factory Receivables > —] Holdback GL Account Number: 228A\n[Factory Receivables > —] Rebate GL Account Number: 227A\n[Factory Receivables > —] Incentives GL Account Number: 227A\n[General Department Information (Part 1) > —] Please select your country: USA\n[General Department Information (Part 1) > —] What are you retained earnings accounts and how are they used?: shareholder dividend\n[General Department Information (Part 1) > —] What payroll provider do you currently use?: Netchex\n[General Department Information (Part 1) > —] What payroll provider will you use at the time of the Tekion ARC go live date?: Netchex\n[General Department Information (Part 1) > —] Please list all manufacturer dealer codes (and BAC codes for GM dealers): MD010\n[General Department Information (Part 1) > —] Please describe the accounting G/L or Journal restrictions: accounting can see all accounts journals, department managers can view only accounts for their responsibility\n[General Department Information (Part 1) > —] Federal Tax ID / EIN:: 52-1497709\n[General Department Information (Part 1) > —] State Tax ID:: 03974865\n[General Department Information (Part 1) > —] State Dealer Code:: 21469248\n[General Department Information (Part 1) > —] DMV #:: NW10000325\n[General Department Information (Part 1) > —] Please describe your accounting prefixes:: we only have 1 store\n[Parts and Labor Tax Rates > —] Is your tax rate for parts and labor the same?: No\n[Parts and Labor Tax Rates > —] Tax rate on Parts?: yes\n[Parts and Labor Tax Rates > —] Tax rate on labor?: no\n[Parts and Labor Tax Rates > —] Tax rate on sublet?: no\n[Parts and Labor Tax Rates > —] Tax rate on deductible?: no\n[Parts and Labor Tax Rates > —] Do you charge tax on shop supplies?: Yes\n[Finance Company #9 > —] Finance Company Name: M&T BANK\n[Finance Company #9 > —] Finance Company GL Account Number: 262C\n[Vehicle Sales Payables > —] Lien Payoff GL Account: 309\n[Vehicle Sales Payables > —] Title Fee GL Account Number: 301\n[Vehicle Sales Payables > —] Registration GL Account Number: 301\n[Vehicle Sales Payables > —] Emissions GL Account Number: 301\n[Vehicle Sales Payables > —] Documentation Fee GL Account Number: 805A\n[Vehicle Sales Payables > —] Bank or Acquisition Fee GL Account Number : 205\n[Vehicle Sales Payables > —] Lemon Law Fee GL Account Number: not applicable\n[Vehicle Sales Payables > —] Lien Fee GL Account Number: 301\n[Vehicle Sales Payables > —] Environment Protect Fee GL Account Number: 324A\n[Vehicle Sales Payables > —] State Fee GL Account Number: 301\n[Vehicle Sales Payables > —] Waste Tire Fee GL Account Number: 324A\n[Vehicle Sales Payables > —] Tire Fee GL Account Number: 324A\n[Service Warranty Sales GL Mapping > —] Warranty GL Account Number: 226A, 220B\n[Service Warranty Sales GL Mapping > —] Warranty Sublet GL Account Number: 226A, 220B\n[Source Specific RO Parts Sales GL Account > —] Do you have Source Specific RO Parts Sales GL Accounts?: Tires, Gas Oil Grease (GOG)\n[Source Specific RO Parts Sales GL Account > —] Do you have non-taxable GL accounts for source specific RO Sale Accounts?: No\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Customer Pay RO Parts Sales GL Accounts: 491\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Internal RO Parts Sales GL Accounts: 491\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Warranty RO Parts Sales GL Accounts: 491\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Customer Pay RO Parts Sales GL Accounts: 490\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Internal RO Parts Sales GL Accounts: 490\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Warranty RO Parts Sales GL Accounts: 490\n[Parts - Check Payment Method > —] Counter Sales/Retail GL Account: 203C\n[Parts - Check Payment Method > —] Wholesale GL Account: 203C\n[Finance Company #1 > —] Finance Company Name: HYUNDAI MOTOR FINANCE\n[Finance Company #1 > —] Finance Company GL Account Number: 262A\n[Finance Company #5 > —] Finance Company Name: PATRIOT FCU\n[Finance Company #5 > —] Finance Company GL Account Number: 262H\n[Parts Repair Order Sales Accounts > —] Parts RO Sales Optional Service Departments: Others: .\n[Parts Repair Order Sales Accounts > —] Do you have taxable and Non-taxable accounts?: Others: .\n[Parts Repair Order Sales Accounts > —] RO Customer Pay Parts Sales GL Account: 460A\n[Parts Repair Order Sales Accounts > —] RO Service Contract Parts Sales GL Account: 460A\n[Parts Repair Order Sales Accounts > —] RO Warranty Parts Sales GL Account: 464A\n[Parts Repair Order Sales Accounts > —] RO Internal Parts Sales GL Account: 465A\n[Used Vehicle Wholesale > —] Used Car Sale Account: 433\n[Used Vehicle Wholesale > —] Used Truck Sale Account: 433\n[Used Vehicle Wholesale > —] Used Car Sale Account - Certified: 433\n[Used Vehicle Wholesale > —] Used Car Sale Account - Non-Certified: 433\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Certified: 433\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Non-Certified: 433\n[Used Vehicle Personal Purchase > —] Used Car Sale Account: OTHER CARS (430A - Used retail other franchise cars, 430 B trucks, 430C suv / cuv - ,430G - used retail other franchise hybrid ev)\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Certified: 442A (certified car) ,442AG (certified ev/huv) ,442B (certified suv/cuv),442BG (certified hev suv/cuv)\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Non-Certified: 441A (non cert car) ,441AG (non cert ev/huv) ,441B (non cert suv/cuv) ,441BG (non cert hev suv/ cuv)\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account: 430B\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account - Non-Certified: 430B\n[Cash Receipts > —] Journal Name and Journal Number for Cash Receipts: CRC-Cash Receipts, 203C\n[Cash Receipts > —] How do you post your day collection from service and parts?: Cash receipts function in my existing DMS, Deposit function in my existing DMS\n[Cash Receipts > —] How do you post customer down payments?: Individual cash receipts\n[Credit/Debit Card - Vehicle Sales > —] Individual Purchase GL Account : Initially posted to account 222 when the deal was made, then transferred to account 201A after reconcile the credit card batches.\n[Credit/Debit Card - Vehicle Sales > —] Only F&I - After Sale GL Account: Initially posted to account 222 when the deal was made, then transferred to account 201A after reconcile the credit card batches.\n[Credit/Debit Card - Vehicle Sales > —] Business/Commercial GL Account : Initially posted to account 222 when the deal was made, then transferred to account 201A after reconcile the credit card batches.\n[Credit/Debit Card - Vehicle Sales > —] DealerTrade GL Account: NA\n[Credit/Debit Card - Vehicle Sales > —] Wholesale GL Account: NA\n[Tekion Blueprint Submission > —] Please upload a sample payroll upload file (if applicable): Sample Payroll File.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90025005/51131684-a780-47e1-8d89-aab12ef72a9a/8f23d70e-fdd5-4fd9-83ee-f65dac53d51e/Sample%20Payroll%20File.xlsx)\n[Tekion Blueprint Submission > —] Are there any state/province, federal or OEM specific reporting which is used daily, weekly, monthly, quarterly or yearly?: Hyundai pulls data. We upload financial monthly. Sales/Use tax, Tire tax we run reports and submit on Maryland portal. All our reporting would be typical for a Maryland Hyundai Dealer.\n[Tekion Blueprint Submission > —] Is there anything else we need to know about your ARC accounting?: Our schedules are very important. Tried to upload with the journal but received error message.\n[Tekion Blueprint Submission > —] Name of Submitter: Sandi Lwin\n[Finance Company #7 > —] Finance Company Name: WELLS FARGO\n[Finance Company #7 > —] Finance Company GL Account Number: 262\n[Finance Company #8 > —] Finance Company Name: CAPITAL ONE AUTO FINANCE\n[Finance Company #8 > —] Finance Company GL Account Number: 262H\n[OEM Reward > —] Counter Sales/Retail GL Account: not applicable\n[OEM Reward > —] Wholesale GL Account: not applicable\n[OEM Reward > —] Internal GL Account: not applicable\n[OEM Reward > —] Repair GL Account: no applicable\n[Used Vehicle Notes > —] Additional Used Vehicle Details Not Addressed Above : Used Inventory accounts\n\n239 - NON Cert Hyundai\n240 - Other Makes\n252 - CERT Hyundai\n[AR Charge - Vehicle Sales > —] Individual Purchase GL Account : 222\n[AR Charge - Vehicle Sales > —] Only F&I - After Sale GL Account: not applicable\n[AR Charge - Vehicle Sales > —] Business/Commercial GL Account : 222\n[AR Charge - Vehicle Sales > —] DealerTrade GL Account: Initially posted to account 222, then posted to account 202 when we received the check.\n[AR Charge - Vehicle Sales > —] Wholesale GL Account: Initially posted to account 222A, then transferred to account 202 after the check was deposited.\n[Parts and Service Fees > —] Shop Supplies GL Account: 061C\n[Parts and Service Fees > —] Tire Fee GL Account: 324A\n[Parts and Service Fees > —] Environmental Fee GL Account: 324A (wrapped with tire fee)\n[General Department Information (Part 2) > —] What would you like your first check # in Tekion to be?: 2001\n[General Department Information (Part 2) > —] What would you like your PO # in Tekion to be?: 3005\n[General Department Information (Part 2) > —] Please provide a sample positive pay file. If you don't currently use positive pay, you will need to request a sample file from your bank.: Massey Inc Positive Pay Sample.csv (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90025005/51131684-a780-47e1-8d89-aab12ef72a9a/11c2ca73-3eb5-4fa1-afde-2ef9911ba8c3/Massey%20Inc%20Positive%20Pay%20Sample.csv)\n[General Department Information (Part 2) > —] What banks do / will you send the Positive Pay file to?: M&T Bank\n[General Department Information (Part 2) > —] Do you conduct Bank Reconciliation in your DMS?: Yes\n[General Department Information (Part 2) > —] What are the banks that you reconcile and what are the G/L accounts?: First United (cash and checks) 202 M&T 201A (everything else goes in and out of here)\n[Finance Company #6 > —] Finance Company Name: SANTANDER\n[Finance Company #6 > —] Finance Company GL Account Number: 262E\n[Accounts Payable Settings > —] On what date do you typically run your AP batch?: 10th\n[Accounts Payable Settings > —] What is your Invoice cutoff date?: 25th\n[Accounts Payable Settings > —] Which AP GL accounts do you use in the AP open-item feature? : 201a\n[Accounts Payable Settings > —] In what order would you like your Invoices in Batch Payments to display?: Due Date - Earliest First\n[Accounts Payable Settings > —] What type of schedule is your A/P account?: Open Item\n[Accounts Payable Settings > —] AP GL Account Number: 300\n[Accounts Payable Settings > —] AP Discount Account Number: 805G\n[Accounts Payable Settings > —] AP Cash payment Journal Name and Journal Number: CDP - Cash Disbursement Accounts Payable\n[Accounts Payable Settings > —] Purchase Journal: Journal Name and Journal Number: POT - Purchases General\n[Accounts Payable Settings > —] AP Bank Name: M&T\n[Accounts Payable Settings > —] AP Bank Account GL Account Number: 201a\n[Accounts Payable Settings > —] Additional AP Details Not Addressed Above : We multiple due dates. We manually pay vendors not much in batches. \nWe have 2 payable accounts. 1 for all vendors and 1 for Hyundai - OEM 300A which is always a credit and we make a JE.\n[Finance Company #13 > —] Finance Company Name: BANK OF AMERICA\n[Finance Company #13 > —] Finance Company GL Account Number: 262\n[CIT - Receivable - Vehicle Sales > —] Individual Purchase GL Account : 205\n[CIT - Receivable - Vehicle Sales > —] Business/Commercial GL Account : 205\n[CIT - Receivable - Vehicle Sales > —] DealerTrade GL Account: not applicable\n[CIT - Receivable - Vehicle Sales > —] Wholesale GL Account: not applicable\n[Parts Source Specific GL Accounting > —] Do you have source specific inventory GL accounts?: Tires, Gas Oil Grease (GOG), Accessories\n[Parts Source Specific GL Accounting > —] Do you have non-taxable source specific sale GL accounts?: Yes\n[Parts Source Specific GL Accounting > —] Tires Source Specific GL Account: 244A\n[Parts Source Specific GL Accounting > —] Tires Source Specific GL Account - Non-Tax: 244A\n[Parts Source Specific GL Accounting > —] GOG Source Specific GL Account: 244\n[Parts Source Specific GL Accounting > —] GOG Source Specific GL Account - Non-Tax: 244\n[Parts Source Specific GL Accounting > —] Accessories Specific GL Account: 242A\n[Parts Source Specific GL Accounting > —] Accessories Specific GL Account - Non-Tax: 242A\n[Fixed Ops Other Accounts > —] Sales Tax - Labor GL Account: 324\n[Fixed Ops Other Accounts > —] Sales Tax - Parts GL Account: 324\n[Fixed Ops Other Accounts > —] Freight - Non-Taxable - GL Account: 324\n[Fixed Ops Other Accounts > —] Other Supplies - GL Account: 061C\n[Fixed Ops Other Accounts > —] Other Supplies - Non-Taxable - GL Account: 061C\n[Fixed Ops Other Accounts > —] Restocking Fee - GL Account: 061D\n[Finance Company #3 > —] Finance Company Name: GLOBAL LENDING\n[Finance Company #3 > —] Finance Company GL Account Number: 262\n[Finance Company #12 > —] Finance Company Name: CHASE BANK\n[Finance Company #12 > —] Finance Company GL Account Number: 262\n[Cost Adjustments #1 > —] Name of Cost Adjustment: Bank Fee\n[Cost Adjustments #1 > —] Cost Adjustment Gross: Back Gross\n[Cost Adjustments #1 > —] Cost Adjustment Account #: finance charge back for new 618A and used 638 if not allowed in deal. In deal depends on model being sold\n[Commissions > —] Does your current DMS calculate sales commissions?: No\n[Commissions > —] Please select the staff for which commissions are calculated in the deal:: Salesperson\n[Commissions > —] Are BDC employees ever added in the commissions screen?: No\n[Commissions > —] Do you remove any packs from the commissionable gross? (please list out all): used has a $500 pack before calculating salesperson commission. it is removed for managers\n[Commissions > —] Please upload documentation containing sales commission details here:: Sales Pay Plans 04012026.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90025005/51131684-a780-47e1-8d89-aab12ef72a9a/74ee1951-929d-4869-817d-0caa1fdf29a1/Sales%20Pay%20Plans%2004012026.xlsx)\n[Commissions > —] Additional Notes about Commissions: we keep manual track of salespeople commission but include the cost in deal\n[Service - Taxes > —] Are coupon discounts taken before or after tax is applied?: Before tax is applied\n[Service - Taxes > —] Is your tax rate the same for Parts, Labor, Sublets and Deductibles?: Yes\n[Service - Taxes > —] Are there any special tax conditions? Examples below: None\n[Service - Taxes > —] Tax rate for Parts and Labor: 6% tax on Parts, NA for labor\n[Service Accounting Settings > —] Do you use Quicklane or Express account sections on your financial statement?: No\n[Service Accounting Settings > —] What is your desired Tekion starting RO #?: 510000\n[Service Accounting Settings > —] How do you track lane/express separately for Accounting?: we don't\n[Service Accounting Settings > —] Do you use a dedicated department in the service application to drive the QL/Express accounting, or specific labor op codes?: Labor Ops/Service Types\n[Service Accounting Settings > —] What is your current RO #?: 417144\n[Service Accounting Settings > —] Do you use a manufacturer reward/gift/loyalty rewards payment option?: N/A\n[Service Accounting Settings > —] Who is your credit card processing company?: Others: Maverick\n[Parts Accounting Settings > —] Please select all that are taxable: : Parts\n[Parts Accounting Settings > —] What is the parts tax rate? : Others: 6%\n[Parts Accounting Settings > —] What is your current parts invoice #? : 103159\n[Parts Accounting Settings > —] What would you like your starting Purchase Order number to be?: 3005\n[Parts Accounting Settings > —] What do you want to start your parts invoice numbers in Tekion?: 20000\n[Vehicle Inventory Pack Notes > —] Additional Vehicle Inventory Posting Packs Details Not Addressed Above : GL ACCOUNT #252 HYUNDAI CERTIFIED\n[Cost Adjustments #2 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments > —] How many Cost Adjustments do you have?: 3\n[Cost Adjustments #4 > —] Cost Adjustment Gross: Back Gross\n[Cost Adjustments #3 > —] Name of Cost Adjustment: Downpayment cancellation of finance products applied to downpayment\n[Cost Adjustments #3 > —] Cost Adjustment Gross: Back Gross\n[Cost Adjustments #3 > —] Cost Adjustment Account #: 618A or 638 manually adjusted for product cancellation receivable used as down payment"
   },
-  "savedAt": "2026-09-16T18:59:57.705Z"
+  "savedAt": "2026-09-18T14:48:38.398Z"
 }
