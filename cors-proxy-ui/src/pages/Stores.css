@@ -1,0 +1,1925 @@
+/* ==========================================================================
+   Stores Dashboard Styles
+   ========================================================================== */
+
+.stores-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* --- Topbar --- */
+.stores-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #11151d;
+}
+
+.stores-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stores-topbar-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.stores-export-group {
+  display: inline-flex;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.stores-refresh-btn {
+  font-weight: 800 !important;
+}
+
+/* --- Alerts & Toasts --- */
+.stores-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 10000;
+  background: #1e293b;
+  color: #f8fafc;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.stores-token-expired-alert {
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* --- Main Layout --- */
+.stores-layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.stores-layout.filters-collapsed {
+  grid-template-columns: 1fr;
+}
+
+/* --- Sidebar & Filter Controls --- */
+.stores-sidebar {
+  min-width: 0;
+}
+
+.stores-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.stores-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stores-panel-header .stores-panel-title {
+  margin: 0;
+}
+
+.stores-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.stores-date-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+/* --- Table Card & Header Actions --- */
+.stores-content {
+  min-width: 0;
+}
+
+.stores-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stores-table-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stores-table-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.stores-table-count {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.stores-table-count strong {
+  color: #f8fafc;
+}
+
+.stores-quick-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 4px;
+  flex-wrap: wrap;
+}
+
+.stores-quick-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.15s ease;
+}
+
+.stores-quick-icon img {
+  width: 17px;
+  height: 17px;
+  object-fit: contain;
+  display: block;
+}
+
+.stores-quick-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 9px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.stores-quick-btn-prod {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.25);
+}
+
+.stores-quick-btn-preprod {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.stores-quick-btn-map {
+  color: #c084fc;
+  background: rgba(192, 132, 252, 0.08);
+  border: 1px solid rgba(192, 132, 252, 0.25);
+}
+
+.stores-quick-btn-timesheet {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+}
+
+/* --- Table Grid & Cells --- */
+.stores-table-wrap-tall {
+  max-height: calc(100vh - 180px);
+  overflow: auto;
+}
+
+.stores-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.stores-dealer-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stores-slack-trigger-btn {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.stores-launch-date-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stores-pod-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.stores-status-cell-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stores-tracking-timestamp {
+  font-size: 10px;
+  color: #38bdf8;
+  font-family: monospace;
+  padding-left: 2px;
+  white-space: nowrap;
+}
+
+/* --- Status Dropdown Select --- */
+.status-select-wrap {
+  position: relative;
+  display: inline-block;
+  width: 110px;
+  min-width: 110px;
+}
+
+.status-select {
+  width: 100%;
+  min-width: 110px;
+  border-radius: 8px;
+  padding: 5px 22px 5px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  appearance: none;
+}
+
+.status-select-todo {
+  background: rgba(148, 163, 184, 0.14);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+}
+
+.status-select-wip {
+  background: rgba(245, 158, 11, 0.16);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.30);
+}
+
+.status-select-completed {
+  background: rgba(34, 197, 94, 0.16);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.30);
+}
+
+.status-select-arrow {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 8px;
+}
+
+/* --- Chips and Badges --- */
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.status-chip-symbol {
+  font-size: 9px;
+}
+
+.status-chip-group {
+  display: inline-flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.setup-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 3px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.setup-chip-active {
+  background: rgba(56, 189, 248, 0.14);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+}
+
+.setup-chip-inactive {
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.setup-chip-label {
+  opacity: 0.85;
+}
+
+.setup-chip-val {
+  font-size: 9px;
+}
+
+.setup-cell-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.14);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.30);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.setup-cell-unfetched {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(148, 163, 184, 0.10);
+  color: #64748b;
+  border: 1px solid rgba(148, 163, 184, 0.20);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* --- Dealer Meta & Slack Modal --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 9999;
+}
+
+.dealer-modal-box {
+  width: 100%;
+  maxWidth: 1040px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: #151922;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.dealer-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #11151d;
+}
+
+.dealer-modal-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.dealer-modal-subtitle {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.dealer-modal-subtitle strong {
+  color: #f8fafc;
+}
+
+.dealer-modal-body {
+  overflow-y: auto;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.dealer-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #0d1117;
+}
+
+.dealer-meta-label {
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dealer-meta-value {
+  color: #f1f5f9;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.tracking-link-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.dealer-setup-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dealer-setup-summary {
+  font-size: 11px;
+  color: #94a3b8;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.dealer-setup-summary strong {
+  color: #38bdf8;
+}
+
+/* --- Slack Workflow Section --- */
+.slack-workspace-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.slack-recipients-card,
+.slack-draft-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #11151d;
+}
+
+.slack-draft-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.slack-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slack-card-title {
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.slack-session-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.slack-session-active {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+}
+
+.slack-session-inactive {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+}
+
+.slack-recipient-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.slack-recipient-user {
+  color: #94a3b8;
+}
+
+.slack-recipient-meta {
+  color: #64748b;
+  font-size: 11px;
+}
+
+.slack-dispatches-wrap {
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  color: #64748b;
+}
+
+.slack-dispatch-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+.slack-toggle-group {
+  display: inline-flex;
+  background: #0b0f15;
+  padding: 2px;
+  border-radius: 6px;
+}
+
+.slack-editor-textarea {
+  width: 100%;
+  min-height: 220px;
+  resize: vertical;
+}
+
+.slack-editor-preview {
+  min-height: 220px;
+  white-space: pre-wrap;
+  color: #e2e8f0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.slack-submit-wrap {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ==========================================================================
+   Dealer Update Modal Refinements
+   ========================================================================== */
+
+.dealer-modal-box {
+  width: 100%;
+  max-width: 1080px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: #141822;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+
+.dealer-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 22px;
+  background: #0f131a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dealer-header-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dealer-modal-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.dealer-modal-tag {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.28);
+}
+
+.dealer-modal-subtitle {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 4px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.dealer-modal-body {
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Quick Info Strip */
+.dealer-info-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: #0b0e14;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dealer-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dealer-info-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+}
+
+.dealer-info-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+/* Segmented Tabs Navigation */
+.dealer-nav-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  background: #0b0e14;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: fit-content;
+}
+
+.dealer-nav-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.dealer-nav-tab-btn:hover {
+  color: #f8fafc;
+}
+
+.dealer-nav-tab-btn.active {
+  background: rgba(56, 189, 248, 0.16);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+/* ==========================================================================
+   Smart Update Modal Refinements (HUD, Slack & Tasks)
+   ========================================================================== */
+
+/* --- Modal Overlay & Dialog --- */
+.update-modal-dialog {
+  width: 100%;
+  max-width: 1080px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: #0d111a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.update-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #111624;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.update-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.update-header-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #f8fafc;
+  letter-spacing: -0.2px;
+}
+
+.update-header-badges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.hud-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hud-badge.accent {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+/* --- Consolidated Store HUD (Single Compact Row) --- */
+.update-store-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: #090c12;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hud-telemetry-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 11px;
+}
+
+.hud-telemetry-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-label {
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 9.5px;
+  letter-spacing: 0.5px;
+}
+
+.hud-value {
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
+.hud-setup-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* --- Segmented Nav Controller --- */
+.update-nav-segmented {
+  display: inline-flex;
+  padding: 3px;
+  background: #111622;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9px;
+  margin: 14px 20px 0 20px;
+  width: fit-content;
+}
+
+.update-nav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 18px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.update-nav-tab:hover {
+  color: #f8fafc;
+}
+
+.update-nav-tab.active {
+  background: #1e293b;
+  color: #38bdf8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.update-tab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #64748b;
+}
+
+.update-nav-tab.active .update-tab-dot {
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+/* --- Task Module Sidebar & Task List --- */
+.tasks-shell-grid {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px 20px 20px 20px;
+  min-height: 480px;
+}
+
+.tasks-module-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  background: #111622;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.module-nav-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.module-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #f8fafc;
+}
+
+.module-nav-btn.active {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.module-badge-count {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #94a3b8;
+}
+
+.module-nav-btn.active .module-badge-count {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+}
+
+/* --- Active Task Hero Card --- */
+.task-hero-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #111622;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.task-hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.task-hero-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1.35;
+}
+
+.task-id-tag {
+  font-family: monospace;
+  font-size: 11px;
+  color: #64748b;
+  margin-right: 6px;
+}
+
+.task-lifecycle-btn {
+  font-weight: 800 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px !important;
+  font-size: 12px !important;
+}
+
+/* --- Composer Box (Mentions, Templates, Attachments) --- */
+.task-composer-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: #111622;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.composer-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.composer-template-pills {
+  display: flex;
+  gap: 6px;
+}
+
+.template-pill-btn {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #090c12;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.template-pill-btn:hover {
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.template-pill-btn.active {
+  background: rgba(56, 189, 248, 0.14);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.composer-textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.5;
+  background: #090c12;
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.composer-textarea:focus {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+}
+
+.composer-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.attach-action-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.attached-filename-chip {
+  font-size: 11px;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-weight: 600;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================================================
+   Stores Dashboard Styles
+   ========================================================================== */
+
+.stores-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* --- Topbar --- */
+.stores-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #11151d;
+}
+
+.stores-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stores-topbar-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.stores-export-group {
+  display: inline-flex;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.stores-refresh-btn {
+  font-weight: 800 !important;
+}
+
+/* --- Alerts & Toasts --- */
+.stores-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 10000;
+  background: #1e293b;
+  color: #f8fafc;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.stores-token-expired-alert {
+  margin-bottom: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* --- Main Layout --- */
+.stores-layout {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.stores-layout.filters-collapsed {
+  grid-template-columns: 1fr;
+}
+
+/* --- Sidebar & Filter Controls --- */
+.stores-sidebar {
+  min-width: 0;
+}
+
+.stores-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.stores-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stores-panel-header .stores-panel-title {
+  margin: 0;
+}
+
+.stores-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.stores-date-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+/* --- Table Card & Header Actions --- */
+.stores-content {
+  min-width: 0;
+}
+
+.stores-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stores-table-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stores-table-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.stores-table-count {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.stores-table-count strong {
+  color: #f8fafc;
+}
+
+.stores-quick-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 4px;
+  flex-wrap: wrap;
+}
+
+.stores-quick-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.15s ease;
+}
+
+.stores-quick-icon img {
+  width: 17px;
+  height: 17px;
+  object-fit: contain;
+  display: block;
+}
+
+.stores-quick-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 9px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.stores-quick-btn-prod {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.25);
+}
+
+.stores-quick-btn-preprod {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.stores-quick-btn-map {
+  color: #c084fc;
+  background: rgba(192, 132, 252, 0.08);
+  border: 1px solid rgba(192, 132, 252, 0.25);
+}
+
+.stores-quick-btn-timesheet {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.08);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+}
+
+/* --- Table Grid & Cells --- */
+.stores-table-wrap-tall {
+  max-height: calc(100vh - 180px);
+  overflow: auto;
+}
+
+.stores-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.stores-dealer-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stores-slack-trigger-btn {
+  background: rgba(59, 130, 246, 0.12);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.stores-launch-date-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stores-pod-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.stores-status-cell-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stores-tracking-timestamp {
+  font-size: 10px;
+  color: #38bdf8;
+  font-family: monospace;
+  padding-left: 2px;
+  white-space: nowrap;
+}
+
+/* --- Status Dropdown Select --- */
+.status-select-wrap {
+  position: relative;
+  display: inline-block;
+  width: 110px;
+  min-width: 110px;
+}
+
+.status-select {
+  width: 100%;
+  min-width: 110px;
+  border-radius: 8px;
+  padding: 5px 22px 5px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  appearance: none;
+}
+
+.status-select-arrow {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  font-size: 8px;
+}
+
+/* --- Chips and Badges --- */
+.status-chip-group {
+  display: inline-flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.setup-cell-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.14);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.30);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.setup-cell-unfetched {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(148, 163, 184, 0.10);
+  color: #64748b;
+  border: 1px solid rgba(148, 163, 184, 0.20);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* --- Modal Overlay & Dialog --- */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 9999;
+}
+
+.update-modal-dialog {
+  width: 100%;
+  max-width: 1080px;
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  background: #0d111a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.update-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: #111624;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.update-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.update-header-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #f8fafc;
+  letter-spacing: -0.2px;
+}
+
+.update-header-badges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.hud-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hud-badge.accent {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+/* --- Consolidated Store HUD --- */
+.update-store-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background: #090c12;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hud-telemetry-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 11px;
+}
+
+.hud-telemetry-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-label {
+  color: #64748b;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 9.5px;
+  letter-spacing: 0.5px;
+}
+
+.hud-value {
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
+.hud-setup-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dealer-setup-summary {
+  font-size: 11px;
+  color: #94a3b8;
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.dealer-setup-summary strong {
+  color: #38bdf8;
+}
+
+/* --- Segmented Nav Controller --- */
+.update-nav-segmented {
+  display: inline-flex;
+  padding: 3px;
+  background: #111622;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9px;
+  margin: 14px 20px 0 20px;
+  width: fit-content;
+}
+
+.update-nav-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 18px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.update-nav-tab:hover {
+  color: #f8fafc;
+}
+
+.update-nav-tab.active {
+  background: #1e293b;
+  color: #38bdf8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.update-tab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #64748b;
+}
+
+.update-nav-tab.active .update-tab-dot {
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+/* --- Task Module Sidebar & Workspace --- */
+.tasks-shell-grid {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 16px;
+  padding: 16px 20px 20px 20px;
+  min-height: 480px;
+}
+
+.tasks-module-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px;
+  background: #111622;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.module-nav-btn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.module-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #f8fafc;
+}
+
+.module-nav-btn.active {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.module-badge-count {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #94a3b8;
+}
+
+.module-nav-btn.active .module-badge-count {
+  background: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+}
+
+/* --- Active Task Hero Card --- */
+.task-hero-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: #111622;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.task-hero-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.task-hero-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1.35;
+}
+
+.task-id-tag {
+  font-family: monospace;
+  font-size: 11px;
+  color: #64748b;
+  margin-right: 6px;
+}
+
+.task-lifecycle-btn {
+  font-weight: 800 !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px !important;
+  font-size: 12px !important;
+}
+
+/* --- Composer Card --- */
+.task-composer-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: #111622;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.composer-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.composer-template-pills {
+  display: flex;
+  gap: 6px;
+}
+
+.template-pill-btn {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #090c12;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.template-pill-btn:hover {
+  color: #f8fafc;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.template-pill-btn.active {
+  background: rgba(56, 189, 248, 0.14);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.composer-textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 12px;
+  line-height: 1.5;
+  background: #090c12;
+  color: #f8fafc;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.composer-textarea:focus {
+  outline: none;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
+}
+
+.composer-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.attach-action-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.attached-filename-chip {
+  font-size: 11px;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-weight: 600;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tracking-link-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+/* --- Slack Workflow Section --- */
+.slack-workspace-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.slack-recipients-card,
+.slack-draft-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #11151d;
+}
+
+.slack-draft-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.slack-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.slack-card-title {
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.slack-session-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.slack-session-active {
+  background: rgba(34, 197, 94, 0.12);
+  color: #4ade80;
+}
+
+.slack-session-inactive {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+}
+
+.slack-recipient-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.slack-dispatches-wrap {
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 11px;
+  color: #64748b;
+}
+
+.slack-dispatch-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+.slack-toggle-group {
+  display: inline-flex;
+  background: #0b0f15;
+  padding: 2px;
+  border-radius: 6px;
+}
+
+.slack-editor-preview {
+  min-height: 220px;
+  white-space: pre-wrap;
+  color: #e2e8f0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.slack-submit-wrap {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}

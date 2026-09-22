@@ -37,6 +37,7 @@ import {
   persistBlueprintDecodeResult,
   ALL_BLUEPRINT_MODULES,
 } from "../services/blueprintDecodeBot";
+import { syncAccountingBootstrapForDealer } from "../services/bootstrapSyncBot";
 
 const MAX_PROFILE_AGE_MS = 48 * 60 * 60 * 1000;
 const TOC_API_ENDPOINT = "https://us-west1-tapapi.tekioncloud.com/tapapi/v2/usermanagement/getuserprofile";
@@ -1063,6 +1064,95 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
     return () => unsubscribe();
   }, [autoDecodeBlueprintsForProfile]);
 
+  /**
+   * Mirrors Blueprint Decode Bot behavior for Accounting Bootstrap.
+   *
+   * The selected Dealer Profile is the source of truth:
+   * - profile.dealerId identifies the Bootstrap tenant/dealer.
+   * - profile.bootstrapHeaders authenticate the request.
+   *
+   * The result is saved into Bootstrap IndexedDB and then posted to
+   * the existing backend validation snapshot endpoint.
+   */
+  const autoSyncAccountingBootstrapForProfile = useCallback(
+    async (profile: ArcTekionProfile) => {
+      const dealerId = profile.dealerId?.trim();
+
+      if (!dealerId) {
+        return;
+      }
+
+      const profileHeaderPairs = toKeyValuePairs(profile.bootstrapHeaders);
+
+      const headers = profileHeaderPairs.reduce<Record<string, string>>(
+        (result, pair) => {
+          const key = pair.key.trim();
+          const value = pair.value.trim();
+
+          if (pair.enabled && key && value) {
+            result[key] = value;
+          }
+
+          return result;
+        },
+        {}
+      );
+
+      if (Object.keys(headers).length === 0) {
+        logger.warn(
+          "Bootstrap auto-sync skipped because selected profile has no headers",
+          {
+            dealerId,
+            profileId: profile.id,
+          }
+        );
+        return;
+      }
+
+      try {
+        const result = await syncAccountingBootstrapForDealer({
+          dealerId,
+          dealerName: profile.tenantName || dealerId,
+          headers,
+        });
+
+        const summary =
+          `Bootstrap synced for Dealer ${dealerId}: ` +
+          `${result.bootstrap.glAccounts.length} GL account(s), ` +
+          `${result.bootstrap.costCenterSetup.length} cost-center field(s), ` +
+          `${result.bootstrap.journals.length} journal(s).`;
+
+        if (result.serverWarning) {
+          logger.warn("Bootstrap server snapshot warning", {
+            dealerId,
+            warning: result.serverWarning,
+          });
+
+          showMessage(
+            "warning",
+            `${summary} Local IndexedDB save succeeded. Server warning: ${result.serverWarning}`
+          );
+          return;
+        }
+
+        showMessage("success", summary);
+      } catch (error: unknown) {
+        logger.warn("Bootstrap auto-sync failed", {
+          dealerId,
+          error,
+        });
+
+        showMessage(
+          "warning",
+          `Bootstrap auto-sync failed for Dealer ${dealerId}: ${
+            error instanceof Error ? error.message : "unknown error"
+          }`
+        );
+      }
+    },
+    [showMessage]
+  );
+
   const handleSelectDealerProfile = useCallback(
     (profile: ArcTekionProfile) => {
       const pairs = toKeyValuePairs(profile.bootstrapHeaders);
@@ -1071,9 +1161,17 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
       setGlobalHeaders(pairs);
       saveGlobalHeaders(pairs);
       showMessage("success", `Applied ${pairs.length} headers from Dealer ${profile.dealerId}`);
+
+      // Run both automations using the currently selected dealer profile.
+      // Neither blocks the UI or prevents the other workflow from finishing.
       void autoDecodeBlueprintsForProfile(profile);
+      void autoSyncAccountingBootstrapForProfile(profile);
     },
-    [showMessage, autoDecodeBlueprintsForProfile]
+    [
+      showMessage,
+      autoDecodeBlueprintsForProfile,
+      autoSyncAccountingBootstrapForProfile,
+    ]
   );
 
   const handleSelectStoresProfileCapture = useCallback(

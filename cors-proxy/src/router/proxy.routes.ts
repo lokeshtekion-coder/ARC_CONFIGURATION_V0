@@ -15,19 +15,28 @@ router.get("/health", (_req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
   try {
-    console.log("[proxy] POST /api/proxy called");
-    console.log("[proxy] Incoming body:", JSON.stringify(req.body, null, 2));
-
     const {
       url,
       method = "GET",
       headers = {},
       body,
+      multipartBase64,
+      timeout = 60000,
     }: {
       url?: string;
       method?: string;
       headers?: Record<string, string>;
       body?: unknown;
+      multipartBase64?: {
+        fields?: Record<string, string>;
+        file?: {
+          fieldName?: string;
+          name: string;
+          type?: string;
+          base64: string;
+        };
+      };
+      timeout?: number;
     } = req.body ?? {};
 
     if (!url || typeof url !== "string") {
@@ -38,11 +47,6 @@ router.post("/", async (req: Request, res: Response) => {
     }
 
     const normalizedMethod = String(method || "GET").toUpperCase() as Method;
-    console.log("[proxy] Forwarding request:", {
-      url,
-      method: normalizedMethod,
-      headerKeys: Object.keys(headers || {}),
-    });
 
     const forwardedHeaders: AxiosRequestHeaders = Object.entries(headers || {}).reduce(
       (acc, [key, value]) => {
@@ -57,13 +61,60 @@ router.post("/", async (req: Request, res: Response) => {
     delete forwardedHeaders["host"];
     delete forwardedHeaders["content-length"];
 
+    let outgoingData: any = normalizedMethod === "GET" ? undefined : body;
+
+    // Convert multipartBase64 into native FormData binary stream
+    if (multipartBase64?.file?.base64) {
+      const { file, fields } = multipartBase64;
+      const buffer = Buffer.from(file.base64, "base64");
+
+      const FormDataClass = (globalThis as any).FormData || FormData;
+      const BlobClass = (globalThis as any).Blob || Blob;
+      const formData = new FormDataClass();
+
+      // Append extra text fields (such as isDeletable=true)
+      if (fields && typeof fields === "object") {
+        for (const [key, val] of Object.entries(fields)) {
+          formData.append(key, String(val));
+        }
+      }
+
+      // Append binary file blob with filename
+      const fileBlob = new BlobClass([buffer], {
+        type: file.type || "application/octet-stream",
+      });
+      formData.append(file.fieldName || "file", fileBlob, file.name);
+
+      outgoingData = formData;
+
+      // Remove manual content-type so Axios and FormData compute multipart boundary
+      delete forwardedHeaders["content-type"];
+      delete forwardedHeaders["Content-Type"];
+
+      console.log("[proxy] 📎 Reconstructed multipart FormData:", {
+        fileName: file.name,
+        fileSizeBytes: buffer.length,
+        fieldName: file.fieldName || "file",
+      });
+    }
+
+    console.log("[proxy] Forwarding request:", {
+      url,
+      method: normalizedMethod,
+      headerKeys: Object.keys(forwardedHeaders),
+      isMultipart: Boolean(multipartBase64?.file),
+    });
+
     const response = await axios({
       url,
       method: normalizedMethod,
       headers: forwardedHeaders,
-      data: normalizedMethod === "GET" ? undefined : body,
+      data: outgoingData,
+      timeout: typeof timeout === "number" ? timeout : 60000,
       validateStatus: () => true,
       maxRedirects: 5,
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
     });
 
     console.log("[proxy] Upstream response:", {

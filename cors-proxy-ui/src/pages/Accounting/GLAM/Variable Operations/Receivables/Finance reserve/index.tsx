@@ -5,9 +5,9 @@ const FinanceReserveView: React.FC = () => {
   return (
     <div style={{ display: "grid", gap: 16 }}>
       <GlamSectionHeader
-        title="Finance reserve"
-        description="Placeholder for Finance reserve configuration"
-        breadcrumb="Accounting / Variable Operations / Receivables / Finance reserve"
+        title="Finance Reserve"
+        description="Placeholder for Finance Reserve configuration"
+        breadcrumb=""
       />
 
       <div
@@ -20,7 +20,8 @@ const FinanceReserveView: React.FC = () => {
           fontSize: 14,
         }}
       >
-        Finance reserve configuration will be added in a separate implementation.
+        Finance Reserve configuration will be added in a separate
+        implementation.
       </div>
     </div>
   );

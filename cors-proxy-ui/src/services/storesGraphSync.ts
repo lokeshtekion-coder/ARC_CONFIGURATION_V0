@@ -1,6 +1,7 @@
 import type { StoreRecord, CustomPhaseStatus } from "./storesDb";
 import { recordStatusTransition } from "./storesDb";
 import { loadTekionApiSettings } from "./tekionApiSettings";
+import { loadLatestExtensionCapture } from "./extensionBridge";
 import {
   STORE_EXPORT_HEADERS,
   groupStoresByMonth,
@@ -20,6 +21,8 @@ export const SHAREPOINT_WORKBOOK_PATH = "T-90 Arc Dealerss.xlsx";
 export const SHAREPOINT_DOC_URL =
   "https://tekion.sharepoint.com/:x:/r/sites/configteam/_layouts/15/Doc.aspx?sourcedoc=%7B5888FB41-2664-43BE-A422-A79E7D2E7FB6%7D&file=T-90%20Arc%20Dealerss.xlsx&action=default&mobileredirect=true";
 
+export const PROD_DEALER_SHEET_NAME = "Prod Dealer";
+
 const CHUNK_SIZE = 500;
 const FORMAT_CONCURRENCY = 3;
 
@@ -36,6 +39,8 @@ const STATUS_HEADERS = [
 
 const STATUS_START_COLUMN_INDEX = STORE_EXPORT_HEADERS.indexOf("Blueprint Parts");
 const STATUS_END_COLUMN_INDEX = STORE_EXPORT_HEADERS.indexOf("SignOff Accounting");
+
+let isSyncingProdDealers = false;
 
 interface GraphSessionInfo {
   id: string;
@@ -85,17 +90,67 @@ function workbookBaseUrl(): string {
   return `${GRAPH_BASE}/drives/${SHAREPOINT_DRIVE_ID}/items/${SHAREPOINT_ITEM_ID}/workbook`;
 }
 
+export function isTokenExpired(token?: string): boolean {
+  if (!token) return true;
+  const parts = token.split(".");
+  if (parts.length !== 3) return false;
+  try {
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64 + "=".repeat((4 - (base64.length % 4 || 4)) % 4);
+    const payload = JSON.parse(atob(padded)) as { exp?: number };
+    if (typeof payload.exp === "number") {
+      return Date.now() >= (payload.exp - 60) * 1000;
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
+export function getEffectiveGraphToken(): string {
+  const settings = loadTekionApiSettings();
+  const directToken = settings.graphApiToken?.trim();
+  if (directToken && !isTokenExpired(directToken)) {
+    return directToken;
+  }
+
+  try {
+    const capture = loadLatestExtensionCapture();
+    const capturedToken = (capture as { graphApiToken?: string })?.graphApiToken?.trim();
+    if (capturedToken && !isTokenExpired(capturedToken)) {
+      return capturedToken;
+    }
+  } catch {}
+
+  try {
+    const localToken =
+      localStorage.getItem("graph_access_token")?.trim() ||
+      localStorage.getItem("sharepoint_token")?.trim();
+    if (localToken && !isTokenExpired(localToken)) {
+      return localToken;
+    }
+  } catch {}
+
+  return directToken || "";
+}
+
 function validateGraphTokenScope(token: string): void {
   const parts = token.split(".");
   if (parts.length !== 3) return;
 
-  let payload: { scp?: string; appid?: string; app_displayname?: string };
+  let payload: { scp?: string; appid?: string; app_displayname?: string; exp?: number };
   try {
     const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
     const padded = base64 + "=".repeat((4 - (base64.length % 4 || 4)) % 4);
     payload = JSON.parse(atob(padded)) as typeof payload;
   } catch {
     return;
+  }
+
+  if (typeof payload.exp === "number" && Date.now() >= payload.exp * 1000) {
+    throw new Error(
+      "Current Microsoft Graph Token has expired. Please refresh your SharePoint T-90 browser tab to capture a fresh token."
+    );
   }
 
   if (payload.appid === "89bee1f7-5e6e-4d8a-9f3d-ecd601259da7") {
@@ -107,7 +162,7 @@ function validateGraphTokenScope(token: string): void {
   const scp = payload.scp || "";
   if (!scp.includes("Files.ReadWrite.All") && !scp.includes("Sites.ReadWrite.All")) {
     throw new Error(
-      `Token lacks required SharePoint permissions (has: "${scp || "none"}"). Requires Files.ReadWrite.All or Sites.ReadWrite.All - re-open the SharePoint T-90 page to refresh the captured token, or confirm tenant admin consent for the SPFx client (${payload.appid ?? "unknown app"}).`
+      `Token lacks required SharePoint permissions (has: "${scp || "none"}"). Requires Files.ReadWrite.All or Sites.ReadWrite.All - re-open the SharePoint T-90 page to refresh the captured token.`
     );
   }
 }
@@ -555,16 +610,31 @@ function normalizeExcelStatus(val?: string): CustomPhaseStatus | null {
   return null;
 }
 
+/**
+ * Priority Resolver:
+ * - Local 'Completed' CANNOT be demoted by Excel background sync.
+ * - Remote 'Completed' promotes local status to Completed.
+ * - Otherwise highest progress status (WIP > TO DO) wins.
+ */
 function resolveStatusPriority(
   localStatus?: string,
   remoteStatus?: string,
-  isAdmin: boolean = false
-): "TO DO" | "WIP" | "Completed" {
+  _isAdmin: boolean = false
+): CustomPhaseStatus {
   const r = normalizeExcelStatus(remoteStatus);
   const l = normalizeExcelStatus(localStatus) || "TO DO";
 
+  // Safeguard: Local Completed is authoritative against background sync
+  if (l === "Completed") {
+    return "Completed";
+  }
+
+  // Remote Completed upgrades local
+  if (r === "Completed") {
+    return "Completed";
+  }
+
   if (r) {
-    if (isAdmin) return r;
     const priorityScore: Record<string, number> = { Completed: 3, WIP: 2, "TO DO": 1 };
     return (priorityScore[r] ?? 1) >= (priorityScore[l] ?? 1) ? r : l;
   }
@@ -671,9 +741,8 @@ export async function patchSingleStoreStatusInGraph(
   field: "fixed_ops_status" | "variable_ops_status" | "testing_status",
   value: CustomPhaseStatus
 ): Promise<boolean> {
-  const settings = loadTekionApiSettings();
-  const token = settings.graphApiToken?.trim();
-  if (!token) return false;
+  const token = getEffectiveGraphToken();
+  if (!token || isTokenExpired(token)) return false;
 
   const headerTitleMap = {
     fixed_ops_status: { status: "Fixed Ops", tracking: "Fixed Ops Tracking" },
@@ -713,7 +782,6 @@ export async function patchSingleStoreStatusInGraph(
           const cellRow = i + 1;
           const cellAddress = `${colLetter}${cellRow}`;
 
-          // 1. Update status cell
           await graphRequest(
             `/worksheets/${encodeURIComponent(sheetName)}/range(address='${cellAddress}')`,
             token,
@@ -723,7 +791,6 @@ export async function patchSingleStoreStatusInGraph(
             }
           );
 
-          // 2. Update cell styling
           const palette = getStatusPalette(value);
           await patchRangeFillAndFont(
             token,
@@ -734,7 +801,6 @@ export async function patchSingleStoreStatusInGraph(
             false
           );
 
-          // 3. Update tracking cell
           if (trackingColIdx !== -1) {
             const trackingColLetter = toExcelColumnName(trackingColIdx);
             const trackingCellAddress = `${trackingColLetter}${cellRow}`;
@@ -761,7 +827,7 @@ export async function patchSingleStoreStatusInGraph(
     }
     return false;
   } catch (err) {
-    console.error("[storesGraphSync] Single status patch failed:", err);
+    console.debug("[storesGraphSync] Single status patch skipped or token expired:", err);
     return false;
   }
 }
@@ -777,9 +843,8 @@ export async function pullStatusUpdatesFromGraph(
     return { updatedStores: currentRecords, hasChanges: false };
   }
 
-  const settings = loadTekionApiSettings();
-  const token = settings.graphApiToken?.trim();
-  if (!token) {
+  const token = getEffectiveGraphToken();
+  if (!token || isTokenExpired(token)) {
     return { updatedStores: currentRecords, hasChanges: false };
   }
 
@@ -818,7 +883,6 @@ export async function pullStatusUpdatesFromGraph(
         hasChanges = true;
 
         if (fixedChanged && nextFixed) {
-          // If Excel computed a formula time, use it; otherwise fallback to now
           const excelTime = sanitizeExcelTimestamp(remote.fixedOpsTracking);
           const timeToUse = excelTime !== "—" ? excelTime : undefined;
           recordStatusTransition(local.tekion_id, "fixed_ops_status", nextFixed, timeToUse);
@@ -847,7 +911,7 @@ export async function pullStatusUpdatesFromGraph(
 
     return { updatedStores, hasChanges };
   } catch (err: unknown) {
-    console.debug("[storesGraphSync] Silent poll skipped:", err);
+    console.debug("[storesGraphSync] Silent poll skipped or token expired:", err);
     return { updatedStores: currentRecords, hasChanges: false };
   }
 }
@@ -862,8 +926,7 @@ export async function syncStoresToGraphWorkbook(
     throw new Error("No store records available to sync");
   }
 
-  const settings = loadTekionApiSettings();
-  const token = settings.graphApiToken?.trim();
+  const token = getEffectiveGraphToken();
 
   if (!token) {
     throw new Error(
@@ -914,7 +977,6 @@ export async function syncStoresToGraphWorkbook(
         sessionId
       );
 
-      // Write Header
       await patchRangeValues(
         token,
         group.sheetName,
@@ -923,7 +985,6 @@ export async function syncStoresToGraphWorkbook(
         sessionId
       );
 
-      // Inject self-locking Excel tracking formulas if empty
       const dataRowsWithFormulas = rawRows.map((row, index) => {
         const rowNum = index + 2;
         const rowCopy = [...row];
@@ -986,5 +1047,113 @@ export async function syncStoresToGraphWorkbook(
     };
   } finally {
     await closeSession(token, sessionId);
+  }
+}
+
+function parseLaunchDateForT(value: string): Date | null {
+  if (!value) return null;
+  if (/^\d+$/.test(value)) {
+    const num = Number(value);
+    const ms = value.length <= 10 ? num * 1000 : num;
+    const d = new Date(ms);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function isStoreLiveOrToday(launchDateStr: string): boolean {
+  const d = parseLaunchDateForT(launchDateStr);
+  if (!d) return false;
+  const today = new Date();
+  const startToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const launchDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = Math.round((launchDay.getTime() - startToday.getTime()) / 86400000);
+  return diffDays <= 0;
+}
+
+export async function syncProdDealersToGraph(records: StoreRecord[]): Promise<void> {
+  if (isSyncingProdDealers || records.length === 0) return;
+
+  const prodStores = records.filter((r) => isStoreLiveOrToday(r.launch_date));
+  if (prodStores.length === 0) return;
+
+  const token = getEffectiveGraphToken();
+  if (!token || isTokenExpired(token)) return;
+
+  isSyncingProdDealers = true;
+
+  try {
+    const sessionId = await createSession(token);
+    try {
+      const existingSheets = await listWorksheetNames(token, sessionId);
+      const existingSheetSet = new Set(existingSheets);
+      await ensureWorksheet(token, PROD_DEALER_SHEET_NAME, existingSheetSet, sessionId);
+
+      const remoteDataMap = await fetchExistingWorkbookData(token, [PROD_DEALER_SHEET_NAME], sessionId);
+      const mergedProdStores = mergeLocalAndRemoteStores(prodStores, remoteDataMap);
+
+      const groups = groupStoresByMonth(mergedProdStores);
+      const prodRows: StoreExcelRow[] = groups.flatMap((g) => g.rows);
+      if (prodRows.length === 0) return;
+
+      const rawRows = rowsToMatrix(prodRows);
+      const existingRowCount = await getUsedRangeRowCount(token, PROD_DEALER_SHEET_NAME, sessionId);
+      const clearRows = Math.max(existingRowCount, rawRows.length + 1, 1);
+
+      await clearWorksheetRect(token, PROD_DEALER_SHEET_NAME, clearRows, STORE_EXPORT_HEADERS.length, sessionId);
+      await patchRangeValues(token, PROD_DEALER_SHEET_NAME, 1, [Array.from(STORE_EXPORT_HEADERS)], sessionId);
+
+      const fixedOpsIdx = STORE_EXPORT_HEADERS.indexOf("Fixed Ops");
+      const fixedOpsTrackIdx = STORE_EXPORT_HEADERS.indexOf("Fixed Ops Tracking");
+      const varOpsIdx = STORE_EXPORT_HEADERS.indexOf("Variable Ops");
+      const varOpsTrackIdx = STORE_EXPORT_HEADERS.indexOf("Variable Ops Tracking");
+
+      const fixedColLetter = toExcelColumnName(fixedOpsIdx);
+      const fixedTrackColLetter = toExcelColumnName(fixedOpsTrackIdx);
+      const varColLetter = toExcelColumnName(varOpsIdx);
+      const varTrackColLetter = toExcelColumnName(varOpsTrackIdx);
+
+      const dataRowsWithFormulas = rawRows.map((row, index) => {
+        const rowNum = index + 2;
+        const rowCopy = [...row];
+
+        if (!rowCopy[fixedOpsTrackIdx] || rowCopy[fixedOpsTrackIdx] === "—") {
+          rowCopy[fixedOpsTrackIdx] = buildTrackingFormula(fixedColLetter, fixedTrackColLetter, rowNum);
+        }
+        if (!rowCopy[varOpsTrackIdx] || rowCopy[varOpsTrackIdx] === "—") {
+          rowCopy[varOpsTrackIdx] = buildTrackingFormula(varColLetter, varTrackColLetter, rowNum);
+        }
+
+        return rowCopy;
+      });
+
+      let currentRow = 2;
+      let remaining = dataRowsWithFormulas.slice();
+
+      while (remaining.length > 0) {
+        const chunk = remaining.slice(0, CHUNK_SIZE);
+        const address = buildRangeAddress(currentRow, chunk.length, STORE_EXPORT_HEADERS.length);
+
+        await graphRequest(
+          `/worksheets/${encodeURIComponent(PROD_DEALER_SHEET_NAME)}/range(address='${address}')`,
+          token,
+          { method: "PATCH", body: JSON.stringify({ formulas: chunk }) },
+          sessionId
+        );
+
+        currentRow += chunk.length;
+        remaining = remaining.slice(CHUNK_SIZE);
+      }
+
+      await applyHeaderFormatting(token, PROD_DEALER_SHEET_NAME, STORE_EXPORT_HEADERS.length, sessionId);
+      await applyStatusFormatting(token, PROD_DEALER_SHEET_NAME, prodRows, clearRows, sessionId);
+    } finally {
+      await closeSession(token, sessionId);
+    }
+  } catch (err) {
+    console.debug("[storesGraphSync] Auto-sync to 'Prod Dealer' sheet skipped:", err);
+  } finally {
+    isSyncingProdDealers = false;
   }
 }

@@ -27,7 +27,20 @@ export interface StoreRecord {
   base_entity_instance_id?: string;
   implementation_tm_sync_status_tracking_id?: string;
   project_implementation_tm_sync_status_tracking_id?: string;
+
+  /** TAP project ID used by the Tasks panel APIs. */
+  onboarding_project_id?: string;
+
+  // PDL & Leadership Contacts (used by storeSlackHelper)
+  workorder_consolidated_pdl?: string;
+  dealer_pdl?: string;
+  arc_pdl?: string;
+  project_engagement_manager_1781169293313734451?: string;
+  fixed_ops_track_lead_1773369946675032982?: string;
   conversion_track_lead_1773369950325147526?: string;
+  accounting_track_lead_1773369945455468395?: string;
+
+  // Operational & Custom Statuses
   fixed_ops_status?: CustomPhaseStatus;
   variable_ops_status?: CustomPhaseStatus;
   testing_status?: CustomPhaseStatus;
@@ -65,82 +78,8 @@ function getDb(): Promise<IDBPDatabase<StoresDbSchema>> {
       },
     });
   }
+
   return dbPromise;
-}
-
-/**
- * Pushes the latest snapshot of stores to the Node.js backend disk.
- */
-async function pushBackupToBackend(stores: StoreRecord[]): Promise<void> {
-  if (!stores || stores.length === 0) return;
-  try {
-    const res = await fetch(BACKUP_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ stores }),
-    });
-    if (res.ok) {
-      const data = await res.json();
-      console.log(`[storesDb] ✅ Backup pushed to backend (port 4000): ${data.count} stores.`);
-    } else {
-      console.warn(`[storesDb] ❌ Backup push returned status: ${res.status}`);
-    }
-  } catch (err) {
-    console.warn("[storesDb] Backend backup push failed:", err);
-  }
-}
-
-/**
- * Recovers the latest stores snapshot from the Node.js backend disk.
- */
-async function fetchBackupFromBackend(): Promise<StoreRecord[]> {
-  try {
-    const res = await fetch(BACKUP_API_URL);
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data?.stores) ? data.stores : [];
-  } catch (err) {
-    console.warn("[storesDb] Failed to recover backup from backend:", err);
-    return [];
-  }
-}
-
-/**
- * Reads stores from IndexedDB. If IndexedDB is empty (e.g., cleared on system reboot),
- * it queries the backend disk backup, populates IndexedDB, and returns the records.
- */
-export async function getStores(): Promise<StoreRecord[]> {
-  const db = await getDb();
-  let localStores = await db.getAll("stores");
-
-  if (!localStores || localStores.length === 0) {
-    console.info("[storesDb] IndexedDB is empty. Attempting recovery from backend backup...");
-    const recovered = await fetchBackupFromBackend();
-    if (recovered.length > 0) {
-      const tx = db.transaction("stores", "readwrite");
-      const store = tx.objectStore("stores");
-      await Promise.all(recovered.map((s) => store.put(s)));
-      await tx.done;
-      console.info(`[storesDb] Successfully restored ${recovered.length} stores from backend.`);
-      return recovered;
-    }
-  }
-
-  return localStores;
-}
-
-/**
- * Persists stores into IndexedDB and asynchronously updates the backend backup file.
- */
-export async function saveStores(stores: StoreRecord[]): Promise<void> {
-  const db = await getDb();
-  const tx = db.transaction("stores", "readwrite");
-  const store = tx.objectStore("stores");
-  await Promise.all(stores.map((s) => store.put(s)));
-  await tx.done;
-
-  // Asynchronously overwrite the backup on the backend
-  void pushBackupToBackend(stores);
 }
 
 export function getStoredStatusVault(): Record<
@@ -159,51 +98,6 @@ export function getStoredStatusVault(): Record<
   }
 }
 
-export function saveStatusToVault(
-  tekionId: string,
-  field: "fixed_ops_status" | "variable_ops_status" | "testing_status",
-  value: CustomPhaseStatus
-): void {
-  try {
-    const vault = getStoredStatusVault();
-    if (!vault[tekionId]) {
-      vault[tekionId] = {};
-    }
-    vault[tekionId][field] = value;
-    localStorage.setItem(STORE_VAULT_KEY, JSON.stringify(vault));
-  } catch (err) {
-    console.error("[storesDb] Failed to save status to vault", err);
-  }
-}
-
-/**
- * Bulk updates the Status Vault cache for multiple stores.
- * Directly modifies localStorage so cached values match live Excel state.
- */
-export function bulkUpdateStatusVault(
-  updates: Array<{
-    tekionId: string;
-    fixed_ops_status?: CustomPhaseStatus;
-    variable_ops_status?: CustomPhaseStatus;
-    testing_status?: CustomPhaseStatus;
-  }>
-): void {
-  try {
-    const vault = getStoredStatusVault();
-    for (const item of updates) {
-      if (!vault[item.tekionId]) {
-        vault[item.tekionId] = {};
-      }
-      if (item.fixed_ops_status) vault[item.tekionId].fixed_ops_status = item.fixed_ops_status;
-      if (item.variable_ops_status) vault[item.tekionId].variable_ops_status = item.variable_ops_status;
-      if (item.testing_status) vault[item.tekionId].testing_status = item.testing_status;
-    }
-    localStorage.setItem(STORE_VAULT_KEY, JSON.stringify(vault));
-  } catch (err) {
-    console.error("[storesDb] Failed bulk update status vault", err);
-  }
-}
-
 export function getStatusTimeline(): Record<
   string,
   Record<string, { wipAt?: string; completedAt?: string }>
@@ -216,6 +110,149 @@ export function getStatusTimeline(): Record<
   }
 }
 
+async function pushBackupToBackend(stores: StoreRecord[]): Promise<void> {
+  if (!stores || stores.length === 0) return;
+
+  try {
+    const vault = getStoredStatusVault();
+    const timeline = getStatusTimeline();
+
+    await fetch(BACKUP_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ stores, vault, timeline }),
+    });
+  } catch (err) {
+    console.warn("[storesDb] Dual backup push failed:", err);
+  }
+}
+
+export async function getStores(): Promise<StoreRecord[]> {
+  const db = await getDb();
+  const localStores = await db.getAll("stores");
+
+  if (!localStores || localStores.length === 0) {
+    console.info("[storesDb] IndexedDB empty. Initiating recovery from SQLite/Backup...");
+
+    try {
+      const res = await fetch(BACKUP_API_URL);
+      if (res.ok) {
+        const data = await res.json();
+        const recoveredStores: StoreRecord[] = Array.isArray(data?.stores)
+          ? data.stores
+          : [];
+
+        if (recoveredStores.length > 0) {
+          const tx = db.transaction("stores", "readwrite");
+          const store = tx.objectStore("stores");
+          await Promise.all(recoveredStores.map((item) => store.put(item)));
+          await tx.done;
+
+          if (data.vault && Object.keys(data.vault).length > 0) {
+            localStorage.setItem(STORE_VAULT_KEY, JSON.stringify(data.vault));
+          }
+
+          if (data.timeline && Object.keys(data.timeline).length > 0) {
+            localStorage.setItem(STATUS_TIMELINE_KEY, JSON.stringify(data.timeline));
+          }
+
+          console.info(
+            `[storesDb] ✅ Restored ${recoveredStores.length} stores and timelines.`
+          );
+          return recoveredStores;
+        }
+      }
+    } catch (err) {
+      console.warn("[storesDb] Recovery failed:", err);
+    }
+  }
+
+  return localStores;
+}
+
+export async function saveStores(stores: StoreRecord[]): Promise<void> {
+  const db = await getDb();
+  const tx = db.transaction("stores", "readwrite");
+  const store = tx.objectStore("stores");
+
+  await Promise.all(stores.map((item) => store.put(item)));
+  await tx.done;
+
+  void pushBackupToBackend(stores);
+}
+
+export function saveStatusToVault(
+  tekionId: string,
+  field: "fixed_ops_status" | "variable_ops_status" | "testing_status",
+  value: CustomPhaseStatus
+): void {
+  try {
+    const vault = getStoredStatusVault();
+    if (!vault[tekionId]) vault[tekionId] = {};
+
+    vault[tekionId][field] = value;
+    localStorage.setItem(STORE_VAULT_KEY, JSON.stringify(vault));
+  } catch (err) {
+    console.error("[storesDb] Failed save status to vault:", err);
+  }
+}
+
+/**
+ * Bulk updates the vault with safety rules:
+ * Completed statuses are locked and cannot be demoted to 'TO DO' or 'WIP'
+ * by automated background sync calls unless allowDowngrade is explicitly true.
+ */
+export function bulkUpdateStatusVault(
+  updates: Array<{
+    tekionId: string;
+    fixed_ops_status?: CustomPhaseStatus;
+    variable_ops_status?: CustomPhaseStatus;
+    testing_status?: CustomPhaseStatus;
+  }>,
+  allowDowngrade = false
+): void {
+  try {
+    const vault = getStoredStatusVault();
+    const priorityScore: Record<string, number> = { Completed: 3, WIP: 2, "TO DO": 1 };
+
+    for (const item of updates) {
+      if (!vault[item.tekionId]) vault[item.tekionId] = {};
+
+      if (item.fixed_ops_status) {
+        const current = vault[item.tekionId].fixed_ops_status;
+        if (
+          allowDowngrade ||
+          (priorityScore[item.fixed_ops_status] ?? 1) >= (priorityScore[current || "TO DO"] ?? 1)
+        ) {
+          vault[item.tekionId].fixed_ops_status = item.fixed_ops_status;
+        }
+      }
+      if (item.variable_ops_status) {
+        const current = vault[item.tekionId].variable_ops_status;
+        if (
+          allowDowngrade ||
+          (priorityScore[item.variable_ops_status] ?? 1) >= (priorityScore[current || "TO DO"] ?? 1)
+        ) {
+          vault[item.tekionId].variable_ops_status = item.variable_ops_status;
+        }
+      }
+      if (item.testing_status) {
+        const current = vault[item.tekionId].testing_status;
+        if (
+          allowDowngrade ||
+          (priorityScore[item.testing_status] ?? 1) >= (priorityScore[current || "TO DO"] ?? 1)
+        ) {
+          vault[item.tekionId].testing_status = item.testing_status;
+        }
+      }
+    }
+
+    localStorage.setItem(STORE_VAULT_KEY, JSON.stringify(vault));
+  } catch (err) {
+    console.error("[storesDb] Bulk update status vault failed:", err);
+  }
+}
+
 export function recordStatusTransition(
   tekionId: string,
   field: "fixed_ops_status" | "variable_ops_status" | "testing_status",
@@ -224,14 +261,12 @@ export function recordStatusTransition(
 ): void {
   try {
     const timeline = getStatusTimeline();
-    if (!timeline[tekionId]) {
-      timeline[tekionId] = {};
-    }
-    if (!timeline[tekionId][field]) {
-      timeline[tekionId][field] = {};
-    }
+
+    if (!timeline[tekionId]) timeline[tekionId] = {};
+    if (!timeline[tekionId][field]) timeline[tekionId][field] = {};
 
     const timestamp = customIsoTime || new Date().toISOString();
+
     if (value === "WIP") {
       timeline[tekionId][field].wipAt = timestamp;
     } else if (value === "Completed") {
@@ -242,6 +277,6 @@ export function recordStatusTransition(
 
     localStorage.setItem(STATUS_TIMELINE_KEY, JSON.stringify(timeline));
   } catch (err) {
-    console.error("[storesDb] Failed to record status transition", err);
+    console.error("[storesDb] Record status transition failed:", err);
   }
 }

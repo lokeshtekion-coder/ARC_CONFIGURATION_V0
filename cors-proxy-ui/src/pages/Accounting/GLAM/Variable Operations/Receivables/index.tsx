@@ -1,130 +1,109 @@
 import React, { useState } from "react";
-import { Arrow, GlamSectionHeader } from "../../components/glamShared";
+import { GlamSectionHeader } from "../../components/glamShared";
 import FactoryReceivablesView from "./Factory Receivables";
 import FinanceReserveView from "./Finance reserve";
 
-type ReceivablesSectionKey = "home" | "factory-receivables" | "finance-reserve";
+type ReceivablesSectionKey = "factory-receivables" | "finance-reserve";
 
-const cardStyle: React.CSSProperties = {
-  borderRadius: 16,
-  border: "1px solid rgba(255,255,255,0.08)",
-  background: "rgba(255,255,255,0.02)",
-  padding: 16,
-  minWidth: 0,
-};
-
-const itemButtonStyle: React.CSSProperties = {
-  width: "100%",
-  border: "1px solid rgba(255,255,255,0.08)",
-  background: "rgba(255,255,255,0.02)",
-  color: "#f8fafc",
-  padding: "14px 16px",
+const topNavigationStyle: React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: 10,
+  flexWrap: "wrap",
+  padding: 12,
   borderRadius: 14,
-  cursor: "pointer",
-  textAlign: "left",
+  border: "1px solid rgba(255,255,255,0.08)",
+  background: "rgba(255,255,255,0.02)",
 };
 
-const ReceivablesHome: React.FC<{
-  onOpen: (key: ReceivablesSectionKey) => void;
-}> = ({ onOpen }) => {
+function getNavigationButtonStyle(
+  active: boolean
+): React.CSSProperties {
+  return {
+    border: active
+      ? "1px solid rgba(96,165,250,0.75)"
+      : "1px solid rgba(255,255,255,0.10)",
+    background: active
+      ? "rgba(59,130,246,0.18)"
+      : "rgba(255,255,255,0.025)",
+    color: active ? "#dbeafe" : "#cbd5e1",
+    borderRadius: 10,
+    padding: "10px 14px",
+    cursor: "pointer",
+    fontSize: 13,
+    fontWeight: 800,
+    transition: "all 0.15s ease",
+    boxShadow: active ? "0 0 0 1px rgba(96,165,250,0.12)" : "none",
+  };
+}
+
+const ReceivablesView: React.FC = () => {
+  const [activeSection, setActiveSection] =
+    useState<ReceivablesSectionKey>("factory-receivables");
+
   return (
     <div style={{ display: "grid", gap: 16 }}>
       <GlamSectionHeader
         title="Receivables"
-        description="Receivables configuration area"
+        description=""
         breadcrumb="Accounting / Variable Operations / Receivables"
       />
 
-      <div style={cardStyle}>
-        <div style={{ display: "grid", gap: 10 }}>
-          <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 800 }}>
-            Receivables Folders
-          </div>
-          <div style={{ color: "#94a3b8", fontSize: 13, lineHeight: 1.6 }}>
-            Select a receivables configuration folder to continue.
-          </div>
+      <div style={topNavigationStyle}>
+        <div
+          style={{
+            color: "#94a3b8",
+            fontSize: 12,
+            fontWeight: 800,
+            marginRight: 2,
+          }}
+        >
+          RECEIVABLES:
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setActiveSection("factory-receivables")}
+          aria-pressed={activeSection === "factory-receivables"}
+          style={getNavigationButtonStyle(
+            activeSection === "factory-receivables"
+          )}
+          title=""
+        >
+          Factory Receivables
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveSection("finance-reserve")}
+          aria-pressed={activeSection === "finance-reserve"}
+          style={getNavigationButtonStyle(activeSection === "finance-reserve")}
+          title=""
+        >
+          Finance Reserve
+        </button>
+
+        <div
+          style={{
+            marginLeft: "auto",
+            color: "#64748b",
+            fontSize: 12,
+            fontStyle: "italic",
+          }}
+        >
+          {activeSection === "factory-receivables"
+            ? "Holdback · Rebates · Incentives"
+            : "Finance Reserve configuration"}
         </div>
       </div>
 
-      <div style={{ display: "grid", gap: 12 }}>
-        <button
-          type="button"
-          onClick={() => onOpen("factory-receivables")}
-          style={itemButtonStyle}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-            <div>
-              <div style={{ color: "#f8fafc", fontSize: 15, fontWeight: 800, marginBottom: 4 }}>
-                Factory Receivables
-              </div>
-              <div style={{ color: "#94a3b8", fontSize: 12, lineHeight: 1.5 }}>
-                Configure Holdback, Rebates, and Incentives factory receivable GL mappings.
-              </div>
-            </div>
-            <Arrow open={false} />
-          </div>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onOpen("finance-reserve")}
-          style={itemButtonStyle}
-        >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-            <div>
-              <div style={{ color: "#f8fafc", fontSize: 15, fontWeight: 800, marginBottom: 4 }}>
-                Finance reserve
-              </div>
-              <div style={{ color: "#94a3b8", fontSize: 12, lineHeight: 1.5 }}>
-                Placeholder for future Finance reserve configuration.
-              </div>
-            </div>
-            <Arrow open={false} />
-          </div>
-        </button>
-      </div>
+      {activeSection === "factory-receivables" ? (
+        <FactoryReceivablesView />
+      ) : (
+        <FinanceReserveView />
+      )}
     </div>
   );
-};
-
-const ReceivablesView: React.FC = () => {
-  const [activeSection, setActiveSection] = useState<ReceivablesSectionKey>("home");
-
-  if (activeSection === "factory-receivables") {
-    return (
-      <div style={{ display: "grid", gap: 16 }}>
-        <div>
-          <button
-            type="button"
-            className="btn-secondary btn-sm"
-            onClick={() => setActiveSection("home")}
-          >
-            ← Back to Receivables
-          </button>
-        </div>
-        <FactoryReceivablesView />
-      </div>
-    );
-  }
-
-  if (activeSection === "finance-reserve") {
-    return (
-      <div style={{ display: "grid", gap: 16 }}>
-        <div>
-          <button
-            type="button"
-            className="btn-secondary btn-sm"
-            onClick={() => setActiveSection("home")}
-          >
-            ← Back to Receivables
-          </button>
-        </div>
-        <FinanceReserveView />
-      </div>
-    );
-  }
-
-  return <ReceivablesHome onOpen={setActiveSection} />;
 };
 
 export default ReceivablesView;

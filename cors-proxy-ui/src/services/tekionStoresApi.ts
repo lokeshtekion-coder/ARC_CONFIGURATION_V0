@@ -5,35 +5,11 @@ import {
 } from "./extensionBridge";
 import { loadGlobalHeaders, loadTekionApiSettings } from "./tekionApiSettings";
 import type { KeyValuePair } from "../types/proxy.types";
+import type { StoreRecord } from "./storesDb";
+export type { StoreRecord };
 
 export type TRange = 7 | 30 | 60 | 90;
 
-export interface StoreRecord {
-  tekion_id: string;
-  dealer_id: string;
-  dba_name: string;
-  launch_date: string;
-  implementation_type: string;
-  pre_production_environment_status: string;
-  superpod_id: string;
-  product_types?: string;
-
-  workorder_consolidated_pdl?: string;
-  dealer_pdl?: string;
-  arc_pdl?: string;
-
-  project_implementation_tm_sync_status_tracking_id?: string;
-  implementation_tm_sync_status_tracking_id?: string;
-  base_entity_instance_id?: string;
-
-  project_engagement_manager_1781169293313734451?: string;
-  fixed_ops_track_lead_1773369946675032982?: string;
-  conversion_track_lead_1773369950325147526?: string;
-  accounting_track_lead_1773369945455468395?: string;
-
-  tenant_code?: string;
-  tenant_id?: string;
-}
 
 const STORES_API_URL =
   "https://us-west1-tapapi.tekioncloud.com/tapapi/tap-crm-implementations-backend/public/v1/entity-instance/1";
@@ -280,6 +256,8 @@ function mapStore(item: Record<string, unknown>): StoreRecord {
       item.implementation_tm_sync_status_tracking_id
     ),
     base_entity_instance_id: normalize(item.base_entity_instance_id),
+    onboarding_project_id: normalize(item.onboarding_project_id),
+
 
     project_engagement_manager_1781169293313734451: normalize(
       item.project_engagement_manager_1781169293313734451

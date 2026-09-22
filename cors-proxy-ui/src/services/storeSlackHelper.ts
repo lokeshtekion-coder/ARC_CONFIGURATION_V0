@@ -31,10 +31,14 @@ interface SlackApiResponse {
   ts?: string;
   no_op?: boolean;
   already_open?: boolean;
+  upload_url?: string;
+  file_id?: string;
+  file?: { id?: string };
 }
 
 const DM_CHANNEL_CACHE_KEY = "arc-slack-dm-channel-cache-v1";
-const DEFAULT_SLACK_ENTERPRISE_ORIGIN = "https://tekion.enterprise.slack.com";
+const SLACK_API_BASE = "https://slack.com/api";
+const SLACK_CLIENT_ORIGIN = "https://app.slack.com";
 
 const logger = {
   info: (...args: unknown[]) => console.info("[storeSlackHelper]", ...args),
@@ -392,42 +396,41 @@ function cacheDmChannel(input: {
   saveDmChannelCache(cache);
 }
 
-function resolveSlackOrigin(sourceUrl?: string): string {
-  if (sourceUrl) {
-    try {
-      const parsed = new URL(sourceUrl);
-      if (parsed.hostname.includes("slack.com")) {
-        return parsed.origin;
-      }
-    } catch {}
+function sanitizeSlackCookie(rawCookie: string): string {
+  const trimmed = rawCookie.trim();
+  if (!trimmed) return "";
+
+  if (trimmed.includes("=")) {
+    return trimmed;
   }
-  return DEFAULT_SLACK_ENTERPRISE_ORIGIN;
+
+  let decoded = trimmed;
+  try {
+    decoded = decodeURIComponent(trimmed);
+  } catch {}
+
+  return `d=${encodeURIComponent(decoded)}`;
 }
 
 async function proxySlackRequest(input: {
   url: string;
   body: Record<string, unknown>;
 }): Promise<SlackApiResponse> {
-  const { slackToken, slackDCookie, lastSlackSourceUrl } = getSlackSession();
+  const { slackToken, slackDCookie, lastSlackCaptureAt } = getSlackSession();
 
   if (!slackToken) {
-    throw new Error("Slack token is not available. Please verify Slack tab is open or re-sync extension.");
+    throw new Error("Slack token is not available. Open Slack in your browser to sync credentials.");
   }
 
   if (!slackDCookie) {
-    throw new Error("Slack 'd' cookie is not available. Please verify Slack tab is logged in.");
+    throw new Error("Slack 'd' cookie is not available. Verify you are logged into Slack.");
   }
 
-  const slackOrigin = resolveSlackOrigin(lastSlackSourceUrl);
-
-  // Reroute generic slack.com URLs to the active enterprise workspace origin
   let targetUrl = input.url;
-  try {
-    const parsed = new URL(input.url);
-    targetUrl = `${slackOrigin}${parsed.pathname}`;
-  } catch {}
+  if (!targetUrl.startsWith("http")) {
+    targetUrl = `${SLACK_API_BASE}/${targetUrl.replace(/^\/+/, "")}`;
+  }
 
-  // Slack xoxc web tokens require form-urlencoded parameters with client identity flags
   const formPayload = new URLSearchParams();
   formPayload.set("token", slackToken);
   formPayload.set("_x_sonic", "true");
@@ -439,9 +442,7 @@ async function proxySlackRequest(input: {
     }
   }
 
-  const cookieHeader = slackDCookie.includes("=")
-    ? slackDCookie
-    : `d=${encodeURIComponent(slackDCookie)}`;
+  const cookieHeader = sanitizeSlackCookie(slackDCookie);
 
   const proxyRequest = {
     url: targetUrl,
@@ -450,8 +451,10 @@ async function proxySlackRequest(input: {
       "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
       "Accept": "*/*",
       "Cookie": cookieHeader,
-      "Referer": `${slackOrigin}/`,
-      "Origin": slackOrigin,
+      "Referer": `${SLACK_CLIENT_ORIGIN}/`,
+      "Origin": SLACK_CLIENT_ORIGIN,
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
     },
     body: formPayload.toString(),
     timeout: 60000,
@@ -460,6 +463,10 @@ async function proxySlackRequest(input: {
   logger.info("Sending Slack request via proxy", {
     targetUrl,
     endpoint: targetUrl.split("/").slice(-2).join("/"),
+    tokenPrefix: `${slackToken.slice(0, 9)}...`,
+    tokenLength: slackToken.length,
+    hasDCookie: Boolean(slackDCookie),
+    capturedAt: lastSlackCaptureAt || "unknown",
   });
 
   const response = await fetch("/api/proxy", {
@@ -475,7 +482,7 @@ async function proxySlackRequest(input: {
   let proxyJson: Record<string, unknown> = {};
   try {
     proxyJson = rawText ? (JSON.parse(rawText) as Record<string, unknown>) : {};
-  } catch (error) {
+  } catch {
     throw new Error(`Slack proxy returned non-JSON response: ${rawText.slice(0, 300)}`);
   }
 
@@ -501,6 +508,13 @@ async function proxySlackRequest(input: {
       upstreamStatus,
       errorMsg,
     });
+
+    if (errorMsg === "invalid_auth") {
+      throw new Error(
+        "Slack session token has expired or is invalid. Open Slack (https://app.slack.com) and press Refresh (F5) to re-sync credentials."
+      );
+    }
+
     throw new Error(`Slack API Error: ${errorMsg}`);
   }
 
@@ -527,7 +541,7 @@ export async function openSlackConversation(input: {
   });
 
   const response = await proxySlackRequest({
-    url: "https://slack.com/api/conversations.open",
+    url: `${SLACK_API_BASE}/conversations.open`,
     body: {
       users: input.userId,
     },
@@ -571,7 +585,7 @@ export async function sendSlackMessage(input: {
   });
 
   const response = await proxySlackRequest({
-    url: "https://slack.com/api/chat.postMessage",
+    url: `${SLACK_API_BASE}/chat.postMessage`,
     body: {
       channel: channelId,
       text: input.text,
@@ -582,4 +596,110 @@ export async function sendSlackMessage(input: {
     channelId,
     ts: response.ts,
   };
+}
+
+/**
+ * Uploads an HTML document directly to a designated Slack conversation/DM (e.g. D0694BGT61W)
+ * using the modern files.getUploadURLExternal -> pre-signed binary upload -> files.completeUploadExternal flow.
+ */
+export async function sendSlackDocument(input: {
+  channelId: string;
+  fileName: string;
+  fileContent: string;
+  initialComment?: string;
+  title?: string;
+}): Promise<SlackApiResponse> {
+  logger.info("Starting external document upload to Slack", {
+    channelId: input.channelId,
+    fileName: input.fileName,
+  });
+
+  const byteLength = new TextEncoder().encode(input.fileContent).byteLength;
+  const base64Content = btoa(
+    encodeURIComponent(input.fileContent).replace(/%([0-9A-F]{2})/g, (_, p1) =>
+      String.fromCharCode(parseInt(p1, 16))
+    )
+  );
+
+  const getUrlRes = await proxySlackRequest({
+    url: `${SLACK_API_BASE}/files.getUploadURLExternal`,
+    body: {
+      filename: input.fileName,
+      length: byteLength,
+    },
+  });
+
+  const uploadUrl = normalize(getUrlRes.upload_url);
+  const fileId = normalize(getUrlRes.file_id);
+
+  if (!uploadUrl || !fileId) {
+    throw new Error(
+      `Slack files.getUploadURLExternal failed: ${getUrlRes.error || "missing upload_url or file_id"}`
+    );
+  }
+
+  logger.info("Received Slack upload URL, uploading file payload...", {
+    fileId,
+    byteLength,
+  });
+
+  const uploadProxyRes = await fetch("/api/proxy", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      url: uploadUrl,
+      method: "POST",
+      headers: {},
+      timeout: 60000,
+      multipartBase64: {
+        file: {
+          fieldName: "file",
+          name: input.fileName,
+          type: "text/html; charset=utf-8",
+          base64: base64Content,
+        },
+      },
+    }),
+  });
+
+  const uploadWrapper = (await uploadProxyRes.json()) as Record<string, unknown>;
+  const uploadStatus =
+    typeof uploadWrapper.status === "number"
+      ? uploadWrapper.status
+      : uploadProxyRes.status;
+
+  if (!uploadProxyRes.ok || uploadStatus >= 400) {
+    logger.error("Failed to upload file to Slack storage URL", {
+      uploadStatus,
+      body: uploadWrapper.body,
+    });
+    throw new Error(`Failed to upload file to Slack storage: HTTP ${uploadStatus}`);
+  }
+
+  logger.info("File payload uploaded successfully, finalizing upload in channel...", {
+    fileId,
+    channelId: input.channelId,
+  });
+
+  const completeRes = await proxySlackRequest({
+    url: `${SLACK_API_BASE}/files.completeUploadExternal`,
+    body: {
+      files: JSON.stringify([
+        {
+          id: fileId,
+          title: input.title || input.fileName,
+        },
+      ]),
+      channel_id: input.channelId,
+      channels: input.channelId,
+      initial_comment: input.initialComment || "",
+    },
+  });
+
+  logger.info("Slack document upload completed successfully", {
+    fileId,
+    completeRes,
+  });
+
+  return completeRes;
 }

@@ -92,7 +92,7 @@ export const GLAM_GROUPS: GlamNavGroup[] = [
       {
         key: "payment-fixed-operations",
         label: "Fixed Operations",
-        description: "GLAM content for payment receipts under fixed operations",
+        description: "GLAM content for payment receipts under fixeds operations",
       },
     ],
   },

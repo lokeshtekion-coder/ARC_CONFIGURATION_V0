@@ -1,14 +1,14 @@
 import React from "react";
 import { GlamSectionPlaceholder } from "../../components/glamShared";
 
-const PaymentVariableOperationsView: React.FC = () => {
+const PaymentFixedOperationsView: React.FC = () => {
   return (
     <GlamSectionPlaceholder
       title="Variable Operations"
-      description="GLAM content for payment receipts under variable operations"
+      description="GLAM content for payment receipts under Variable operations"
       breadcrumb="Accounting / Payment Receipts / Variable Operations"
     />
   );
 };
 
-export default PaymentVariableOperationsView;
+export default PaymentFixedOperationsView;

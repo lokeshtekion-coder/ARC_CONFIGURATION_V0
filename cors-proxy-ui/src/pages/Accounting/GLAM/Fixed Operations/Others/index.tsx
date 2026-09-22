@@ -1,14 +1,6 @@
 import React from "react";
-import { GlamSectionPlaceholder } from "../../components/glamShared";
+import FixedOpOthers from "./FixedOpOthers";
 
-const OthersView: React.FC = () => {
-  return (
-    <GlamSectionPlaceholder
-      title="Others"
-      description="GLAM content for other fixed operations"
-      breadcrumb="Accounting / Fixed Operations / Others"
-    />
-  );
-};
+const Others: React.FC = () => <FixedOpOthers />;
 
-export default OthersView;
+export default Others;
