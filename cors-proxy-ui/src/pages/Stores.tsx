@@ -318,16 +318,13 @@ function getPodStyle(superpodId?: string) {
   };
 }
 
-// ---------------------------------------------------------
-// Helper to safely merge parallel task updates onto state
-// ---------------------------------------------------------
 function safelyMergeStatusFields(prevRecords: StoreRecord[], updatedStores: StoreRecord[]) {
   const prevMap = new Map(prevRecords.map((s) => [s.tekion_id, s]));
   return updatedStores.map((uStore) => {
     const prev = prevMap.get(uStore.tekion_id);
     if (!prev) return uStore;
     return {
-      ...prev, // Preserve the latest blueprints, setup data, and UI changes
+      ...prev,
       fixed_ops_status: uStore.fixed_ops_status,
       variable_ops_status: uStore.variable_ops_status,
       testing_status: uStore.testing_status,
@@ -888,9 +885,9 @@ const DealerMetaModal: React.FC<{
 
             {row.setup_data ? (
               <span className="dealer-setup-summary">
-                OEM: <strong>{row.setup_data.oemDealerCodes?.join(", ") || "—"}</strong> • JRN:{" "}
-                <strong>{row.setup_data.journalsAccessibleDealerCount ?? 0}</strong> • SC:{" "}
-                <strong>{row.setup_data.salesChainsAccessibleDealerCount ?? 0}</strong> • COA:{" "}
+                OEM: <strong>{row.setup_data.oemDealerCodes?.join(", ") || "—"}</strong> JRN:{" "}
+                <strong>{row.setup_data.journalsAccessibleDealerCount ?? 0}</strong> SC:{" "}
+                <strong>{row.setup_data.salesChainsAccessibleDealerCount ?? 0}</strong> COA:{" "}
                 <strong>{row.setup_data.coaAccessibleDealerCount ?? 0}</strong>
               </span>
             ) : row.setup_data_error ? (
@@ -1080,7 +1077,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     window.setTimeout(() => setCopiedKey(null), 1200);
   }, []);
 
-  // Update Blueprint fetching using functional updates
   const loadStatusesForStores = useCallback(async (stores: StoreRecord[]) => {
     const tekionIds = stores.map((item) => item.tekion_id).filter(Boolean);
 
@@ -1159,7 +1155,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         await saveStores(uniqueStores);
         showToast(`✅ Refreshed ${uniqueStores.length} stores`);
 
-        // Check for Excel Status Sync Updates Safely
         void (async () => {
           try {
             const { updatedStores, hasChanges } = await pullStatusUpdatesFromGraph(uniqueStores);
@@ -1306,7 +1301,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       const updatedRecords = prev.map((r) =>
         r.tekion_id === tekion_id ? { ...r, [field]: value } : r
       );
-      void saveStores(updatedRecords).catch(err => logger.error("Failed to save DB", err));
+      void saveStores(updatedRecords).catch((err) => logger.error("Failed to save DB", err));
       return updatedRecords;
     });
 
@@ -1416,7 +1411,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           !q ||
           item.tekion_id.toLowerCase().includes(q) ||
           item.dealer_id.toLowerCase().includes(q) ||
-          item.dba_name.toLowerCase().includes(q);
+          item.dba_name.toLowerCase().includes(q) ||
+          (item.tenant_code && item.tenant_code.toLowerCase().includes(q)) ||
+          (item.tenant_id && item.tenant_id.toLowerCase().includes(q));
 
         const matchesSuperpod = !superpodId || item.superpod_id === superpodId;
         const normalizedImp = cleanImpType(item.implementation_type);
@@ -1517,7 +1514,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         fileName,
         fileContent: htmlContent,
         title: `SLA Breach Audit Report - ${dateStr}`,
-        initialComment: `🚨 *Dealership SLA Breach Audit Report* (${dateStr})\n• Total Stores Audited: *${slaData.totalEvaluated}*\n• SLA Breaches Found: *${slaData.breachedCount}* (Fixed Ops <= 80d or Variable Ops <= 75d from launch)\n\n📎 An interactive HTML report with Excel-style column filters is attached below. Download and open it in any web browser.`,
+        initialComment: `🚨 *Dealership SLA Breach Audit Report* (${dateStr})\nTotal Stores Audited: *${slaData.totalEvaluated}*\nSLA Breaches Found: *${slaData.breachedCount}* (Fixed Ops <= 80d or Variable Ops <= 75d from launch)\n\n📎 An interactive HTML report with Excel-style column filters is attached below. Download and open it in any web browser.`,
       });
 
       showToast(`✅ Sent SLA report (${slaData.breachedCount} breaches) to Slack!`);
@@ -1702,7 +1699,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
             {loadingSetupAll ? "⏳ Setup..." : "🧩 Fetch Setup Data"}
           </button>
 
-          {/* SLA Report Action Button */}
           <button
             className="btn-secondary btn-sm"
             onClick={() => void handleSendSlaReport()}
@@ -1717,7 +1713,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
             {dispatchingSlaReport ? "⏳ Sending SLA..." : "🚨 SLA Report"}
           </button>
 
-          {/* Live TAP Status Sync Button */}
           <button
             className="btn-secondary btn-sm"
             onClick={() => void handleSyncRealTapStatuses()}
@@ -1770,14 +1765,14 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                   className="stores-input"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="ID, Dealer, or Store Name..."
+                  placeholder="ID, Dealer, Name, or Tenant..."
                 />
               </div>
 
               <div className="stores-field">
                 <label className="stores-label">T-Range Presets</label>
                 <div className="stores-preset-grid">
-                  {[7, 30, 60, 90].map((days) => (
+                  {[7, 30, 60, 90, 150].map((days) => (
                     <button
                       key={days}
                       type="button"

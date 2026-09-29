@@ -16,7 +16,7 @@ const config: PaymentMappingScreenConfig = {
       key: "service-warranty-receivable",
       label: "Warranty Receivable",
       attributes: {
-        PAY_TYPE: "Warranty",
+        PAY_TYPE: "WARRANTY",
         PAYMENT_METHOD_FIXED_OPS: "",
       },
       blueprintSection: "Service - Payment Methods - Warranty",

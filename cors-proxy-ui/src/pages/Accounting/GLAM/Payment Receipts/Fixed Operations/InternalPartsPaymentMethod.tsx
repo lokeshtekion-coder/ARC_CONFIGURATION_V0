@@ -9,7 +9,7 @@ const config: PaymentMappingScreenConfig = {
   name: "Internal Parts Payment Method",
   title: "Internal Parts Payment Method",
   description:
-    "Maps Internal Parts payment methods from Blueprint account answers. Vehicle Inventory - INVV is always included as a protected system default mapped directly to INVV.",
+    "Maps Internal Parts payment methods from Blueprint account answers. Vehicle Inventory - INVV is always included as a protected system default mapped directly to INVV. Custom payment methods like Other Supplies require corresponding custom field options in Tekion.",
 
   mappingColumns: ["SALE_TYPE_FIXED_OPS", "PAYMENT_METHOD_PARTS"],
 
@@ -52,6 +52,20 @@ const config: PaymentMappingScreenConfig = {
       },
       blueprintSection: "Internal Parts Payment Method",
       blueprintQuestion: "We Owe GL Account",
+    },
+    {
+      key: "internal-parts-other-supplies",
+      label: "Other Supplies",
+      attributes: {
+        SALE_TYPE_FIXED_OPS: "INTERNAL",
+        PAYMENT_METHOD_PARTS: "",
+      },
+      blueprintSection: "Internal Parts Payment Method",
+      blueprintQuestion: "Other Supplies GL Account",
+      paymentMethodField: {
+        customFieldKey: "PARTS_SALES_ORDER_INTERNAL",
+        optionName: "Other Supplies",
+      },
     },
   ],
 };

@@ -5,8 +5,10 @@ import type { KeyValuePair } from "../../../types/proxy.types";
 
 const TGPT_TOKEN_KEY = "tgpt_access_token";
 const TGPT_BASE = "https://tapapi.tekioncloud.com/tapapi/tgpt";
+
+// Correct endpoint for creating coupons (both Parts & Service live under service-module)
 const COUPON_CREATE_URL =
-  "https://preprodapp.tekioncloud.com/api/parts/proxy/u/settings/coupon";
+  "https://preprodapp.tekioncloud.com/api/service-module/u/coupon?locale=en_US";
 
 const QUESTION_HAS_COUPONS = "Do you have any parts coupons/discounts?";
 const QUESTION_COUPON_DETAILS =
@@ -25,7 +27,7 @@ Return valid JSON only. Do not return markdown fences or extra explanations.
     {
       "couponCode": "STRING (Max 15 chars, Alphanumeric UPPERCASE. Generate if missing using exact parts description keywords)",
       "description": "STRING (Preserve the parts wording clearly)",
-      "glAccount": "STRING (G/L Account string, default '9999')",
+      "glAccount": "STRING (G/L Account string, default 'SALESP')",
       "discount": {
         "type": "percentage" | "flat_amount" | "none",
         "value": NUMBER | null,
@@ -39,10 +41,12 @@ Return valid JSON only. Do not return markdown fences or extra explanations.
 
 EXTRACTION RULES:
 1. ALL coupons extracted here are strictly applied to PARTS only.
+
 2. DISCOUNTS:
-   - "10% OFF PARTS", "15% DISCOUNT" -> discount.type = "percentage", value = 10 or 15.
-   - "$20 OFF", "5.00 OFF", "DOLLAR OFF" -> discount.type = "flat_amount", value = 20 or 5.
-   - If a cap exists (e.g. "Up to $100"), set discount.capAmount to 100.
+- "10% OFF PARTS", "15% DISCOUNT" -> discount.type = "percentage", value = 10 or 15.
+- "$20 OFF", "5.00 OFF", "DOLLAR OFF" -> discount.type = "flat_amount", value = 20 or 5.
+- If a cap exists (e.g. "Up to $100"), set discount.capAmount to 100.
+
 3. If no number is mentioned but discount is indicated, set discount.type = "flat_amount" and value = 1.
 4. Clean the description to be human-readable and meaningful.
 
@@ -126,7 +130,6 @@ export const CouponsView: React.FC = () => {
   const dealerId = useMemo(() => extractDealerIdFromHeaders(enabledHeaders), [enabledHeaders]);
   const globalHeaderCount = useMemo(() => Object.keys(enabledHeaders).length, [enabledHeaders]);
 
-  // Extract values directly from Blueprint IndexedDB context
   const blueprintCouponStatus = useMemo(() => {
     const ans = getAnswer(QUESTION_HAS_COUPONS);
     return typeof ans === "string" ? ans.trim() : normalize(ans);
@@ -141,7 +144,6 @@ export const CouponsView: React.FC = () => {
     return typeof ans === "string" ? ans.trim() : normalize(ans);
   }, [getAnswer]);
 
-  // Auto-populate when Blueprint loads if the input is empty and coupons are declared "Yes"
   useEffect(() => {
     if (hasBlueprint && hasCouponsInBlueprint && blueprintDetailsText && !inputText) {
       setInputText(blueprintDetailsText);
@@ -256,7 +258,7 @@ export const CouponsView: React.FC = () => {
           id: `parts-coupon-${idx}-${Date.now()}`,
           code: item.couponCode || "",
           description: item.description || "",
-          glAccount: item.glAccount || "9999",
+          glAccount: item.glAccount || "SALESP",
           pricingMethod: isPercentage ? "PERCENTAGE" : "FLAT",
           value: val,
           capAmount: item.discount?.capAmount ? String(item.discount.capAmount) : "",
@@ -300,7 +302,7 @@ export const CouponsView: React.FC = () => {
             id: `parts-coupon-${idx}-${Date.now()}`,
             code: item.couponCode || item.code || "",
             description: item.description || item.name || "",
-            glAccount: item.glAccount || "9999",
+            glAccount: item.glAccount || "SALESP",
             pricingMethod: isPercentage ? "PERCENTAGE" : "FLAT",
             value: val,
             capAmount: item.discount?.capAmount ? String(item.discount.capAmount) : item.capAmount || "",
@@ -329,15 +331,13 @@ export const CouponsView: React.FC = () => {
   };
 
   const buildPartsTekionPayload = () => {
-    const dealerPrefix = dealerId || "8126";
     const startTimeVal = String(Date.now());
 
     return parsedData.map((coupon) => {
       const isPercentage = coupon.pricingMethod === "PERCENTAGE";
-      const cleanGl = coupon.glAccount.includes("_")
-        ? coupon.glAccount
-        : `${dealerPrefix}_${coupon.glAccount}`;
       const numericVal = coupon.value || "0";
+      // Raw GL code (e.g. SALESP or 9999). Do NOT prepend dealerId prefix.
+      const cleanGl = coupon.glAccount ? coupon.glAccount.trim() : "SALESP";
 
       const basePayload: any = {
         couponCode: coupon.code,
@@ -375,8 +375,8 @@ export const CouponsView: React.FC = () => {
         considerForGrossCalculation: false,
         taxable: false,
         roLevelOnly: false,
-        subPayTypes: [],
-        payTypes: ["CUSTOMER_PAY"],
+        subPayTypes: ["ALL_CUSTOMER_PAY"],
+        payTypes: [],
         allowedMultipleTimesInSameRo: true,
         languages: isPercentage
           ? { documentDefault: "en_US", locale: null }
@@ -441,6 +441,7 @@ export const CouponsView: React.FC = () => {
               ...enabledHeaders,
               accept: "application/json, text/plain, */*",
               "content-type": "application/json",
+              locale: "en_US",
             },
             body: item,
             timeout: 60000,
@@ -448,15 +449,35 @@ export const CouponsView: React.FC = () => {
         });
 
         if (!res.ok) {
-          failures.push(`${item.couponCode}: proxy HTTP ${res.status}`);
+          failures.push(`${item.couponCode}: Proxy server HTTP ${res.status}`);
           continue;
         }
 
-        const json = await res.json();
-        if ((json?.status ?? 200) >= 400) {
-          failures.push(
-            `${item.couponCode}: ${json?.status ?? ""} ${json?.statusText ?? "Request failed"}`.trim()
-          );
+        const proxyResponse = await res.json();
+        const upstreamStatus = proxyResponse?.status ?? 200;
+        const tekionBody = proxyResponse?.body ?? proxyResponse;
+
+        // Verify upstream HTTP status and validate against Tekion error response schemas
+        const isHttpError = typeof upstreamStatus === "number" && upstreamStatus >= 400;
+        const isTekionError =
+          tekionBody?.status === "ERROR" ||
+          tekionBody?.status === "FAILED" ||
+          Boolean(tekionBody?.errors?.length) ||
+          Boolean(tekionBody?.errorMessage);
+
+        // Guard against false positive where the settings API returns dealer setting payload
+        const isSettingDocument = tekionBody?.data?.id?.endsWith("_part_setting");
+
+        if (isHttpError || isTekionError || isSettingDocument) {
+          const detail =
+            tekionBody?.errorMessage ||
+            tekionBody?.errors?.[0]?.message ||
+            tekionBody?.message ||
+            (isSettingDocument ? "Routed to settings endpoint instead of coupon service" : "") ||
+            proxyResponse?.statusText ||
+            "Creation failed";
+
+          failures.push(`${item.couponCode}: ${detail}`);
           continue;
         }
 
@@ -466,12 +487,12 @@ export const CouponsView: React.FC = () => {
       if (failures.length === 0) {
         setMessage({
           ok: true,
-          text: `✓ Successfully created ${successCount} of ${payloadArray.length} parts coupons in Tekion Preprod.`,
+          text: `✓ Successfully created ${successCount} of ${payloadArray.length} parts coupon(s) in Tekion Preprod.`,
         });
       } else {
         setMessage({
           ok: false,
-          text: `Created ${successCount} of ${payloadArray.length} coupons.\n\nFailed:\n${failures.join("\n")}`,
+          text: `Created ${successCount} of ${payloadArray.length} coupon(s).\n\nFailed:\n${failures.join("\n")}`,
         });
       }
     } catch (err: any) {
@@ -859,7 +880,7 @@ BATTERY15 - $15.00 FLAT DISCOUNT"
                           color: row.confidence >= 0.8 ? "#86efac" : "#fde68a",
                         }}
                       >
-                        {Math.round(row.confidence * 100)}%
+                        {Math.round((row.confidence ?? 1) * 100)}%
                       </span>
                     </td>
                     <td style={{ ...tdStyle, textAlign: "center" }}>

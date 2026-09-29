@@ -19,7 +19,6 @@ export type MappingRuleDefinition = {
 
   /**
    * Overrides Blueprint GL-account lookup.
-   *
    * Used by required Vehicle Inventory - INVV default mappings.
    * Example: "INVV" becomes "<dealerId>_INVV".
    */
@@ -52,7 +51,7 @@ export type PaymentMappingScreenConfig = {
   rules: MappingRuleDefinition[];
 };
 
-type BootstrapAccount = {
+export type BootstrapAccount = {
   accountNumber: string;
   id: string;
   key: string;
@@ -64,6 +63,12 @@ type CustomFieldOption = {
   id: string;
   name: string;
   deleted: boolean;
+};
+
+export type GlResolutionResult = {
+  accountNumber: string;
+  accountFound: boolean;
+  matchType: "exact" | "fallback_stripped" | "not_found";
 };
 
 const GLAM_MAPPING_RULE_URL =
@@ -113,9 +118,12 @@ function generateRowId(): string {
   return `glam-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
-function extractGlAccountNumber(value: unknown): string | null {
+/**
+ * Extracts the primary account token from raw blueprint text,
+ * preserving alphanumeric codes (e.g. "220CC - Retail Cash" -> "220CC").
+ */
+function sanitizeRawGlInput(value: unknown): string | null {
   const text = normalize(value);
-
   if (!text) return null;
 
   const normalized = normalizeLower(text);
@@ -129,8 +137,108 @@ function extractGlAccountNumber(value: unknown): string | null {
     return null;
   }
 
-  const match = text.match(/\d{2,}/);
-  return match?.[0] ?? null;
+  const token = text.split(/[\s:–—-]+/)[0]?.trim();
+  const candidate = token || text;
+
+  // Must contain at least one digit or alphanumeric standard identifier
+  if (!/\d/.test(candidate) && candidate.toLowerCase() !== "invv") return null;
+
+  return candidate.replace(/[.,;:]+$/, "");
+}
+
+/**
+ * Generates fallback candidates by progressively stripping suffixes,
+ * delimiters, and sub-codes from any GL account string.
+ */
+function generateGlFallbackCandidates(rawInput: string): string[] {
+  const candidates: string[] = [];
+  const trimmed = rawInput.trim();
+
+  // 1. Strip trailing non-digit characters (e.g. "220CC" -> "220", "1010A" -> "1010")
+  const trailingAlphaStripped = trimmed.replace(/[^0-9]+$/g, "");
+  if (trailingAlphaStripped && trailingAlphaStripped !== trimmed) {
+    candidates.push(trailingAlphaStripped);
+  }
+
+  // 2. Strip separator-based sub-accounts (e.g. "220-01" -> "220", "1010.CC" -> "1010")
+  const delimiterSplit = trimmed.split(/[-_./:\s]/)[0];
+  if (
+    delimiterSplit &&
+    delimiterSplit !== trimmed &&
+    !candidates.includes(delimiterSplit)
+  ) {
+    candidates.push(delimiterSplit);
+  }
+
+  // 3. Extract purely numeric core (e.g. "GL-220-X" -> "220")
+  const numericCore = trimmed.replace(/\D/g, "");
+  if (
+    numericCore &&
+    !candidates.includes(numericCore) &&
+    numericCore !== trimmed
+  ) {
+    candidates.push(numericCore);
+  }
+
+  return candidates;
+}
+
+/**
+ * Generic resolver for any GL Account code against Bootstrap accounts:
+ * 1. Checks if exact alphanumeric code exists in Bootstrap accounts.
+ * 2. If not, strips suffixes/delimiters and checks if base account exists.
+ * 3. Falls back gracefully to candidate or 9999 if neither exists.
+ */
+export function resolveGlAccountWithBootstrap(
+  rawInput: unknown,
+  accounts: BootstrapAccount[] = []
+): GlResolutionResult {
+  const rawCode = sanitizeRawGlInput(rawInput);
+
+  if (!rawCode) {
+    return {
+      accountNumber: "9999",
+      accountFound: false,
+      matchType: "not_found",
+    };
+  }
+
+  const accountMap = new Map<string, BootstrapAccount>();
+  for (const acc of accounts) {
+    if (acc?.accountNumber) {
+      accountMap.set(normalize(acc.accountNumber).toUpperCase(), acc);
+    }
+  }
+
+  // STEP 1: Check if the exact alphanumeric account exists in bootstrap (e.g. "220CC")
+  const exactMatch = accountMap.get(rawCode.toUpperCase());
+  if (exactMatch) {
+    return {
+      accountNumber: exactMatch.accountNumber,
+      accountFound: true,
+      matchType: "exact",
+    };
+  }
+
+  // STEP 2: Exact match missing -> Check fallback stripped candidates (e.g. "220")
+  const fallbacks = generateGlFallbackCandidates(rawCode);
+  for (const candidate of fallbacks) {
+    const fallbackMatch = accountMap.get(candidate.toUpperCase());
+    if (fallbackMatch) {
+      return {
+        accountNumber: fallbackMatch.accountNumber,
+        accountFound: true,
+        matchType: "fallback_stripped",
+      };
+    }
+  }
+
+  // STEP 3: Neither exists in bootstrap -> return best candidate or rawCode
+  return {
+    accountNumber: fallbacks[0] || rawCode,
+    accountFound: false,
+    matchType: "not_found",
+  };
 }
 
 function getBootstrapRoot(data: unknown): Record<string, unknown> {
@@ -236,12 +344,6 @@ function isPaymentMethodColumn(column: string): boolean {
   return normalize(column).includes("PAYMENT_METHOD");
 }
 
-/**
- * UI-only resolver.
- *
- * The payload retains the generated Tekion custom-field option ID, while the
- * UI displays its actual human-readable payment-method name below the ID.
- */
 function findPaymentMethodNameByGeneratedId(
   rules: MappingRuleDefinition[],
   row: GlamMappingRow,
@@ -282,11 +384,6 @@ function findPaymentMethodNameByGeneratedId(
   return "";
 }
 
-/**
- * Config rules start with an empty PAYMENT_METHOD_* value. buildRow replaces
- * that value with a server-generated custom-field option ID. This function
- * safely matches that saved payload row back to its original config rule.
- */
 function doesRowMatchRule(
   row: GlamMappingRow,
   rule: MappingRuleDefinition,
@@ -309,8 +406,6 @@ function doesRowMatchRule(
         continue;
       }
 
-      // Fallback recognition for required defaults such as INVV if a
-      // Bootstrap snapshot temporarily does not include the generated ID.
       if (
         rule.alwaysInclude &&
         normalize(rule.mappedAssetIdOverride) &&
@@ -354,7 +449,9 @@ function findScopedBlueprintValue(
     );
   });
 
-  if (exact) return exact.decodedValue;
+  if (exact && exact.decodedValue !== undefined && exact.decodedValue !== null) {
+    return exact.decodedValue;
+  }
 
   const loose = rows.find((row) => {
     const rowSection = normalizeComparable(row.sectionName);
@@ -373,6 +470,20 @@ function findScopedBlueprintValue(
   return loose?.decodedValue;
 }
 
+function isValueDefinedInBlueprint(val: unknown): boolean {
+  if (val === undefined || val === null) return false;
+  const s = normalize(val);
+  if (!s) return false;
+  const l = normalizeLower(s);
+  return (
+    l !== "n/a" &&
+    l !== "na" &&
+    l !== "none" &&
+    l !== "null" &&
+    l !== "not applicable"
+  );
+}
+
 function buildRow(
   dealerId: string,
   rule: MappingRuleDefinition,
@@ -380,18 +491,14 @@ function buildRow(
   accounts: BootstrapAccount[],
   bootstrap: BootstrapRecord | null
 ): GlamMappingRow {
-  const decodedAccountNumber = extractGlAccountNumber(decodedValue);
+  let glSuffix: string;
 
-  const matchedAccount = decodedAccountNumber
-    ? accounts.find((account) => account.accountNumber === decodedAccountNumber)
-    : undefined;
-
-  // Vehicle Inventory - INVV is a system-enforced mapping, not a
-  // Blueprint-entered GL account. It must always map to <dealerId>_INVV.
-  const glSuffix =
-    normalize(rule.mappedAssetSuffix) ||
-    matchedAccount?.accountNumber ||
-    "9999";
+  if (normalize(rule.mappedAssetSuffix)) {
+    glSuffix = normalize(rule.mappedAssetSuffix);
+  } else {
+    const resolution = resolveGlAccountWithBootstrap(decodedValue, accounts);
+    glSuffix = resolution.accountNumber || "9999";
+  }
 
   const paymentMethodId = rule.paymentMethodField
     ? findGeneratedPaymentMethodId(
@@ -417,8 +524,6 @@ function buildRow(
   return {
     rowId: generateRowId(),
     attributes,
-    // Normal GL mappings use "<dealerId>_<GL account>".
-    // INVV is a unique Tekion system account and must be exactly "INVV".
     mappedAssetId:
       normalize(rule.mappedAssetIdOverride) || `${dealerId}_${glSuffix}`,
     mappedDealerId: dealerId,
@@ -454,7 +559,8 @@ export const PaymentMappingView: React.FC<{
   } | null>(null);
 
   const flatRows = useMemo(
-    () => accountingBlueprint.blueprint?.populatedFlatRows ??
+    () =>
+      accountingBlueprint.blueprint?.populatedFlatRows ??
       accountingBlueprint.blueprint?.allFields ??
       [],
     [accountingBlueprint.blueprint]
@@ -462,23 +568,43 @@ export const PaymentMappingView: React.FC<{
 
   const accounts = useMemo(() => getBootstrapAccounts(bootstrap), [bootstrap]);
 
+  /**
+   * Only includes rules that are either:
+   * 1. Hardcoded system defaults (alwaysInclude or mappedAssetSuffix)
+   * 2. Actually found and populated in the Blueprint
+   */
   const buildDefaultRows = useCallback(
-    (activeDealerId: string, activeBootstrap: BootstrapRecord | null): GlamMappingRow[] =>
-      config.rules.map((rule) => {
-        const decodedValue = findScopedBlueprintValue(
-          flatRows,
-          rule.blueprintSection,
-          rule.blueprintQuestion
-        );
+    (activeDealerId: string, activeBootstrap: BootstrapRecord | null): GlamMappingRow[] => {
+      const activeAccounts = getBootstrapAccounts(activeBootstrap);
 
-        return buildRow(
-          activeDealerId,
-          rule,
-          decodedValue,
-          getBootstrapAccounts(activeBootstrap),
-          activeBootstrap
-        );
-      }),
+      return config.rules
+        .filter((rule) => {
+          if (rule.alwaysInclude || normalize(rule.mappedAssetSuffix)) {
+            return true;
+          }
+          const decodedValue = findScopedBlueprintValue(
+            flatRows,
+            rule.blueprintSection,
+            rule.blueprintQuestion
+          );
+          return isValueDefinedInBlueprint(decodedValue);
+        })
+        .map((rule) => {
+          const decodedValue = findScopedBlueprintValue(
+            flatRows,
+            rule.blueprintSection,
+            rule.blueprintQuestion
+          );
+
+          return buildRow(
+            activeDealerId,
+            rule,
+            decodedValue,
+            activeAccounts,
+            activeBootstrap
+          );
+        });
+    },
     [config.rules, flatRows]
   );
 
@@ -491,9 +617,15 @@ export const PaymentMappingView: React.FC<{
   );
 
   const ensureRequiredDefaultRows = useCallback(
-    (rows: GlamMappingRow[], activeDealerId: string, activeBootstrap: BootstrapRecord | null) => {
+    (
+      rows: GlamMappingRow[],
+      activeDealerId: string,
+      activeBootstrap: BootstrapRecord | null
+    ) => {
       const defaults = buildDefaultRows(activeDealerId, activeBootstrap);
-      const existingKeys = new Set(rows.map((row) => getAttributesKey(row.attributes)));
+      const existingKeys = new Set(
+        rows.map((row) => getAttributesKey(row.attributes))
+      );
 
       const requiredRows = defaults.filter((row) => {
         const matchingRule = config.rules.find((rule) =>
@@ -605,6 +737,7 @@ export const PaymentMappingView: React.FC<{
     buildDefaultRows,
     config.module,
     config.name,
+    ensureRequiredDefaultRows,
     saveDraft,
   ]);
 
@@ -612,54 +745,86 @@ export const PaymentMappingView: React.FC<{
     void reload();
   }, [reload]);
 
+  /**
+   * Only show in source rows if the question is populated in Blueprint
+   * or is marked as an always-included system default.
+   */
   const sourceRows = useMemo(
     () =>
-      config.rules.map((rule) => {
-        const decodedValue = findScopedBlueprintValue(
-          flatRows,
-          rule.blueprintSection,
-          rule.blueprintQuestion
-        );
+      config.rules
+        .filter((rule) => {
+          if (rule.alwaysInclude || normalize(rule.mappedAssetSuffix)) {
+            return true;
+          }
+          const decodedValue = findScopedBlueprintValue(
+            flatRows,
+            rule.blueprintSection,
+            rule.blueprintQuestion
+          );
+          return isValueDefinedInBlueprint(decodedValue);
+        })
+        .map((rule) => {
+          const decodedValue = findScopedBlueprintValue(
+            flatRows,
+            rule.blueprintSection,
+            rule.blueprintQuestion
+          );
 
-        const accountNumber =
-          normalize(rule.mappedAssetSuffix) ||
-          extractGlAccountNumber(decodedValue);
+          let accountNumber: string;
+          let accountFound: boolean;
+          let matchType: "exact" | "fallback_stripped" | "not_found" = "not_found";
 
-        const accountFound = Boolean(
-          normalize(rule.mappedAssetSuffix) ||
-            (accountNumber &&
-              accounts.some((account) => account.accountNumber === accountNumber))
-        );
+          if (normalize(rule.mappedAssetSuffix)) {
+            accountNumber = normalize(rule.mappedAssetSuffix);
+            accountFound = true;
+            matchType = "exact";
+          } else {
+            const resolution = resolveGlAccountWithBootstrap(decodedValue, accounts);
+            accountNumber = resolution.accountNumber;
+            accountFound = resolution.accountFound;
+            matchType = resolution.matchType;
+          }
 
-        const generatedPaymentMethodId = rule.paymentMethodField
-          ? findGeneratedPaymentMethodId(
-              bootstrap,
-              dealerId,
-              rule.paymentMethodField.customFieldKey,
-              rule.paymentMethodField.optionName
-            )
-          : "";
+          const generatedPaymentMethodId = rule.paymentMethodField
+            ? findGeneratedPaymentMethodId(
+                bootstrap,
+                dealerId,
+                rule.paymentMethodField.customFieldKey,
+                rule.paymentMethodField.optionName
+              )
+            : "";
 
-        return {
-          rule,
-          decodedValue:
-            normalize(rule.mappedAssetSuffix)
-              ? `System default: ${rule.mappedAssetSuffix}`
-              : normalize(
-                  Array.isArray(decodedValue) ? decodedValue.join(", ") : decodedValue
-                ),
-          accountNumber,
-          accountFound,
-          generatedPaymentMethodId,
-        };
-      }),
+          const hasGlAccount = Boolean(
+            decodedValue && accountNumber && accountNumber !== "9999"
+          );
+
+          const isMissingCustomOption = Boolean(
+            rule.paymentMethodField && hasGlAccount && !generatedPaymentMethodId
+          );
+
+          return {
+            rule,
+            decodedValue:
+              normalize(rule.mappedAssetSuffix)
+                ? `System default: ${rule.mappedAssetSuffix}`
+                : normalize(
+                    Array.isArray(decodedValue) ? decodedValue.join(", ") : decodedValue
+                  ),
+            accountNumber,
+            accountFound,
+            matchType,
+            generatedPaymentMethodId,
+            isMissingCustomOption,
+          };
+        }),
     [accounts, bootstrap, config.rules, dealerId, flatRows]
   );
 
-  /**
-   * Updates the editable mappedAssetId input while the user types.
-   * It does not alter attributes, payment-method IDs, or any Blueprint data.
-   */
+  const missingOptionsList = useMemo(
+    () => sourceRows.filter((item) => item.isMissingCustomOption),
+    [sourceRows]
+  );
+
   const updateMappedAssetIdDraft = (
     rowId: string | null | undefined,
     index: number,
@@ -667,9 +832,7 @@ export const PaymentMappingView: React.FC<{
   ) => {
     setMappingList((currentRows) =>
       currentRows.map((row, rowIndex) => {
-        const isTargetRow = rowId
-          ? row.rowId === rowId
-          : rowIndex === index;
+        const isTargetRow = rowId ? row.rowId === rowId : rowIndex === index;
 
         return isTargetRow
           ? {
@@ -681,19 +844,13 @@ export const PaymentMappingView: React.FC<{
     );
   };
 
-  /**
-   * Saves a manual mappedAssetId override into the local GLAM draft.
-   * The exact edited value is retained in the outgoing Tekion payload.
-   */
   const saveMappedAssetIdEdit = async (
     rowId: string | null | undefined,
     index: number,
     mappedAssetId: string
   ) => {
     const nextRows = mappingList.map((row, rowIndex) => {
-      const isTargetRow = rowId
-        ? row.rowId === rowId
-        : rowIndex === index;
+      const isTargetRow = rowId ? row.rowId === rowId : rowIndex === index;
 
       return isTargetRow
         ? {
@@ -733,7 +890,9 @@ export const PaymentMappingView: React.FC<{
     const rows = buildDefaultRows(dealerId, bootstrap);
     setMappingList(rows);
     await saveDraft(rows, dealerId);
-    setMessage("Mapping rows were rebuilt from Blueprint + Bootstrap data.");
+    setMessage(
+      `Mapping rows were rebuilt from Blueprint. Populated ${rows.length} row(s).`
+    );
   };
 
   const syncActiveRowsFromValidatedBlueprint = async () => {
@@ -748,26 +907,31 @@ export const PaymentMappingView: React.FC<{
       rebuiltRows.map((row) => [getAttributesKey(row.attributes), row])
     );
 
-    const synchronizedRows = mappingList.map((currentRow) => {
-      const rebuiltRow = rebuiltByAttributes.get(
-        getAttributesKey(currentRow.attributes)
-      );
+    // Keep existing rows that are still in Blueprint, drop ones that were removed in Blueprint
+    const synchronizedRows = mappingList
+      .filter((currentRow) =>
+        rebuiltByAttributes.has(getAttributesKey(currentRow.attributes))
+      )
+      .map((currentRow) => {
+        const rebuiltRow = rebuiltByAttributes.get(
+          getAttributesKey(currentRow.attributes)
+        );
 
-      if (!rebuiltRow) {
-        return currentRow;
-      }
+        if (!rebuiltRow) {
+          return currentRow;
+        }
 
-      return {
-        ...rebuiltRow,
-        rowId: currentRow.rowId ?? rebuiltRow.rowId,
-      };
-    });
+        return {
+          ...rebuiltRow,
+          rowId: currentRow.rowId ?? rebuiltRow.rowId,
+        };
+      });
 
     setMappingList(synchronizedRows);
     await saveDraft(synchronizedRows, dealerId);
 
     setMessage(
-      `Synced ${synchronizedRows.length} active row(s) from validated Blueprint and Bootstrap data. Deleted rows were preserved.`
+      `Synced ${synchronizedRows.length} active row(s) from validated Blueprint. Empty/missing Blueprint questions were excluded.`
     );
   };
 
@@ -809,6 +973,22 @@ export const PaymentMappingView: React.FC<{
 
     if (rowsForDeploy.length !== mappingList.length) {
       setMappingList(rowsForDeploy);
+    }
+
+    const unmappedOptionRows = rowsForDeploy.filter((row) =>
+      Object.entries(row.attributes).some(
+        ([k, v]) =>
+          isPaymentMethodColumn(k) &&
+          (v === "MISSING_GENERATED_PAYMENT_METHOD_ID" || v === "")
+      )
+    );
+
+    if (unmappedOptionRows.length > 0) {
+      setDeployMessage({
+        ok: false,
+        text: `Deployment blocked: ${unmappedOptionRows.length} mapping row(s) require custom field options in Tekion that are not yet created or loaded in Bootstrap. Check the alert banner above.`,
+      });
+      return;
     }
 
     const payload: GlamMappingDraftPayload = {
@@ -935,7 +1115,7 @@ export const PaymentMappingView: React.FC<{
             type="button"
             disabled={loading || !dealerId}
             onClick={() => void syncActiveRowsFromValidatedBlueprint()}
-            title="Updates active payload rows from Blueprint and Bootstrap, while keeping deleted rows deleted"
+            title="Updates active payload rows from Blueprint and Bootstrap, removing unanswered questions"
           >
             ⇣ Sync Validated Rows
           </button>
@@ -952,6 +1132,32 @@ export const PaymentMappingView: React.FC<{
           </button>
         </div>
       </div>
+
+      {missingOptionsList.length > 0 && (
+        <div
+          style={{
+            padding: "12px 14px",
+            borderRadius: 10,
+            border: "1px solid rgba(245, 158, 11, 0.35)",
+            background: "rgba(245, 158, 11, 0.12)",
+            color: "#fbbf24",
+            fontSize: 12.5,
+            lineHeight: 1.5,
+          }}
+        >
+          <strong style={{ fontSize: 13 }}>⚠ Missing Custom Field Option Detected:</strong>
+          <div style={{ marginTop: 4 }}>
+            The Blueprint assigns GL accounts to the following payment method(s), but their corresponding options are missing from Tekion custom fields:
+          </div>
+          <ul style={{ margin: "6px 0 0 18px", padding: 0 }}>
+            {missingOptionsList.map((item) => (
+              <li key={item.rule.key}>
+                <strong>{item.rule.paymentMethodField?.optionName}</strong> (GL: <code>{item.accountNumber}</code>) is missing under custom field <code>{item.rule.paymentMethodField?.customFieldKey}</code>. Create this option in Tekion before deploying.
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {message ? (
         <div
@@ -994,6 +1200,9 @@ export const PaymentMappingView: React.FC<{
           overflow: "auto",
         }}
       >
+        <div style={{ padding: "10px 14px", color: "#94a3b8", fontSize: 12 }}>
+          Blueprint Verification Table (Only displaying answers populated in Blueprint + Required Defaults)
+        </div>
         <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 1080 }}>
           <thead>
             <tr style={{ background: "rgba(255,255,255,0.05)" }}>
@@ -1018,16 +1227,35 @@ export const PaymentMappingView: React.FC<{
                 </td>
                 <td style={cellStyle}>
                   <span style={{ color: getStatusColor(source.accountFound), fontWeight: 700 }}>
-                    {source.accountFound ? "✓ Valid" : "Fallback → 9999"}
+                    {source.matchType === "exact" && "✓ Valid"}
+                    {source.matchType === "fallback_stripped" && "✓ Valid (Stripped Suffix)"}
+                    {source.matchType === "not_found" && "Fallback → 9999"}
                   </span>
                 </td>
                 <td style={{ ...cellStyle, fontFamily: "ui-monospace, monospace" }}>
-                  {source.rule.paymentMethodField
-                    ? source.generatedPaymentMethodId || "Missing generated ID"
-                    : "Not required"}
+                  {source.rule.paymentMethodField ? (
+                    source.generatedPaymentMethodId ? (
+                      source.generatedPaymentMethodId
+                    ) : source.isMissingCustomOption ? (
+                      <span style={{ color: "#f87171", fontWeight: 700 }}>
+                        ⚠ Option "{source.rule.paymentMethodField.optionName}" Missing in Tekion
+                      </span>
+                    ) : (
+                      <span style={{ color: "#94a3b8" }}>Missing generated ID</span>
+                    )
+                  ) : (
+                    "Not required"
+                  )}
                 </td>
               </tr>
             ))}
+            {sourceRows.length === 0 && (
+              <tr>
+                <td colSpan={6} style={{ ...cellStyle, color: "#94a3b8" }}>
+                  No matching questions answered in this Blueprint.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
@@ -1170,7 +1398,6 @@ export const PaymentMappingView: React.FC<{
                 >
                   {(() => {
                     const matchingRule = findMatchingRuleForRow(row);
-
                     const isRequiredDefault = Boolean(matchingRule?.alwaysInclude);
 
                     return (
@@ -1195,7 +1422,7 @@ export const PaymentMappingView: React.FC<{
             {!loading && mappingList.length === 0 ? (
               <tr>
                 <td colSpan={config.mappingColumns.length + 3} style={{ ...cellStyle, color: "#94a3b8" }}>
-                  No mapping rows remain. The synchronized payload will send an empty mappingList.
+                  No mapping rows populated from Blueprint. The synchronized payload will send an empty mappingList.
                 </td>
               </tr>
             ) : null}
@@ -1205,7 +1432,7 @@ export const PaymentMappingView: React.FC<{
 
       <details>
         <summary style={{ cursor: "pointer", color: "#cbd5e1", fontWeight: 700 }}>
-          Show synchronized payload preview
+          Show synchronized payload preview ({mappingList.length} rows)
         </summary>
         <pre
           style={{

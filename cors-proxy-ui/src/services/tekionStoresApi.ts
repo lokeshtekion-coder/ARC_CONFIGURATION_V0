@@ -8,8 +8,7 @@ import type { KeyValuePair } from "../types/proxy.types";
 import type { StoreRecord } from "./storesDb";
 export type { StoreRecord };
 
-export type TRange = 7 | 30 | 60 | 90;
-
+export type TRange = 7 | 30 | 60 | 90 | 150;
 
 const STORES_API_URL =
   "https://us-west1-tapapi.tekioncloud.com/tapapi/tap-crm-implementations-backend/public/v1/entity-instance/1";
@@ -257,7 +256,6 @@ function mapStore(item: Record<string, unknown>): StoreRecord {
     ),
     base_entity_instance_id: normalize(item.base_entity_instance_id),
     onboarding_project_id: normalize(item.onboarding_project_id),
-
 
     project_engagement_manager_1781169293313734451: normalize(
       item.project_engagement_manager_1781169293313734451

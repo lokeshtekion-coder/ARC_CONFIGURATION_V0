@@ -1,0 +1,4587 @@
+{
+  "dealerId": "8194",
+  "timestamp": "2026-09-28T06-03-17-538Z",
+  "bootstrap": {
+    "dealerId": "8194",
+    "glAccounts": [
+      {
+        "key": "8194_8194_4504C",
+        "accountName": "Service/Maint Contract - Labor - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4504C",
+        "active": true,
+        "id": "8194_4504C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4625C",
+        "accountName": "Parts & Access. - W.O. Body Shop - Other Makes Vehicles - Cost of Sale",
+        "accountNumber": "4625C",
+        "active": true,
+        "id": "8194_4625C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4504A",
+        "accountName": "Service/Maint Contract - Labor - Infiniti Vehicles - Sale",
+        "accountNumber": "4504A",
+        "active": true,
+        "id": "8194_4504A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4625A",
+        "accountName": "Parts & Access. - W.O. Body Shop - Other Makes Vehicles - Sale",
+        "accountNumber": "4625A",
+        "active": true,
+        "id": "8194_4625A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_8040",
+        "accountName": "Bad Debts Recovered",
+        "accountNumber": "8040",
+        "active": true,
+        "id": "8194_8040",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_UCCP",
+        "accountName": "Used Vehicles - Infiniti Certified Retail Net Gross Profit - Cost of Sale",
+        "accountNumber": "UCCP",
+        "active": true,
+        "id": "8194_UCCP",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4612C",
+        "accountName": "Parts & Access. - Express Service - Other Makes Vehicles - Cost of Sale",
+        "accountNumber": "4612C",
+        "active": true,
+        "id": "8194_4612C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4600C",
+        "accountName": "Parts & Access. - W.O. - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4600C",
+        "active": true,
+        "id": "8194_4600C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0230C",
+        "accountName": "Other Salaries & Wages - Service Dept.",
+        "accountNumber": "0230C",
+        "active": true,
+        "id": "8194_0230C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0230D",
+        "accountName": "Other Salaries & Wages - Parts & Acc. Dept",
+        "accountNumber": "0230D",
+        "active": true,
+        "id": "8194_0230D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0230E",
+        "accountName": "Other Salaries & Wages - Body Shop Dept.",
+        "accountNumber": "0230E",
+        "active": true,
+        "id": "8194_0230E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2600",
+        "accountName": "Marketable Securities",
+        "accountNumber": "2600",
+        "active": true,
+        "id": "8194_2600",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_3810",
+        "accountName": "Bldg & Imprvm - Accumulated Depreciation",
+        "accountNumber": "3810",
+        "active": true,
+        "id": "8194_3810",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_3930",
+        "accountName": "Investments",
+        "accountNumber": "3930",
+        "active": true,
+        "id": "8194_3930",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8194_8194_2840",
+        "accountName": "Furn & Fixtures",
+        "accountNumber": "2840",
+        "active": true,
+        "id": "8194_2840",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_0230A",
+        "accountName": "Other Salaries & Wages - New Vehicle Dept.",
+        "accountNumber": "0230A",
+        "active": true,
+        "id": "8194_0230A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0230B",
+        "accountName": "Other Salaries & Wages - Used Vehicle Dept.",
+        "accountNumber": "0230B",
+        "active": true,
+        "id": "8194_0230B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2960",
+        "accountName": "Other Non-Automotive Assets",
+        "accountNumber": "2960",
+        "active": true,
+        "id": "8194_2960",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_4612A",
+        "accountName": "Parts & Access. - Express Service - Other Makes Vehicles - Sale",
+        "accountNumber": "4612A",
+        "active": true,
+        "id": "8194_4612A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4600A",
+        "accountName": "Parts & Access. - W.O. - Infiniti Vehicles - Sale",
+        "accountNumber": "4600A",
+        "active": true,
+        "id": "8194_4600A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_8050",
+        "accountName": "Other Income",
+        "accountNumber": "8050",
+        "active": true,
+        "id": "8194_8050",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_4502C",
+        "accountName": "Express Service - Cust. Mech. Labor - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4502C",
+        "active": true,
+        "id": "8194_4502C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0350C",
+        "accountName": "Institutional Advertising - Service Dept.",
+        "accountNumber": "0350C",
+        "active": true,
+        "id": "8194_0350C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0350B",
+        "accountName": "Institutional Advertising - Used Vehicle Dept.",
+        "accountNumber": "0350B",
+        "active": true,
+        "id": "8194_0350B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4950A",
+        "accountName": "Internal Body Shop Labor - Sale",
+        "accountNumber": "4950A",
+        "active": true,
+        "id": "8194_4950A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0350E",
+        "accountName": "Institutional Advertising - Body Shop Dept.",
+        "accountNumber": "0350E",
+        "active": true,
+        "id": "8194_0350E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0350D",
+        "accountName": "Institutional Advertising - Parts & Acc. Dept",
+        "accountNumber": "0350D",
+        "active": true,
+        "id": "8194_0350D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4950C",
+        "accountName": "Internal Body Shop Labor - Cost of Sale",
+        "accountNumber": "4950C",
+        "active": true,
+        "id": "8194_4950C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_3920",
+        "accountName": "Dividends",
+        "accountNumber": "3920",
+        "active": true,
+        "id": "8194_3920",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8194_8194_2950",
+        "accountName": "Other Notes & Accounts Receivable",
+        "accountNumber": "2950",
+        "active": true,
+        "id": "8194_2950",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_2830",
+        "accountName": "Parts & Acc. Eq",
+        "accountNumber": "2830",
+        "active": true,
+        "id": "8194_2830",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_0350A",
+        "accountName": "Institutional Advertising - New Vehicle Dept.",
+        "accountNumber": "0350A",
+        "active": true,
+        "id": "8194_0350A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2870",
+        "accountName": "Signs",
+        "accountNumber": "2870",
+        "active": true,
+        "id": "8194_2870",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_4700A",
+        "accountName": "Gas, Oil, & Grease - Sale",
+        "accountNumber": "4700A",
+        "active": true,
+        "id": "8194_4700A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4506C",
+        "accountName": "Exp Service Service/Maint Cont Labor - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4506C",
+        "active": true,
+        "id": "8194_4506C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4506A",
+        "accountName": "Exp Service Service/Maint Cont Labor - Infiniti Vehicles - Sale",
+        "accountNumber": "4506A",
+        "active": true,
+        "id": "8194_4506A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_8020",
+        "accountName": "Gain on Disposal of Assets",
+        "accountNumber": "8020",
+        "active": true,
+        "id": "8194_8020",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_4290A",
+        "accountName": "Other Service Contract Sls. - New Other Makes Vehicle - Sales",
+        "accountNumber": "4290A",
+        "active": true,
+        "id": "8194_4290A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0240C",
+        "accountName": "Absentee Wages - Productive Personnel - Service Dept.",
+        "accountNumber": "0240C",
+        "active": true,
+        "id": "8194_0240C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4290C",
+        "accountName": "Other Service Contract Sls. - New Other Makes Vehicle - Cost of Sale",
+        "accountNumber": "4290C",
+        "active": true,
+        "id": "8194_4290C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0240E",
+        "accountName": "Absentee Wages - Productive Personnel - Body Shop Dept.",
+        "accountNumber": "0240E",
+        "active": true,
+        "id": "8194_0240E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2620",
+        "accountName": "Prepaid Expenses",
+        "accountNumber": "2620",
+        "active": true,
+        "id": "8194_2620",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_3830",
+        "accountName": "Parts & Acc. Eq - Accumulated Depreciation",
+        "accountNumber": "3830",
+        "active": true,
+        "id": "8194_3830",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_2860",
+        "accountName": "Leaseholds",
+        "accountNumber": "2860",
+        "active": true,
+        "id": "8194_2860",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_3950",
+        "accountName": "Paid in Capital",
+        "accountNumber": "3950",
+        "active": true,
+        "id": "8194_3950",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8194_8194_4602C",
+        "accountName": "Parts & Access. - Express Service - W.O. -  Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4602C",
+        "active": true,
+        "id": "8194_4602C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4602A",
+        "accountName": "Parts & Access. - Express Service - W.O. -  Infiniti Vehicles - Sale",
+        "accountNumber": "4602A",
+        "active": true,
+        "id": "8194_4602A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0360E",
+        "accountName": "Stationery & Office Supplies - Body Shop Dept.",
+        "accountNumber": "0360E",
+        "active": true,
+        "id": "8194_0360E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0130B",
+        "accountName": "Policy Adjustment - Used Vehicle Dept.",
+        "accountNumber": "0130B",
+        "active": true,
+        "id": "8194_0130B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4940A",
+        "accountName": "Warranty Claims Body Shop Labor - Sale",
+        "accountNumber": "4940A",
+        "active": true,
+        "id": "8194_4940A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0360B",
+        "accountName": "Stationery & Office Supplies - Used Vehicle Dept.",
+        "accountNumber": "0360B",
+        "active": true,
+        "id": "8194_0360B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4180A",
+        "accountName": "Q60 Coupe - Lease - Sales",
+        "accountNumber": "4180A",
+        "active": true,
+        "id": "8194_4180A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0360A",
+        "accountName": "Stationery & Office Supplies - New Vehicle Dept.",
+        "accountNumber": "0360A",
+        "active": true,
+        "id": "8194_0360A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0130C",
+        "accountName": "Policy Adjustment - Service Dept.",
+        "accountNumber": "0130C",
+        "active": true,
+        "id": "8194_0130C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0130D",
+        "accountName": "Policy Adjustment - Parts & Acc. Dept",
+        "accountNumber": "0130D",
+        "active": true,
+        "id": "8194_0130D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4940C",
+        "accountName": "Warranty Claims Body Shop Labor - Cost of Sale",
+        "accountNumber": "4940C",
+        "active": true,
+        "id": "8194_4940C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0360D",
+        "accountName": "Stationery & Office Supplies - Parts & Acc. Dept",
+        "accountNumber": "0360D",
+        "active": true,
+        "id": "8194_0360D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4180C",
+        "accountName": "Q60 Coupe - Lease - Cost of Sale",
+        "accountNumber": "4180C",
+        "active": true,
+        "id": "8194_4180C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0360C",
+        "accountName": "Stationery & Office Supplies - Service Dept.",
+        "accountNumber": "0360C",
+        "active": true,
+        "id": "8194_0360C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0130E",
+        "accountName": "Policy Adjustment - Body Shop Dept.",
+        "accountNumber": "0130E",
+        "active": true,
+        "id": "8194_0130E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_6490C",
+        "accountName": "Finance Res Inc - Infiniti Certified Vehicle - Cost of Sale",
+        "accountNumber": "6490C",
+        "active": true,
+        "id": "8194_6490C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_3820",
+        "accountName": "Mach & Shop Eq - Accumulated Depreciation",
+        "accountNumber": "3820",
+        "active": true,
+        "id": "8194_3820",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_2610",
+        "accountName": "Fin. - Ins. - Serv. Cont. Inc. Rec. - Current",
+        "accountNumber": "2610",
+        "active": true,
+        "id": "8194_2610",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_3940",
+        "accountName": "Withdrawals",
+        "accountNumber": "3940",
+        "active": true,
+        "id": "8194_3940",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8194_8194_2970",
+        "accountName": "Other Assets",
+        "accountNumber": "2970",
+        "active": true,
+        "id": "8194_2970",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_0130A",
+        "accountName": "Policy Adjustment - New Vehicle Dept.",
+        "accountNumber": "0130A",
+        "active": true,
+        "id": "8194_0130A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2850",
+        "accountName": "Service Units",
+        "accountNumber": "2850",
+        "active": true,
+        "id": "8194_2850",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_3860",
+        "accountName": "Leaseholds - Accumulated Depreciation",
+        "accountNumber": "3860",
+        "active": true,
+        "id": "8194_3860",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_2890",
+        "accountName": "Fin. - Ins. - Serv. Cont. Inc. Rec. - Deferred",
+        "accountNumber": "2890",
+        "active": true,
+        "id": "8194_2890",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_4645A",
+        "accountName": "Parts & Access. - Warranty Claims - Other Makes Vehicles - Sale",
+        "accountNumber": "4645A",
+        "active": true,
+        "id": "8194_4645A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4512A",
+        "accountName": "Express Service Labor - Other Makes Vehicles - Sale",
+        "accountNumber": "4512A",
+        "active": true,
+        "id": "8194_4512A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4657C",
+        "accountName": "Tires Internal - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4657C",
+        "active": true,
+        "id": "8194_4657C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4657A",
+        "accountName": "Tires Internal - Infiniti Vehicles - Sale",
+        "accountNumber": "4657A",
+        "active": true,
+        "id": "8194_4657A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_8080",
+        "accountName": "LIFO Adjustments - Additions to Income",
+        "accountNumber": "8080",
+        "active": true,
+        "id": "8194_8080",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_4620C",
+        "accountName": "Parts & Access. - W.O. Body Shop - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4620C",
+        "active": true,
+        "id": "8194_4620C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4620A",
+        "accountName": "Parts & Access. - W.O. Body Shop - Infiniti Vehicles - Sale",
+        "accountNumber": "4620A",
+        "active": true,
+        "id": "8194_4620A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4644C",
+        "accountName": "Parts & Access - Serv/Maint Contract - Other Makes Vehicles - Cost of Sale",
+        "accountNumber": "4644C",
+        "active": true,
+        "id": "8194_4644C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_980",
+        "accountName": "Bonuses - Owners",
+        "accountNumber": "980",
+        "active": true,
+        "id": "8194_980",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0210E",
+        "accountName": "Salaries - Supervision - Body Shop Dept.",
+        "accountNumber": "0210E",
+        "active": true,
+        "id": "8194_0210E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0440E",
+        "accountName": "Postage & Misc. - Body Shop Dept.",
+        "accountNumber": "0440E",
+        "active": true,
+        "id": "8194_0440E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0440D",
+        "accountName": "Postage & Misc. - Parts & Acc. Dept",
+        "accountNumber": "0440D",
+        "active": true,
+        "id": "8194_0440D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0210A",
+        "accountName": "Salaries - Supervision - New Vehicle Dept.",
+        "accountNumber": "0210A",
+        "active": true,
+        "id": "8194_0210A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0440A",
+        "accountName": "Postage & Misc. - New Vehicle Dept.",
+        "accountNumber": "0440A",
+        "active": true,
+        "id": "8194_0440A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0100",
+        "accountName": "Commissions & Incentives",
+        "accountNumber": "0100",
+        "active": true,
+        "id": "8194_0100",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8194_8194_0210B",
+        "accountName": "Salaries - Supervision - Used Vehicle Dept.",
+        "accountNumber": "0210B",
+        "active": true,
+        "id": "8194_0210B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0440C",
+        "accountName": "Postage & Misc. - Service Dept.",
+        "accountNumber": "0440C",
+        "active": true,
+        "id": "8194_0440C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0210C",
+        "accountName": "Salaries - Supervision - Service Dept.",
+        "accountNumber": "0210C",
+        "active": true,
+        "id": "8194_0210C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0210D",
+        "accountName": "Salaries - Supervision - Parts & Acc. Dept",
+        "accountNumber": "0210D",
+        "active": true,
+        "id": "8194_0210D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0440B",
+        "accountName": "Postage & Misc. - Used Vehicle Dept.",
+        "accountNumber": "0440B",
+        "active": true,
+        "id": "8194_0440B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_3850",
+        "accountName": "Service Units - Accumulated Depreciation",
+        "accountNumber": "3850",
+        "active": true,
+        "id": "8194_3850",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_2760",
+        "accountName": "Company Vehicles/Service Loaner",
+        "accountNumber": "2760",
+        "active": true,
+        "id": "8194_2760",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_4644A",
+        "accountName": "Parts & Access - Serv/Maint Contract - Other Makes Vehicles - Sale",
+        "accountNumber": "4644A",
+        "active": true,
+        "id": "8194_4644A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_8090",
+        "accountName": "Rental / Service Loaner Vehicles Income",
+        "accountNumber": "8090",
+        "active": true,
+        "id": "8194_8090",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_4643C",
+        "accountName": "Parts & Access - Express Service Warranty - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4643C",
+        "active": true,
+        "id": "8194_4643C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4510C",
+        "accountName": "Cust. Mech. Labor - Other Makes Vehicles - Cost of Sale",
+        "accountNumber": "4510C",
+        "active": true,
+        "id": "8194_4510C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4643A",
+        "accountName": "Parts & Access - Express Service Warranty - Infiniti Vehicles - Sale",
+        "accountNumber": "4643A",
+        "active": true,
+        "id": "8194_4643A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4667C",
+        "accountName": "Tires Express Service - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4667C",
+        "active": true,
+        "id": "8194_4667C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_990",
+        "accountName": "Income Taxes",
+        "accountNumber": "990",
+        "active": true,
+        "id": "8194_990",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4510A",
+        "accountName": "Cust. Mech. Labor - Other Makes Vehicles - Sale",
+        "accountNumber": "4510A",
+        "active": true,
+        "id": "8194_4510A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4655C",
+        "accountName": "Parts & Access. - Internal - Other Makes Vehicles - Cost of Sale",
+        "accountNumber": "4655C",
+        "active": true,
+        "id": "8194_4655C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0100E",
+        "accountName": "Commissions & Incentives - Body Shop Dept.",
+        "accountNumber": "0100E",
+        "active": true,
+        "id": "8194_0100E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4970A",
+        "accountName": "Body Shop Materials - Sale",
+        "accountNumber": "4970A",
+        "active": true,
+        "id": "8194_4970A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0100A",
+        "accountName": "Commissions & Incentives - New Vehicle Dept.",
+        "accountNumber": "0100A",
+        "active": true,
+        "id": "8194_0100A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0100B",
+        "accountName": "Commissions & Incentives - Used Vehicle Dept.",
+        "accountNumber": "0100B",
+        "active": true,
+        "id": "8194_0100B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4970C",
+        "accountName": "Body Shop Materials - Cost of Sale",
+        "accountNumber": "4970C",
+        "active": true,
+        "id": "8194_4970C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0100C",
+        "accountName": "Commissions & Incentives - Service Dept.",
+        "accountNumber": "0100C",
+        "active": true,
+        "id": "8194_0100C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_3840",
+        "accountName": "Furn & Fixtures - Accumulated Depreciation",
+        "accountNumber": "3840",
+        "active": true,
+        "id": "8194_3840",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_0100D",
+        "accountName": "Commissions & Incentives - Parts & Acc. Dept",
+        "accountNumber": "0100D",
+        "active": true,
+        "id": "8194_0100D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_3960",
+        "accountName": "Treasury Stock",
+        "accountNumber": "3960",
+        "active": true,
+        "id": "8194_3960",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8194_8194_2430",
+        "accountName": "LIFO Reserve - Parts & Accessories",
+        "accountNumber": "2430",
+        "active": true,
+        "id": "8194_2430",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_4502A",
+        "accountName": "Express Service - Cust. Mech. Labor - Infiniti Vehicles - Sale",
+        "accountNumber": "4502A",
+        "active": true,
+        "id": "8194_4502A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4647C",
+        "accountName": "Tires Warranty - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4647C",
+        "active": true,
+        "id": "8194_4647C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4405A",
+        "accountName": "Used Vehicles - Infiniti Certified Retail - Sale",
+        "accountNumber": "4405A",
+        "active": true,
+        "id": "8194_4405A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4647A",
+        "accountName": "Tires Warranty - Infiniti Vehicles - Sale",
+        "accountNumber": "4647A",
+        "active": true,
+        "id": "8194_4647A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4405C",
+        "accountName": "Used Vehicles - Infiniti Certified Retail - Cost of Sale",
+        "accountNumber": "4405C",
+        "active": true,
+        "id": "8194_4405C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4610C",
+        "accountName": "Parts & Access. - W.O. Other Makes Vehicles - Cost of Sale",
+        "accountNumber": "4610C",
+        "active": true,
+        "id": "8194_4610C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4610A",
+        "accountName": "Parts & Access. - W.O. Other Makes Vehicles - Sale",
+        "accountNumber": "4610A",
+        "active": true,
+        "id": "8194_4610A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0220D",
+        "accountName": "Salaries - Clerical - Parts & Acc. Dept",
+        "accountNumber": "0220D",
+        "active": true,
+        "id": "8194_0220D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0220E",
+        "accountName": "Salaries - Clerical - Body Shop Dept.",
+        "accountNumber": "0220E",
+        "active": true,
+        "id": "8194_0220E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4080A",
+        "accountName": "Q60 - Retail - Sales",
+        "accountNumber": "4080A",
+        "active": true,
+        "id": "8194_4080A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4080C",
+        "accountName": "Q60 - Retail - Cost of Sale",
+        "accountNumber": "4080C",
+        "active": true,
+        "id": "8194_4080C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_2425",
+        "accountName": "Parts & Accessories - Other Makes",
+        "accountNumber": "2425",
+        "active": true,
+        "id": "8194_2425",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_0220A",
+        "accountName": "Salaries - Clerical - New Vehicle Dept.",
+        "accountNumber": "0220A",
+        "active": true,
+        "id": "8194_0220A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0220B",
+        "accountName": "Salaries - Clerical - Used Vehicle Dept.",
+        "accountNumber": "0220B",
+        "active": true,
+        "id": "8194_0220B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2420",
+        "accountName": "Parts, Accessories & Tire Inventories - Infiniti",
+        "accountNumber": "2420",
+        "active": true,
+        "id": "8194_2420",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_0220C",
+        "accountName": "Salaries - Clerical - Service Dept.",
+        "accountNumber": "0220C",
+        "active": true,
+        "id": "8194_0220C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2300",
+        "accountName": "Demos, Infiniti",
+        "accountNumber": "2300",
+        "active": true,
+        "id": "8194_2300",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_3870",
+        "accountName": "Signs - Accumulated Depreciation",
+        "accountNumber": "3870",
+        "active": true,
+        "id": "8194_3870",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_2780",
+        "accountName": "Rental Vehicles",
+        "accountNumber": "2780",
+        "active": true,
+        "id": "8194_2780",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_4500C",
+        "accountName": "Cust. Mech. Labor - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4500C",
+        "active": true,
+        "id": "8194_4500C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4645C",
+        "accountName": "Parts & Access. - Warranty Claims - Other Makes Vehicles - Cost of Sale",
+        "accountNumber": "4645C",
+        "active": true,
+        "id": "8194_4645C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4500A",
+        "accountName": "Cust. Mech. Labor - Infiniti Vehicles - Sale",
+        "accountNumber": "4500A",
+        "active": true,
+        "id": "8194_4500A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4512C",
+        "accountName": "Express Service Labor - Other Makes Vehicles - Cost of Sale",
+        "accountNumber": "4512C",
+        "active": true,
+        "id": "8194_4512C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0570C",
+        "accountName": "Heat, Light, Power & Water - Service Dept.",
+        "accountNumber": "0570C",
+        "active": true,
+        "id": "8194_0570C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2415",
+        "accountName": "LIFO Reserve - Used Vehicles",
+        "accountNumber": "2415",
+        "active": true,
+        "id": "8194_2415",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_0340D",
+        "accountName": "Freight & Express - Parts & Acc. Dept",
+        "accountNumber": "0340D",
+        "active": true,
+        "id": "8194_0340D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0570B",
+        "accountName": "Heat, Light, Power & Water - Used Vehicle Dept.",
+        "accountNumber": "0570B",
+        "active": true,
+        "id": "8194_0570B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4960A",
+        "accountName": "Sublet Repairs Body Shop - Sale",
+        "accountNumber": "4960A",
+        "active": true,
+        "id": "8194_4960A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0570E",
+        "accountName": "Heat, Light, Power & Water - Body Shop Dept.",
+        "accountNumber": "0570E",
+        "active": true,
+        "id": "8194_0570E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0570D",
+        "accountName": "Heat, Light, Power & Water - Parts & Acc. Dept",
+        "accountNumber": "0570D",
+        "active": true,
+        "id": "8194_0570D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4960C",
+        "accountName": "Sublet Repairs Body Shop - Cost of Sale",
+        "accountNumber": "4960C",
+        "active": true,
+        "id": "8194_4960C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0110A",
+        "accountName": "Delivery Expense - New Vehicle Dept.",
+        "accountNumber": "0110A",
+        "active": true,
+        "id": "8194_0110A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_3500",
+        "accountName": "Allowance for Doubtful Accounts",
+        "accountNumber": "3500",
+        "active": true,
+        "id": "8194_3500",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_0570A",
+        "accountName": "Heat, Light, Power & Water - New Vehicle Dept.",
+        "accountNumber": "0570A",
+        "active": true,
+        "id": "8194_0570A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0110B",
+        "accountName": "Delivery Expense - Used Vehicle Dept.",
+        "accountNumber": "0110B",
+        "active": true,
+        "id": "8194_0110B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2410",
+        "accountName": "LIFO Reserve - New Vehicles",
+        "accountNumber": "2410",
+        "active": true,
+        "id": "8194_2410",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_3420",
+        "accountName": "Long Term Debt - Company Cars & Service Loaners",
+        "accountNumber": "3420",
+        "active": true,
+        "id": "8194_3420",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_2330",
+        "accountName": "Demos Other Makes",
+        "accountNumber": "2330",
+        "active": true,
+        "id": "8194_2330",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_2210",
+        "accountName": "Factory Receivables - Infiniti",
+        "accountNumber": "2210",
+        "active": true,
+        "id": "8194_2210",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_2450",
+        "accountName": "Body Shop Materials",
+        "accountNumber": "2450",
+        "active": true,
+        "id": "8194_2450",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_4205A",
+        "accountName": "Other Make Fleet Cars and Trucks - Sales",
+        "accountNumber": "4205A",
+        "active": true,
+        "id": "8194_4205A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4435A",
+        "accountName": "GAP Sales - Infiniti Certified Vehicle - Sale",
+        "accountNumber": "4435A",
+        "active": true,
+        "id": "8194_4435A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4410C",
+        "accountName": "Used Vehicles - Other Makes - Retail - Cost of Sale",
+        "accountNumber": "4410C",
+        "active": true,
+        "id": "8194_4410C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4652C",
+        "accountName": "Parts & Access. - Internal - CPO Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4652C",
+        "active": true,
+        "id": "8194_4652C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4640C",
+        "accountName": "Parts & Access. - Warranty Claims - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4640C",
+        "active": true,
+        "id": "8194_4640C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4555C",
+        "accountName": "Internal Mech. Labor - Other Makes Vehicles - Cost of Sale",
+        "accountNumber": "4555C",
+        "active": true,
+        "id": "8194_4555C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4652A",
+        "accountName": "Parts & Access. - Internal - CPO Infiniti Vehicles - Sale",
+        "accountNumber": "4652A",
+        "active": true,
+        "id": "8194_4652A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4543C",
+        "accountName": "Express Service Warranty Labor - Infiniti Vehicles  - Cost of Sale",
+        "accountNumber": "4543C",
+        "active": true,
+        "id": "8194_4543C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4640A",
+        "accountName": "Parts & Access. - Warranty Claims - Infiniti Vehicles - Sale",
+        "accountNumber": "4640A",
+        "active": true,
+        "id": "8194_4640A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4555A",
+        "accountName": "Internal Mech. Labor - Other Makes Vehicles - Sale",
+        "accountNumber": "4555A",
+        "active": true,
+        "id": "8194_4555A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4410A",
+        "accountName": "Used Vehicles - Other Makes - Retail - Sale",
+        "accountNumber": "4410A",
+        "active": true,
+        "id": "8194_4410A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4543A",
+        "accountName": "Express Service Warranty Labor - Infiniti Vehicles  - Sale",
+        "accountNumber": "4543A",
+        "active": true,
+        "id": "8194_4543A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_2200",
+        "accountName": "Service and Parts Accounts Receivable",
+        "accountNumber": "2200",
+        "active": true,
+        "id": "8194_2200",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_3410",
+        "accountName": "Long Term Debt - Officers/Owners",
+        "accountNumber": "3410",
+        "active": true,
+        "id": "8194_3410",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_2440",
+        "accountName": "Gas, Oil, & Grease",
+        "accountNumber": "2440",
+        "active": true,
+        "id": "8194_2440",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_2320",
+        "accountName": "New SUV/CUV - Infiniti",
+        "accountNumber": "2320",
+        "active": true,
+        "id": "8194_2320",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_3770",
+        "accountName": "Accum. Depr - Lease & Rental",
+        "accountNumber": "3770",
+        "active": true,
+        "id": "8194_3770",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_0390C",
+        "accountName": "Travel & Entertainment - Service Dept.",
+        "accountNumber": "0390C",
+        "active": true,
+        "id": "8194_0390C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4445A",
+        "accountName": "GAP Sales - Used Infiniti Vehicle - Sale",
+        "accountNumber": "4445A",
+        "active": true,
+        "id": "8194_4445A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4675C",
+        "accountName": "Parts & Access. - Wholesale - Other Makes Vehicles - Cost of Sale",
+        "accountNumber": "4675C",
+        "active": true,
+        "id": "8194_4675C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0390B",
+        "accountName": "Travel & Entertainment - Used Vehicle Dept.",
+        "accountNumber": "0390B",
+        "active": true,
+        "id": "8194_0390B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0390E",
+        "accountName": "Travel & Entertainment - Body Shop Dept.",
+        "accountNumber": "0390E",
+        "active": true,
+        "id": "8194_0390E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4445C",
+        "accountName": "GAP Sales - Used Infiniti Vehicle - Cost of Sale",
+        "accountNumber": "4445C",
+        "active": true,
+        "id": "8194_4445C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4675A",
+        "accountName": "Parts & Access. - Wholesale - Other Makes Vehicles - Sale",
+        "accountNumber": "4675A",
+        "active": true,
+        "id": "8194_4675A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0390D",
+        "accountName": "Travel & Entertainment - Parts & Acc. Dept",
+        "accountNumber": "0390D",
+        "active": true,
+        "id": "8194_0390D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0160A",
+        "accountName": "Interest - Floor Plan - Vehicles - New Vehicle Dept.",
+        "accountNumber": "0160A",
+        "active": true,
+        "id": "8194_0160A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0390A",
+        "accountName": "Travel & Entertainment - New Vehicle Dept.",
+        "accountNumber": "0390A",
+        "active": true,
+        "id": "8194_0390A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0160B",
+        "accountName": "Interest - Floor Plan - Vehicles - Used Vehicle Dept.",
+        "accountNumber": "0160B",
+        "active": true,
+        "id": "8194_0160B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2310",
+        "accountName": "New Car - Infiniti",
+        "accountNumber": "2310",
+        "active": true,
+        "id": "8194_2310",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_3400",
+        "accountName": "Long Term Debt - Mortgages Payable",
+        "accountNumber": "3400",
+        "active": true,
+        "id": "8194_3400",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_3200",
+        "accountName": "Accrued Liabilities - Interest",
+        "accountNumber": "3200",
+        "active": true,
+        "id": "8194_3200",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_8030A",
+        "accountName": "Documentary Fees - New Vehicle Dept.",
+        "accountNumber": "8030A",
+        "active": true,
+        "id": "8194_8030A",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_3320",
+        "accountName": "Accrued Liabilities - Other",
+        "accountNumber": "3320",
+        "active": true,
+        "id": "8194_3320",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_8030B",
+        "accountName": "Documentary Fees - Used Vehicle Dept.",
+        "accountNumber": "8030B",
+        "active": true,
+        "id": "8194_8030B",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_2230",
+        "accountName": "Warranty Receivables - Other Makes",
+        "accountNumber": "2230",
+        "active": true,
+        "id": "8194_2230",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_2470",
+        "accountName": "Work in Process",
+        "accountNumber": "2470",
+        "active": true,
+        "id": "8194_2470",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_4667A",
+        "accountName": "Tires Express Service - Infiniti Vehicles - Sale",
+        "accountNumber": "4667A",
+        "active": true,
+        "id": "8194_4667A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4655A",
+        "accountName": "Parts & Access. - Internal - Other Makes Vehicles - Sale",
+        "accountNumber": "4655A",
+        "active": true,
+        "id": "8194_4655A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4400A",
+        "accountName": "Used Vehicles - Infiniti - Retail - Sale",
+        "accountNumber": "4400A",
+        "active": true,
+        "id": "8194_4400A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0280B",
+        "accountName": "Salaries - Salespeople - Used Vehicle Dept.",
+        "accountNumber": "0280B",
+        "active": true,
+        "id": "8194_0280B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0280C",
+        "accountName": "Salaries - Salespeople - Service Dept.",
+        "accountNumber": "0280C",
+        "active": true,
+        "id": "8194_0280C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4400C",
+        "accountName": "Used Vehicles - Infiniti - Retail - Cost of Sale",
+        "accountNumber": "4400C",
+        "active": true,
+        "id": "8194_4400C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0280D",
+        "accountName": "Salaries - Salespeople - Parts & Acc. Dept",
+        "accountNumber": "0280D",
+        "active": true,
+        "id": "8194_0280D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4545C",
+        "accountName": "Warranty Mech. Labor - Other Makes Vehicles - Cost of Sale",
+        "accountNumber": "4545C",
+        "active": true,
+        "id": "8194_4545C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0280E",
+        "accountName": "Salaries - Salespeople - Body Shop Dept.",
+        "accountNumber": "0280E",
+        "active": true,
+        "id": "8194_0280E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0280A",
+        "accountName": "Salaries - Salespeople - New Vehicle Dept.",
+        "accountNumber": "0280A",
+        "active": true,
+        "id": "8194_0280A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2225",
+        "accountName": "Service Contracts Receivable - Infiniti",
+        "accountNumber": "2225",
+        "active": true,
+        "id": "8194_2225",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_6405R",
+        "accountName": "Reconditioning - Infiniti Certified Retail - Cost of Sale",
+        "accountNumber": "6405R",
+        "active": true,
+        "id": "8194_6405R",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_3310",
+        "accountName": "Accrued Liabilities - Reserve for Repossession Losses",
+        "accountNumber": "3310",
+        "active": true,
+        "id": "8194_3310",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_2220",
+        "accountName": "Warranty Receivables - Infiniti",
+        "accountNumber": "2220",
+        "active": true,
+        "id": "8194_2220",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_2100",
+        "accountName": "Vehicle Accounts Receivable",
+        "accountNumber": "2100",
+        "active": true,
+        "id": "8194_2100",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_3430",
+        "accountName": "Long Term Debt - Other",
+        "accountNumber": "3430",
+        "active": true,
+        "id": "8194_3430",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_2460",
+        "accountName": "Sublet Repairs",
+        "accountNumber": "2460",
+        "active": true,
+        "id": "8194_2460",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_2340",
+        "accountName": "New Vehicles - Other Makes",
+        "accountNumber": "2340",
+        "active": true,
+        "id": "8194_2340",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_4545A",
+        "accountName": "Warranty Mech. Labor - Other Makes Vehicles - Sale",
+        "accountNumber": "4545A",
+        "active": true,
+        "id": "8194_4545A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4205C",
+        "accountName": "Other Make Fleet Cars and Trucks - Cost of Sale",
+        "accountNumber": "4205C",
+        "active": true,
+        "id": "8194_4205C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4435C",
+        "accountName": "GAP Sales - Infiniti Certified Vehicle - Cost of Sale",
+        "accountNumber": "4435C",
+        "active": true,
+        "id": "8194_4435C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4544C",
+        "accountName": "Service/Maint Contract Labor - Other Makes Vehicles - Cost of Sale",
+        "accountNumber": "4544C",
+        "active": true,
+        "id": "8194_4544C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4665C",
+        "accountName": "Parts & Access. - Counter Retail - Other Makes Vehicles - Cost of Sale",
+        "accountNumber": "4665C",
+        "active": true,
+        "id": "8194_4665C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0170B",
+        "accountName": "Advertising Reimbursement / Allowances - Used Vehicle Dept.",
+        "accountNumber": "0170B",
+        "active": true,
+        "id": "8194_0170B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4653C",
+        "accountName": "Parts & Access. - Express Service - Internal - Infiniti  Vehicles - Cost of Sale",
+        "accountNumber": "4653C",
+        "active": true,
+        "id": "8194_4653C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0170C",
+        "accountName": "Advertising Reimbursement / Allowances - Service Dept.",
+        "accountNumber": "0170C",
+        "active": true,
+        "id": "8194_0170C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4544A",
+        "accountName": "Service/Maint Contract Labor - Other Makes Vehicles - Sale",
+        "accountNumber": "4544A",
+        "active": true,
+        "id": "8194_4544A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4665A",
+        "accountName": "Parts & Access. - Counter Retail - Other Makes Vehicles - Sale",
+        "accountNumber": "4665A",
+        "active": true,
+        "id": "8194_4665A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0170D",
+        "accountName": "Advertising Reimbursement / Allowances - Parts & Acc. Dept",
+        "accountNumber": "0170D",
+        "active": true,
+        "id": "8194_0170D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4653A",
+        "accountName": "Parts & Access. - Express Service - Internal - Infiniti  Vehicles - Sale",
+        "accountNumber": "4653A",
+        "active": true,
+        "id": "8194_4653A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0170E",
+        "accountName": "Advertising Reimbursement / Allowances - Body Shop Dept.",
+        "accountNumber": "0170E",
+        "active": true,
+        "id": "8194_0170E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2215",
+        "accountName": "Factory Receivables - Other Makes",
+        "accountNumber": "2215",
+        "active": true,
+        "id": "8194_2215",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_0170A",
+        "accountName": "Advertising Reimbursement / Allowances - New Vehicle Dept.",
+        "accountNumber": "0170A",
+        "active": true,
+        "id": "8194_0170A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4980A",
+        "accountName": "Miscellaneous Body Shop - Sale",
+        "accountNumber": "4980A",
+        "active": true,
+        "id": "8194_4980A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4980C",
+        "accountName": "Miscellaneous Body Shop - Cost of Sale",
+        "accountNumber": "4980C",
+        "active": true,
+        "id": "8194_4980C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_3300",
+        "accountName": "Accrued Liabilities - Pension Fund",
+        "accountNumber": "3300",
+        "active": true,
+        "id": "8194_3300",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_2375",
+        "accountName": "Used Vehicle - Infiniti Certified",
+        "accountNumber": "2375",
+        "active": true,
+        "id": "8194_2375",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_UCOP",
+        "accountName": "Used Vehicles - Other Makes - Retail Net Gross Profit - Cost of Sale",
+        "accountNumber": "UCOP",
+        "active": true,
+        "id": "8194_UCOP",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_3100",
+        "accountName": "Notes Payable - New Vehicles & Demonstrators",
+        "accountNumber": "3100",
+        "active": true,
+        "id": "8194_3100",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_3220",
+        "accountName": "Accrued Liabilities - Insurance",
+        "accountNumber": "3220",
+        "active": true,
+        "id": "8194_3220",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_2010",
+        "accountName": "Cash Clearing",
+        "accountNumber": "2010",
+        "active": true,
+        "id": "8194_2010",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_2370",
+        "accountName": "Used Vehicle - Infiniti",
+        "accountNumber": "2370",
+        "active": true,
+        "id": "8194_2370",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_4116A",
+        "accountName": "Non-Current Model - Lease - Sales",
+        "accountNumber": "4116A",
+        "active": true,
+        "id": "8194_4116A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4551C",
+        "accountName": "Internal Mech. Labor - Infiniti Certified Vehicles - Cost of Sale",
+        "accountNumber": "4551C",
+        "active": true,
+        "id": "8194_4551C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4200C",
+        "accountName": "Other Makes Vehicles - Cost of Sale",
+        "accountNumber": "4200C",
+        "active": true,
+        "id": "8194_4200C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4660C",
+        "accountName": "Parts & Access. - Counter Retail - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4660C",
+        "active": true,
+        "id": "8194_4660C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4551A",
+        "accountName": "Internal Mech. Labor - Infiniti Certified Vehicles - Sale",
+        "accountNumber": "4551A",
+        "active": true,
+        "id": "8194_4551A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4660A",
+        "accountName": "Parts & Access. - Counter Retail - Infiniti Vehicles - Sale",
+        "accountNumber": "4660A",
+        "active": true,
+        "id": "8194_4660A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0250E",
+        "accountName": "Taxes - Payroll - Body Shop Dept.",
+        "accountNumber": "0250E",
+        "active": true,
+        "id": "8194_0250E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0480E",
+        "accountName": "Dues, Subscriptions, Memberships & Contributions - Body Shop Dept.",
+        "accountNumber": "0480E",
+        "active": true,
+        "id": "8194_0480E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4103A",
+        "accountName": "QX50 - Lease - Sales",
+        "accountNumber": "4103A",
+        "active": true,
+        "id": "8194_4103A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0480D",
+        "accountName": "Dues, Subscriptions, Memberships & Contributions - Parts & Acc. Dept",
+        "accountNumber": "0480D",
+        "active": true,
+        "id": "8194_0480D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4103C",
+        "accountName": "QX50 - Lease - Cost of Sale",
+        "accountNumber": "4103C",
+        "active": true,
+        "id": "8194_4103C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4200A",
+        "accountName": "Other Makes Vehicles - Sales",
+        "accountNumber": "4200A",
+        "active": true,
+        "id": "8194_4200A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0250A",
+        "accountName": "Taxes - Payroll - New Vehicle Dept.",
+        "accountNumber": "0250A",
+        "active": true,
+        "id": "8194_0250A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0480A",
+        "accountName": "Dues, Subscriptions, Memberships & Contributions - New Vehicle Dept.",
+        "accountNumber": "0480A",
+        "active": true,
+        "id": "8194_0480A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0250B",
+        "accountName": "Taxes - Payroll - Used Vehicle Dept.",
+        "accountNumber": "0250B",
+        "active": true,
+        "id": "8194_0250B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0250C",
+        "accountName": "Taxes - Payroll - Service Dept.",
+        "accountNumber": "0250C",
+        "active": true,
+        "id": "8194_0250C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0480C",
+        "accountName": "Dues, Subscriptions, Memberships & Contributions - Service Dept.",
+        "accountNumber": "0480C",
+        "active": true,
+        "id": "8194_0480C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0480B",
+        "accountName": "Dues, Subscriptions, Memberships & Contributions - Used Vehicle Dept.",
+        "accountNumber": "0480B",
+        "active": true,
+        "id": "8194_0480B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0250D",
+        "accountName": "Taxes - Payroll - Parts & Acc. Dept",
+        "accountNumber": "0250D",
+        "active": true,
+        "id": "8194_0250D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_3210",
+        "accountName": "Accrued Liabilities - Payroll",
+        "accountNumber": "3210",
+        "active": true,
+        "id": "8194_3210",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_8160A",
+        "accountName": "Infiniti Sales Programs - New Vehicle Dept.",
+        "accountNumber": "8160A",
+        "active": true,
+        "id": "8194_8160A",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_8160B",
+        "accountName": "Infiniti Sales Programs - Used Vehicle Dept.",
+        "accountNumber": "8160B",
+        "active": true,
+        "id": "8194_8160B",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_4453C",
+        "accountName": "All Other F&I Products - Infiniti Certified Vehicle - Cost of Sale",
+        "accountNumber": "4453C",
+        "active": true,
+        "id": "8194_4453C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4465C",
+        "accountName": "GAP Sales - Used Other Makes  - Cost of Sale",
+        "accountNumber": "4465C",
+        "active": true,
+        "id": "8194_4465C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4550C",
+        "accountName": "Internal Mech. Labor - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4550C",
+        "active": true,
+        "id": "8194_4550C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4550A",
+        "accountName": "Internal Mech. Labor - Infiniti Vehicles - Sale",
+        "accountNumber": "4550A",
+        "active": true,
+        "id": "8194_4550A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0370E",
+        "accountName": "Supplies & Laundry - Body Shop Dept.",
+        "accountNumber": "0370E",
+        "active": true,
+        "id": "8194_0370E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4235A",
+        "accountName": "Maintenance Contract Sales - New Other Makes Vehicle - Sales",
+        "accountNumber": "4235A",
+        "active": true,
+        "id": "8194_4235A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4489A",
+        "accountName": "Maintenance Contract Sales - Used Other Makes Vehicle - Sale",
+        "accountNumber": "4489A",
+        "active": true,
+        "id": "8194_4489A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0370D",
+        "accountName": "Supplies & Laundry - Parts & Acc. Dept",
+        "accountNumber": "0370D",
+        "active": true,
+        "id": "8194_0370D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4453A",
+        "accountName": "All Other F&I Products - Infiniti Certified Vehicle - Sale",
+        "accountNumber": "4453A",
+        "active": true,
+        "id": "8194_4453A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4465A",
+        "accountName": "GAP Sales - Used Other Makes  - Sale",
+        "accountNumber": "4465A",
+        "active": true,
+        "id": "8194_4465A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4489C",
+        "accountName": "Maintenance Contract Sales - Used Other Makes Vehicle - Cost of Sale",
+        "accountNumber": "4489C",
+        "active": true,
+        "id": "8194_4489C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4235C",
+        "accountName": "Maintenance Contract Sales - New Other Makes Vehicle - Cost of Sale",
+        "accountNumber": "4235C",
+        "active": true,
+        "id": "8194_4235C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0140A",
+        "accountName": "Demo Vehicle Expense - New Vehicle Dept.",
+        "accountNumber": "0140A",
+        "active": true,
+        "id": "8194_0140A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0370A",
+        "accountName": "Supplies & Laundry - New Vehicle Dept.",
+        "accountNumber": "0370A",
+        "active": true,
+        "id": "8194_0370A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0140B",
+        "accountName": "Demo Vehicle Expense - Used Vehicle Dept.",
+        "accountNumber": "0140B",
+        "active": true,
+        "id": "8194_0140B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0370C",
+        "accountName": "Supplies & Laundry - Service Dept.",
+        "accountNumber": "0370C",
+        "active": true,
+        "id": "8194_0370C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0370B",
+        "accountName": "Supplies & Laundry - Used Vehicle Dept.",
+        "accountNumber": "0370B",
+        "active": true,
+        "id": "8194_0370B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2235",
+        "accountName": "Service Contracts Receivable - Other Makes",
+        "accountNumber": "2235",
+        "active": true,
+        "id": "8194_2235",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_8160C",
+        "accountName": "Infiniti Sales Programs - Service Dept.",
+        "accountNumber": "8160C",
+        "active": true,
+        "id": "8194_8160C",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_8160D",
+        "accountName": "Infiniti Sales Programs - Parts & Acc. Dept",
+        "accountNumber": "8160D",
+        "active": true,
+        "id": "8194_8160D",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_3000",
+        "accountName": "Accounts Payable - Trade Creditors",
+        "accountNumber": "3000",
+        "active": true,
+        "id": "8194_3000",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_3120",
+        "accountName": "Notes Payable - Used Vehicles",
+        "accountNumber": "3120",
+        "active": true,
+        "id": "8194_3120",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_3240",
+        "accountName": "Accrued Liabilities - Taxes - Sales",
+        "accountNumber": "3240",
+        "active": true,
+        "id": "8194_3240",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_0090",
+        "accountName": "F&I Commissions & Incentives",
+        "accountNumber": "0090",
+        "active": true,
+        "id": "8194_0090",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8194_8194_4420C",
+        "accountName": "Used Vehicles - Wholesale - Cost of Sale",
+        "accountNumber": "4420C",
+        "active": true,
+        "id": "8194_4420C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4650C",
+        "accountName": "Parts & Access. - Internal - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4650C",
+        "active": true,
+        "id": "8194_4650C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4553C",
+        "accountName": "Express Service Internal Labor - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4553C",
+        "active": true,
+        "id": "8194_4553C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4650A",
+        "accountName": "Parts & Access. - Internal - Infiniti Vehicles - Sale",
+        "accountNumber": "4650A",
+        "active": true,
+        "id": "8194_4650A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4553A",
+        "accountName": "Express Service Internal Labor - Infiniti Vehicles - Sale",
+        "accountNumber": "4553A",
+        "active": true,
+        "id": "8194_4553A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0260D",
+        "accountName": "Employee Benefits / Pension Fund / 401K - Parts & Acc. Dept",
+        "accountNumber": "0260D",
+        "active": true,
+        "id": "8194_0260D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0260E",
+        "accountName": "Employee Benefits / Pension Fund / 401K - Body Shop Dept.",
+        "accountNumber": "0260E",
+        "active": true,
+        "id": "8194_0260E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4420A",
+        "accountName": "Used Vehicles - Wholesale - Sale",
+        "accountNumber": "4420A",
+        "active": true,
+        "id": "8194_4420A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0260A",
+        "accountName": "Employee Benefits / Pension Fund / 401 K - New Vehicle Dept.",
+        "accountNumber": "0260A",
+        "active": true,
+        "id": "8194_0260A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0260B",
+        "accountName": "Employee Benefits / Pension Fund / 401 K - Used Vehicle Dept.",
+        "accountNumber": "0260B",
+        "active": true,
+        "id": "8194_0260B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0260C",
+        "accountName": "Employee Benefits / Pension Fund / 401K - Service Dept.",
+        "accountNumber": "0260C",
+        "active": true,
+        "id": "8194_0260C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2020",
+        "accountName": "Cash In Bank",
+        "accountNumber": "2020",
+        "active": true,
+        "id": "8194_2020",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_3230",
+        "accountName": "Accrued Liabilities - Taxes - Other than Payroll, Sales, Income",
+        "accountNumber": "3230",
+        "active": true,
+        "id": "8194_3230",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_2380",
+        "accountName": "Used Vehicle - Other Makes",
+        "accountNumber": "2380",
+        "active": true,
+        "id": "8194_2380",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_4540C",
+        "accountName": "Warranty Mech. Labor - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4540C",
+        "active": true,
+        "id": "8194_4540C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4540A",
+        "accountName": "Warranty Mech. Labor - Infiniti Vehicles - Sale",
+        "accountNumber": "4540A",
+        "active": true,
+        "id": "8194_4540A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4455A",
+        "accountName": "All Other F&I Products - Used Other Makes Vehicle - Sale",
+        "accountNumber": "4455A",
+        "active": true,
+        "id": "8194_4455A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0150D",
+        "accountName": "Advertising - Parts & Acc. Dept",
+        "accountNumber": "0150D",
+        "active": true,
+        "id": "8194_0150D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0380D",
+        "accountName": "Outside Services - Parts & Acc. Dept",
+        "accountNumber": "0380D",
+        "active": true,
+        "id": "8194_0380D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4116C",
+        "accountName": "Non-Current Model - Lease - Cost of Sale",
+        "accountNumber": "4116C",
+        "active": true,
+        "id": "8194_4116C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0380C",
+        "accountName": "Outside Services - Service Dept.",
+        "accountNumber": "0380C",
+        "active": true,
+        "id": "8194_0380C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0150E",
+        "accountName": "Advertising - Body Shop Dept.",
+        "accountNumber": "0150E",
+        "active": true,
+        "id": "8194_0150E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4455C",
+        "accountName": "All Other F&I Products - Used Other Makes Vehicle - Cost of Sale",
+        "accountNumber": "4455C",
+        "active": true,
+        "id": "8194_4455C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0380E",
+        "accountName": "Outside Services - Body Shop Dept.",
+        "accountNumber": "0380E",
+        "active": true,
+        "id": "8194_0380E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0150A",
+        "accountName": "Advertising - New Vehicle Dept.",
+        "accountNumber": "0150A",
+        "active": true,
+        "id": "8194_0150A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0150B",
+        "accountName": "Advertising - Used Vehicle Dept.",
+        "accountNumber": "0150B",
+        "active": true,
+        "id": "8194_0150B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0380B",
+        "accountName": "Outside Services - Used Vehicle Dept.",
+        "accountNumber": "0380B",
+        "active": true,
+        "id": "8194_0380B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0380A",
+        "accountName": "Outside Services - New Vehicle Dept.",
+        "accountNumber": "0380A",
+        "active": true,
+        "id": "8194_0380A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0150C",
+        "accountName": "Advertising - Service Dept.",
+        "accountNumber": "0150C",
+        "active": true,
+        "id": "8194_0150C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_UCNP",
+        "accountName": "Used Vehicles - Infiniti - Retail Net Gross Profit - Cost of Sale",
+        "accountNumber": "UCNP",
+        "active": true,
+        "id": "8194_UCNP",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_3020",
+        "accountName": "Warranty Payable",
+        "accountNumber": "3020",
+        "active": true,
+        "id": "8194_3020",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_3260",
+        "accountName": "Accrued Liabilities - Income Taxes - Previous Year",
+        "accountNumber": "3260",
+        "active": true,
+        "id": "8194_3260",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_2050",
+        "accountName": "Contracts in Transit",
+        "accountNumber": "2050",
+        "active": true,
+        "id": "8194_2050",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_4486C",
+        "accountName": "Maintenance Contract Sales - Infiniti Certified Vehicle - Cost of Sale",
+        "accountNumber": "4486C",
+        "active": true,
+        "id": "8194_4486C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4680A",
+        "accountName": "Parts & Access. - Miscellaneous - Sale",
+        "accountNumber": "4680A",
+        "active": true,
+        "id": "8194_4680A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4486A",
+        "accountName": "Maintenance Contract Sales - Infiniti Certified Vehicle - Sale",
+        "accountNumber": "4486A",
+        "active": true,
+        "id": "8194_4486A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4680C",
+        "accountName": "Parts & Access. - Miscellaneous - Cost of Sale",
+        "accountNumber": "4680C",
+        "active": true,
+        "id": "8194_4680C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_6400R",
+        "accountName": "Reconditioning Infiniti - Retail - Cost of Sale",
+        "accountNumber": "6400R",
+        "active": true,
+        "id": "8194_6400R",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_3250",
+        "accountName": "Accrued Liabilities - Taxes - Payroll",
+        "accountNumber": "3250",
+        "active": true,
+        "id": "8194_3250",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_4485A",
+        "accountName": "Quality Guard + Plus Svc. Cont. Sls. - Used Other Makes Vehicle - Sale",
+        "accountNumber": "4485A",
+        "active": true,
+        "id": "8194_4485A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4485C",
+        "accountName": "Quality Guard + Plus Svc. Cont. Sls. - Used Other Makes Vehicle - Cost of Sale",
+        "accountNumber": "4485C",
+        "active": true,
+        "id": "8194_4485C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_8180A",
+        "accountName": "Placeholder - New Vehicle Dept.",
+        "accountNumber": "8180A",
+        "active": true,
+        "id": "8194_8180A",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_0500E",
+        "accountName": "Rent & Interest Real Estate Mortgages - Body Shop Dept.",
+        "accountNumber": "0500E",
+        "active": true,
+        "id": "8194_0500E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_8180B",
+        "accountName": "Placeholder - Used Vehicle Dept.",
+        "accountNumber": "8180B",
+        "active": true,
+        "id": "8194_8180B",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_8180C",
+        "accountName": "Placeholder - Service Dept.",
+        "accountNumber": "8180C",
+        "active": true,
+        "id": "8194_8180C",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_8180D",
+        "accountName": "Placeholder - Parts & Acc. Dept",
+        "accountNumber": "8180D",
+        "active": true,
+        "id": "8194_8180D",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_0500B",
+        "accountName": "Rent & Interest Real Estate Mortgages - Used Vehicle Dept.",
+        "accountNumber": "0500B",
+        "active": true,
+        "id": "8194_0500B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0500A",
+        "accountName": "Rent & Interest Real Estate Mortgages - New Vehicle Dept.",
+        "accountNumber": "0500A",
+        "active": true,
+        "id": "8194_0500A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0500D",
+        "accountName": "Rent & Interest Real Estate Mortgages - Parts & Acc. Dept",
+        "accountNumber": "0500D",
+        "active": true,
+        "id": "8194_0500D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0500C",
+        "accountName": "Rent & Interest Real Estate Mortgages - Service Dept.",
+        "accountNumber": "0500C",
+        "active": true,
+        "id": "8194_0500C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_3040",
+        "accountName": "Accounts Payable - Customer Deposits",
+        "accountNumber": "3040",
+        "active": true,
+        "id": "8194_3040",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_3280",
+        "accountName": "Accrued Liabilities - Bonuses - Employees",
+        "accountNumber": "3280",
+        "active": true,
+        "id": "8194_3280",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_0090B",
+        "accountName": "F & I Commissions & Incentives - Used Vehicle Dept.",
+        "accountNumber": "0090B",
+        "active": true,
+        "id": "8194_0090B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4210A",
+        "accountName": "All Other F&I Products - New Infiniti Vehicle - Sales",
+        "accountNumber": "4210A",
+        "active": true,
+        "id": "8194_4210A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4670A",
+        "accountName": "Parts & Access. - Wholesale - Infiniti Vehicles - Sale",
+        "accountNumber": "4670A",
+        "active": true,
+        "id": "8194_4670A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0090A",
+        "accountName": "F & I Commissions & Incentives - New Vehicle Dept.",
+        "accountNumber": "0090A",
+        "active": true,
+        "id": "8194_0090A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4016C",
+        "accountName": "Non-Current Model - Retail - Cost of Sale",
+        "accountNumber": "4016C",
+        "active": true,
+        "id": "8194_4016C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4452A",
+        "accountName": "All Other F&I Products - Used Infiniti Vehicle - Sale",
+        "accountNumber": "4452A",
+        "active": true,
+        "id": "8194_4452A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4210C",
+        "accountName": "All Other F&I Products - New Infiniti Vehicle - Cost of Sale",
+        "accountNumber": "4210C",
+        "active": true,
+        "id": "8194_4210C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4016A",
+        "accountName": "Non-Current Model - Retail - Sales",
+        "accountNumber": "4016A",
+        "active": true,
+        "id": "8194_4016A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4452C",
+        "accountName": "All Other F&I Products - Used Infiniti Vehicle - Cost of Sale",
+        "accountNumber": "4452C",
+        "active": true,
+        "id": "8194_4452C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4585C",
+        "accountName": "Service Contract Sales - Cost of Sale",
+        "accountNumber": "4585C",
+        "active": true,
+        "id": "8194_4585C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4585A",
+        "accountName": "Service Contract Sales - Sale",
+        "accountNumber": "4585A",
+        "active": true,
+        "id": "8194_4585A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_6300C",
+        "accountName": "Incentive Earnings - Other Makes - Cost of Sale",
+        "accountNumber": "6300C",
+        "active": true,
+        "id": "8194_6300C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_8070E",
+        "accountName": "Misc Factory Programs - Body Shop Dept.",
+        "accountNumber": "8070E",
+        "active": true,
+        "id": "8194_8070E",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_8070A",
+        "accountName": "Misc Factory Programs - New Vehicle Dept.",
+        "accountNumber": "8070A",
+        "active": true,
+        "id": "8194_8070A",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_8070B",
+        "accountName": "Misc Factory Programs - Used Vehicle Dept.",
+        "accountNumber": "8070B",
+        "active": true,
+        "id": "8194_8070B",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_6990C",
+        "accountName": "Adj. Cost of Labor Sales - Body Shop - Cost of Sale",
+        "accountNumber": "6990C",
+        "active": true,
+        "id": "8194_6990C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0620D",
+        "accountName": "Equipment - Repairs and Rental - Parts & Acc. Dept",
+        "accountNumber": "0620D",
+        "active": true,
+        "id": "8194_0620D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_8070C",
+        "accountName": "Misc Factory Programs - Service Dept.",
+        "accountNumber": "8070C",
+        "active": true,
+        "id": "8194_8070C",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_4670C",
+        "accountName": "Parts & Access. - Wholesale - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4670C",
+        "active": true,
+        "id": "8194_4670C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_8070D",
+        "accountName": "Misc Factory Programs - Parts & Acc. Dept",
+        "accountNumber": "8070D",
+        "active": true,
+        "id": "8194_8070D",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_0620E",
+        "accountName": "Equipment - Repairs and Rental - Body Shop Dept.",
+        "accountNumber": "0620E",
+        "active": true,
+        "id": "8194_0620E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0620B",
+        "accountName": "Equipment - Repairs and Rental - Used Vehicle Dept.",
+        "accountNumber": "0620B",
+        "active": true,
+        "id": "8194_0620B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0620C",
+        "accountName": "Equipment - Repairs and Rental - Service Dept.",
+        "accountNumber": "0620C",
+        "active": true,
+        "id": "8194_0620C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0620A",
+        "accountName": "Equipment - Repairs and Rental - New Vehicle Dept.",
+        "accountNumber": "0620A",
+        "active": true,
+        "id": "8194_0620A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_6410R",
+        "accountName": "Reconditioning - Other Makes - Retail - Cost of Sale",
+        "accountNumber": "6410R",
+        "active": true,
+        "id": "8194_6410R",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_3030",
+        "accountName": "Accounts Payable - Vehicle Lien Payoff",
+        "accountNumber": "3030",
+        "active": true,
+        "id": "8194_3030",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_3150",
+        "accountName": "Notes Payable - Owners",
+        "accountNumber": "3150",
+        "active": true,
+        "id": "8194_3150",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_3270",
+        "accountName": "Accrued Liabilities - Income Taxes - Current Year",
+        "accountNumber": "3270",
+        "active": true,
+        "id": "8194_3270",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_4100A",
+        "accountName": "Infiniti - Fleet - Vehicles - Sales",
+        "accountNumber": "4100A",
+        "active": true,
+        "id": "8194_4100A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4560A",
+        "accountName": "Sublet Labor - Sale",
+        "accountNumber": "4560A",
+        "active": true,
+        "id": "8194_4560A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4003A",
+        "accountName": "QX50 - Retail - Sales",
+        "accountNumber": "4003A",
+        "active": true,
+        "id": "8194_4003A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4487C",
+        "accountName": "Other Service Contract Sls - Used Other Makes Vehicle - Cost of Sale",
+        "accountNumber": "4487C",
+        "active": true,
+        "id": "8194_4487C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4100C",
+        "accountName": "Infiniti - Fleet - Vehicles - Cost of Sale",
+        "accountNumber": "4100C",
+        "active": true,
+        "id": "8194_4100C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4487A",
+        "accountName": "Other Service Contract Sls - Used Other Makes Vehicle - Sale",
+        "accountNumber": "4487A",
+        "active": true,
+        "id": "8194_4487A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4003C",
+        "accountName": "QX50 - Retail - Cost of Sale",
+        "accountNumber": "4003C",
+        "active": true,
+        "id": "8194_4003C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0510E",
+        "accountName": "Amortization - Leaseholds - Body Shop Dept.",
+        "accountNumber": "0510E",
+        "active": true,
+        "id": "8194_0510E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0510D",
+        "accountName": "Amortization - Leaseholds - Parts & Acc. Dept",
+        "accountNumber": "0510D",
+        "active": true,
+        "id": "8194_0510D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4560C",
+        "accountName": "Sublet Labor - Cost of Sale",
+        "accountNumber": "4560C",
+        "active": true,
+        "id": "8194_4560C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_3185",
+        "accountName": "Notes Payable - Current Amount - Mortgage",
+        "accountNumber": "3185",
+        "active": true,
+        "id": "8194_3185",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_3180",
+        "accountName": "Notes Payable - Current Amount - Long Term Debt",
+        "accountNumber": "3180",
+        "active": true,
+        "id": "8194_3180",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_4155A",
+        "accountName": "QX80 - Lease - Sales",
+        "accountNumber": "4155A",
+        "active": true,
+        "id": "8194_4155A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4131A",
+        "accountName": "Q50 - Lease - Sales",
+        "accountNumber": "4131A",
+        "active": true,
+        "id": "8194_4131A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4155C",
+        "accountName": "QX80 - Lease - Cost of Sale",
+        "accountNumber": "4155C",
+        "active": true,
+        "id": "8194_4155C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4482A",
+        "accountName": "Other Service Contract Sls - Used Infiniti Vehicle - Sale",
+        "accountNumber": "4482A",
+        "active": true,
+        "id": "8194_4482A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_6310C",
+        "accountName": "Finance Reserve Inc. - New Infiniti Vehicle - Cost of Sale",
+        "accountNumber": "6310C",
+        "active": true,
+        "id": "8194_6310C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_8520",
+        "accountName": "Loss on Disposal of Assets",
+        "accountNumber": "8520",
+        "active": true,
+        "id": "8194_8520",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4131C",
+        "accountName": "Q50 - Lease - Cost of Sale",
+        "accountNumber": "4131C",
+        "active": true,
+        "id": "8194_4131C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4482C",
+        "accountName": "Other Service Contract Sls - Used Infiniti Vehicle - Cost of Sale",
+        "accountNumber": "4482C",
+        "active": true,
+        "id": "8194_4482C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_3050",
+        "accountName": "Accounts Payable - License Fees",
+        "accountNumber": "3050",
+        "active": true,
+        "id": "8194_3050",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_3170",
+        "accountName": "Notes Payable - Rental Vehicles",
+        "accountNumber": "3170",
+        "active": true,
+        "id": "8194_3170",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_3290",
+        "accountName": "Accrued Liabilities - Bonuses - Owners",
+        "accountNumber": "3290",
+        "active": true,
+        "id": "8194_3290",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_0180A",
+        "accountName": "Floor Plan Assistance - New Vehicle Dept.",
+        "accountNumber": "0180A",
+        "active": true,
+        "id": "8194_0180A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4033C",
+        "accountName": "QX55 - Retail - Cost of Sale",
+        "accountNumber": "4033C",
+        "active": true,
+        "id": "8194_4033C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0180B",
+        "accountName": "Floor Plan Assistance - Used Vehicle Dept.",
+        "accountNumber": "0180B",
+        "active": true,
+        "id": "8194_0180B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4033A",
+        "accountName": "QX55 - Retail - Sales",
+        "accountNumber": "4033A",
+        "active": true,
+        "id": "8194_4033A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_8530",
+        "accountName": "Credit Card Expense",
+        "accountNumber": "8530",
+        "active": true,
+        "id": "8194_8530",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4481A",
+        "accountName": "Maintenance Contract Sales - Used Infiniti Vehicle - Sale",
+        "accountNumber": "4481A",
+        "active": true,
+        "id": "8194_4481A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4481C",
+        "accountName": "Maintenance Contract Sales - Used Infiniti Vehicle - Cost of Sale",
+        "accountNumber": "4481C",
+        "active": true,
+        "id": "8194_4481C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4133A",
+        "accountName": "QX55 - Lease - Sales",
+        "accountNumber": "4133A",
+        "active": true,
+        "id": "8194_4133A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4484A",
+        "accountName": "Other Service Contract Sls - Infiniti Certified Vehicle - Sale",
+        "accountNumber": "4484A",
+        "active": true,
+        "id": "8194_4484A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4133C",
+        "accountName": "QX55 - Lease - Cost of Sale",
+        "accountNumber": "4133C",
+        "active": true,
+        "id": "8194_4133C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4230A",
+        "accountName": "Maintenance Contract Sales - New Infiniti Vehicle - Sales",
+        "accountNumber": "4230A",
+        "active": true,
+        "id": "8194_4230A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4484C",
+        "accountName": "Other Service Contract Sls - Infiniti Certified Vehicle - Cost of Sale",
+        "accountNumber": "4484C",
+        "active": true,
+        "id": "8194_4484C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_6695C",
+        "accountName": "Purchase Discounts Taken - Cost of Sale",
+        "accountNumber": "6695C",
+        "active": true,
+        "id": "8194_6695C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_6477C",
+        "accountName": "Fin., Ins. & Svc. Cont. Adj. - Infiniti Certified Vehicle - Cost of Sale",
+        "accountNumber": "6477C",
+        "active": true,
+        "id": "8194_6477C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_6320C",
+        "accountName": "Repo Losses - New - Cost of Sale",
+        "accountNumber": "6320C",
+        "active": true,
+        "id": "8194_6320C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4230C",
+        "accountName": "Maintenance Contract Sales - New Infiniti Vehicle - Cost of Sale",
+        "accountNumber": "4230C",
+        "active": true,
+        "id": "8194_4230C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_8500",
+        "accountName": "Casualty Losses",
+        "accountNumber": "8500",
+        "active": true,
+        "id": "8194_8500",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0600D",
+        "accountName": "Management Fees - Parts & Acc. Dept",
+        "accountNumber": "0600D",
+        "active": true,
+        "id": "8194_0600D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0600E",
+        "accountName": "Management Fees - Body Shop Dept.",
+        "accountNumber": "0600E",
+        "active": true,
+        "id": "8194_0600E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0600B",
+        "accountName": "Management Fees - Used Vehicle Dept.",
+        "accountNumber": "0600B",
+        "active": true,
+        "id": "8194_0600B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0600C",
+        "accountName": "Management Fees - Service Dept.",
+        "accountNumber": "0600C",
+        "active": true,
+        "id": "8194_0600C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0600A",
+        "accountName": "Management Fees - New Vehicle Dept.",
+        "accountNumber": "0600A",
+        "active": true,
+        "id": "8194_0600A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_3190",
+        "accountName": "Notes Payable - Other",
+        "accountNumber": "3190",
+        "active": true,
+        "id": "8194_3190",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8194_8194_4483A",
+        "accountName": "Infiniti Elite CPO Wrap Svc. Cont. Sls. - Infiniti Certified Vehicle - Sale",
+        "accountNumber": "4483A",
+        "active": true,
+        "id": "8194_4483A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_6345C",
+        "accountName": "Fin., Ins. & Svc. Cont. Adj. - New Other Makes Vehicle - Cost of Sale",
+        "accountNumber": "6345C",
+        "active": true,
+        "id": "8194_6345C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_6430C",
+        "accountName": "Adj. - Used Vehicle Inventory - Cost of Sale",
+        "accountNumber": "6430C",
+        "active": true,
+        "id": "8194_6430C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4580C",
+        "accountName": "Miscellaneous Mech. Repairs - Cost of Sale",
+        "accountNumber": "4580C",
+        "active": true,
+        "id": "8194_4580C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_8510",
+        "accountName": "Interest Paid",
+        "accountNumber": "8510",
+        "active": true,
+        "id": "8194_8510",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4483C",
+        "accountName": "Infiniti Elite CPO Wrap Svc. Cont. Sls. - Infiniti Certified Vehicle - Cost of Sale",
+        "accountNumber": "4483C",
+        "active": true,
+        "id": "8194_4483C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4580A",
+        "accountName": "Miscellaneous Mech. Repairs - Sale",
+        "accountNumber": "4580A",
+        "active": true,
+        "id": "8194_4580A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0530A",
+        "accountName": "Depreciation - Buildings & Improvements - New Vehicle Dept.",
+        "accountNumber": "0530A",
+        "active": true,
+        "id": "8194_0530A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4900A",
+        "accountName": "Customer Body Shop Labor - Vehicles - Sale",
+        "accountNumber": "4900A",
+        "active": true,
+        "id": "8194_4900A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4900C",
+        "accountName": "Customer Body Shop Labor - Vehicles - Cost of Sale",
+        "accountNumber": "4900C",
+        "active": true,
+        "id": "8194_4900C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_6475C",
+        "accountName": "Fin., Ins. & Svc, Cont. Adj. - Used Other Makes Vehicle - Cost of Sale",
+        "accountNumber": "6475C",
+        "active": true,
+        "id": "8194_6475C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_6330C",
+        "accountName": "Finance Reserve Inc. - New Other Makes Vehicle - Cost of Sale",
+        "accountNumber": "6330C",
+        "active": true,
+        "id": "8194_6330C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0650E",
+        "accountName": "Taxes - Other than Real Estate, Payroll & Income - Body Shop Dept.",
+        "accountNumber": "0650E",
+        "active": true,
+        "id": "8194_0650E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_8200",
+        "accountName": "Other Makes Net Profit (Loss)",
+        "accountNumber": "8200",
+        "active": true,
+        "id": "8194_8200",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_0420C",
+        "accountName": "Employee Training - Service Dept.",
+        "accountNumber": "0420C",
+        "active": true,
+        "id": "8194_0420C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0650C",
+        "accountName": "Taxes - Other than Real Estate, Payroll & Income - Service Dept.",
+        "accountNumber": "0650C",
+        "active": true,
+        "id": "8194_0650C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0650D",
+        "accountName": "Taxes - Other than Real Estate, Payroll & Income - Parts & Acc. Dept",
+        "accountNumber": "0650D",
+        "active": true,
+        "id": "8194_0650D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0420B",
+        "accountName": "Employee Training - Used Vehicle Dept.",
+        "accountNumber": "0420B",
+        "active": true,
+        "id": "8194_0420B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4260A",
+        "accountName": "GAP Sales - New Infiniti Vehicle - Sales",
+        "accountNumber": "4260A",
+        "active": true,
+        "id": "8194_4260A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0420E",
+        "accountName": "Employee Training - Body Shop Dept.",
+        "accountNumber": "0420E",
+        "active": true,
+        "id": "8194_0420E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0650A",
+        "accountName": "Taxes - Other than Real Estate, Payroll & Income - New Vehicle Dept.",
+        "accountNumber": "0650A",
+        "active": true,
+        "id": "8194_0650A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0420D",
+        "accountName": "Employee Training - Parts & Acc. Dept",
+        "accountNumber": "0420D",
+        "active": true,
+        "id": "8194_0420D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0650B",
+        "accountName": "Taxes - Other than Real Estate, Payroll & Income - Used Vehicle Dept.",
+        "accountNumber": "0650B",
+        "active": true,
+        "id": "8194_0650B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4260C",
+        "accountName": "GAP Sales - New Infiniti Vehicle - Cost of Sale",
+        "accountNumber": "4260C",
+        "active": true,
+        "id": "8194_4260C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0420A",
+        "accountName": "Employee Training - New Vehicle Dept.",
+        "accountNumber": "0420A",
+        "active": true,
+        "id": "8194_0420A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4198A",
+        "accountName": "Q70 - Lease - Sales",
+        "accountNumber": "4198A",
+        "active": true,
+        "id": "8194_4198A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4198C",
+        "accountName": "Q70 - Lease - Cost of Sale",
+        "accountNumber": "4198C",
+        "active": true,
+        "id": "8194_4198C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_6440C",
+        "accountName": "Finance Res Inc - Used Infiniti Vehicle - Cost of Sale",
+        "accountNumber": "6440C",
+        "active": true,
+        "id": "8194_6440C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0540E",
+        "accountName": "Insurance - Buildings & Improvements - Body Shop Dept.",
+        "accountNumber": "0540E",
+        "active": true,
+        "id": "8194_0540E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0310B",
+        "accountName": "Company Vehicle - Used Vehicle Dept.",
+        "accountNumber": "0310B",
+        "active": true,
+        "id": "8194_0310B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0540B",
+        "accountName": "Insurance - Buildings & Improvements - Used Vehicle Dept.",
+        "accountNumber": "0540B",
+        "active": true,
+        "id": "8194_0540B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0310C",
+        "accountName": "Company Vehicle - Service Dept.",
+        "accountNumber": "0310C",
+        "active": true,
+        "id": "8194_0310C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0540A",
+        "accountName": "Insurance - Buildings & Improvements - New Vehicle Dept.",
+        "accountNumber": "0540A",
+        "active": true,
+        "id": "8194_0540A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0540D",
+        "accountName": "Insurance - Buildings & Improvements - Parts & Acc. Dept",
+        "accountNumber": "0540D",
+        "active": true,
+        "id": "8194_0540D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0310D",
+        "accountName": "Company Vehicle - Parts & Acc. Dept",
+        "accountNumber": "0310D",
+        "active": true,
+        "id": "8194_0310D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0310E",
+        "accountName": "Company Vehicle - Body Shop Dept.",
+        "accountNumber": "0310E",
+        "active": true,
+        "id": "8194_0310E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0540C",
+        "accountName": "Insurance - Buildings & Improvements - Service Dept.",
+        "accountNumber": "0540C",
+        "active": true,
+        "id": "8194_0540C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0310A",
+        "accountName": "Company Vehicle - New Vehicle Dept.",
+        "accountNumber": "0310A",
+        "active": true,
+        "id": "8194_0310A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0430E",
+        "accountName": "Bad Debts - Body Shop Dept.",
+        "accountNumber": "0430E",
+        "active": true,
+        "id": "8194_0430E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2900",
+        "accountName": "Deposits on Contracts",
+        "accountNumber": "2900",
+        "active": true,
+        "id": "8194_2900",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_6340C",
+        "accountName": "Fin., Ins. & Svc. Cont. Adj. - New Infiniti Vehicle - Cost of Sale",
+        "accountNumber": "6340C",
+        "active": true,
+        "id": "8194_6340C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0200B",
+        "accountName": "Salaries - Owners - Used Vehicle Dept.",
+        "accountNumber": "0200B",
+        "active": true,
+        "id": "8194_0200B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0430B",
+        "accountName": "Bad Debts - Used Vehicle Dept.",
+        "accountNumber": "0430B",
+        "active": true,
+        "id": "8194_0430B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4250A",
+        "accountName": "All Other F&I Products - New Other Makes Vehicle - Sales",
+        "accountNumber": "4250A",
+        "active": true,
+        "id": "8194_4250A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4480A",
+        "accountName": "Infiniti Service Contract Sls - Used Infiniti Vehicle - Sale",
+        "accountNumber": "4480A",
+        "active": true,
+        "id": "8194_4480A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0200C",
+        "accountName": "Salaries - Owners - Service Dept.",
+        "accountNumber": "0200C",
+        "active": true,
+        "id": "8194_0200C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0430A",
+        "accountName": "Bad Debts - New Vehicle Dept.",
+        "accountNumber": "0430A",
+        "active": true,
+        "id": "8194_0430A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0430D",
+        "accountName": "Bad Debts - Parts & Acc. Dept",
+        "accountNumber": "0430D",
+        "active": true,
+        "id": "8194_0430D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0200D",
+        "accountName": "Salaries - Owners - Parts & Acc. Dept",
+        "accountNumber": "0200D",
+        "active": true,
+        "id": "8194_0200D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4480C",
+        "accountName": "Infiniti Service Contract Sls - Used Infiniti Vehicle - Cost of Sale",
+        "accountNumber": "4480C",
+        "active": true,
+        "id": "8194_4480C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4250C",
+        "accountName": "All Other F&I Products - New Other Makes Vehicle - Cost of Sale",
+        "accountNumber": "4250C",
+        "active": true,
+        "id": "8194_4250C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0200E",
+        "accountName": "Salaries - Owners - Body Shop Dept.",
+        "accountNumber": "0200E",
+        "active": true,
+        "id": "8194_0200E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0430C",
+        "accountName": "Bad Debts - Service Dept.",
+        "accountNumber": "0430C",
+        "active": true,
+        "id": "8194_0430C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0200A",
+        "accountName": "Salaries - Owners - New Vehicle Dept.",
+        "accountNumber": "0200A",
+        "active": true,
+        "id": "8194_0200A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4055A",
+        "accountName": "QX80 - Retail - Sales",
+        "accountNumber": "4055A",
+        "active": true,
+        "id": "8194_4055A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4164A",
+        "accountName": "QX60 - Lease - Sales",
+        "accountNumber": "4164A",
+        "active": true,
+        "id": "8194_4164A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4285A",
+        "accountName": "Other Service Contract Sls - New Infiniti Vehicle - Sales",
+        "accountNumber": "4285A",
+        "active": true,
+        "id": "8194_4285A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4055C",
+        "accountName": "QX80 - Retail - Cost of Sale",
+        "accountNumber": "4055C",
+        "active": true,
+        "id": "8194_4055C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_970",
+        "accountName": "Bonuses - Employees",
+        "accountNumber": "970",
+        "active": true,
+        "id": "8194_970",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4031A",
+        "accountName": "Q50 - Retail - Sales",
+        "accountNumber": "4031A",
+        "active": true,
+        "id": "8194_4031A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0320E",
+        "accountName": "Small Tools - Body Shop Dept.",
+        "accountNumber": "0320E",
+        "active": true,
+        "id": "8194_0320E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0550E",
+        "accountName": "Taxes - Real Estate - Body Shop Dept.",
+        "accountNumber": "0550E",
+        "active": true,
+        "id": "8194_0550E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_6450C",
+        "accountName": "Repo losses - Used Vehicles - Cost of Sale",
+        "accountNumber": "6450C",
+        "active": true,
+        "id": "8194_6450C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0550D",
+        "accountName": "Taxes - Real Estate - Parts & Acc. Dept",
+        "accountNumber": "0550D",
+        "active": true,
+        "id": "8194_0550D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_8550",
+        "accountName": "Other Deductions",
+        "accountNumber": "8550",
+        "active": true,
+        "id": "8194_8550",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4031C",
+        "accountName": "Q50 - Retail - Cost of Sale",
+        "accountNumber": "4031C",
+        "active": true,
+        "id": "8194_4031C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0550A",
+        "accountName": "Taxes - Real Estate - New Vehicle Dept.",
+        "accountNumber": "0550A",
+        "active": true,
+        "id": "8194_0550A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4164C",
+        "accountName": "QX60 - Lease - Cost of Sale",
+        "accountNumber": "4164C",
+        "active": true,
+        "id": "8194_4164C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4285C",
+        "accountName": "Other Service Contract Sls - New Infiniti Vehicle - Cost of Sale",
+        "accountNumber": "4285C",
+        "active": true,
+        "id": "8194_4285C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0550C",
+        "accountName": "Taxes - Real Estate - Service Dept.",
+        "accountNumber": "0550C",
+        "active": true,
+        "id": "8194_0550C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0320C",
+        "accountName": "Small Tools - Service Dept.",
+        "accountNumber": "0320C",
+        "active": true,
+        "id": "8194_0320C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0550B",
+        "accountName": "Taxes - Real Estate - Used Vehicle Dept.",
+        "accountNumber": "0550B",
+        "active": true,
+        "id": "8194_0550B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0510A",
+        "accountName": "Amortization - Leaseholds - New Vehicle Dept.",
+        "accountNumber": "0510A",
+        "active": true,
+        "id": "8194_0510A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0510C",
+        "accountName": "Amortization - Leaseholds - Service Dept.",
+        "accountNumber": "0510C",
+        "active": true,
+        "id": "8194_0510C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0510B",
+        "accountName": "Amortization - Leaseholds - Used Vehicle Dept.",
+        "accountNumber": "0510B",
+        "active": true,
+        "id": "8194_0510B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4098A",
+        "accountName": "Q70 - Retail - Sales",
+        "accountNumber": "4098A",
+        "active": true,
+        "id": "8194_4098A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_2800",
+        "accountName": "Land",
+        "accountNumber": "2800",
+        "active": true,
+        "id": "8194_2800",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_4280C",
+        "accountName": "Infiniti Service Contracts Sls - New Infiniti Vehicle - Cost of Sale",
+        "accountNumber": "4280C",
+        "active": true,
+        "id": "8194_4280C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_6350C",
+        "accountName": "Dealer Trade Profit - Cost of Sale",
+        "accountNumber": "6350C",
+        "active": true,
+        "id": "8194_6350C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0400E",
+        "accountName": "Legal & Auditing - Body Shop Dept.",
+        "accountNumber": "0400E",
+        "active": true,
+        "id": "8194_0400E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0630E",
+        "accountName": "Depreciation - Other than Bldgs. & Improvements - Body Shop Dept.",
+        "accountNumber": "0630E",
+        "active": true,
+        "id": "8194_0630E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4098C",
+        "accountName": "Q70 - Retail - Cost of Sale",
+        "accountNumber": "4098C",
+        "active": true,
+        "id": "8194_4098C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0400D",
+        "accountName": "Legal & Auditing - Parts & Acc. Dept",
+        "accountNumber": "0400D",
+        "active": true,
+        "id": "8194_0400D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0630C",
+        "accountName": "Depreciation - Other than Bldgs. & Improvements - Service Dept.",
+        "accountNumber": "0630C",
+        "active": true,
+        "id": "8194_0630C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0630D",
+        "accountName": "Depreciation - Other than Bldgs. & Improvements - Parts & Acc. Dept",
+        "accountNumber": "0630D",
+        "active": true,
+        "id": "8194_0630D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4280A",
+        "accountName": "Infiniti Service Contracts Sls - New Infiniti Vehicle - Sales",
+        "accountNumber": "4280A",
+        "active": true,
+        "id": "8194_4280A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0400A",
+        "accountName": "Legal & Auditing - New Vehicle Dept.",
+        "accountNumber": "0400A",
+        "active": true,
+        "id": "8194_0400A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0630A",
+        "accountName": "Depreciation - Other than Buildings & Improvements - New Vehicle Dept.",
+        "accountNumber": "0630A",
+        "active": true,
+        "id": "8194_0630A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0630B",
+        "accountName": "Depreciation - Other than Buildings & Improvements - Used Vehicle Dept.",
+        "accountNumber": "0630B",
+        "active": true,
+        "id": "8194_0630B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0400C",
+        "accountName": "Legal & Auditing - Service Dept.",
+        "accountNumber": "0400C",
+        "active": true,
+        "id": "8194_0400C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0400B",
+        "accountName": "Legal & Auditing - Used Vehicle Dept.",
+        "accountNumber": "0400B",
+        "active": true,
+        "id": "8194_0400B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4604C",
+        "accountName": "Parts & Access. - Service/Maint Contract - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4604C",
+        "active": true,
+        "id": "8194_4604C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4604A",
+        "accountName": "Parts & Access. - Service/Maint Contract - Infiniti Vehicles - Sale",
+        "accountNumber": "4604A",
+        "active": true,
+        "id": "8194_4604A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_8010",
+        "accountName": "Interest Earned / Cash Discounts",
+        "accountNumber": "8010",
+        "active": true,
+        "id": "8194_8010",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8194_8194_4700C",
+        "accountName": "Gas, Oil, & Grease - Cost of Sale",
+        "accountNumber": "4700C",
+        "active": true,
+        "id": "8194_4700C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_2910",
+        "accountName": "Life Insurance - Cash Value",
+        "accountNumber": "2910",
+        "active": true,
+        "id": "8194_2910",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_6460C",
+        "accountName": "Finance Res Inc - Used Other Makes Vehicle - Cost of Sale",
+        "accountNumber": "6460C",
+        "active": true,
+        "id": "8194_6460C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0520D",
+        "accountName": "Repair & Maintenance - Real Estate - Parts & Acc. Dept",
+        "accountNumber": "0520D",
+        "active": true,
+        "id": "8194_0520D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0520C",
+        "accountName": "Repair & Maintenance - Real Estate - Service Dept.",
+        "accountNumber": "0520C",
+        "active": true,
+        "id": "8194_0520C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_6690C",
+        "accountName": "Parts & Access. - Inventory Adjustment - Cost of Sale",
+        "accountNumber": "6690C",
+        "active": true,
+        "id": "8194_6690C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0520E",
+        "accountName": "Repair & Maintenance - Real Estate - Body Shop Dept.",
+        "accountNumber": "0520E",
+        "active": true,
+        "id": "8194_0520E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0520B",
+        "accountName": "Repair & Maintenance - Real Estate - Used Vehicle Dept.",
+        "accountNumber": "0520B",
+        "active": true,
+        "id": "8194_0520B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0520A",
+        "accountName": "Repair & Maintenance - Real Estate - New Vehicle Dept.",
+        "accountNumber": "0520A",
+        "active": true,
+        "id": "8194_0520A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4607C",
+        "accountName": "Tires - W.O. - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4607C",
+        "active": true,
+        "id": "8194_4607C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4607A",
+        "accountName": "Tires - W.O. - Infiniti Vehicles - Sale",
+        "accountNumber": "4607A",
+        "active": true,
+        "id": "8194_4607A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_4064A",
+        "accountName": "QX60 - Retail - Sales",
+        "accountNumber": "4064A",
+        "active": true,
+        "id": "8194_4064A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_8580",
+        "accountName": "LIFO Adjustments - Deductions to Income",
+        "accountNumber": "8580",
+        "active": true,
+        "id": "8194_8580",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4270C",
+        "accountName": "GAP Sales - New Other Makes Vehicle - Cost of Sale",
+        "accountNumber": "4270C",
+        "active": true,
+        "id": "8194_4270C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_2820",
+        "accountName": "Mach & Shop Eq",
+        "accountNumber": "2820",
+        "active": true,
+        "id": "8194_2820",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_3910",
+        "accountName": "Retained Earnings",
+        "accountNumber": "3910",
+        "active": true,
+        "id": "8194_3910",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8194_8194_0410D",
+        "accountName": "Communication, Telephone, Internet & Data Processing - Parts & Acc. Dept",
+        "accountNumber": "0410D",
+        "active": true,
+        "id": "8194_0410D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0640D",
+        "accountName": "Insurance - Other than Bldgs. & Improvements - Parts & Acc. Dept",
+        "accountNumber": "0640D",
+        "active": true,
+        "id": "8194_0640D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0640E",
+        "accountName": "Insurance - Other than Bldgs. & Improvements - Body Shop Dept.",
+        "accountNumber": "0640E",
+        "active": true,
+        "id": "8194_0640E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0410C",
+        "accountName": "Communication, Telephone, Internet & Data Processing - Service Dept.",
+        "accountNumber": "0410C",
+        "active": true,
+        "id": "8194_0410C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_2940",
+        "accountName": "Advances to Employees",
+        "accountNumber": "2940",
+        "active": true,
+        "id": "8194_2940",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_4064C",
+        "accountName": "QX60 - Retail - Cost of Sale",
+        "accountNumber": "4064C",
+        "active": true,
+        "id": "8194_4064C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0640B",
+        "accountName": "Insurance - Other than Buildings & Improvements - Used Vehicle Dept.",
+        "accountNumber": "0640B",
+        "active": true,
+        "id": "8194_0640B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4270A",
+        "accountName": "GAP Sales - New Other Makes Vehicle - Sales",
+        "accountNumber": "4270A",
+        "active": true,
+        "id": "8194_4270A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_0410E",
+        "accountName": "Communication, Telephone, Internet & Data Processing - Body Shop Dept.",
+        "accountNumber": "0410E",
+        "active": true,
+        "id": "8194_0410E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0640C",
+        "accountName": "Insurance - Other than Bldgs. & Improvements - Service Dept.",
+        "accountNumber": "0640C",
+        "active": true,
+        "id": "8194_0640C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_6590C",
+        "accountName": "Adj. Cost of Labor Sales - Mech. - Cost of Sale",
+        "accountNumber": "6590C",
+        "active": true,
+        "id": "8194_6590C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0640A",
+        "accountName": "Insurance - Other than Buildings & Improvements - New Vehicle Dept.",
+        "accountNumber": "0640A",
+        "active": true,
+        "id": "8194_0640A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0410B",
+        "accountName": "Communication, Telephone, Internet & Data Processing - Used Vehicle Dept.",
+        "accountNumber": "0410B",
+        "active": true,
+        "id": "8194_0410B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0410A",
+        "accountName": "Communication, Telephone, Internet & Data Processing - New Vehicle Dept.",
+        "accountNumber": "0410A",
+        "active": true,
+        "id": "8194_0410A",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_4606C",
+        "accountName": "Parts & Access. - Express Service - Svc/Maint Contract - Infiniti Vehicles - Cost of Sale",
+        "accountNumber": "4606C",
+        "active": true,
+        "id": "8194_4606C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_4606A",
+        "accountName": "Parts & Access. - Express Service - Svc/Maint Contract - Infiniti Vehicles - Sale",
+        "accountNumber": "4606A",
+        "active": true,
+        "id": "8194_4606A",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8194_8194_8590",
+        "accountName": "Rental / Service Loaner Vehicles Expense",
+        "accountNumber": "8590",
+        "active": true,
+        "id": "8194_8590",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_3900",
+        "accountName": "Capital Stock",
+        "accountNumber": "3900",
+        "active": true,
+        "id": "8194_3900",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8194_8194_2930",
+        "accountName": "Notes & Accts Rec. - Officers/Owners",
+        "accountNumber": "2930",
+        "active": true,
+        "id": "8194_2930",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_2810",
+        "accountName": "Bldg & Imprvm",
+        "accountNumber": "2810",
+        "active": true,
+        "id": "8194_2810",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8194_8194_0530C",
+        "accountName": "Depreciation - Buildings & Improvements - Service Dept.",
+        "accountNumber": "0530C",
+        "active": true,
+        "id": "8194_0530C",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0530B",
+        "accountName": "Depreciation - Buildings & Improvements - Used Vehicle Dept.",
+        "accountNumber": "0530B",
+        "active": true,
+        "id": "8194_0530B",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_0530E",
+        "accountName": "Depreciation - Buildings & Improvements - Body Shop Dept.",
+        "accountNumber": "0530E",
+        "active": true,
+        "id": "8194_0530E",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8194_8194_6470C",
+        "accountName": "Fin., Ins. & Svc. Cont. Adj. - Used Infiniti Vehicle - Cost of Sale",
+        "accountNumber": "6470C",
+        "active": true,
+        "id": "8194_6470C",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8194_8194_0530D",
+        "accountName": "Depreciation - Buildings & Improvements - Parts & Acc. Dept",
+        "accountNumber": "0530D",
+        "active": true,
+        "id": "8194_0530D",
+        "accountTypeId": "OPERATING_EXPENSE"
+      }
+    ],
+    "costCenterSetup": [
+      {
+        "key": "8194_6aa38480f78f90135f9e0e33",
+        "customFieldKey": "PARTS_SALES_ORDER_INTERNAL",
+        "options": [
+          {
+            "id": "NEW_CAR_INVENTORY",
+            "name": "New Car Inventory"
+          },
+          {
+            "id": "NEW_TRUCK_INVENTORY",
+            "name": "New Truck Inventory"
+          },
+          {
+            "id": "USED_CAR_INVENTORY",
+            "name": "Used Car Inventory"
+          },
+          {
+            "id": "USED_TRUCK_INVENTORY",
+            "name": "Used Truck Inventory"
+          },
+          {
+            "id": "INTERNAL_DUE_BILL",
+            "name": "Internal Due Bill"
+          },
+          {
+            "id": "SHOP_SUPPLIES",
+            "name": "Shop Supplies"
+          },
+          {
+            "id": "SERVICE_POLICY",
+            "name": "Service Policy"
+          },
+          {
+            "id": "INTERNAL_POLICY_PARTS",
+            "name": "Internal Policy Parts"
+          },
+          {
+            "id": "INTERNAL_INTER_FRANCHISE",
+            "name": "Internal Inter Franchise"
+          }
+        ]
+      },
+      {
+        "key": "8194_6aa38480f78f90135f9e0e39",
+        "customFieldKey": "DEPARTMENT",
+        "options": [
+          {
+            "id": "6aa3f9daf78f90135f9e0f4e",
+            "name": "Service"
+          },
+          {
+            "id": "6aa3f9cef78f90135f9e0f4d",
+            "name": "Parts"
+          },
+          {
+            "id": "6aa3f9c4797f66059f35e942",
+            "name": "General & Admin"
+          },
+          {
+            "id": "6aa3f9a9f78f90135f9e0f4c",
+            "name": "Used Vehicle Sales"
+          },
+          {
+            "id": "6aa3f9a0f78f90135f9e0f4b",
+            "name": "New Vehicle Sales"
+          }
+        ]
+      },
+      {
+        "key": "8194_6aa38480f78f90135f9e0e35",
+        "customFieldKey": "REPAIR_ORDER_CP_IW_SPLIT",
+        "options": [
+          {
+            "id": "6ab6d6ad6280fff6affff050",
+            "name": "Other Service Contract"
+          }
+        ]
+      },
+      {
+        "key": "8194_6aa38480f78f90135f9e0e3e",
+        "customFieldKey": "REPAIR_ORDER_WARRANTY",
+        "options": [
+          {
+            "id": "6ab6d6800df09d17aa2eb453",
+            "name": "PDI"
+          },
+          {
+            "id": "6ab6d6790df09d17aa2eb452",
+            "name": "Warranty Receivable"
+          }
+        ]
+      },
+      {
+        "key": "8194_6aa38480f78f90135f9e0e37",
+        "customFieldKey": "REPAIR_ORDER_INTERNAL",
+        "options": [
+          {
+            "id": "6ab6d7470df09d17aa2eb45c",
+            "name": "Lot Damage-Used"
+          },
+          {
+            "id": "6ab6d7410df09d17aa2eb45b",
+            "name": "Lot Damage-New"
+          },
+          {
+            "id": "6ab6d7386280fff6affff054",
+            "name": "Lot Damage-Pts"
+          },
+          {
+            "id": "6ab6d7310df09d17aa2eb45a",
+            "name": "Lot Damage-Svc"
+          },
+          {
+            "id": "6ab6d7276280fff6affff053",
+            "name": "PDI."
+          },
+          {
+            "id": "6ab6d71f0df09d17aa2eb459",
+            "name": "Service Goodwill"
+          },
+          {
+            "id": "6ab6d7120df09d17aa2eb458",
+            "name": "Parts Policy."
+          },
+          {
+            "id": "6ab6d70b0df09d17aa2eb457",
+            "name": "Service Policy."
+          },
+          {
+            "id": "6ab6d6fc0df09d17aa2eb456",
+            "name": "Internal Due Bill."
+          },
+          {
+            "id": "6ab6d6f26280fff6affff052",
+            "name": "Used Truck Inventory."
+          },
+          {
+            "id": "6ab6d6d90df09d17aa2eb455",
+            "name": "Used Car Inventory."
+          },
+          {
+            "id": "6ab6d6cc6280fff6affff051",
+            "name": "New Truck Inventory."
+          },
+          {
+            "id": "6ab6d6c00df09d17aa2eb454",
+            "name": "New Car Inventory."
+          }
+        ]
+      }
+    ],
+    "journals": [
+      {
+        "key": "8194_8194_56",
+        "id": "8194_56",
+        "journalName": "Cash Receipts (Balance FWD)",
+        "journalNumber": "56"
+      },
+      {
+        "key": "8194_8194_88",
+        "id": "8194_88",
+        "journalName": "F/S Statistical Data",
+        "journalNumber": "88"
+      },
+      {
+        "key": "8194_8194_25",
+        "id": "8194_25",
+        "journalName": "Used Vehicle Wholesale",
+        "journalNumber": "25"
+      },
+      {
+        "key": "8194_8194_58",
+        "id": "8194_58",
+        "journalName": "Warranty Credits",
+        "journalNumber": "58"
+      },
+      {
+        "key": "8194_8194_57",
+        "id": "8194_57",
+        "journalName": "Cash Receipts (Open-Item)",
+        "journalNumber": "57"
+      },
+      {
+        "key": "8194_8194_15",
+        "id": "8194_15",
+        "journalName": "Dealer Trades",
+        "journalNumber": "15"
+      },
+      {
+        "key": "8194_8194_70",
+        "id": "8194_70",
+        "journalName": "Vehicle Purchases",
+        "journalNumber": "70"
+      },
+      {
+        "key": "8194_8194_81",
+        "id": "8194_81",
+        "journalName": "Standard Recurring Entries",
+        "journalNumber": "81"
+      },
+      {
+        "key": "8194_8194_92",
+        "id": "8194_92",
+        "journalName": "YTD Adjustments",
+        "journalNumber": "92"
+      },
+      {
+        "key": "8194_8194_80",
+        "id": "8194_80",
+        "journalName": "General Journal",
+        "journalNumber": "80"
+      },
+      {
+        "key": "8194_8194_61",
+        "id": "8194_61",
+        "journalName": "Cash Disbursements-Payroll",
+        "journalNumber": "61"
+      },
+      {
+        "key": "8194_8194_94",
+        "id": "8194_94",
+        "journalName": "Set Up Schedules",
+        "journalNumber": "94"
+      },
+      {
+        "key": "8194_8194_60",
+        "id": "8194_60",
+        "journalName": "Cash Disbursements",
+        "journalNumber": "60"
+      },
+      {
+        "key": "8194_8194_82",
+        "id": "8194_82",
+        "journalName": "Prior Period Adjustments",
+        "journalNumber": "82"
+      },
+      {
+        "key": "8194_8194_93",
+        "id": "8194_93",
+        "journalName": "Set Up History",
+        "journalNumber": "93"
+      },
+      {
+        "key": "8194_8194_30",
+        "id": "8194_30",
+        "journalName": "Service Sales",
+        "journalNumber": "30"
+      },
+      {
+        "key": "8194_8194_FC",
+        "id": "8194_FC",
+        "journalName": "Finance Charge",
+        "journalNumber": "FC"
+      },
+      {
+        "key": "8194_8194_40",
+        "id": "8194_40",
+        "journalName": "Payroll",
+        "journalNumber": "40"
+      },
+      {
+        "key": "8194_8194_95",
+        "id": "8194_95",
+        "journalName": "Set Up General Ledger",
+        "journalNumber": "95"
+      },
+      {
+        "key": "8194_8194_10",
+        "id": "8194_10",
+        "journalName": "New Vehicle Sales",
+        "journalNumber": "10"
+      },
+      {
+        "key": "8194_8194_32",
+        "id": "8194_32",
+        "journalName": "Parts Sales",
+        "journalNumber": "32"
+      },
+      {
+        "key": "8194_8194_20",
+        "id": "8194_20",
+        "journalName": "Used Vehicle Sales",
+        "journalNumber": "20"
+      },
+      {
+        "key": "8194_8194_75",
+        "id": "8194_75",
+        "journalName": "General Purchases",
+        "journalNumber": "75"
+      },
+      {
+        "key": "8194_8194_SC",
+        "id": "8194_SC",
+        "journalName": "SC",
+        "journalNumber": "SC"
+      }
+    ]
+  }
+}

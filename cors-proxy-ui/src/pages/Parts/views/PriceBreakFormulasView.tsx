@@ -154,7 +154,7 @@ function buildPreviewRows(
       endAmount,
       variableType: existing ? existing.variableType : defaultVariableType,
       operator: existing ? existing.operator : defaultOperator,
-      value: existing ? existing.value : (values[index] ?? 0),
+      value: values[index] ?? (existing ? existing.value : 0),
     });
     previousEnd = endAmounts[index];
   }
@@ -167,7 +167,7 @@ function buildPreviewRows(
     endAmount: "999999999.00",
     variableType: finalExisting ? finalExisting.variableType : defaultVariableType,
     operator: finalExisting ? finalExisting.operator : defaultOperator,
-    value: finalExisting ? finalExisting.value : (values[endAmounts.length] ?? 0),
+    value: values[endAmounts.length] ?? (finalExisting ? finalExisting.value : 0),
   });
 
   return rows;
@@ -267,7 +267,6 @@ export const PriceBreakFormulasView: React.FC = () => {
     };
   }, []);
 
-  // Synchronize outside status pills and cards directly from preview rows
   const syncOutsideFromRows = (rows: PreviewRow[]) => {
     const ends: number[] = [];
     for (let i = 0; i < rows.length; i += 1) {
@@ -380,7 +379,6 @@ export const PriceBreakFormulasView: React.FC = () => {
         setValues(nextValues);
       }
 
-      // Rebuild while preserving custom operators and variable types already set in previewRows
       const rows = buildPreviewRows(
         parsed.values,
         nextValues,
@@ -399,12 +397,18 @@ export const PriceBreakFormulasView: React.FC = () => {
         setPopupError(parsed.error);
         return;
       }
-      setValues(parsed.values);
 
-      // Rebuild while preserving custom operators and variable types
+      let nextValues = [...parsed.values];
+      if (endAmounts.length > 0 && nextValues.length < endAmounts.length + 1) {
+        while (nextValues.length < endAmounts.length + 1) {
+          nextValues.push(0);
+        }
+      }
+      setValues(nextValues);
+
       const rows = buildPreviewRows(
         endAmounts,
-        parsed.values,
+        nextValues,
         globalVariableType,
         globalOperator,
         previewRows
@@ -425,7 +429,6 @@ export const PriceBreakFormulasView: React.FC = () => {
     setPreviewRows((prev) => prev.map((r) => ({ ...r, operator: op })));
   };
 
-  // Updates row-level state, cascades next Start Amount, and preserves mixed operators (Scenario 1, 2, 3)
   const handleUpdatePreviewRow = (
     index: number,
     field: keyof PreviewRow,
@@ -435,7 +438,6 @@ export const PriceBreakFormulasView: React.FC = () => {
       const updated = prev.map((r) => ({ ...r }));
       updated[index] = { ...updated[index], [field]: newValue };
 
-      // When End Amount is updated, advance next row's Start Amount by +0.01
       if (field === "endAmount" && index + 1 < updated.length) {
         const valStr = String(newValue).trim();
         const parsedEnd = parseFloat(valStr);
@@ -455,7 +457,6 @@ export const PriceBreakFormulasView: React.FC = () => {
         }
       }
 
-      // Sync outside state without resetting custom operators
       syncOutsideFromRows(updated);
       return updated;
     });
@@ -530,7 +531,6 @@ export const PriceBreakFormulasView: React.FC = () => {
         return;
       }
 
-      // Builds the exact payload honoring every row's specific operator (+ or -)
       const payload = buildPayload(normalizeText(formulaName), baseVariableType, previewRows);
       await submitPriceFormula(payload, headers);
 
@@ -1145,7 +1145,6 @@ export const PriceBreakFormulasView: React.FC = () => {
                             >
                               <td style={tdMonoStyle}>{index + 1}</td>
 
-                              {/* Start Amount */}
                               <td style={tdStyle}>
                                 <input
                                   type="number"
@@ -1163,7 +1162,6 @@ export const PriceBreakFormulasView: React.FC = () => {
                                 />
                               </td>
 
-                              {/* End Amount with Cascading Next Start Amount */}
                               <td style={tdStyle}>
                                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                   <input
@@ -1209,7 +1207,6 @@ export const PriceBreakFormulasView: React.FC = () => {
                                 </div>
                               </td>
 
-                              {/* Variable Type Dropdown */}
                               <td style={tdStyle}>
                                 <select
                                   value={row.variableType}
@@ -1230,7 +1227,6 @@ export const PriceBreakFormulasView: React.FC = () => {
                                 </select>
                               </td>
 
-                              {/* Operator Selector (Scenario 1, 2, 3 respected per row) */}
                               <td style={tdStyle}>
                                 <select
                                   value={row.operator}
@@ -1265,7 +1261,6 @@ export const PriceBreakFormulasView: React.FC = () => {
                                 </select>
                               </td>
 
-                              {/* Value Input */}
                               <td style={tdStyle}>
                                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                   <input
@@ -1290,7 +1285,6 @@ export const PriceBreakFormulasView: React.FC = () => {
                                 </div>
                               </td>
 
-                              {/* Delete Row */}
                               <td style={{ ...tdStyle, textAlign: "center" }}>
                                 <button
                                   type="button"
