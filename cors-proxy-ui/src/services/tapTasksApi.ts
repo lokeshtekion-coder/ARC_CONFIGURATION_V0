@@ -6,6 +6,7 @@ import {
 import { loadGlobalHeaders, loadTekionApiSettings } from "./tekionApiSettings";
 import type { KeyValuePair } from "../types/proxy.types";
 import type { CustomPhaseStatus, StoreRecord } from "./storesDb";
+import { resolveStoreProjectId } from "./storesDb";
 
 const TAP_API_BASE = "https://tapapi.tekioncloud.com/tapapi/task_management/public/v1";
 const ATTACHMENT_API_BASE =
@@ -14,6 +15,17 @@ const ATTACHMENT_API_BASE =
 export type TapTaskStatus = "new" | "inprogress" | "completed" | "duplicate";
 export type TapBlueprintModule = "parts" | "service" | "accounting";
 export type TapTaskModule = TapBlueprintModule;
+
+export interface TapAttachmentItem {
+  id: number | string;
+  name: string;
+  link: string;
+  thumbnailLink?: string;
+  version?: number;
+  createdAt?: number;
+  createdBy?: number;
+  isDeletable?: boolean;
+}
 
 export interface TapTaskMembership {
   team?: {
@@ -33,6 +45,8 @@ export interface TapTask {
   status: TapTaskStatus | string;
   dueDate?: number | null;
   memberships?: TapTaskMembership[];
+  taskAttachmentCount?: number;
+  attachments?: TapAttachmentItem[];
 }
 
 export interface TapTaskCommentMention {
@@ -54,6 +68,13 @@ export interface DealerContextHeaders {
 
 export type TapProjectTasks = TapTasksByModule;
 
+export type BatchFetchProgressCallback = (
+  processed: number,
+  total: number,
+  updated: number,
+  skippedTasks?: number
+) => void;
+
 export class TapTaskApiError extends Error {
   constructor(message = "TAP task functions is not working") {
     super(message);
@@ -69,6 +90,29 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function normalize(value: unknown): string {
   return String(value ?? "").trim();
+}
+
+/**
+ * Safely extracts and converts any ID type (string or number) to a trimmed string
+ */
+function getCleanId(val: unknown): string {
+  if (val === null || val === undefined) return "";
+  return String(val).trim();
+}
+
+/**
+ * Unified helper resolving the strongest available TAP project or tracking ID
+ */
+export function extractEffectiveProjectId(
+  store?: (Partial<StoreRecord> & Record<string, any>) | null
+): string {
+  if (!store) return "";
+  return (
+    resolveStoreProjectId(store) ||
+    getCleanId(store.target_entity_instance_id || store.targetEntityInstanceId) ||
+    getCleanId(store.project_implementation_tm_sync_status_tracking_id) ||
+    getCleanId(store.implementation_tm_sync_status_tracking_id)
+  );
 }
 
 function normalizeHeaders(input: unknown): Record<string, string> {
@@ -141,7 +185,18 @@ function buildTapHeaders(context?: DealerContextHeaders): Record<string, string>
     accept: "application/json, text/plain, */*",
     origin: "https://tap.tekioncloud.com",
     referer: "https://tap.tekioncloud.com/",
+    locale: "en_US",
   };
+
+  if (!headers["email"]) {
+    headers["email"] = "tlreddy@tekion.com";
+  }
+
+  const explicitDuoToken =
+    localStorage.getItem("tap_duo_api_token") || localStorage.getItem("tap_token");
+  if (explicitDuoToken && !headers["tap-duo-api-token"]) {
+    headers["tap-duo-api-token"] = explicitDuoToken;
+  }
 
   if (context?.tenantId) headers["tenant-id"] = context.tenantId;
   if (context?.dealerId) headers["dealer-id"] = context.dealerId;
@@ -181,8 +236,13 @@ async function proxyJson<T>(
 ): Promise<T> {
   const headers: Record<string, string> = {
     ...buildTapHeaders(context),
-    "content-type": "application/json",
   };
+
+  if (method !== "GET" && method !== "HEAD") {
+    headers["content-type"] = "application/json";
+  } else {
+    delete headers["content-type"];
+  }
 
   const startTime = performance.now();
 
@@ -218,7 +278,9 @@ async function proxyJson<T>(
 
   if (upstreamStatus === 429 && retries > 0) {
     const backoffMs = (3 - retries) * 1500;
-    console.warn(`[tapTasksApi] ⏳ Upstream 429 rate limit. Backing off for ${backoffMs}ms... (${retries} retries left)`);
+    console.warn(
+      `[tapTasksApi] ⏳ Upstream 429 rate limit. Backing off for ${backoffMs}ms... (${retries} retries left)`
+    );
     await sleep(backoffMs);
     return proxyJson<T>(url, method, body, context, silent, retries - 1);
   }
@@ -246,12 +308,122 @@ async function proxyJson<T>(
 
   console.info(`[tapTasksApi] 🟢 Success (${upstreamStatus}) ${method} ${url} [${elapsedMs}ms]`, {
     status: upstreamStatus,
-    endpoint: url.replace(TAP_API_BASE, ""),
+    endpoint: url.replace(TAP_API_BASE, "").replace(ATTACHMENT_API_BASE, ""),
     sentPayload: body,
     resolvedSummary: summarizeBody(parsed),
   });
 
   return parsed as T;
+}
+
+export async function fetchTaskAttachments(
+  taskId: number | string,
+  context?: DealerContextHeaders
+): Promise<TapAttachmentItem[]> {
+  return (await fetchTaskAttachmentsOrNull(taskId, context)) ?? [];
+}
+
+export async function fetchTaskAttachmentsOrNull(
+  taskId: number | string,
+  context?: DealerContextHeaders
+): Promise<TapAttachmentItem[] | null> {
+  const idNum = toFiniteTaskId(taskId);
+  if (!idNum) {
+    console.warn(`[tapTasksApi] ⚠️ fetchTaskAttachments called with invalid taskId:`, taskId);
+    return null;
+  }
+
+  const url = `${ATTACHMENT_API_BASE}/tasks/${idNum}?languageCode=en_US`;
+  const rawHeaders = buildTapHeaders(context);
+
+  const headers: Record<string, string> = {};
+  for (const [k, v] of Object.entries(rawHeaders)) {
+    const lk = k.toLowerCase();
+    if (lk !== "content-type" && lk !== "content-length") {
+      headers[lk] = v;
+    }
+  }
+
+  headers["locale"] = "en_US";
+  headers["accept"] = "application/json, text/plain, */*";
+  if (!headers["email"]) {
+    headers["email"] = "tlreddy@tekion.com";
+  }
+
+  const duoToken =
+    localStorage.getItem("tap_duo_api_token") ||
+    localStorage.getItem("tap_token") ||
+    headers["tap-duo-api-token"];
+
+  if (duoToken) {
+    headers["tap-duo-api-token"] = duoToken;
+  }
+
+  console.info(`[tapTasksApi] 🚀 CALLING ATTACHMENTS API for task #${idNum} -> ${url}`);
+
+  const MAX_ATTEMPTS = 4;
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch("/api/proxy", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url,
+          method: "GET",
+          headers,
+          timeout: 30000,
+        }),
+      });
+
+      const wrapper = await res.json();
+      const upstreamStatus = typeof wrapper.status === "number" ? wrapper.status : res.status;
+
+      if (upstreamStatus === 429 || upstreamStatus >= 500) {
+        if (attempt < MAX_ATTEMPTS) {
+          await sleep(attempt * 1500);
+          continue;
+        }
+        console.warn(`[tapTasksApi] ⚠️ Task #${idNum} attachments failed after retries (${upstreamStatus})`);
+        return null;
+      }
+
+      if (upstreamStatus >= 400) {
+        console.warn(
+          `[tapTasksApi] ⚠️ Upstream error ${upstreamStatus} on task #${idNum}:`,
+          wrapper.body
+        );
+        return null;
+      }
+
+      let parsed = wrapper.body;
+      if (typeof parsed === "string") {
+        try {
+          parsed = JSON.parse(parsed);
+        } catch {
+          return null;
+        }
+      }
+
+      const list = Array.isArray(parsed)
+        ? parsed
+        : Array.isArray(parsed?.data)
+        ? parsed.data
+        : Array.isArray(parsed?.attachments)
+        ? parsed.attachments
+        : [];
+
+      console.info(`[tapTasksApi] ✅ Task #${idNum} resolved ${list.length} attachment(s)`);
+      return list as TapAttachmentItem[];
+    } catch (error) {
+      if (attempt < MAX_ATTEMPTS) {
+        await sleep(attempt * 1500);
+        continue;
+      }
+      console.error(`[tapTasksApi] ❌ Exception fetching attachments for task #${idNum}:`, error);
+      return null;
+    }
+  }
+  return null;
 }
 
 function toFiniteTaskId(value: unknown): number | null {
@@ -291,9 +463,12 @@ function toTapTask(value: unknown): TapTask | null {
     : [];
 
   const dueDateRaw = value.dueDate ?? value.due_date;
-  const dueDate = typeof dueDateRaw === "number" && Number.isFinite(dueDateRaw)
-    ? dueDateRaw
-    : null;
+  const dueDate =
+    typeof dueDateRaw === "number" && Number.isFinite(dueDateRaw) ? dueDateRaw : null;
+
+  const countRaw = value.taskAttachmentCount ?? value.attachmentCount;
+  const taskAttachmentCount =
+    typeof countRaw === "number" && Number.isFinite(countRaw) ? countRaw : undefined;
 
   return {
     taskId,
@@ -302,17 +477,25 @@ function toTapTask(value: unknown): TapTask | null {
     status: normalize(value.status).toLowerCase() || "new",
     dueDate,
     memberships,
+    taskAttachmentCount,
   };
 }
 
-function belongsToDsOnboardingProject(task: TapTask, onboardingProjectId: number): boolean {
+function belongsToDsOnboardingProject(
+  task: TapTask,
+  targetProjectId: number,
+  fallbackProjectId?: number
+): boolean {
   if (!task.memberships || task.memberships.length === 0) return true;
 
   return task.memberships.some((membership) => {
     const isDs = !membership.team?.teamName || membership.team.teamName.includes("Onboarding");
+    const pId = Number(membership.project?.projectId);
     const isProj =
       !membership.project?.projectId ||
-      Number(membership.project.projectId) === onboardingProjectId;
+      pId === targetProjectId ||
+      (fallbackProjectId ? pId === fallbackProjectId : false);
+
     return isDs && isProj;
   });
 }
@@ -326,27 +509,33 @@ function moduleForTask(task: TapTask): TapBlueprintModule | null {
     taskName.includes("signoff") ||
     taskName.includes("review") ||
     taskName.includes("validation") ||
-    taskName.includes("checklist");
+    taskName.includes("checklist") ||
+    taskName.includes("training") ||
+    taskName.includes("hardware") ||
+    taskName.includes("scanner");
 
   if (isExcluded) return null;
 
   if (
     taskName === "blueprint configuration - accounting" ||
-    (taskName.startsWith("blueprint configuration") && taskName.includes("accounting"))
+    (taskName.startsWith("blueprint configuration") && taskName.includes("accounting")) ||
+    (taskName === "blueprint configuration" && description.includes("accounting"))
   ) {
     return "accounting";
   }
 
   if (
-    (taskName === "blueprint configuration" && description.includes("parts blueprint")) ||
-    taskName === "blueprint configuration - parts"
+    taskName === "blueprint configuration - parts" ||
+    (taskName.startsWith("blueprint configuration") && taskName.includes("parts")) ||
+    (taskName === "blueprint configuration" && description.includes("parts"))
   ) {
     return "parts";
   }
 
   if (
-    (taskName === "blueprint configuration" && description.includes("service blueprint")) ||
-    taskName === "blueprint configuration - service"
+    taskName === "blueprint configuration - service" ||
+    (taskName.startsWith("blueprint configuration") && taskName.includes("service")) ||
+    (taskName === "blueprint configuration" && description.includes("service"))
   ) {
     return "service";
   }
@@ -420,22 +609,27 @@ async function fetchTasksInChunks(
 
 export async function fetchTapBlueprintTasks(
   onboardingProjectId: string | number,
-  context?: DealerContextHeaders
+  context?: DealerContextHeaders,
+  alternateProjectId?: string | number
 ): Promise<TapTasksByModule> {
-  const projectId = Number(onboardingProjectId);
-  if (!Number.isFinite(projectId) || projectId <= 0) {
+  const primaryId = Number(onboardingProjectId);
+  const altId = Number(alternateProjectId);
+
+  const effectiveId = Number.isFinite(primaryId) && primaryId > 0 ? primaryId : altId;
+
+  if (!Number.isFinite(effectiveId) || effectiveId <= 0) {
     throw new TapTaskApiError(
-      "TAP task functions is not working. onboarding_project_id is missing."
+      "TAP task functions is not working. Both onboarding_project_id and ds_onboarding_project_id are missing."
     );
   }
 
-  console.info(`[tapTasksApi] 🚀 Querying project groups for ID: ${projectId}`, {
-    projectId,
+  console.info(`[tapTasksApi] 🚀 Querying project groups for ID: ${effectiveId} (Alt: ${altId || "none"})`, {
+    effectiveId,
     dealerContext: context,
   });
 
   const groupsResponse = await proxyJson<unknown>(
-    `${TAP_API_BASE}/projects/${encodeURIComponent(String(projectId))}/groups/`,
+    `${TAP_API_BASE}/projects/${encodeURIComponent(String(effectiveId))}/groups/`,
     "POST",
     {
       filters: [
@@ -466,7 +660,7 @@ export async function fetchTapBlueprintTasks(
   }
 
   console.info(`[tapTasksApi] 🔍 Discovered ${candidateIds.length} task IDs across groups`, {
-    projectId,
+    effectiveId,
     taskIdsSample: candidateIds.slice(0, 10),
   });
 
@@ -477,7 +671,7 @@ export async function fetchTapBlueprintTasks(
 
   for (const raw of rawTasks) {
     const task = toTapTask(raw);
-    if (!task || !belongsToDsOnboardingProject(task, projectId)) continue;
+    if (!task || !belongsToDsOnboardingProject(task, effectiveId, altId)) continue;
 
     const mod = moduleForTask(task);
     if (mod) {
@@ -486,7 +680,7 @@ export async function fetchTapBlueprintTasks(
   }
 
   console.info(`[tapTasksApi] 🎯 Blueprint Tasks Successfully Mapped`, {
-    projectId,
+    effectiveId,
     totalRawTasksReceived: rawTasks.length,
     parts: result.parts.map((t) => ({ id: t.taskId, name: t.taskName, status: t.status })),
     service: result.service.map((t) => ({ id: t.taskId, name: t.taskName, status: t.status })),
@@ -766,71 +960,197 @@ export function calculateFixedOpsStatus(tasks: TapTasksByModule): CustomPhaseSta
 }
 
 /**
- * Concurrently fetches real TAP task statuses with rate-limiting protection (sequential pacing + 350ms delay).
- * Skips stores where both Fixed Ops and Variable Ops are already Completed.
+ * Task-Level Granular Diffing Engine:
+ * - Queries lightweight task metadata for each store.
+ * - Indexes previous tasks in memory by taskId.
+ * - If status is unchanged and attachments are already loaded, REUSES them immediately without network calls.
+ * - Only queries attachments for newly discovered or updated tasks.
  */
 export async function batchFetchRealTapStatuses(
-  stores: StoreRecord[],
-  onProgress?: (processed: number, total: number, updated: number) => void
-): Promise<{ updatedStores: StoreRecord[]; updatedCount: number }> {
-  const eligible = stores.filter(
-    (s) =>
-      Boolean(s.onboarding_project_id?.trim()) &&
-      (s.fixed_ops_status !== "Completed" || s.variable_ops_status !== "Completed")
-  );
+  stores: (StoreRecord & Record<string, any>)[],
+  onProgress?: BatchFetchProgressCallback,
+  onStoreUpdated?: (store: StoreRecord & Record<string, any>) => void
+): Promise<{
+  updatedStores: (StoreRecord & Record<string, any>)[];
+  updatedCount: number;
+  totalSkippedTasks: number;
+}> {
+  const eligible = stores.filter((s) => Boolean(extractEffectiveProjectId(s)));
+
+  console.info(`[tapTasksApi] batchFetchRealTapStatuses starting for ${eligible.length} eligible stores`);
 
   const total = eligible.length;
   let processed = 0;
   let updatedCount = 0;
+  let totalSkippedTasks = 0;
 
-  const storeMap = new Map<string, StoreRecord>(stores.map((s) => [s.tekion_id, { ...s }]));
+  const storeMap = new Map<string, StoreRecord & Record<string, any>>(
+    stores.map((s) => [s.tekion_id, { ...s }])
+  );
 
   for (let i = 0; i < eligible.length; i++) {
     const store = eligible[i];
+    const projectId = extractEffectiveProjectId(store);
+
+    if (!projectId) {
+      processed++;
+      onProgress?.(processed, total, updatedCount, totalSkippedTasks);
+      continue;
+    }
 
     try {
-      const result = await fetchTapBlueprintTasks(store.onboarding_project_id!, {
-        tenantId: store.tenant_id,
-        dealerId: store.dealer_id,
-        tenantCode: store.tenant_code,
+      console.info(
+        `[tapTasksApi] Fetching blueprint tasks for store ${store.dba_name} (Resolved Project ID: ${projectId})`
+      );
+      const result = await fetchTapBlueprintTasks(
+        store.onboarding_project_id || projectId,
+        {
+          tenantId: store.tenant_id,
+          dealerId: store.dealer_id,
+          tenantCode: store.tenant_code,
+        },
+        store.ds_onboarding_project_id
+      );
+
+      console.info(`[tapTasksApi] Tasks found for ${store.dba_name}:`, {
+        parts: result.parts.length,
+        service: result.service.length,
+        accounting: result.accounting.length,
       });
+
+      const prevTasks = store.fetched_blueprint_tasks || {};
+      const prevByTaskId = new Map<string, any>(
+        [
+          ...(prevTasks.partsTasks || []),
+          ...(prevTasks.serviceTasks || []),
+          ...(prevTasks.accountingTasks || []),
+        ].map((pt: any) => [String(pt.taskId || pt.id), pt])
+      );
+
+      // TASK-LEVEL GRANULAR DIFFING HYDRATION
+      const hydrateList = async (tasks: TapTask[]) => {
+        let count = 0;
+        let failed = false;
+
+        for (const t of tasks) {
+          const tIdStr = String(t.taskId);
+          const currentStatus = String(t.status || "new").toLowerCase();
+          const prev = prevByTaskId.get(tIdStr);
+
+          const isAttachmentResolved =
+            prev?.attachments !== undefined && Array.isArray(prev.attachments);
+          const isStatusUnchanged =
+            prev && String(prev.status || "").toLowerCase() === currentStatus;
+
+          // Reuse cache if attachments are loaded and status is unchanged
+          if (isAttachmentResolved && isStatusUnchanged) {
+            totalSkippedTasks++;
+            t.attachments = prev.attachments;
+            t.taskAttachmentCount =
+              prev.taskAttachmentCount ?? prev.attachments.length;
+            count += t.taskAttachmentCount ?? 0;
+            continue;
+          }
+
+          // Fetch only if new, status-changed, or attachments missing
+          const atts = await fetchTaskAttachmentsOrNull(t.taskId, {
+            tenantId: store.tenant_id,
+            dealerId: store.dealer_id,
+            tenantCode: store.tenant_code,
+          });
+
+          if (atts === null) {
+            failed = true;
+            if (prev) {
+              t.attachments = prev.attachments;
+              t.taskAttachmentCount = Number(
+                prev.taskAttachmentCount ?? prev.attachments?.length ?? 0
+              );
+            } else {
+              t.taskAttachmentCount = 0;
+            }
+          } else {
+            t.attachments = atts;
+            t.taskAttachmentCount = atts.length;
+          }
+
+          count += t.taskAttachmentCount ?? 0;
+          await sleep(150);
+        }
+
+        return { count, failed };
+      };
+
+      const parts = await hydrateList(result.parts);
+      const service = await hydrateList(result.service);
+      const accounting = await hydrateList(result.accounting);
+
+      if (parts.failed || service.failed || accounting.failed) {
+        console.warn(
+          `[tapTasksApi] Some attachment lookups failed for ${store.dba_name}; kept previous counts where available`
+        );
+      }
+
+      const fixedOpsAttachments =
+        (parts.failed || service.failed) && typeof store.fixed_ops_attachments === "number"
+          ? Math.max(store.fixed_ops_attachments, parts.count + service.count)
+          : parts.count + service.count;
+
+      const variableOpsAttachments =
+        accounting.failed && typeof store.variable_ops_attachments === "number"
+          ? Math.max(store.variable_ops_attachments, accounting.count)
+          : accounting.count;
 
       const realFixedOps = calculateFixedOpsStatus(result);
       const realVariableOps = calculatePhaseStatus(result.accounting);
 
       const current = storeMap.get(store.tekion_id);
       if (current) {
-        let changed = false;
+        current.fixed_ops_status = realFixedOps;
+        current.variable_ops_status = realVariableOps;
 
-        if (realFixedOps === "Completed" && current.fixed_ops_status !== "Completed") {
-          current.fixed_ops_status = "Completed";
-          changed = true;
-        }
+        const fixedUnknown =
+          (parts.failed || service.failed) && typeof store.fixed_ops_attachments !== "number";
+        const varUnknown =
+          accounting.failed && typeof store.variable_ops_attachments !== "number";
 
-        if (realVariableOps === "Completed" && current.variable_ops_status !== "Completed") {
-          current.variable_ops_status = "Completed";
-          changed = true;
-        }
+        if (!fixedUnknown) current.fixed_ops_attachments = fixedOpsAttachments;
+        if (!varUnknown) current.variable_ops_attachments = variableOpsAttachments;
 
-        if (changed) {
-          updatedCount++;
-          storeMap.set(store.tekion_id, current);
+        current.fetched_blueprint_tasks = {
+          partsTasks: result.parts,
+          serviceTasks: result.service,
+          accountingTasks: result.accounting,
+          fetchedAt: new Date().toISOString(),
+        };
+
+        current.attachments_incomplete =
+          parts.failed || service.failed || accounting.failed;
+
+        updatedCount++;
+        storeMap.set(store.tekion_id, current);
+
+        try {
+          onStoreUpdated?.(current);
+        } catch (cbErr) {
+          console.warn("[tapTasksApi] onStoreUpdated callback failed", cbErr);
         }
       }
     } catch (err) {
       console.warn(`[tapTasksApi] Could not sync TAP tasks for store #${store.dealer_id}`, err);
     } finally {
       processed++;
-      onProgress?.(processed, total, updatedCount);
+      onProgress?.(processed, total, updatedCount, totalSkippedTasks);
     }
 
     if (i + 1 < eligible.length) {
-      await sleep(350);
+      await sleep(250);
     }
   }
 
   return {
     updatedStores: Array.from(storeMap.values()),
     updatedCount,
+    totalSkippedTasks,
   };
 }

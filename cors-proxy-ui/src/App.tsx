@@ -11,6 +11,7 @@ import { Accounting } from "./pages/Accounting/Accounting";
 import { Analytics } from "./pages/Analytics/Analytics";
 import { Adhoc } from "./pages/Adhoc/Adhoc";
 import { TGPT } from "./pages/TGPT/TGPT";
+import { Review } from "./pages/Review/Review";
 import { SyncBotDashboard } from "./pages/SyncBotDashboard";
 import { SyncHealthBanner } from "./components/SyncHealthBanner";
 import { UpdateStatusBanner } from "./components/UpdateStatusBanner";
@@ -29,7 +30,8 @@ export type PageId =
   | "analytics"
   | "adhoc"
   | "tgpt"
-  | "syncbot";
+  | "syncbot"
+  | "review";
 
 export interface NavItem {
   id: Exclude<PageId, "home" | "settings">;
@@ -47,6 +49,7 @@ const NAV_ITEMS: NavItem[] = [
   { id: "analytics", label: "Analytics", icon: "📊", category: "core" },
   { id: "adhoc", label: "Adhoc", icon: "⚡", category: "core" },
   { id: "tgpt", label: "TGPT", icon: "🤖", category: "core" },
+  { id: "review", label: "Review", icon: "📝", category: "core" },
 
   // Utility Tools
   { id: "blueprint", label: "Blueprint", icon: "🧬", category: "utility" },
@@ -201,6 +204,8 @@ function renderPage(
       return <Adhoc onBack={onBack} />;
     case "tgpt":
       return <TGPT onBack={onBack} />;
+    case "review":
+      return <Review onBack={onBack} />;
     case "syncbot":
       return <SyncBotDashboard onBack={onBack} />;
     default:

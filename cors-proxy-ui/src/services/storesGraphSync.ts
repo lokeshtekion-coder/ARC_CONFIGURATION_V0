@@ -1,4 +1,4 @@
-import type { StoreRecord, CustomPhaseStatus } from "./storesDb";
+import type { StoreRecord, CustomPhaseStatus, NotWorkedOption } from "./storesDb";
 import { recordStatusTransition } from "./storesDb";
 import { loadTekionApiSettings } from "./tekionApiSettings";
 import { loadLatestExtensionCapture } from "./extensionBridge";
@@ -79,11 +79,14 @@ export interface MergedGraphSyncResult extends GraphSyncResult {
 
 interface RemoteExcelRowData {
   tekionId: string;
+  fixedAssignee?: string;
+  variableAssignee?: string;
   fixedOpsStatus?: string;
   fixedOpsTracking?: string;
   variableOpsStatus?: string;
   variableOpsTracking?: string;
   testingStatus?: string;
+  notWorked?: string;
 }
 
 function workbookBaseUrl(): string {
@@ -96,7 +99,8 @@ export function isTokenExpired(token?: string): boolean {
   if (parts.length !== 3) return false;
   try {
     const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64 + "=".repeat((4 - (base64.length % 4 || 4)) % 4);
+    const padLen = (4 - (base64.length % 4)) % 4;
+    const padded = base64 + "=".repeat(padLen);
     const payload = JSON.parse(atob(padded)) as { exp?: number };
     if (typeof payload.exp === "number") {
       return Date.now() >= (payload.exp - 60) * 1000;
@@ -141,7 +145,8 @@ function validateGraphTokenScope(token: string): void {
   let payload: { scp?: string; appid?: string; app_displayname?: string; exp?: number };
   try {
     const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
-    const padded = base64 + "=".repeat((4 - (base64.length % 4 || 4)) % 4);
+    const padLen = (4 - (base64.length % 4)) % 4;
+    const padded = base64 + "=".repeat(padLen);
     payload = JSON.parse(atob(padded)) as typeof payload;
   } catch {
     return;
@@ -610,12 +615,6 @@ function normalizeExcelStatus(val?: string): CustomPhaseStatus | null {
   return null;
 }
 
-/**
- * Priority Resolver:
- * - Local 'Completed' CANNOT be demoted by Excel background sync.
- * - Remote 'Completed' promotes local status to Completed.
- * - Otherwise highest progress status (WIP > TO DO) wins.
- */
 function resolveStatusPriority(
   localStatus?: string,
   remoteStatus?: string,
@@ -624,12 +623,10 @@ function resolveStatusPriority(
   const r = normalizeExcelStatus(remoteStatus);
   const l = normalizeExcelStatus(localStatus) || "TO DO";
 
-  // Safeguard: Local Completed is authoritative against background sync
   if (l === "Completed") {
     return "Completed";
   }
 
-  // Remote Completed upgrades local
   if (r === "Completed") {
     return "Completed";
   }
@@ -668,6 +665,15 @@ async function fetchExistingWorkbookData(
       const headerRow = rows[0].map((h) => String(h || "").trim().toLowerCase());
 
       const tekionIdIdx = headerRow.findIndex((h) => h === "tekion id");
+      const fixedAssigneeIdx = headerRow.findIndex(
+        (h) => h === "fixed ops assignee" || h === "assignee" || h === "lead assignee"
+      );
+      const varAssigneeIdx = headerRow.findIndex(
+        (h) => h === "variable ops assignee" || h === "var ops assignee"
+      );
+
+      const notWorkedIdx = headerRow.findIndex((h) => /not\s*worked/i.test(h));
+
       const fixedOpsIdx = headerRow.findIndex((h) => h === "fixed ops");
       const fixedOpsTrackingIdx = headerRow.findIndex((h) => h === "fixed ops tracking");
       const variableOpsIdx = headerRow.findIndex((h) => h === "variable ops");
@@ -683,6 +689,9 @@ async function fetchExistingWorkbookData(
 
         remoteMap.set(tekionId, {
           tekionId,
+          fixedAssignee: fixedAssigneeIdx !== -1 ? String(row[fixedAssigneeIdx] || "").trim() : undefined,
+          variableAssignee: varAssigneeIdx !== -1 ? String(row[varAssigneeIdx] || "").trim() : undefined,
+          notWorked: notWorkedIdx !== -1 ? String(row[notWorkedIdx] || "").trim() : undefined,
           fixedOpsStatus: fixedOpsIdx !== -1 ? String(row[fixedOpsIdx] || "").trim() : undefined,
           fixedOpsTracking: fixedOpsTrackingIdx !== -1 ? String(row[fixedOpsTrackingIdx] || "").trim() : undefined,
           variableOpsStatus: variableOpsIdx !== -1 ? String(row[variableOpsIdx] || "").trim() : undefined,
@@ -724,13 +733,119 @@ function mergeLocalAndRemoteStores(
       isAdmin
     );
 
+    const custom_assignee = remote.fixedAssignee?.trim() || (local as any).custom_assignee;
+    const custom_variable_assignee = remote.variableAssignee?.trim() || (local as any).custom_variable_assignee;
+    const not_worked = remote.notWorked?.trim() || local.not_worked;
+
     return {
       ...local,
       fixed_ops_status,
       variable_ops_status,
       testing_status,
+      custom_assignee,
+      custom_variable_assignee,
+      not_worked,
     };
   });
+}
+
+/**
+ * Patches a specific column by possible header candidates
+ */
+async function patchColumnValueInSheet(
+  tekionId: string,
+  candidateHeaders: string[],
+  value: string
+): Promise<boolean> {
+  const token = getEffectiveGraphToken();
+  if (!token || isTokenExpired(token)) return false;
+
+  try {
+    const sheetNames = await listWorksheetNames(token);
+
+    for (const sheetName of sheetNames) {
+      const data = await graphRequest<{ values?: string[][] }>(
+        `/worksheets/${encodeURIComponent(sheetName)}/usedRange`,
+        token,
+        { method: "GET" }
+      );
+
+      const rows = data?.values;
+      if (!rows || rows.length < 2) continue;
+
+      const headerRow = rows[0].map((h) => String(h || "").trim().toLowerCase());
+      const tekionIdIdx = headerRow.findIndex((h) => h === "tekion id");
+      const targetColIdx = headerRow.findIndex((h) =>
+        candidateHeaders.map((c) => c.toLowerCase()).includes(h)
+      );
+
+      if (tekionIdIdx === -1 || targetColIdx === -1) continue;
+
+      for (let i = 1; i < rows.length; i++) {
+        if (String(rows[i][tekionIdIdx] || "").trim() === tekionId) {
+          const colLetter = toExcelColumnName(targetColIdx);
+          const cellRow = i + 1;
+          const cellAddress = `${colLetter}${cellRow}`;
+
+          await graphRequest(
+            `/worksheets/${encodeURIComponent(sheetName)}/range(address='${cellAddress}')`,
+            token,
+            {
+              method: "PATCH",
+              body: JSON.stringify({ values: [[value]] }),
+            }
+          );
+          return true;
+        }
+      }
+    }
+    return false;
+  } catch (err) {
+    console.debug(`[storesGraphSync] Patch for [${candidateHeaders.join(", ")}] skipped:`, err);
+    return false;
+  }
+}
+
+/**
+ * Patches Fixed Ops Assignee in Graph
+ */
+export async function patchSingleStoreAssigneeInGraph(
+  tekionId: string,
+  assignee: string
+): Promise<boolean> {
+  return patchColumnValueInSheet(
+    tekionId,
+    ["Fixed Ops Assignee", "Assignee", "Lead Assignee"],
+    assignee
+  );
+}
+
+/**
+ * Patches Variable Ops Assignee in Graph
+ */
+export async function patchSingleStoreVariableAssigneeInGraph(
+  tekionId: string,
+  assignee: string
+): Promise<boolean> {
+  return patchColumnValueInSheet(
+    tekionId,
+    ["Variable Ops Assignee", "Var Ops Assignee"],
+    assignee
+  );
+}
+
+/**
+ * Patches "Not Worked?" in Graph
+ */
+export async function patchSingleStoreNotWorkedInGraph(
+  tekionId: string,
+  notWorkedValue: NotWorkedOption | string
+): Promise<boolean> {
+  return patchColumnValueInSheet(
+    tekionId,
+    ["Not Worked?", "Not Worked", "Not Worked Status"],
+    notWorkedValue
+  );
 }
 
 /**
@@ -834,7 +949,7 @@ export async function patchSingleStoreStatusInGraph(
 
 /**
  * Lightweight Background Reader:
- * Pulls current Excel state, evaluates formulas, syncs timestamps
+ * Pulls current Excel state, evaluates formulas, syncs timestamps, assignees, and Not Worked flags
  */
 export async function pullStatusUpdatesFromGraph(
   currentRecords: StoreRecord[]
@@ -879,7 +994,19 @@ export async function pullStatusUpdatesFromGraph(
       const varChanged = nextVar !== local.variable_ops_status;
       const testingChanged = nextTesting !== local.testing_status;
 
-      if (fixedChanged || varChanged || testingChanged) {
+      const remoteFixedAssignee = remote.fixedAssignee?.trim() || "";
+      const currentFixedAssignee = (local as any).custom_assignee || "";
+      const fixedAssigneeChanged = remoteFixedAssignee !== "" && remoteFixedAssignee !== currentFixedAssignee;
+
+      const remoteVarAssignee = remote.variableAssignee?.trim() || "";
+      const currentVarAssignee = (local as any).custom_variable_assignee || "";
+      const varAssigneeChanged = remoteVarAssignee !== "" && remoteVarAssignee !== currentVarAssignee;
+
+      const remoteNotWorked = remote.notWorked?.trim() || "";
+      const currentNotWorked = String(local.not_worked || "").trim();
+      const notWorkedChanged = remoteNotWorked !== "" && remoteNotWorked !== currentNotWorked;
+
+      if (fixedChanged || varChanged || testingChanged || fixedAssigneeChanged || varAssigneeChanged || notWorkedChanged) {
         hasChanges = true;
 
         if (fixedChanged && nextFixed) {
@@ -903,6 +1030,9 @@ export async function pullStatusUpdatesFromGraph(
           fixed_ops_status: nextFixed,
           variable_ops_status: nextVar,
           testing_status: nextTesting,
+          custom_assignee: fixedAssigneeChanged ? remoteFixedAssignee : currentFixedAssignee,
+          custom_variable_assignee: varAssigneeChanged ? remoteVarAssignee : currentVarAssignee,
+          not_worked: notWorkedChanged ? remoteNotWorked : currentNotWorked,
         };
       }
 
@@ -917,8 +1047,47 @@ export async function pullStatusUpdatesFromGraph(
 }
 
 /**
- * Authoritative Two-Way Sync with Formula Injection
+ * Authoritative Two-Way Sync with Formula & Assignee Injection
  */
+const EXCEL_SNAPSHOT_URL = "http://localhost:4000/api/stores/excel-snapshot";
+
+async function readSheetGrid(
+  token: string,
+  sheetName: string,
+  sessionId?: string | null
+): Promise<string[][]> {
+  try {
+    const data = await graphRequest<{ formulas?: unknown[][] }>(
+      `/worksheets/${encodeURIComponent(sheetName)}/usedRange?$select=formulas`,
+      token,
+      { method: "GET" },
+      sessionId
+    );
+    return (data?.formulas ?? []).map((r) => r.map((c) => String(c ?? "")));
+  } catch {
+    return [];
+  }
+}
+
+async function snapshotSheetBeforeSync(sheetName: string, grid: string[][]): Promise<void> {
+  if (grid.length < 2) return;
+  const res = await fetch(EXCEL_SNAPSHOT_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ sheetName, rows: grid }),
+  });
+  if (!res.ok) {
+    throw new Error(
+      `Aborted Excel sync for "${sheetName}": could not save a safety backup of the existing sheet (HTTP ${res.status}).`
+    );
+  }
+}
+
+function isEmptyCell(v: unknown): boolean {
+  const t = String(v ?? "").trim();
+  return t === "" || t === "—";
+}
+
 export async function syncStoresToGraphWorkbook(
   records: StoreRecord[]
 ): Promise<MergedGraphSyncResult> {
@@ -956,6 +1125,16 @@ export async function syncStoresToGraphWorkbook(
     const varOpsIdx = STORE_EXPORT_HEADERS.indexOf("Variable Ops");
     const varOpsTrackIdx = STORE_EXPORT_HEADERS.indexOf("Variable Ops Tracking");
 
+    const fixedAssigneeColIdx = STORE_EXPORT_HEADERS.findIndex((h) => {
+      const s = h.toLowerCase();
+      return s === "fixed ops assignee" || s === "assignee" || s === "lead assignee";
+    });
+    const varAssigneeColIdx = STORE_EXPORT_HEADERS.findIndex((h) => {
+      const s = h.toLowerCase();
+      return s === "variable ops assignee" || s === "var ops assignee";
+    });
+    const notWorkedColIdx = STORE_EXPORT_HEADERS.findIndex((h) => /not\s*worked/i.test(h));
+
     const fixedColLetter = toExcelColumnName(fixedOpsIdx);
     const fixedTrackColLetter = toExcelColumnName(fixedOpsTrackIdx);
     const varColLetter = toExcelColumnName(varOpsIdx);
@@ -965,6 +1144,56 @@ export async function syncStoresToGraphWorkbook(
       await ensureWorksheet(token, group.sheetName, existingSheetSet, sessionId);
 
       const rawRows = rowsToMatrix(group.rows);
+
+      const existingGrid = await readSheetGrid(token, group.sheetName, sessionId);
+      await snapshotSheetBeforeSync(group.sheetName, existingGrid);
+
+      const oldHeader = (existingGrid[0] ?? []).map((h) => h.trim().toLowerCase());
+      const newHeader = STORE_EXPORT_HEADERS.map((h) => h.toLowerCase());
+      const oldIdCol = oldHeader.indexOf("tekion id");
+      const oldRowsById = new Map<string, string[]>();
+      if (oldIdCol !== -1) {
+        for (const r of existingGrid.slice(1)) {
+          const id = String(r[oldIdCol] ?? "").trim();
+          if (id) oldRowsById.set(id, r);
+        }
+      }
+      const colMap = newHeader.map((h) => {
+        let i = oldHeader.indexOf(h);
+        if (i === -1 && (h === "fixed ops assignee" || h === "assignee")) {
+          i = oldHeader.indexOf("lead assignee");
+        }
+        if (i === -1 && /not\s*worked/i.test(h)) {
+          i = oldHeader.findIndex((oh) => /not\s*worked/i.test(oh));
+        }
+        return i;
+      });
+
+      const allLocalIds = new Set(mergedRecords.map((r) => r.tekion_id));
+      const groupIds = new Set(
+        group.rows.map((r) => String((r as any)["Tekion ID"] ?? "").trim())
+      );
+
+      const trackingCols = new Set([fixedOpsTrackIdx, varOpsTrackIdx]);
+      for (const row of rawRows) {
+        const old = oldRowsById.get(String(row[0] ?? "").trim());
+        if (!old) continue;
+        for (let j = 0; j < row.length; j++) {
+          if (trackingCols.has(j) || colMap[j] === -1) continue;
+          if (isEmptyCell(row[j]) && !isEmptyCell(old[colMap[j]])) {
+            row[j] = old[colMap[j]];
+          }
+        }
+      }
+
+      for (const [id, old] of oldRowsById) {
+        if (groupIds.has(id) || allLocalIds.has(id)) continue;
+        const kept = newHeader.map((_, j) =>
+          colMap[j] === -1 || trackingCols.has(j) ? "" : old[colMap[j]] ?? ""
+        );
+        rawRows.push(kept);
+      }
+
       const newTotalRows = rawRows.length + 1;
       const existingRowCount = await getUsedRangeRowCount(token, group.sheetName, sessionId);
       const clearRows = Math.max(existingRowCount, newTotalRows, 1);
@@ -988,6 +1217,22 @@ export async function syncStoresToGraphWorkbook(
       const dataRowsWithFormulas = rawRows.map((row, index) => {
         const rowNum = index + 2;
         const rowCopy = [...row];
+
+        const storeItem = group.rows[index];
+        const tekionIdVal = (storeItem as any)?.["Tekion ID"] ?? (storeItem as any)?.tekionId;
+        const localMatch = mergedRecords.find((s) => s.tekion_id === tekionIdVal);
+
+        if (fixedAssigneeColIdx !== -1 && localMatch && (localMatch as any).custom_assignee) {
+          rowCopy[fixedAssigneeColIdx] = (localMatch as any).custom_assignee;
+        }
+
+        if (varAssigneeColIdx !== -1 && localMatch && (localMatch as any).custom_variable_assignee) {
+          rowCopy[varAssigneeColIdx] = (localMatch as any).custom_variable_assignee;
+        }
+
+        if (notWorkedColIdx !== -1 && localMatch && localMatch.not_worked) {
+          rowCopy[notWorkedColIdx] = localMatch.not_worked;
+        }
 
         if (!rowCopy[fixedOpsTrackIdx] || rowCopy[fixedOpsTrackIdx] === "—") {
           rowCopy[fixedOpsTrackIdx] = buildTrackingFormula(fixedColLetter, fixedTrackColLetter, rowNum);
@@ -1109,6 +1354,16 @@ export async function syncProdDealersToGraph(records: StoreRecord[]): Promise<vo
       const varOpsIdx = STORE_EXPORT_HEADERS.indexOf("Variable Ops");
       const varOpsTrackIdx = STORE_EXPORT_HEADERS.indexOf("Variable Ops Tracking");
 
+      const fixedAssigneeColIdx = STORE_EXPORT_HEADERS.findIndex((h) => {
+        const s = h.toLowerCase();
+        return s === "fixed ops assignee" || s === "assignee" || s === "lead assignee";
+      });
+      const varAssigneeColIdx = STORE_EXPORT_HEADERS.findIndex((h) => {
+        const s = h.toLowerCase();
+        return s === "variable ops assignee" || s === "var ops assignee";
+      });
+      const notWorkedColIdx = STORE_EXPORT_HEADERS.findIndex((h) => /not\s*worked/i.test(h));
+
       const fixedColLetter = toExcelColumnName(fixedOpsIdx);
       const fixedTrackColLetter = toExcelColumnName(fixedOpsTrackIdx);
       const varColLetter = toExcelColumnName(varOpsIdx);
@@ -1117,6 +1372,22 @@ export async function syncProdDealersToGraph(records: StoreRecord[]): Promise<vo
       const dataRowsWithFormulas = rawRows.map((row, index) => {
         const rowNum = index + 2;
         const rowCopy = [...row];
+
+        const storeItem = prodRows[index];
+        const tekionIdVal = (storeItem as any)?.["Tekion ID"] ?? (storeItem as any)?.tekionId;
+        const localMatch = mergedProdStores.find((s) => s.tekion_id === tekionIdVal);
+
+        if (fixedAssigneeColIdx !== -1 && localMatch && (localMatch as any).custom_assignee) {
+          rowCopy[fixedAssigneeColIdx] = (localMatch as any).custom_assignee;
+        }
+
+        if (varAssigneeColIdx !== -1 && localMatch && (localMatch as any).custom_variable_assignee) {
+          rowCopy[varAssigneeColIdx] = (localMatch as any).custom_variable_assignee;
+        }
+
+        if (notWorkedColIdx !== -1 && localMatch && localMatch.not_worked) {
+          rowCopy[notWorkedColIdx] = localMatch.not_worked;
+        }
 
         if (!rowCopy[fixedOpsTrackIdx] || rowCopy[fixedOpsTrackIdx] === "—") {
           rowCopy[fixedOpsTrackIdx] = buildTrackingFormula(fixedColLetter, fixedTrackColLetter, rowNum);

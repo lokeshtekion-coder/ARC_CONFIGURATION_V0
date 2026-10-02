@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback } from "react";
 // @ts-ignore - raw import for Vite/bundler
 import slackCsvText from "./DATA/Slack.csv?raw";
+import { storesBotRunner, type BotState } from "../services/storesBotRunner";
 import {
   fetchStores,
   getTDaysRange,
@@ -12,10 +13,15 @@ import {
   saveStores,
   getStoredStatusVault,
   saveStatusToVault,
+  saveNotWorkedToVault,
   recordStatusTransition,
   bulkUpdateStatusVault,
+  resolveStoreProjectId,
+  NOT_WORKED_OPTIONS,
+  type StoreRecord,
+  type CustomPhaseStatus,
+  type StoreSetupData,
 } from "../services/storesDb";
-import type { StoreRecord, CustomPhaseStatus, StoreSetupData } from "../services/storesDb";
 import type {
   OnboardingStatus,
   StoreBlueprintStatuses,
@@ -27,6 +33,9 @@ import {
   syncStoresToGraphWorkbook,
   pullStatusUpdatesFromGraph,
   patchSingleStoreStatusInGraph,
+  patchSingleStoreAssigneeInGraph,
+  patchSingleStoreVariableAssigneeInGraph,
+  patchSingleStoreNotWorkedInGraph,
   syncProdDealersToGraph,
 } from "../services/storesGraphSync";
 import { buildLatestFieldTrackingText } from "../services/storesExcelShared";
@@ -34,20 +43,45 @@ import {
   buildStoreSlackDraftContext,
   getSlackSession,
   sendSlackMessage,
-  sendSlackDocument,
   type SlackRecipientCandidate,
   type SlackDirectoryUser,
 } from "../services/storeSlackHelper";
-import { fetchSetupDataForStore } from "../services/storeSetupDataService";
+import { fetchSetupDataForStore, isSetupDataComplete } from "../services/storeSetupDataService";
 import { isUserAdmin } from "../services/authHelper";
-import { evaluateSlaBreaches, generateSlaHtmlReport } from "../services/slaReportGenerator";
+import {
+  runSlackAlerts,
+  maybeSendDailyDigest,
+  dispatchAllThreeReports,
+  isSlackSessionActive,
+} from "../services/slackAlertsService";
+import {
+  ASSIGNEE_OPTIONS,
+  resolveStoreAssignee,
+  loadAssigneeConfig,
+  reconcileAssignments,
+  recordManualAssignment,
+  runAutoAssign,
+} from "../services/assigneeService";
 import { batchFetchRealTapStatuses } from "../services/tapTasksApi";
-import DealerTasksPanel from "./DealerTasksPanel";
+import DealerTasksPanel, {
+  type StoreBlueprintTasks,
+} from "./DealerTasksPanel";
 import "./Stores.css";
 
 interface Props {
   onBack: () => void;
 }
+
+export type AssigneeName = typeof ASSIGNEE_OPTIONS[number];
+
+export type ExtendedStoreRecord = StoreRecord & {
+  fetched_blueprint_tasks?: StoreBlueprintTasks;
+  custom_assignee?: AssigneeName | string;
+  custom_variable_assignee?: AssigneeName | string;
+  fixed_ops_attachments?: number;
+  variable_ops_attachments?: number;
+  attachments_incomplete?: boolean;
+};
 
 const logger = {
   info: (...args: unknown[]) => console.info("[Stores]", ...args),
@@ -138,16 +172,16 @@ function parseLaunchDate(value: string): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-function formatLaunchDate(value: string): string {
+function formatLaunchDateUI(value: string): { weekday: string; date: string } {
   const d = parseLaunchDate(value);
-  if (!d) return value || "—";
+  if (!d) return { weekday: "", date: value || "—" };
 
   const weekday = d.toLocaleDateString("en-US", { weekday: "short" });
   const month = `${d.getMonth() + 1}`.padStart(2, "0");
   const day = `${d.getDate()}`.padStart(2, "0");
   const year = d.getFullYear();
 
-  return `${weekday} ${month}/${day}/${year}`;
+  return { weekday, date: `${month}/${day}/${year}` };
 }
 
 function getMonthYearString(value: string): string | null {
@@ -177,6 +211,14 @@ function getTLabel(
   if (diffDays > 0) return { label: `T-${diffDays}`, tone: "future" };
   if (diffDays === 0) return { label: "T", tone: "today" };
   return { label: "Launched", tone: "past" };
+}
+
+function getStoreFixedAssignee(row: ExtendedStoreRecord): string {
+  return resolveStoreAssignee(row);
+}
+
+function getStoreVariableAssignee(row: ExtendedStoreRecord): string {
+  return row.custom_variable_assignee || "";
 }
 
 function toInputDate(d: Date): string {
@@ -246,7 +288,7 @@ function isSameLocalDay(isoString?: string): boolean {
   );
 }
 
-function shouldAutoFetchStatuses(records: StoreRecord[]): boolean {
+function shouldAutoFetchStatuses(records: ExtendedStoreRecord[]): boolean {
   if (records.length === 0) return true;
   return records.some((row) => !isSameLocalDay(row.onboarding_status_fetched_at));
 }
@@ -318,16 +360,44 @@ function getPodStyle(superpodId?: string) {
   };
 }
 
-function safelyMergeStatusFields(prevRecords: StoreRecord[], updatedStores: StoreRecord[]) {
+function mergeIncomingStore(
+  existing: ExtendedStoreRecord | undefined,
+  incoming: StoreRecord
+): ExtendedStoreRecord {
+  if (!existing) return incoming as ExtendedStoreRecord;
+  const merged: Record<string, any> = { ...existing };
+  for (const [key, value] of Object.entries(incoming)) {
+    const blank =
+      value === undefined ||
+      value === null ||
+      (typeof value === "string" && value.trim() === "") ||
+      (Array.isArray(value) && value.length === 0);
+    if (!blank) merged[key] = value;
+  }
+  return merged as ExtendedStoreRecord;
+}
+
+function safelyMergeStatusFields(
+  prevRecords: ExtendedStoreRecord[],
+  updatedStores: StoreRecord[]
+): ExtendedStoreRecord[] {
   const prevMap = new Map(prevRecords.map((s) => [s.tekion_id, s]));
   return updatedStores.map((uStore) => {
     const prev = prevMap.get(uStore.tekion_id);
-    if (!prev) return uStore;
+    if (!prev) return uStore as ExtendedStoreRecord;
     return {
       ...prev,
       fixed_ops_status: uStore.fixed_ops_status,
       variable_ops_status: uStore.variable_ops_status,
       testing_status: uStore.testing_status,
+      not_worked: uStore.not_worked ?? prev.not_worked,
+      custom_assignee: (uStore as any).custom_assignee ?? prev.custom_assignee,
+      custom_variable_assignee:
+        (uStore as any).custom_variable_assignee ?? prev.custom_variable_assignee,
+      fixed_ops_attachments: (uStore as any).fixed_ops_attachments ?? prev.fixed_ops_attachments,
+      variable_ops_attachments: (uStore as any).variable_ops_attachments ?? prev.variable_ops_attachments,
+      fetched_blueprint_tasks: (uStore as any).fetched_blueprint_tasks ?? prev.fetched_blueprint_tasks,
+      attachments_incomplete: (uStore as any).attachments_incomplete ?? prev.attachments_incomplete,
     };
   });
 }
@@ -412,7 +482,7 @@ const SetupDataChip: React.FC<{
   </span>
 );
 
-const SetupDataCell: React.FC<{ row: StoreRecord }> = ({ row }) => {
+const SetupDataCell: React.FC<{ row: ExtendedStoreRecord }> = ({ row }) => {
   if (row.setup_data_error) {
     return (
       <span
@@ -464,7 +534,8 @@ const SetupDataCell: React.FC<{ row: StoreRecord }> = ({ row }) => {
   const oemCodes = row.setup_data.oemDealerCodes || [];
   const hasOem = oemCodes.length > 0;
   const firstCode = oemCodes[0] || "—";
-  const oemDisplay = oemCodes.length > 1 ? `${firstCode} (+${oemCodes.length - 1})` : firstCode;
+  const oemDisplay =
+    oemCodes.length > 1 ? `${firstCode} (+${oemCodes.length - 1})` : firstCode;
   const oemFull = hasOem ? oemCodes.join(", ") : "None";
 
   const journalsCount = row.setup_data.journalsAccessibleDealerCount ?? 0;
@@ -567,7 +638,7 @@ const CustomStatusSelect: React.FC<{
 };
 
 function withOnboardingStatuses(
-  stores: StoreRecord[],
+  stores: ExtendedStoreRecord[],
   statusMap: Record<
     string,
     {
@@ -575,7 +646,7 @@ function withOnboardingStatuses(
       signoff_statuses: StoreSignoffStatuses;
     }
   >
-): StoreRecord[] {
+): ExtendedStoreRecord[] {
   const fetchedAt = new Date().toISOString();
 
   return stores.map((store) => {
@@ -620,16 +691,17 @@ const SlackRecipientRow: React.FC<{
 };
 
 const DealerMetaModal: React.FC<{
-  row: StoreRecord | null;
+  row: ExtendedStoreRecord | null;
   onClose: () => void;
   onToast: (message: string) => void;
   onSetupFetched: (tekionId: string, setupData: StoreSetupData) => void;
+  onTasksSnapshot?: (tekionId: string, tasks: any, complete: boolean) => void;
   onTaskOperationalStatusChange: (
     tekionId: string,
     field: "fixed_ops_status" | "variable_ops_status",
     value: CustomPhaseStatus
   ) => Promise<void> | void;
-}> = ({ row, onClose, onToast, onSetupFetched, onTaskOperationalStatusChange }) => {
+}> = ({ row, onClose, onToast, onSetupFetched, onTaskOperationalStatusChange, onTasksSnapshot }) => {
   const [tab, setTab] = useState<"tasks" | "slack">("tasks");
   const draftContext = useMemo(() => {
     return row ? buildStoreSlackDraftContext(row) : null;
@@ -781,12 +853,7 @@ const DealerMetaModal: React.FC<{
 
     setLoadingSetup(true);
     try {
-      const targetStore: StoreRecord = {
-        ...row,
-        setup_data: undefined,
-      };
-
-      const setupData = await fetchSetupDataForStore(targetStore);
+      const setupData = await fetchSetupDataForStore(row, { force: true });
       onSetupFetched(row.tekion_id, setupData);
       onToast("✅ Setup data fetched");
     } catch (error: unknown) {
@@ -797,10 +864,15 @@ const DealerMetaModal: React.FC<{
   };
 
   const hasSlackSession = Boolean(slackSession.slackToken && slackSession.slackDCookie);
+
+  // Guarantee resolved project ID using fallback logic
+  const resolvedProjectId = resolveStoreProjectId(row);
+
   const trackingId =
     row.project_implementation_tm_sync_status_tracking_id ||
     row.implementation_tm_sync_status_tracking_id ||
-    row.base_entity_instance_id;
+    row.base_entity_instance_id ||
+    resolvedProjectId;
 
   const token = `${row.tenant_code || ""}_${row.tenant_id || ""}_${row.dealer_id || ""}`;
   const preprodSchedulingUrl = `https://preprod-conscheduling.tekioncloud.com/consumer-scheduling/sign-in/phone?accessToken=${encodeURIComponent(token)}`;
@@ -826,7 +898,12 @@ const DealerMetaModal: React.FC<{
           <div className="hud-telemetry-group">
             <div className="hud-telemetry-item">
               <span className="hud-label">Project:</span>
-              <span className="hud-value">{row.onboarding_project_id || "—"}</span>
+              <span
+                className="hud-value"
+                title={`Resolved project: ${resolvedProjectId || "None"}`}
+              >
+                {resolvedProjectId || "—"}
+              </span>
             </div>
             <div className="hud-telemetry-item">
               <span className="hud-label">Tracking:</span>
@@ -927,6 +1004,7 @@ const DealerMetaModal: React.FC<{
               row={row}
               onToast={onToast}
               onOperationalStatusChange={onTaskOperationalStatusChange}
+              onTasksSnapshot={onTasksSnapshot}
             />
           )}
 
@@ -1029,13 +1107,14 @@ const DealerMetaModal: React.FC<{
 };
 
 export const Stores: React.FC<Props> = ({ onBack }) => {
-  const [records, setRecords] = useState<StoreRecord[]>([]);
+  const [records, setRecords] = useState<ExtendedStoreRecord[]>([]);
   const [loadingStores, setLoadingStores] = useState(false);
   const [syncingExcel, setSyncingExcel] = useState(false);
   const [loadingSetupAll, setLoadingSetupAll] = useState(false);
-  const [dispatchingSlaReport, setDispatchingSlaReport] = useState(false);
+  const [dispatching3Reports, setDispatching3Reports] = useState(false);
   const [syncingTapStatuses, setSyncingTapStatuses] = useState(false);
   const [tapSyncProgress, setTapSyncProgress] = useState("");
+
   const [error, setError] = useState("");
   const [tokenExpiredMessage, setTokenExpiredMessage] = useState("");
   const [toastMessage, setToastMessage] = useState("");
@@ -1050,7 +1129,21 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
   const [implementationType, setImplementationType] = useState("");
   const [productType, setProductType] = useState("");
   const [selectedMonth, setSelectedMonth] = useState("");
-  const [activeDealerPopup, setActiveDealerPopup] = useState<StoreRecord | null>(null);
+  const [fixedAssigneeFilter, setFixedAssigneeFilter] = useState<AssigneeName | "">("");
+  const [variableAssigneeFilter, setVariableAssigneeFilter] = useState<AssigneeName | "">("");
+  const [notWorkedFilter, setNotWorkedFilter] = useState<string>("");
+  const [activeDealerPopup, setActiveDealerPopup] = useState<ExtendedStoreRecord | null>(null);
+
+  // Synchronize modal store with latest data and guarantee resolved onboarding_project_id
+  const currentModalRecord = useMemo(() => {
+    if (!activeDealerPopup) return null;
+    const latest = records.find((r) => r.tekion_id === activeDealerPopup.tekion_id) || activeDealerPopup;
+    const resolvedProjectId = resolveStoreProjectId(latest);
+    return {
+      ...latest,
+      onboarding_project_id: resolvedProjectId || latest.onboarding_project_id,
+    };
+  }, [activeDealerPopup, records]);
 
   const presetRange = useMemo(() => getTDaysRange(range), [range]);
   const [fromDate, setFromDate] = useState(toInputDate(presetRange.fromDate));
@@ -1066,6 +1159,15 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     [fromDate, toDate]
   );
 
+  const [botState, setBotState] = useState<BotState>(() => storesBotRunner.getState());
+
+  useEffect(() => {
+    const unsubscribe = storesBotRunner.subscribe((state) => {
+      setBotState(state);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
     window.setTimeout(() => setToastMessage(""), 3500);
@@ -1077,7 +1179,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     window.setTimeout(() => setCopiedKey(null), 1200);
   }, []);
 
-  const loadStatusesForStores = useCallback(async (stores: StoreRecord[]) => {
+  const loadStatusesForStores = useCallback(async (stores: ExtendedStoreRecord[]) => {
     const tekionIds = stores.map((item) => item.tekion_id).filter(Boolean);
 
     if (tekionIds.length === 0) {
@@ -1114,16 +1216,19 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         const existingMap = new Map(existingDbStores.map((s) => [s.tekion_id, s]));
         const vault = getStoredStatusVault();
 
-        const uniqueStores = Array.from(
-          new Map<string, StoreRecord>(
+        const fetchedStores: ExtendedStoreRecord[] = Array.from(
+          new Map<string, ExtendedStoreRecord>(
             rawStores.map((store) => {
-              const existing = existingMap.get(store.tekion_id);
+              const existing = existingMap.get(store.tekion_id) as ExtendedStoreRecord | undefined;
               const override = vault[store.tekion_id];
+              const base = mergeIncomingStore(existing, store);
 
               return [
                 store.tekion_id,
                 {
-                  ...store,
+                  ...base,
+                  onboarding_project_id: store.onboarding_project_id || existing?.onboarding_project_id,
+                  ds_onboarding_project_id: store.ds_onboarding_project_id || existing?.ds_onboarding_project_id,
                   fixed_ops_status:
                     override?.fixed_ops_status ||
                     existing?.fixed_ops_status ||
@@ -1139,21 +1244,33 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     existing?.testing_status ||
                     existing?.configuration_status ||
                     "TO DO",
-                  blueprint_statuses: existing?.blueprint_statuses,
-                  signoff_statuses: existing?.signoff_statuses,
-                  onboarding_status_fetched_at: existing?.onboarding_status_fetched_at,
-                  setup_data: existing?.setup_data,
-                  setup_data_fetched_at: existing?.setup_data_fetched_at,
-                  setup_data_error: existing?.setup_data_error,
+                  not_worked:
+                    override?.not_worked ||
+                    existing?.not_worked ||
+                    store.not_worked,
+                  custom_assignee:
+                    override?.custom_assignee ||
+                    existing?.custom_assignee ||
+                    (store as any).custom_assignee,
+                  custom_variable_assignee:
+                    override?.custom_variable_assignee ||
+                    existing?.custom_variable_assignee ||
+                    (store as any).custom_variable_assignee,
                 },
               ];
             })
           ).values()
         );
 
+        const fetchedIds = new Set(fetchedStores.map((s) => s.tekion_id));
+        const uniqueStores: ExtendedStoreRecord[] = [
+          ...fetchedStores,
+          ...(existingDbStores as ExtendedStoreRecord[]).filter((s) => !fetchedIds.has(s.tekion_id)),
+        ];
+
         setRecords(uniqueStores);
         await saveStores(uniqueStores);
-        showToast(`✅ Refreshed ${uniqueStores.length} stores`);
+        showToast(`✅ Refreshed ${fetchedStores.length} stores (${uniqueStores.length} total kept)`);
 
         void (async () => {
           try {
@@ -1171,6 +1288,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     fixed_ops_status: s.fixed_ops_status,
                     variable_ops_status: s.variable_ops_status,
                     testing_status: s.testing_status,
+                    custom_assignee: s.custom_assignee,
+                    custom_variable_assignee: s.custom_variable_assignee,
+                    not_worked: s.not_worked,
                   }))
                 );
                 return safelyMerged;
@@ -1208,8 +1328,8 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       const rawData = await getStores();
       const vault = getStoredStatusVault();
 
-      const uniqueData = Array.from(
-        new Map<string, StoreRecord>(
+      const uniqueData: ExtendedStoreRecord[] = Array.from(
+        new Map<string, ExtendedStoreRecord>(
           rawData.map((store) => {
             const override = vault[store.tekion_id];
             return [
@@ -1231,6 +1351,15 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                   store.testing_status ||
                   store.configuration_status ||
                   "TO DO",
+                not_worked:
+                  override?.not_worked ||
+                  store.not_worked,
+                custom_assignee:
+                  override?.custom_assignee ||
+                  store.custom_assignee,
+                custom_variable_assignee:
+                  override?.custom_variable_assignee ||
+                  store.custom_variable_assignee,
               },
             ];
           })
@@ -1256,6 +1385,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     fixed_ops_status: s.fixed_ops_status,
                     variable_ops_status: s.variable_ops_status,
                     testing_status: s.testing_status,
+                    custom_assignee: s.custom_assignee,
+                    custom_variable_assignee: s.custom_variable_assignee,
+                    not_worked: s.not_worked,
                   }))
                 );
                 return safelyMerged;
@@ -1314,10 +1446,163 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       if (success) {
         showToast(`✅ Synced ${value} to Excel`);
       } else {
-        showToast(`⚠️ Updated locally (Excel sync pending)`);
+        showToast(`⚠ Updated locally (Excel sync pending)`);
       }
     })();
   };
+
+  const updateStoreNotWorked = useCallback(
+    async (tekion_id: string, value: string) => {
+      setRecords((prev) => {
+        const updated = prev.map((r) =>
+          r.tekion_id === tekion_id ? { ...r, not_worked: value } : r
+        );
+        void saveStores(updated).catch((err) => logger.error("Failed saving not_worked", err));
+        return updated;
+      });
+
+      saveNotWorkedToVault(tekion_id, value);
+      bulkUpdateStatusVault([{ tekionId: tekion_id, not_worked: value }]);
+      showToast(`✅ Updated 'Not Worked?' to ${value || "Handled by ARC"}`);
+
+      void (async () => {
+        const success = await patchSingleStoreNotWorkedInGraph(tekion_id, value);
+        if (success) {
+          showToast(`✅ Synced 'Not Worked?' to Excel`);
+        }
+      })();
+    },
+    [showToast]
+  );
+
+  const updateStoreFixedAssignee = useCallback(
+    async (tekion_id: string, newAssignee: AssigneeName | "") => {
+      const target = records.find((r) => r.tekion_id === tekion_id);
+      if (target) recordManualAssignment(target, newAssignee);
+      setRecords((prev) => {
+        const updated = prev.map((r) =>
+          r.tekion_id === tekion_id ? { ...r, custom_assignee: newAssignee } : r
+        );
+        void saveStores(updated).catch((err) => logger.error("Failed saving assignee", err));
+        return updated;
+      });
+
+      bulkUpdateStatusVault([{ tekionId: tekion_id, custom_assignee: newAssignee }]);
+      showToast(`✅ Updated Fixed Ops Assignee to ${newAssignee || "Unassigned"}`);
+
+      void (async () => {
+        const success = await patchSingleStoreAssigneeInGraph(tekion_id, newAssignee);
+        if (success) {
+          showToast(`✅ Synced Fixed Ops Assignee to Excel`);
+        }
+      })();
+    },
+    [showToast, records]
+  );
+
+  const updateStoreVariableAssignee = useCallback(
+    async (tekion_id: string, newAssignee: AssigneeName | "") => {
+      setRecords((prev) => {
+        const updated = prev.map((r) =>
+          r.tekion_id === tekion_id ? { ...r, custom_variable_assignee: newAssignee } : r
+        );
+        void saveStores(updated).catch((err) => logger.error("Failed saving variable assignee", err));
+        return updated;
+      });
+
+      bulkUpdateStatusVault([{ tekionId: tekion_id, custom_variable_assignee: newAssignee }]);
+      showToast(`✅ Updated Variable Ops Assignee to ${newAssignee || "Unassigned"}`);
+
+      void (async () => {
+        const success = await patchSingleStoreVariableAssigneeInGraph(tekion_id, newAssignee);
+        if (success) {
+          showToast(`✅ Synced Variable Ops Assignee to Excel`);
+        }
+      })();
+    },
+    [showToast]
+  );
+
+  const handleTasksSnapshot = useCallback(
+    (tekionId: string, tasks: any, complete: boolean) => {
+      const sum = (list: any[]) =>
+        (list || []).reduce((acc, t) => acc + Number(t.taskAttachmentCount ?? t.attachments?.length ?? 0), 0);
+      const fixedNow = sum(tasks.parts) + sum(tasks.service);
+      const varNow = sum(tasks.accounting);
+
+      setRecords((prev) => {
+        let changed: ExtendedStoreRecord | null = null;
+        const next = prev.map((r) => {
+          if (r.tekion_id !== tekionId) return r;
+          const fixed = complete ? fixedNow : Math.max(r.fixed_ops_attachments ?? 0, fixedNow);
+          const variable = complete ? varNow : Math.max(r.variable_ops_attachments ?? 0, varNow);
+          if (
+            fixed === r.fixed_ops_attachments &&
+            variable === r.variable_ops_attachments &&
+            r.attachments_incomplete === !complete
+          ) {
+            return r;
+          }
+          changed = {
+            ...r,
+            fixed_ops_attachments: fixed,
+            variable_ops_attachments: variable,
+            attachments_incomplete: !complete,
+            fetched_blueprint_tasks: {
+              partsTasks: tasks.parts,
+              serviceTasks: tasks.service,
+              accountingTasks: tasks.accounting,
+              fetchedAt: new Date().toISOString(),
+            },
+          };
+          return changed;
+        });
+        if (changed) void saveStores([changed]);
+        return changed ? next : prev;
+      });
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (records.length === 0) return;
+    void runSlackAlerts(records).then((n) => {
+      if (n > 0) showToast(`🔔 Sent ${n} alert(s) to Slack`);
+    });
+    void maybeSendDailyDigest(records);
+  }, [records, showToast]);
+
+  useEffect(() => {
+    if (records.length === 0) return;
+    reconcileAssignments(records);
+
+    const config = loadAssigneeConfig();
+    if (!config.autoAssignEnabled) return;
+
+    const { updated, events } = runAutoAssign(records, config);
+    if (!updated.length) return;
+
+    const byId = new Map(updated.map((u) => [u.tekion_id, u as ExtendedStoreRecord]));
+    setRecords((prev) => {
+      const next = prev.map((r) => {
+        const u = byId.get(r.tekion_id);
+        return u && !r.custom_assignee ? { ...r, custom_assignee: u.custom_assignee } : r;
+      });
+      void saveStores(next);
+      return next;
+    });
+    showToast(`🤖 Auto-assigned ${events.length} store(s)`);
+
+    void (async () => {
+      for (const u of updated) {
+        try {
+          await patchSingleStoreAssigneeInGraph(u.tekion_id, String((u as ExtendedStoreRecord).custom_assignee));
+        } catch {
+          /* Excel catches up on next sync */
+        }
+      }
+    })();
+  }, [records, showToast]);
 
   useEffect(() => {
     let isCancelled = false;
@@ -1340,13 +1625,16 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
               fixed_ops_status: s.fixed_ops_status,
               variable_ops_status: s.variable_ops_status,
               testing_status: s.testing_status,
+              custom_assignee: s.custom_assignee,
+              custom_variable_assignee: s.custom_variable_assignee,
+              not_worked: s.not_worked,
             }))
           );
           return merged;
         });
 
         setTrackingTick((prev) => prev + 1);
-        showToast("⚡ Auto-synced status updates from Excel");
+        showToast("⚡ Auto-synced updates from Excel");
       }
 
       void syncProdDealersToGraph(activeList);
@@ -1407,11 +1695,17 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
     return records
       .filter((item) => {
+        const fixedAssignee = getStoreFixedAssignee(item);
+        const variableAssignee = getStoreVariableAssignee(item);
+
         const matchesSearch =
           !q ||
           item.tekion_id.toLowerCase().includes(q) ||
           item.dealer_id.toLowerCase().includes(q) ||
           item.dba_name.toLowerCase().includes(q) ||
+          fixedAssignee.toLowerCase().includes(q) ||
+          variableAssignee.toLowerCase().includes(q) ||
+          (item.not_worked && item.not_worked.toLowerCase().includes(q)) ||
           (item.tenant_code && item.tenant_code.toLowerCase().includes(q)) ||
           (item.tenant_id && item.tenant_id.toLowerCase().includes(q));
 
@@ -1425,6 +1719,16 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         const matchesMonth =
           !selectedMonth || getMonthYearString(item.launch_date) === selectedMonth;
 
+        const matchesFixedAssignee = !fixedAssigneeFilter || fixedAssignee === fixedAssigneeFilter;
+        const matchesVarAssignee = !variableAssigneeFilter || variableAssignee === variableAssigneeFilter;
+
+        const matchesNotWorked =
+          !notWorkedFilter
+            ? true
+            : notWorkedFilter === "HANDLED_BY_ARC"
+            ? !item.not_worked || item.not_worked.trim() === ""
+            : item.not_worked === notWorkedFilter;
+
         const launch = parseLaunchDate(item.launch_date);
         const launchUnix = launch ? Math.floor(launch.getTime() / 1000) : null;
         const matchesDate =
@@ -1436,6 +1740,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           matchesImplementationType &&
           matchesProductType &&
           matchesMonth &&
+          matchesFixedAssignee &&
+          matchesVarAssignee &&
+          matchesNotWorked &&
           matchesDate
         );
       })
@@ -1448,7 +1755,19 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
         return aTime - bTime;
       });
-  }, [records, search, superpodId, implementationType, productType, selectedMonth, fromDate, toDate]);
+  }, [
+    records,
+    search,
+    superpodId,
+    implementationType,
+    productType,
+    selectedMonth,
+    fixedAssigneeFilter,
+    variableAssigneeFilter,
+    notWorkedFilter,
+    fromDate,
+    toDate,
+  ]);
 
   const persistSetupData = useCallback(async (tekionId: string, setupData: StoreSetupData) => {
     setRecords((prev) => {
@@ -1469,16 +1788,28 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
   const handleFetchSetupVisible = useCallback(async () => {
     setLoadingSetupAll(true);
+    let fetched = 0;
+    let skipped = 0;
+    let failed = 0;
     try {
       const latestMap = new Map(records.map((r) => [r.tekion_id, r]));
 
-      for (const row of filtered) {
+      const queue = filtered.filter((row) => {
         const current = latestMap.get(row.tekion_id) ?? row;
+        const complete = isSetupDataComplete(current);
+        if (complete) skipped++;
+        return !complete;
+      });
 
+      for (let i = 0; i < queue.length; i++) {
+        const current = latestMap.get(queue[i].tekion_id) ?? queue[i];
+        setTapSyncProgress(`Setup ${i + 1}/${queue.length}`);
         try {
-          const setupData = await fetchSetupDataForStore(current);
+          const setupData = await fetchSetupDataForStore(current, { force: true });
           await persistSetupData(current.tekion_id, setupData);
+          fetched++;
         } catch (error: unknown) {
+          failed++;
           logger.error("Failed setup data fetch for row", {
             dealerId: current.dealer_id,
             tekionId: current.tekion_id,
@@ -1487,43 +1818,43 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         }
       }
 
-      showToast("✅ Setup data fetch completed for visible stores");
+      showToast(
+        `✅ Setup data: ${fetched} fetched, ${skipped} already complete (skipped)` +
+          (failed ? `, ${failed} failed` : "")
+      );
     } catch (error: unknown) {
       showToast(`❌ ${error instanceof Error ? error.message : "Failed setup fetch"}`);
     } finally {
+      setTapSyncProgress("");
       setLoadingSetupAll(false);
     }
   }, [filtered, records, persistSetupData, showToast]);
 
-  const handleSendSlaReport = async () => {
+  const handleSendAllThreeReportsManual = async () => {
     if (records.length === 0) {
       showToast("❌ No store records available to evaluate.");
       return;
     }
 
-    setDispatchingSlaReport(true);
+    if (!isSlackSessionActive()) {
+      showToast("❌ Slack session inactive. Please connect Slack first.");
+      return;
+    }
+
+    setDispatching3Reports(true);
     try {
-      const slaData = evaluateSlaBreaches(records, 80, 75);
-      const htmlContent = generateSlaHtmlReport(slaData);
-      const targetChannel = "D0694BGT61W";
-      const dateStr = new Date().toISOString().slice(0, 10);
-      const fileName = `SLA_Breach_Report_${dateStr}.html`;
-
-      await sendSlackDocument({
-        channelId: targetChannel,
-        fileName,
-        fileContent: htmlContent,
-        title: `SLA Breach Audit Report - ${dateStr}`,
-        initialComment: `🚨 *Dealership SLA Breach Audit Report* (${dateStr})\nTotal Stores Audited: *${slaData.totalEvaluated}*\nSLA Breaches Found: *${slaData.breachedCount}* (Fixed Ops <= 80d or Variable Ops <= 75d from launch)\n\n📎 An interactive HTML report with Excel-style column filters is attached below. Download and open it in any web browser.`,
-      });
-
-      showToast(`✅ Sent SLA report (${slaData.breachedCount} breaches) to Slack!`);
+      const result = await dispatchAllThreeReports(records, { force: true });
+      if (result.sent) {
+        showToast("✅ Sent Analytics, Fixed Ops & Variable Ops reports to Slack! (4-hr timer reset)");
+      } else {
+        showToast(`⚠ ${result.reason || "Failed to dispatch reports"}`);
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to send SLA report";
-      logger.error("Failed to send SLA report", err);
+      const msg = err instanceof Error ? err.message : "Failed to dispatch reports";
+      logger.error("Failed to send 3 reports", err);
       showToast(`❌ ${msg}`);
     } finally {
-      setDispatchingSlaReport(false);
+      setDispatching3Reports(false);
     }
   };
 
@@ -1541,6 +1872,16 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         records,
         (processed, total, updated) => {
           setTapSyncProgress(`${processed}/${total} (Updated: ${updated})`);
+        },
+        (updatedStore) => {
+          setRecords((prev) => {
+            const merged = safelyMergeStatusFields(
+              prev,
+              prev.map((r) => (r.tekion_id === updatedStore.tekion_id ? updatedStore : r))
+            );
+            return merged;
+          });
+          void saveStores([updatedStore]);
         }
       );
 
@@ -1555,6 +1896,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
               fixed_ops_status: s.fixed_ops_status,
               variable_ops_status: s.variable_ops_status,
               testing_status: s.testing_status,
+              custom_assignee: s.custom_assignee,
+              custom_variable_assignee: s.custom_variable_assignee,
+              not_worked: s.not_worked,
             }))
           );
           return merged;
@@ -1569,9 +1913,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
             logger.warn("Excel sync skipped or Graph token expired:", err);
           });
 
-        showToast(`✅ Synced real TAP statuses: Updated ${updatedCount} store(s) to Completed!`);
+        showToast(`✅ Synced real TAP statuses & attachments for ${updatedCount} store(s)!`);
       } else {
-        showToast("ℹ️ Checked TAP tasks: No new completed statuses found.");
+        showToast("ℹ Checked TAP tasks: No changes found.");
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "TAP batch sync failed";
@@ -1626,6 +1970,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
               fixed_ops_status: s.fixed_ops_status,
               variable_ops_status: s.variable_ops_status,
               testing_status: s.testing_status,
+              custom_assignee: s.custom_assignee,
+              custom_variable_assignee: s.custom_variable_assignee,
+              not_worked: s.not_worked,
             }))
           );
           return merged;
@@ -1650,6 +1997,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     setImplementationType("");
     setProductType("");
     setSelectedMonth("");
+    setFixedAssigneeFilter("");
+    setVariableAssigneeFilter("");
+    setNotWorkedFilter("");
     setFromDate(toInputDate(presetRange.fromDate));
     setToDate(toInputDate(presetRange.toDate));
   };
@@ -1670,6 +2020,31 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         </div>
 
         <div className="stores-topbar-right">
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginRight: 8 }}>
+            <button
+              type="button"
+              className={`btn-sm ${botState.enabled ? "btn-postman" : "btn-secondary"}`}
+              onClick={() => storesBotRunner.setEnabled(!botState.enabled)}
+              style={{ fontWeight: 700 }}
+              title={botState.enabled ? "Click to Pause Autonomous Bot" : "Click to Enable Autonomous Bot"}
+            >
+              {botState.enabled ? "🤖 Bot: ON" : "⏸ Bot: OFF"}
+            </button>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: botState.error ? "#f87171" : botState.enabled ? "#4ade80" : "#94a3b8",
+                maxWidth: 240,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {botState.statusText}
+            </span>
+          </div>
+
           <button className="btn-secondary btn-sm" onClick={() => void handleLoadIndexedDb()}>
             Cache
           </button>
@@ -1701,16 +2076,16 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
           <button
             className="btn-secondary btn-sm"
-            onClick={() => void handleSendSlaReport()}
-            disabled={dispatchingSlaReport || records.length === 0}
+            onClick={() => void handleSendAllThreeReportsManual()}
+            disabled={dispatching3Reports || records.length === 0}
             style={{
-              borderColor: "rgba(244, 63, 94, 0.4)",
-              color: "#fb7185",
+              borderColor: "rgba(168, 85, 247, 0.4)",
+              color: "#c084fc",
               fontWeight: 700,
             }}
-            title="Generate and send SLA breach HTML document to D0694BGT61W"
+            title="Manually dispatch Analytics, Fixed Ops & Variable Ops reports to Slack and reset 4-hour countdown"
           >
-            {dispatchingSlaReport ? "⏳ Sending SLA..." : "🚨 SLA Report"}
+            {dispatching3Reports ? "⏳ Sending 3 Reports..." : "📢 Send 3 Reports (4h Window)"}
           </button>
 
           <button
@@ -1722,7 +2097,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
               color: "#38bdf8",
               fontWeight: 700,
             }}
-            title="Fetch real blueprint task statuses from TAP and update completed stores"
+            title="Fetch real blueprint tasks and attachment counts from TAP and update stores"
           >
             {syncingTapStatuses ? `⏳ ${tapSyncProgress || "Syncing TAP..."}` : "⚡ Sync TAP Statuses"}
           </button>
@@ -1765,7 +2140,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                   className="stores-input"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="ID, Dealer, Name, or Tenant..."
+                  placeholder="ID, Dealer, Name, or Assignee..."
                 />
               </div>
 
@@ -1814,6 +2189,55 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                   {monthOptions.map((m) => (
                     <option key={m} value={m}>
                       {m}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="stores-field">
+                <label className="stores-label">Ownership / Not Worked</label>
+                <select
+                  className="stores-input"
+                  value={notWorkedFilter}
+                  onChange={(e) => setNotWorkedFilter(e.target.value)}
+                >
+                  <option value="">All Stores</option>
+                  <option value="HANDLED_BY_ARC">Handled by ARC Only</option>
+                  {NOT_WORKED_OPTIONS.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="stores-field">
+                <label className="stores-label">Fixed Ops Assignee</label>
+                <select
+                  className="stores-input"
+                  value={fixedAssigneeFilter}
+                  onChange={(e) => setFixedAssigneeFilter(e.target.value as AssigneeName | "")}
+                >
+                  <option value="">All Assignees</option>
+                  {ASSIGNEE_OPTIONS.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="stores-field">
+                <label className="stores-label">Variable Ops Assignee</label>
+                <select
+                  className="stores-input"
+                  value={variableAssigneeFilter}
+                  onChange={(e) => setVariableAssigneeFilter(e.target.value as AssigneeName | "")}
+                >
+                  <option value="">All Assignees</option>
+                  {ASSIGNEE_OPTIONS.map((name) => (
+                    <option key={name} value={name}>
+                      {name}
                     </option>
                   ))}
                 </select>
@@ -1896,10 +2320,10 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                   </a>
 
                   <a
-                    href="https://app.slack.com/client/E08DG6QMMDG"
+                    href="https://app.slack.com/client/E08DG6QMMDG/C0C5QBWEM8X"
                     target="_blank"
                     rel="noreferrer"
-                    title="Open Slack Workspace"
+                    title="Open Operations Slack Channel (C0C5QBWEM8X)"
                     className="stores-quick-icon"
                   >
                     <img
@@ -1977,6 +2401,8 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                   <tr>
                     <th>Store & IDs</th>
                     <th>Go Live</th>
+                    <th>Fixed Ops Assignee</th>
+                    <th>Variable Ops Assignee</th>
                     <th>IMP Type</th>
                     <th>Products</th>
                     <th>Pre-Prod</th>
@@ -1987,6 +2413,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     <th>Variable Ops</th>
                     <th>Sign_Off</th>
                     <th>Testing</th>
+                    <th>Not Worked?</th>
                   </tr>
                 </thead>
 
@@ -1997,6 +2424,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     const signoff = row.signoff_statuses;
                     const podStyle = getPodStyle(row.superpod_id);
                     const cleanedImp = cleanImpType(row.implementation_type);
+                    const uiDate = formatLaunchDateUI(row.launch_date);
+                    const fixedAssignee = getStoreFixedAssignee(row);
+                    const variableAssignee = getStoreVariableAssignee(row);
 
                     void trackingTick;
                     const fixedOpsTime = buildLatestFieldTrackingText(
@@ -2009,6 +2439,24 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                       "variable_ops_status",
                       false
                     );
+
+                    const fixedAttCount =
+                      row.fixed_ops_attachments ??
+                      ((row.fetched_blueprint_tasks?.partsTasks || []).reduce(
+                        (acc: number, t: any) => acc + (t.taskAttachmentCount || 0),
+                        0
+                      ) +
+                        (row.fetched_blueprint_tasks?.serviceTasks || []).reduce(
+                          (acc: number, t: any) => acc + (t.taskAttachmentCount || 0),
+                          0
+                        ));
+
+                    const varAttCount =
+                      row.variable_ops_attachments ??
+                      (row.fetched_blueprint_tasks?.accountingTasks || []).reduce(
+                        (acc: number, t: any) => acc + (t.taskAttachmentCount || 0),
+                        0
+                      );
 
                     return (
                       <tr key={row.tekion_id}>
@@ -2094,9 +2542,114 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
                         <td>
                           <div className="stores-launch-date-cell">
-                            <div>{formatLaunchDate(row.launch_date)}</div>
-                            <div>{tLabel.label}</div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                              {uiDate.weekday && (
+                                <span
+                                  style={{
+                                    fontSize: 11,
+                                    fontWeight: 500,
+                                    color: "#64748b",
+                                    letterSpacing: "0.2px",
+                                  }}
+                                >
+                                  {uiDate.weekday}
+                                </span>
+                              )}
+                              <span
+                                style={{
+                                  fontSize: 11,
+                                  fontWeight: 800,
+                                  color: "#38bdf8",
+                                  background: "rgba(56, 189, 248, 0.12)",
+                                  border: "1px solid rgba(56, 189, 248, 0.3)",
+                                  padding: "2px 6px",
+                                  borderRadius: 5,
+                                  letterSpacing: "0.3px",
+                                }}
+                              >
+                                {uiDate.date}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 3 }}>
+                              {tLabel.label}
+                            </div>
                           </div>
+                        </td>
+
+                        {/* Fixed Ops Assignee */}
+                        <td style={{ minWidth: 130 }}>
+                          <select
+                            value={fixedAssignee}
+                            onChange={(e) =>
+                              void updateStoreFixedAssignee(
+                                row.tekion_id,
+                                e.target.value as AssigneeName | ""
+                              )
+                            }
+                            style={{
+                              width: "100%",
+                              background: fixedAssignee
+                                ? "rgba(168, 85, 247, 0.15)"
+                                : "rgba(148, 163, 184, 0.1)",
+                              color: fixedAssignee ? "#c084fc" : "#64748b",
+                              border: `1px solid ${
+                                fixedAssignee
+                                  ? "rgba(168, 85, 247, 0.35)"
+                                  : "rgba(148, 163, 184, 0.2)"
+                              }`,
+                              borderRadius: 6,
+                              padding: "4px 6px",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              outline: "none",
+                            }}
+                          >
+                            <option value="">— Unassigned —</option>
+                            {ASSIGNEE_OPTIONS.map((name) => (
+                              <option key={name} value={name}>
+                                {name}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+
+                        {/* Variable Ops Assignee */}
+                        <td style={{ minWidth: 130 }}>
+                          <select
+                            value={variableAssignee}
+                            onChange={(e) =>
+                              void updateStoreVariableAssignee(
+                                row.tekion_id,
+                                e.target.value as AssigneeName | ""
+                              )
+                            }
+                            style={{
+                              width: "100%",
+                              background: variableAssignee
+                                ? "rgba(56, 189, 248, 0.15)"
+                                : "rgba(148, 163, 184, 0.1)",
+                              color: variableAssignee ? "#38bdf8" : "#64748b",
+                              border: `1px solid ${
+                                variableAssignee
+                                  ? "rgba(56, 189, 248, 0.35)"
+                                  : "rgba(148, 163, 184, 0.2)"
+                              }`,
+                              borderRadius: 6,
+                              padding: "4px 6px",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              outline: "none",
+                            }}
+                          >
+                            <option value="">— Unassigned —</option>
+                            {ASSIGNEE_OPTIONS.map((name) => (
+                              <option key={name} value={name}>
+                                {name}
+                              </option>
+                            ))}
+                          </select>
                         </td>
 
                         <td>{cleanedImp || "—"}</td>
@@ -2160,6 +2713,37 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                                 void updateCustomStatus(row.tekion_id, "fixed_ops_status", val)
                               }
                             />
+
+                            <div style={{ marginTop: 3 }}>
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 3,
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  padding: "2px 6px",
+                                  borderRadius: 4,
+                                  background:
+                                    fixedAttCount > 0
+                                      ? "rgba(56, 189, 248, 0.16)"
+                                      : "rgba(148, 163, 184, 0.08)",
+                                  color: fixedAttCount > 0 ? "#38bdf8" : "#64748b",
+                                  border: `1px solid ${
+                                    fixedAttCount > 0
+                                      ? "rgba(56, 189, 248, 0.3)"
+                                      : "rgba(148, 163, 184, 0.16)"
+                                  }`,
+                                }}
+                                title="Total attachments across Parts and Service blueprint tasks"
+                              >
+                                <span>📎</span>
+                                <span>
+                                  {fixedAttCount}{row.attachments_incomplete ? "+" : ""} Attachment{fixedAttCount === 1 ? "" : "s"}
+                                </span>
+                              </span>
+                            </div>
+
                             {fixedOpsTime !== "—" && (
                               <span className="stores-tracking-timestamp">
                                 {fixedOpsTime}
@@ -2176,6 +2760,37 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                                 void updateCustomStatus(row.tekion_id, "variable_ops_status", val)
                               }
                             />
+
+                            <div style={{ marginTop: 3 }}>
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 3,
+                                  fontSize: 10,
+                                  fontWeight: 700,
+                                  padding: "2px 6px",
+                                  borderRadius: 4,
+                                  background:
+                                    varAttCount > 0
+                                      ? "rgba(56, 189, 248, 0.16)"
+                                      : "rgba(148, 163, 184, 0.08)",
+                                  color: varAttCount > 0 ? "#38bdf8" : "#64748b",
+                                  border: `1px solid ${
+                                    varAttCount > 0
+                                      ? "rgba(56, 189, 248, 0.3)"
+                                      : "rgba(148, 163, 184, 0.16)"
+                                  }`,
+                                }}
+                                title="Total attachments across Accounting blueprint tasks"
+                              >
+                                <span>📎</span>
+                                <span>
+                                  {varAttCount}{row.attachments_incomplete ? "+" : ""} Attachment{varAttCount === 1 ? "" : "s"}
+                                </span>
+                              </span>
+                            </div>
+
                             {variableOpsTime !== "—" && (
                               <span className="stores-tracking-timestamp">
                                 {variableOpsTime}
@@ -2214,6 +2829,41 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                             }
                           />
                         </td>
+
+                        {/* Not Worked? Column */}
+                        <td style={{ minWidth: 200 }}>
+                          <select
+                            value={row.not_worked || ""}
+                            onChange={(e) =>
+                              void updateStoreNotWorked(row.tekion_id, e.target.value)
+                            }
+                            style={{
+                              width: "100%",
+                              background: row.not_worked
+                                ? "rgba(244, 63, 94, 0.15)"
+                                : "rgba(148, 163, 184, 0.1)",
+                              color: row.not_worked ? "#fb7185" : "#64748b",
+                              border: `1px solid ${
+                                row.not_worked
+                                  ? "rgba(244, 63, 94, 0.35)"
+                                  : "rgba(148, 163, 184, 0.2)"
+                              }`,
+                              borderRadius: 6,
+                              padding: "4px 6px",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              outline: "none",
+                            }}
+                          >
+                            <option value="">— Handled by ARC —</option>
+                            {NOT_WORKED_OPTIONS.map((opt) => (
+                              <option key={opt} value={opt}>
+                                {opt}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
                       </tr>
                     );
                   })}
@@ -2237,9 +2887,10 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       </div>
 
       <DealerMetaModal
-        row={activeDealerPopup}
+        row={currentModalRecord}
         onClose={() => setActiveDealerPopup(null)}
         onToast={showToast}
+        onTasksSnapshot={handleTasksSnapshot}
         onSetupFetched={(tekionId, setupData) => {
           setActiveDealerPopup((prev) =>
             prev && prev.tekion_id === tekionId

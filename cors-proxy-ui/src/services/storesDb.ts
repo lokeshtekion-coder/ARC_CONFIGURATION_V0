@@ -2,6 +2,17 @@ import { openDB, type DBSchema, type IDBPDatabase } from "idb";
 
 export type CustomPhaseStatus = "TO DO" | "WIP" | "Completed";
 
+export const NOT_WORKED_OPTIONS = [
+  "Fixed Ops handled by POD",
+  "Variable Ops handled by POD",
+  "Fixed + Variable handled by POD",
+  "Fixed Ops OFS",
+  "Variable Ops OFS",
+  "Fixed + Variable OFS",
+] as const;
+
+export type NotWorkedOption = typeof NOT_WORKED_OPTIONS[number];
+
 export interface StoreSetupData {
   oemDealerCodes: string[];
   journalsAccessibleDealerCount: number;
@@ -28,8 +39,11 @@ export interface StoreRecord {
   implementation_tm_sync_status_tracking_id?: string;
   project_implementation_tm_sync_status_tracking_id?: string;
 
-  /** TAP project ID used by the Tasks panel APIs. */
+  /** Primary TAP project ID used by the Tasks panel APIs. */
   onboarding_project_id?: string;
+
+  /** Secondary / DataSync project ID fallback when onboarding_project_id is missing. */
+  ds_onboarding_project_id?: string;
 
   // PDL & Leadership Contacts (used by storeSlackHelper)
   workorder_consolidated_pdl?: string;
@@ -40,17 +54,43 @@ export interface StoreRecord {
   conversion_track_lead_1773369950325147526?: string;
   accounting_track_lead_1773369945455468395?: string;
 
+  // Operational Assignees
+  custom_assignee?: string;           // Fixed Ops Assignee
+  custom_variable_assignee?: string;  // Variable Ops Assignee
+
   // Operational & Custom Statuses
   fixed_ops_status?: CustomPhaseStatus;
   variable_ops_status?: CustomPhaseStatus;
   testing_status?: CustomPhaseStatus;
   configuration_status?: CustomPhaseStatus;
+  not_worked?: NotWorkedOption | string; // Exclusion/ownership tracking flag
   blueprint_statuses?: any;
   signoff_statuses?: any;
   onboarding_status_fetched_at?: string;
   setup_data?: StoreSetupData;
   setup_data_fetched_at?: string;
   setup_data_error?: string;
+}
+
+/**
+ * Resolves the active TAP project ID using whichever field is populated:
+ * checks onboarding_project_id first, then falls back to ds_onboarding_project_id.
+ */
+export function resolveStoreProjectId(store?: Partial<StoreRecord> | null): string {
+  if (!store) return "";
+  const primary = (store.onboarding_project_id || "").trim();
+  if (primary) return primary;
+  const secondary = (store.ds_onboarding_project_id || "").trim();
+  return secondary;
+}
+
+export interface VaultStoreEntry {
+  fixed_ops_status?: CustomPhaseStatus;
+  variable_ops_status?: CustomPhaseStatus;
+  testing_status?: CustomPhaseStatus;
+  custom_assignee?: string;
+  custom_variable_assignee?: string;
+  not_worked?: NotWorkedOption | string;
 }
 
 interface StoresDbSchema extends DBSchema {
@@ -82,14 +122,7 @@ function getDb(): Promise<IDBPDatabase<StoresDbSchema>> {
   return dbPromise;
 }
 
-export function getStoredStatusVault(): Record<
-  string,
-  {
-    fixed_ops_status?: CustomPhaseStatus;
-    variable_ops_status?: CustomPhaseStatus;
-    testing_status?: CustomPhaseStatus;
-  }
-> {
+export function getStoredStatusVault(): Record<string, VaultStoreEntry> {
   try {
     const raw = localStorage.getItem(STORE_VAULT_KEY);
     return raw ? JSON.parse(raw) : {};
@@ -197,10 +230,47 @@ export function saveStatusToVault(
   }
 }
 
+export function saveNotWorkedToVault(
+  tekionId: string,
+  value: NotWorkedOption | string
+): void {
+  try {
+    const vault = getStoredStatusVault();
+    if (!vault[tekionId]) vault[tekionId] = {};
+
+    vault[tekionId].not_worked = value;
+    localStorage.setItem(STORE_VAULT_KEY, JSON.stringify(vault));
+  } catch (err) {
+    console.error("[storesDb] Failed save not_worked to vault:", err);
+  }
+}
+
+export function saveAssigneesToVault(
+  tekionId: string,
+  assignees: { custom_assignee?: string; custom_variable_assignee?: string }
+): void {
+  try {
+    const vault = getStoredStatusVault();
+    if (!vault[tekionId]) vault[tekionId] = {};
+
+    if (assignees.custom_assignee !== undefined) {
+      vault[tekionId].custom_assignee = assignees.custom_assignee;
+    }
+    if (assignees.custom_variable_assignee !== undefined) {
+      vault[tekionId].custom_variable_assignee = assignees.custom_variable_assignee;
+    }
+
+    localStorage.setItem(STORE_VAULT_KEY, JSON.stringify(vault));
+  } catch (err) {
+    console.error("[storesDb] Failed save assignees to vault:", err);
+  }
+}
+
 /**
  * Bulk updates the vault with safety rules:
- * Completed statuses are locked and cannot be demoted to 'TO DO' or 'WIP'
- * by automated background sync calls unless allowDowngrade is explicitly true.
+ * - Completed statuses are locked and cannot be demoted to 'TO DO' or 'WIP'
+ *   by automated background sync calls unless allowDowngrade is explicitly true.
+ * - Updates and preserves Fixed Ops, Variable Ops assignees, and Not Worked flags if provided.
  */
 export function bulkUpdateStatusVault(
   updates: Array<{
@@ -208,6 +278,9 @@ export function bulkUpdateStatusVault(
     fixed_ops_status?: CustomPhaseStatus;
     variable_ops_status?: CustomPhaseStatus;
     testing_status?: CustomPhaseStatus;
+    custom_assignee?: string;
+    custom_variable_assignee?: string;
+    not_worked?: NotWorkedOption | string;
   }>,
   allowDowngrade = false
 ): void {
@@ -244,6 +317,15 @@ export function bulkUpdateStatusVault(
         ) {
           vault[item.tekionId].testing_status = item.testing_status;
         }
+      }
+      if (item.custom_assignee !== undefined) {
+        vault[item.tekionId].custom_assignee = item.custom_assignee;
+      }
+      if (item.custom_variable_assignee !== undefined) {
+        vault[item.tekionId].custom_variable_assignee = item.custom_variable_assignee;
+      }
+      if (item.not_worked !== undefined) {
+        vault[item.tekionId].not_worked = item.not_worked;
       }
     }
 

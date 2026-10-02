@@ -1,0 +1,137 @@
+{
+  "dealerId": "8190",
+  "timestamp": "2026-10-01T17-25-40-803Z",
+  "bootstrap": {
+    "dealerId": "8190",
+    "glAccounts": [],
+    "costCenterSetup": [
+      {
+        "key": "8190_6aa270d7797f66059f35e493",
+        "customFieldKey": "REPAIR_ORDER_CP_IW_SPLIT",
+        "options": [
+          {
+            "id": "6abe78eb0df09d17aa2ec03a",
+            "name": "Service Contracts"
+          }
+        ]
+      },
+      {
+        "key": "8190_6aa270d7797f66059f35e495",
+        "customFieldKey": "REPAIR_ORDER_INTERNAL",
+        "options": [
+          {
+            "id": "6abe78eb6280fff6affffbb3",
+            "name": "Vehicle Inventory -INVV"
+          },
+          {
+            "id": "6abe78eb6280fff6affffbb4",
+            "name": "New Car Policy"
+          },
+          {
+            "id": "6abe78eb6280fff6affffbb5",
+            "name": "Used Car Policy"
+          },
+          {
+            "id": "6abe78eb6280fff6affffbb6",
+            "name": "Service Dept Policy"
+          },
+          {
+            "id": "6abe78eb6280fff6affffbb7",
+            "name": "Parts Dept Policy"
+          },
+          {
+            "id": "6abe78eb6280fff6affffbb8",
+            "name": "New Car - Lot Damage"
+          },
+          {
+            "id": "6abe78eb6280fff6affffbb9",
+            "name": "Used Car - Lot Damage"
+          },
+          {
+            "id": "6abe78eb6280fff6affffbba",
+            "name": "Service Dept  - Lot Damage"
+          },
+          {
+            "id": "6abe78eb6280fff6affffbbb",
+            "name": "Parts Dept  - Lot Damage"
+          }
+        ]
+      },
+      {
+        "key": "8190_6aa270d7797f66059f35e48f",
+        "customFieldKey": "REPAIR_ORDER_WARRANTY",
+        "options": [
+          {
+            "id": "6abe78eb6280fff6affffbbc",
+            "name": "Warranty Receivable"
+          },
+          {
+            "id": "6abe78eb6280fff6affffbbd",
+            "name": "PDI"
+          }
+        ]
+      },
+      {
+        "key": "8190_6aa270d7797f66059f35e498",
+        "customFieldKey": "PARTS_SALES_ORDER_INTERNAL",
+        "options": [
+          {
+            "id": "NEW_CAR_INVENTORY",
+            "name": "New Car Inventory"
+          },
+          {
+            "id": "NEW_TRUCK_INVENTORY",
+            "name": "New Truck Inventory"
+          },
+          {
+            "id": "USED_CAR_INVENTORY",
+            "name": "Used Car Inventory"
+          },
+          {
+            "id": "USED_TRUCK_INVENTORY",
+            "name": "Used Truck Inventory"
+          },
+          {
+            "id": "INTERNAL_DUE_BILL",
+            "name": "Internal Due Bill"
+          },
+          {
+            "id": "SHOP_SUPPLIES",
+            "name": "Shop Supplies"
+          },
+          {
+            "id": "SERVICE_POLICY",
+            "name": "Service Policy"
+          },
+          {
+            "id": "INTERNAL_POLICY_PARTS",
+            "name": "Internal Policy Parts"
+          },
+          {
+            "id": "INTERNAL_INTER_FRANCHISE",
+            "name": "Internal Inter Franchise"
+          },
+          {
+            "id": "6abe78ec0df09d17aa2ec03b",
+            "name": "Vehicle Inventory - INVV"
+          },
+          {
+            "id": "OTHER_SUPPLIES",
+            "name": "Other Supplies"
+          }
+        ]
+      },
+      {
+        "key": "8190_6aa270d7797f66059f35e499",
+        "customFieldKey": "DEPARTMENT",
+        "options": [
+          {
+            "id": "6abe78d20df09d17aa2ec038",
+            "name": "Service"
+          }
+        ]
+      }
+    ],
+    "journals": []
+  }
+}

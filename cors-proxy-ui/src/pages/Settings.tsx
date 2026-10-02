@@ -28,6 +28,7 @@ import {
 } from "../services/extensionBridge";
 import { useArcRules } from "../hooks/useArcRules";
 import { JwtDebugger } from "../components/JwtDebugger";
+import { AssigneeSettingsPanel } from "../components/AssigneeSettingsPanel";
 import { GlobalHeadersPanel } from "../components/GlobalHeadersPanel";
 import { SelectableHeaderMap } from "../components/SelectableHeaderMap";
 import type { KeyValuePair } from "../types/proxy.types";
@@ -53,7 +54,7 @@ interface Props {
   onBack: () => void;
 }
 
-type TabKey = "toc" | "tokens" | "profiles" | "headers" | "extension" | "slack";
+type TabKey = "toc" | "tokens" | "profiles" | "headers" | "extension" | "slack" | "assignees";
 type TokenAuthType = "header" | "bearer";
 type MessageType = "success" | "warning" | "error";
 type TokenFieldKey = "tapDuoApiToken" | "graphApiToken";
@@ -1358,6 +1359,7 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
         {renderSidebarButton("toc", "🎯 TOC API (Default)")}
         {renderSidebarButton("tokens", "🔐 API Tokens", tokensAreDirty)}
         {renderSidebarButton("slack", "💬 Slack Session")}
+        {renderSidebarButton("assignees", "👥 Assignees")}
         {renderSidebarButton("profiles", "🏬 Dealer Profiles")}
         {renderSidebarButton("headers", "📮 Global Headers", headersAreDirty)}
         {renderSidebarButton("extension", "🔄 Extension Data")}
@@ -1758,6 +1760,9 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
                 </div>
               </section>
             )}
+
+            {/* TAB: ASSIGNEES */}
+            {activeTab === "assignees" && <AssigneeSettingsPanel />}
 
             {/* TAB: DEALER PROFILES */}
             {activeTab === "profiles" && (

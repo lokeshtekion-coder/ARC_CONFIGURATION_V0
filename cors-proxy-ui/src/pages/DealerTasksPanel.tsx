@@ -1,10 +1,17 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import type { CustomPhaseStatus, StoreRecord } from "../services/storesDb";
+import {
+  resolveStoreProjectId,
+  type CustomPhaseStatus,
+  type StoreRecord,
+} from "../services/storesDb";
 import {
   fetchTapBlueprintTasks,
   postTapTaskComment,
   updateTapTaskStatus,
   uploadTapTaskAttachment,
+  fetchTaskAttachments,
+  fetchTaskAttachmentsOrNull,
+  type TapAttachmentItem,
   type TapBlueprintModule,
   type TapTask,
   type TapTaskCommentMention,
@@ -16,19 +23,46 @@ import {
   type SlackRecipientCandidate,
 } from "../services/storeSlackHelper";
 
+export interface TapTaskWithAttachment extends Partial<TapTask> {
+  taskId: number;
+  taskName: string;
+  status: TapTaskStatus | string;
+  taskAttachmentCount?: number;
+  attachments?: TapAttachmentItem[];
+  id?: string;
+  name?: string;
+}
+
+export type TapTasksByModuleWithAttachment = Record<
+  TapBlueprintModule,
+  TapTaskWithAttachment[]
+>;
+
+export interface StoreBlueprintTasksCache {
+  partsTasks?: TapTaskWithAttachment[];
+  serviceTasks?: TapTaskWithAttachment[];
+  accountingTasks?: TapTaskWithAttachment[];
+  fetchedAt?: string;
+}
+
+export type TapTaskDetail = TapTaskWithAttachment;
+export type StoreBlueprintTasks = StoreBlueprintTasksCache;
+
 interface Props {
-  row: StoreRecord;
+  row: StoreRecord & { fetched_blueprint_tasks?: StoreBlueprintTasksCache };
   onToast: (message: string) => void;
   onOperationalStatusChange: (
     tekionId: string,
     field: "fixed_ops_status" | "variable_ops_status",
     value: CustomPhaseStatus
   ) => Promise<void> | void;
+  /** Reports resolved tasks + attachment counts so the Stores table can show them. */
+  onTasksSnapshot?: (tekionId: string, tasks: TapTasksByModuleWithAttachment, complete: boolean) => void;
 }
 
 type CommentTemplate = "issue" | "completed";
 
-const EMPTY_TASKS: TapTasksByModule = {
+const EMPTY_TASKS: TapTasksByModuleWithAttachment = {
   parts: [],
   service: [],
   accounting: [],
@@ -66,9 +100,8 @@ function lifecycleButtonLabel(status: TapTaskStatus): string {
   return "Duplicate";
 }
 
-function calculatePhaseStatus(tasks: TapTask[]): CustomPhaseStatus {
+function calculatePhaseStatus(tasks: TapTaskWithAttachment[]): CustomPhaseStatus {
   const statuses = tasks.map((task) => normalizeStatus(task.status));
-
   if (statuses.length === 0 || statuses.every((status) => status === "new")) {
     return "TO DO";
   }
@@ -78,7 +111,7 @@ function calculatePhaseStatus(tasks: TapTask[]): CustomPhaseStatus {
   return "WIP";
 }
 
-function calculateFixedOpsStatus(tasks: TapTasksByModule): CustomPhaseStatus {
+function calculateFixedOpsStatus(tasks: TapTasksByModuleWithAttachment): CustomPhaseStatus {
   const partsStatus = calculatePhaseStatus(tasks.parts);
   const serviceStatus = calculatePhaseStatus(tasks.service);
 
@@ -142,36 +175,13 @@ function defaultComment(
   return `${mentionPrefix}We have completed the ${moduleMeta[module].operationalName} for this dealer.\n\nNotes:`;
 }
 
-function statusStyle(status: TapTaskStatus): React.CSSProperties {
-  if (status === "completed") {
-    return {
-      color: "#4ade80",
-      background: "rgba(74, 222, 128, 0.12)",
-      border: "1px solid rgba(74, 222, 128, 0.28)",
-    };
-  }
-
-  if (status === "inprogress") {
-    return {
-      color: "#fbbf24",
-      background: "rgba(251, 191, 36, 0.12)",
-      border: "1px solid rgba(251, 191, 36, 0.28)",
-    };
-  }
-
-  return {
-    color: "#94a3b8",
-    background: "rgba(148, 163, 184, 0.12)",
-    border: "1px solid rgba(148, 163, 184, 0.24)",
-  };
-}
-
 export default function DealerTasksPanel({
   row,
   onToast,
   onOperationalStatusChange,
+  onTasksSnapshot,
 }: Props) {
-  const [tasks, setTasks] = useState<TapTasksByModule>(EMPTY_TASKS);
+  const [tasks, setTasks] = useState<TapTasksByModuleWithAttachment>(EMPTY_TASKS);
   const [activeModule, setActiveModule] = useState<TapBlueprintModule>("parts");
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -181,12 +191,15 @@ export default function DealerTasksPanel({
   const [postingComment, setPostingComment] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [loadingAttachments, setLoadingAttachments] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const onboardingProjectId = row.onboarding_project_id?.trim() || "";
+  // Resolves primary onboarding_project_id, then falls back to ds_onboarding_project_id
+  const resolvedProjectId = resolveStoreProjectId(row);
+
   const moduleTasks = tasks[activeModule];
   const selectedTask =
-    moduleTasks.find((task: TapTask) => task.taskId === selectedTaskId) ??
+    moduleTasks.find((task: TapTaskWithAttachment) => task.taskId === selectedTaskId) ??
     moduleTasks[0] ??
     null;
 
@@ -204,23 +217,136 @@ export default function DealerTasksPanel({
     [row, activeModule]
   );
 
-  const loadTasks = async () => {
-    if (!onboardingProjectId) {
-      onToast("❌ This dealer does not have an onboarding_project_id.");
+  useEffect(() => {
+    const pending: Array<{ module: TapBlueprintModule; taskId: number }> = [];
+    for (const m of MODULES) {
+      for (const t of tasks[m]) {
+        if (t.attachments === undefined && t.taskId) pending.push({ module: m, taskId: t.taskId });
+      }
+    }
+    if (pending.length === 0) return;
+
+    let isCancelled = false;
+    setLoadingAttachments(true);
+
+    void (async () => {
+      for (const item of pending) {
+        if (isCancelled) return;
+        const items = await fetchTaskAttachmentsOrNull(item.taskId, dealerContext);
+        if (isCancelled) return;
+        if (items === null) continue;
+        setTasks((prev) => ({
+          ...prev,
+          [item.module]: prev[item.module].map((t) =>
+            t.taskId === item.taskId
+              ? { ...t, attachments: items, taskAttachmentCount: items.length }
+              : t
+          ),
+        }));
+      }
+      if (!isCancelled) setLoadingAttachments(false);
+    })();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [tasks, dealerContext]);
+
+  useEffect(() => {
+    const all = [...tasks.parts, ...tasks.service, ...tasks.accounting];
+    if (all.length === 0 || !onTasksSnapshot) return;
+    const complete = all.every((t) => t.attachments !== undefined);
+    const anyLoaded = all.some((t) => t.attachments !== undefined);
+    if (anyLoaded) onTasksSnapshot(row.tekion_id, tasks, complete);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tasks]);
+
+  const loadTasks = async (forceRemote = false) => {
+    if (
+      !forceRemote &&
+      row.fetched_blueprint_tasks &&
+      (row.fetched_blueprint_tasks.partsTasks?.length ||
+        row.fetched_blueprint_tasks.serviceTasks?.length ||
+        row.fetched_blueprint_tasks.accountingTasks?.length)
+    ) {
+      const cached = row.fetched_blueprint_tasks;
+      const cachedFormatted: TapTasksByModuleWithAttachment = {
+        parts: (cached.partsTasks || []).map((t) => ({
+          ...t,
+          taskId: Number(t.taskId ?? t.id ?? 0),
+          taskName: t.taskName ?? t.name ?? "Task",
+          status: t.status ?? "new",
+          taskAttachmentCount: Number(t.taskAttachmentCount ?? t.attachments?.length ?? 0),
+          attachments: t.attachments,
+        })),
+        service: (cached.serviceTasks || []).map((t) => ({
+          ...t,
+          taskId: Number(t.taskId ?? t.id ?? 0),
+          taskName: t.taskName ?? t.name ?? "Task",
+          status: t.status ?? "new",
+          taskAttachmentCount: Number(t.taskAttachmentCount ?? t.attachments?.length ?? 0),
+          attachments: t.attachments,
+        })),
+        accounting: (cached.accountingTasks || []).map((t) => ({
+          ...t,
+          taskId: Number(t.taskId ?? t.id ?? 0),
+          taskName: t.taskName ?? t.name ?? "Task",
+          status: t.status ?? "new",
+          taskAttachmentCount: Number(t.taskAttachmentCount ?? t.attachments?.length ?? 0),
+          attachments: t.attachments,
+        })),
+      };
+
+      setTasks(cachedFormatted);
+      const firstModule =
+        MODULES.find((m) => cachedFormatted[m].length > 0) ?? "parts";
+      setActiveModule(firstModule);
+      setSelectedTaskId(cachedFormatted[firstModule][0]?.taskId ?? null);
+      return;
+    }
+
+    if (!resolvedProjectId) {
+      onToast("❌ This dealer does not have a TAP project ID (missing onboarding_project_id & ds_onboarding_project_id).");
       return;
     }
 
     setLoading(true);
     try {
-      const result = await fetchTapBlueprintTasks(onboardingProjectId, dealerContext);
-      setTasks(result);
+      const result = await fetchTapBlueprintTasks(resolvedProjectId, dealerContext);
+
+      const formattedResult: TapTasksByModuleWithAttachment = {
+        parts: (result.parts || []).map((t: any) => ({
+          ...t,
+          taskId: Number(t.taskId ?? t.id ?? 0),
+          taskName: t.taskName ?? t.name ?? "Task",
+          taskAttachmentCount: Number(t.taskAttachmentCount ?? t.attachmentCount ?? 0),
+        })),
+        service: (result.service || []).map((t: any) => ({
+          ...t,
+          taskId: Number(t.taskId ?? t.id ?? 0),
+          taskName: t.taskName ?? t.name ?? "Task",
+          taskAttachmentCount: Number(t.taskAttachmentCount ?? t.attachmentCount ?? 0),
+        })),
+        accounting: (result.accounting || []).map((t: any) => ({
+          ...t,
+          taskId: Number(t.taskId ?? t.id ?? 0),
+          taskName: t.taskName ?? t.name ?? "Task",
+          taskAttachmentCount: Number(t.taskAttachmentCount ?? t.attachmentCount ?? 0),
+        })),
+      };
+
+      setTasks(formattedResult);
 
       const firstModule =
-        MODULES.find((module) => result[module].length > 0) ?? "parts";
+        MODULES.find((module) => formattedResult[module].length > 0) ?? "parts";
       setActiveModule(firstModule);
-      setSelectedTaskId(result[firstModule][0]?.taskId ?? null);
+      setSelectedTaskId(formattedResult[firstModule][0]?.taskId ?? null);
 
-      if (!result.parts.length && !result.service.length && !result.accounting.length) {
+      if (
+        !formattedResult.parts.length &&
+        !formattedResult.service.length &&
+        !formattedResult.accounting.length
+      ) {
         onToast("⚠ No matching DS - Onboarding blueprint tasks were found.");
       }
     } catch (error) {
@@ -236,9 +362,9 @@ export default function DealerTasksPanel({
     setActiveModule("parts");
     setSelectedTaskId(null);
     setCommentTemplate("issue");
-    void loadTasks();
+    void loadTasks(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [row.tekion_id, onboardingProjectId]);
+  }, [row.tekion_id, resolvedProjectId]);
 
   useEffect(() => {
     const firstTask = tasks[activeModule][0];
@@ -246,7 +372,9 @@ export default function DealerTasksPanel({
     setCommentText(defaultComment(activeModule, commentTemplate, recipients));
   }, [activeModule, commentTemplate, recipients, tasks]);
 
-  const applyDerivedOperationalStatuses = async (nextTasks: TapTasksByModule) => {
+  const applyDerivedOperationalStatuses = async (
+    nextTasks: TapTasksByModuleWithAttachment
+  ) => {
     await onOperationalStatusChange(
       row.tekion_id,
       "fixed_ops_status",
@@ -259,7 +387,7 @@ export default function DealerTasksPanel({
     );
   };
 
-  const changeTaskStatus = async (task: TapTask) => {
+  const changeTaskStatus = async (task: TapTaskWithAttachment) => {
     const currentStatus = normalizeStatus(task.status);
     const updatedStatus = nextStatus(currentStatus);
     if (!updatedStatus) return;
@@ -268,9 +396,9 @@ export default function DealerTasksPanel({
     try {
       await updateTapTaskStatus(task.taskId, updatedStatus, dealerContext);
 
-      const nextTasks: TapTasksByModule = {
+      const nextTasks: TapTasksByModuleWithAttachment = {
         ...tasks,
-        [activeModule]: tasks[activeModule].map((item: TapTask) =>
+        [activeModule]: tasks[activeModule].map((item: TapTaskWithAttachment) =>
           item.taskId === task.taskId ? { ...item, status: updatedStatus } : item
         ),
       };
@@ -330,6 +458,25 @@ export default function DealerTasksPanel({
     try {
       await uploadTapTaskAttachment(selectedTask.taskId, selectedFile, dealerContext);
       onToast(`✅ Uploaded ${selectedFile.name}`);
+
+      const freshAttachments = await fetchTaskAttachments(
+        selectedTask.taskId,
+        dealerContext
+      );
+
+      setTasks((prev) => ({
+        ...prev,
+        [activeModule]: prev[activeModule].map((item) =>
+          item.taskId === selectedTask.taskId
+            ? {
+                ...item,
+                attachments: freshAttachments,
+                taskAttachmentCount: freshAttachments.length,
+              }
+            : item
+        ),
+      }));
+
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
@@ -340,9 +487,11 @@ export default function DealerTasksPanel({
     }
   };
 
+  const currentAttachmentCount =
+    selectedTask?.attachments?.length ?? selectedTask?.taskAttachmentCount ?? 0;
+
   return (
     <div className="tasks-shell-grid">
-      {/* Module Selector Sidebar */}
       <aside className="tasks-module-nav">
         {MODULES.map((module) => {
           const count = tasks[module].length;
@@ -374,14 +523,13 @@ export default function DealerTasksPanel({
             className="btn-secondary btn-sm"
             style={{ width: "100%", justifyContent: "center" }}
             disabled={loading}
-            onClick={() => void loadTasks()}
+            onClick={() => void loadTasks(true)}
           >
             {loading ? "Loading…" : "↻ Reload"}
           </button>
         </div>
       </aside>
 
-      {/* Main Workspace */}
       <section style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {loading ? (
           <div style={{ color: "#94a3b8", padding: 30, textAlign: "center" }}>
@@ -401,7 +549,75 @@ export default function DealerTasksPanel({
           </div>
         ) : (
           <>
-            {/* Task Card Hero */}
+            {moduleTasks.length > 1 && (
+              <div
+                style={{
+                  display: "flex",
+                  gap: 8,
+                  overflowX: "auto",
+                  paddingBottom: 6,
+                }}
+              >
+                {moduleTasks.map((t) => {
+                  const isSelected = selectedTask?.taskId === t.taskId;
+                  const attCount =
+                    t.attachments?.length ?? t.taskAttachmentCount ?? 0;
+                  return (
+                    <button
+                      key={t.taskId}
+                      type="button"
+                      onClick={() => setSelectedTaskId(t.taskId)}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: 8,
+                        background: isSelected
+                          ? "rgba(56, 189, 248, 0.16)"
+                          : "rgba(30, 41, 59, 0.5)",
+                        border: `1px solid ${
+                          isSelected
+                            ? "rgba(56, 189, 248, 0.4)"
+                            : "rgba(148, 163, 184, 0.15)"
+                        }`,
+                        color: isSelected ? "#38bdf8" : "#94a3b8",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        whiteSpace: "nowrap",
+                        fontSize: 11,
+                        fontWeight: 600,
+                      }}
+                    >
+                      <span>#{t.taskId}</span>
+                      <span
+                        style={{
+                          maxWidth: 140,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                        }}
+                      >
+                        {t.taskName}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: 10,
+                          padding: "1px 5px",
+                          borderRadius: 4,
+                          background:
+                            attCount > 0
+                              ? "rgba(56, 189, 248, 0.25)"
+                              : "rgba(148, 163, 184, 0.15)",
+                          color: attCount > 0 ? "#38bdf8" : "#94a3b8",
+                        }}
+                      >
+                        📎 {attCount}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             {selectedTask && (
               <div className="task-hero-card">
                 <div className="task-hero-top">
@@ -410,11 +626,56 @@ export default function DealerTasksPanel({
                       <span className="task-id-tag">#{selectedTask.taskId}</span>
                       {selectedTask.taskName}
                     </div>
-                    <div style={{ fontSize: 11, color: "#64748b", marginTop: 4 }}>
-                      Notify Lead:{" "}
-                      <strong style={{ color: "#38bdf8" }}>
-                        {recipients.map((r) => r.name).join(", ") || "None assigned"}
-                      </strong>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        marginTop: 6,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      <div style={{ fontSize: 11, color: "#64748b" }}>
+                        Notify Lead:{" "}
+                        <strong style={{ color: "#38bdf8" }}>
+                          {recipients.map((r) => r.name).join(", ") || "None assigned"}
+                        </strong>
+                      </div>
+
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 4,
+                          padding: "3px 8px",
+                          borderRadius: 6,
+                          fontSize: 11,
+                          fontWeight: 700,
+                          lineHeight: 1,
+                          background:
+                            currentAttachmentCount > 0
+                              ? "rgba(56, 189, 248, 0.18)"
+                              : "rgba(148, 163, 184, 0.12)",
+                          color: currentAttachmentCount > 0 ? "#38bdf8" : "#94a3b8",
+                          border: `1px solid ${
+                            currentAttachmentCount > 0
+                              ? "rgba(56, 189, 248, 0.35)"
+                              : "rgba(148, 163, 184, 0.2)"
+                          }`,
+                        }}
+                      >
+                        <span>📎</span>
+                        <span>
+                          {loadingAttachments
+                            ? "Checking..."
+                            : `${currentAttachmentCount} ${
+                                currentAttachmentCount === 1
+                                  ? "Attachment"
+                                  : "Attachments"
+                              }`}
+                        </span>
+                      </span>
                     </div>
                   </div>
 
@@ -433,15 +694,62 @@ export default function DealerTasksPanel({
                   </button>
                 </div>
 
+                {selectedTask.attachments && selectedTask.attachments.length > 0 && (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: 6,
+                      marginTop: 10,
+                      padding: "8px 10px",
+                      borderRadius: 6,
+                      background: "rgba(15, 23, 42, 0.5)",
+                      border: "1px solid rgba(56, 189, 248, 0.2)",
+                    }}
+                  >
+                    {selectedTask.attachments.map((att) => (
+                      <a
+                        key={att.id}
+                        href={att.link}
+                        target="_blank"
+                        rel="noreferrer"
+                        title="Click to view/download file"
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 5,
+                          fontSize: 11,
+                          color: "#38bdf8",
+                          background: "rgba(56, 189, 248, 0.12)",
+                          padding: "3px 8px",
+                          borderRadius: 4,
+                          textDecoration: "none",
+                          border: "1px solid rgba(56, 189, 248, 0.25)",
+                        }}
+                      >
+                        <span>📄</span>
+                        <span>{att.name}</span>
+                        <span style={{ fontSize: 9, opacity: 0.7 }}>↗</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+
                 {selectedTask.descriptionPlain && (
-                  <div style={{ color: "#94a3b8", fontSize: 12, lineHeight: 1.4 }}>
+                  <div
+                    style={{
+                      color: "#94a3b8",
+                      fontSize: 12,
+                      lineHeight: 1.4,
+                      marginTop: 8,
+                    }}
+                  >
                     {selectedTask.descriptionPlain}
                   </div>
                 )}
               </div>
             )}
 
-            {/* Smart Comment & Attachment Composer */}
             <div className="task-composer-card">
               <div className="composer-toolbar">
                 <div className="composer-template-pills">

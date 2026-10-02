@@ -59,6 +59,8 @@ export function exportStoresToExcel(
       { wch: 20 }, // SignOff Accounting Time
 
       { wch: 24 }, // Status Fetched At
+      { wch: 20 }, // Setup Data Fetched At
+      { wch: 18 }, // Assignee
     ];
 
     XLSX.utils.book_append_sheet(workbook, sheet, group.sheetName);

@@ -1,6 +1,7 @@
 import type { StoreRecord } from "./storesDb";
 import { getStatusTimeline } from "./storesDb";
 import type { OnboardingStatus } from "./storeOnboardingStatusApi";
+import { resolveStoreAssignee } from "./assigneeService";
 
 export const STORE_EXPORT_HEADERS = [
   "Tekion ID",
@@ -37,8 +38,11 @@ export const STORE_EXPORT_HEADERS = [
   "SignOff Accounting",
   "SignOff Accounting Last Released Time",
   "Testing",
+  "Not Worked?",
   "Status Fetched At",
   "Setup Data Fetched At",
+  "Fixed Ops Assignee",
+  "Variable Ops Assignee",
 ] as const;
 
 export type StoreExportHeader = (typeof STORE_EXPORT_HEADERS)[number];
@@ -278,10 +282,13 @@ export function mapStoreToExcelRow(store: StoreRecord): StoreExcelRow {
     "SignOff Accounting": toStatusText(store.signoff_statuses?.accounting),
     "SignOff Accounting Last Released Time": formatDateTimePrecise(store.signoff_statuses?.accounting_last_released_time),
     Testing: store.testing_status || "TO DO",
+    "Not Worked?": store.not_worked || "",
     "Status Fetched At": formatDateTimePrecise(store.onboarding_status_fetched_at),
     "Setup Data Fetched At": formatDateTimePrecise(
       store.setup_data_fetched_at || store.setup_data?.fetchedAt
     ),
+    "Fixed Ops Assignee": resolveStoreAssignee(store) || store.custom_assignee || "",
+    "Variable Ops Assignee": store.custom_variable_assignee || "",
   };
 }
 

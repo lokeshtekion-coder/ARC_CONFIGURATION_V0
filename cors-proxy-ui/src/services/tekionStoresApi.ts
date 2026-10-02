@@ -255,7 +255,14 @@ function mapStore(item: Record<string, unknown>): StoreRecord {
       item.implementation_tm_sync_status_tracking_id
     ),
     base_entity_instance_id: normalize(item.base_entity_instance_id),
-    onboarding_project_id: normalize(item.onboarding_project_id),
+
+    // Unified project ID mappings with fallback support
+    onboarding_project_id: normalize(
+      item.onboarding_project_id ?? item.onboardingProjectId
+    ),
+    ds_onboarding_project_id: normalize(
+      item.ds_onboarding_project_id ?? item.dsOnboardingProjectId
+    ),
 
     project_engagement_manager_1781169293313734451: normalize(
       item.project_engagement_manager_1781169293313734451

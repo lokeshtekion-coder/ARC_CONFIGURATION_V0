@@ -33,12 +33,15 @@ interface SlackApiResponse {
   already_open?: boolean;
   upload_url?: string;
   file_id?: string;
-  file?: { id?: string };
+  file?: { id?: string; permalink?: string; url_private_download?: string; name?: string };
+  files?: Array<{ id?: string; title?: string; permalink?: string; url_private_download?: string }>;
 }
 
 const DM_CHANNEL_CACHE_KEY = "arc-slack-dm-channel-cache-v1";
-const SLACK_API_BASE = "https://slack.com/api";
+const SLACK_API_BASE = "https://tekion.enterprise.slack.com/api";
 const SLACK_CLIENT_ORIGIN = "https://app.slack.com";
+export const TEKION_SLACK_TEAM_ID = "T065DVAH2ER";
+export const TEKION_SLACK_ENTERPRISE_ID = "E08DG6QMMDG";
 
 const logger = {
   info: (...args: unknown[]) => console.info("[storeSlackHelper]", ...args),
@@ -187,9 +190,9 @@ function buildBlueprintStatusLines(
   const accounting = blueprintStatuses?.accounting ?? "UNKNOWN";
 
   return [
-    `• Parts Blueprint: ${getBlueprintStatusLabel(parts)}`,
-    `• Service Blueprint: ${getBlueprintStatusLabel(service)}`,
-    `• Accounting Blueprint: ${getBlueprintStatusLabel(accounting)}`,
+    `Parts Blueprint: ${getBlueprintStatusLabel(parts)}`,
+    `Service Blueprint: ${getBlueprintStatusLabel(service)}`,
+    `Accounting Blueprint: ${getBlueprintStatusLabel(accounting)}`,
   ];
 }
 
@@ -202,9 +205,9 @@ function buildDefaultSlackMessage(row: StoreRecord): string {
   return [
     ":information_source: Blueprint Status Update",
     "",
-    `• Dealership: ${dealership}`,
-    `• Go-Live Date: ${goLive}`,
-    `• ${tLabel} Days`,
+    `Dealership: ${dealership}`,
+    `Go-Live Date: ${goLive}`,
+    `${tLabel} Days`,
     "",
     "Status:",
     ...blueprintLines,
@@ -415,6 +418,7 @@ function sanitizeSlackCookie(rawCookie: string): string {
 async function proxySlackRequest(input: {
   url: string;
   body: Record<string, unknown>;
+  teamId?: string;
 }): Promise<SlackApiResponse> {
   const { slackToken, slackDCookie, lastSlackCaptureAt } = getSlackSession();
 
@@ -431,10 +435,19 @@ async function proxySlackRequest(input: {
     targetUrl = `${SLACK_API_BASE}/${targetUrl.replace(/^\/+/, "")}`;
   }
 
+  const targetTeam = input.teamId || TEKION_SLACK_TEAM_ID;
+
+  // Route URL parameters to Enterprise Grid workspace context
+  const parsedUrl = new URL(targetUrl);
+  parsedUrl.searchParams.set("slack_route", `${TEKION_SLACK_ENTERPRISE_ID}:${targetTeam}`);
+  targetUrl = parsedUrl.toString();
+
   const formPayload = new URLSearchParams();
   formPayload.set("token", slackToken);
   formPayload.set("_x_sonic", "true");
   formPayload.set("_x_app_name", "client");
+  formPayload.set("client_context_team_id", targetTeam);
+  formPayload.set("team_id", targetTeam);
 
   for (const [key, value] of Object.entries(input.body)) {
     if (value !== undefined && value !== null) {
@@ -454,7 +467,7 @@ async function proxySlackRequest(input: {
       "Referer": `${SLACK_CLIENT_ORIGIN}/`,
       "Origin": SLACK_CLIENT_ORIGIN,
       "User-Agent":
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
     },
     body: formPayload.toString(),
     timeout: 60000,
@@ -462,7 +475,7 @@ async function proxySlackRequest(input: {
 
   logger.info("Sending Slack request via proxy", {
     targetUrl,
-    endpoint: targetUrl.split("/").slice(-2).join("/"),
+    endpoint: targetUrl.split("/api/")[1] || targetUrl,
     tokenPrefix: `${slackToken.slice(0, 9)}...`,
     tokenLength: slackToken.length,
     hasDCookie: Boolean(slackDCookie),
@@ -589,6 +602,8 @@ export async function sendSlackMessage(input: {
     body: {
       channel: channelId,
       text: input.text,
+      client_context_team_id: TEKION_SLACK_TEAM_ID,
+      team_id: TEKION_SLACK_TEAM_ID,
     },
   });
 
@@ -598,9 +613,30 @@ export async function sendSlackMessage(input: {
   };
 }
 
+/** Posts a message directly to a Slack channel using chat.postMessage */
+export async function sendSlackChannelMessage(input: {
+  channelId: string;
+  text: string;
+}): Promise<{ ts?: string }> {
+  const response = await proxySlackRequest({
+    url: `${SLACK_API_BASE}/chat.postMessage`,
+    body: {
+      channel: input.channelId,
+      text: input.text,
+      client_context_team_id: TEKION_SLACK_TEAM_ID,
+      team_id: TEKION_SLACK_TEAM_ID,
+    },
+  });
+  return { ts: response.ts };
+}
+
 /**
- * Uploads an HTML document directly to a designated Slack conversation/DM (e.g. D0694BGT61W)
- * using the modern files.getUploadURLExternal -> pre-signed binary upload -> files.completeUploadExternal flow.
+ * Uploads an HTML or XLSX document directly to Slack and shares it as an
+ * authentic, downloadable file card attached to the message.
+ */
+/**
+ * Uploads an HTML or XLSX document directly to a designated Slack channel/conversation.
+ * Completes upload directly into the target channel so Slack renders the native downloadable file card.
  */
 export async function sendSlackDocument(input: {
   channelId: string;
@@ -608,24 +644,42 @@ export async function sendSlackDocument(input: {
   fileContent: string;
   initialComment?: string;
   title?: string;
+  teamId?: string;
+  isBase64?: boolean;
 }): Promise<SlackApiResponse> {
-  logger.info("Starting external document upload to Slack", {
+  const targetTeamId = input.teamId || TEKION_SLACK_TEAM_ID;
+
+  logger.info("Starting document upload to Slack", {
     channelId: input.channelId,
     fileName: input.fileName,
+    teamId: targetTeamId,
   });
 
-  const byteLength = new TextEncoder().encode(input.fileContent).byteLength;
-  const base64Content = btoa(
-    encodeURIComponent(input.fileContent).replace(/%([0-9A-F]{2})/g, (_, p1) =>
-      String.fromCharCode(parseInt(p1, 16))
-    )
-  );
+  const isXlsx = input.fileName.endsWith(".xlsx") || Boolean(input.isBase64);
 
+  let byteLength: number;
+  let base64Content: string;
+
+  if (isXlsx) {
+    base64Content = input.fileContent;
+    byteLength = Math.round((base64Content.length * 3) / 4);
+  } else {
+    byteLength = new TextEncoder().encode(input.fileContent).byteLength;
+    base64Content = btoa(
+      encodeURIComponent(input.fileContent).replace(/%([0-9A-F]{2})/g, (_, p1) =>
+        String.fromCharCode(parseInt(p1, 16))
+      )
+    );
+  }
+
+  // 1. Request upload ticket from Slack
   const getUrlRes = await proxySlackRequest({
     url: `${SLACK_API_BASE}/files.getUploadURLExternal`,
+    teamId: targetTeamId,
     body: {
       filename: input.fileName,
       length: byteLength,
+      team_id: targetTeamId,
     },
   });
 
@@ -638,11 +692,16 @@ export async function sendSlackDocument(input: {
     );
   }
 
-  logger.info("Received Slack upload URL, uploading file payload...", {
+  logger.info("Received Slack upload ticket, streaming file payload...", {
     fileId,
     byteLength,
   });
 
+  const mimeType = isXlsx
+    ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    : "text/html; charset=utf-8";
+
+  // 2. Stream binary payload directly to Slack cloud storage
   const uploadProxyRes = await fetch("/api/proxy", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -655,7 +714,7 @@ export async function sendSlackDocument(input: {
         file: {
           fieldName: "file",
           name: input.fileName,
-          type: "text/html; charset=utf-8",
+          type: mimeType,
           base64: base64Content,
         },
       },
@@ -669,20 +728,24 @@ export async function sendSlackDocument(input: {
       : uploadProxyRes.status;
 
   if (!uploadProxyRes.ok || uploadStatus >= 400) {
-    logger.error("Failed to upload file to Slack storage URL", {
+    logger.error("Failed to upload binary payload to Slack storage", {
       uploadStatus,
       body: uploadWrapper.body,
     });
     throw new Error(`Failed to upload file to Slack storage: HTTP ${uploadStatus}`);
   }
 
-  logger.info("File payload uploaded successfully, finalizing upload in channel...", {
+  logger.info("Payload uploaded to storage. Completing and publishing to channel...", {
     fileId,
     channelId: input.channelId,
+    teamId: targetTeamId,
   });
 
+  // 3. Complete and publish directly into the channel
+  // Passing channel_id here makes Slack render the real, downloadable attachment card
   const completeRes = await proxySlackRequest({
     url: `${SLACK_API_BASE}/files.completeUploadExternal`,
+    teamId: targetTeamId,
     body: {
       files: JSON.stringify([
         {
@@ -691,14 +754,15 @@ export async function sendSlackDocument(input: {
         },
       ]),
       channel_id: input.channelId,
-      channels: input.channelId,
       initial_comment: input.initialComment || "",
+      team_id: targetTeamId,
+      client_context_team_id: targetTeamId,
     },
   });
 
-  logger.info("Slack document upload completed successfully", {
+  logger.info("✅ File successfully published to channel as native attachment card", {
     fileId,
-    completeRes,
+    channelId: input.channelId,
   });
 
   return completeRes;
