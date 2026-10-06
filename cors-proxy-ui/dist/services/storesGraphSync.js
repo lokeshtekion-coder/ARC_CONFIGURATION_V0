@@ -17,12 +17,9 @@ const STATUS_HEADERS = [
     "Blueprint Accounting",
     "Blueprint CRM",
     "Blueprint Analytics",
-    "SignOff Parts",
-    "SignOff Service",
-    "SignOff Accounting",
 ];
 const STATUS_START_COLUMN_INDEX = STORE_EXPORT_HEADERS.indexOf("Blueprint Parts");
-const STATUS_END_COLUMN_INDEX = STORE_EXPORT_HEADERS.indexOf("SignOff Accounting");
+const STATUS_END_COLUMN_INDEX = STORE_EXPORT_HEADERS.indexOf("Blueprint Analytics");
 let isSyncingProdDealers = false;
 function workbookBaseUrl() {
     return `${GRAPH_BASE}/drives/${SHAREPOINT_DRIVE_ID}/items/${SHAREPOINT_ITEM_ID}/workbook`;

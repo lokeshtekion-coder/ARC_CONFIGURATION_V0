@@ -6,6 +6,7 @@ export const NOT_WORKED_OPTIONS = [
     "Fixed Ops OFS",
     "Variable Ops OFS",
     "Fixed + Variable OFS",
+    "Enterprise",
 ];
 /**
  * Resolves the active TAP project ID using whichever field is populated:

@@ -8,18 +8,38 @@ export function hasSetupData(record) {
 }
 /**
  * Normalizes raw backend error JSON strings into clean, concise messages
- * suitable for Excel cells and Slack alert text.
+ * suitable for table badges, Excel cells, and Slack alert text.
  */
 export function sanitizeSetupError(rawError) {
-    const err = String(rawError || "").trim();
+    let err = String(rawError || "").trim();
+    // Strip leading "Error: " wrapper prefix
+    err = err.replace(/^Error:\s*/i, "");
+    // 1. Identify specific Token / Authentication issues
+    if (err.includes("Login174") || err.includes("unauthorized.request.error")) {
+        return "Unauthorized (Login174)";
+    }
+    if (err.includes("API3_GENERATE_TOKEN")) {
+        return "Token Generation Failed (403)";
+    }
+    // 2. Identify Dealer Master status issues
     if (err.includes("Dealer has been disabled") || err.includes("invalid Dealer")) {
         return "Disabled Dealer (Inactive in Master)";
     }
     if (err.includes("No dealer properties returned")) {
         return "Unprovisioned (No Master Properties Found)";
     }
+    // 3. Extract nested displayMessage or message if JSON payload is present
+    const displayMsgMatch = err.match(/"displayMessage"\s*:\s*"([^"]+)"/i);
+    if (displayMsgMatch?.[1]) {
+        return displayMsgMatch[1].trim();
+    }
+    const msgMatch = err.match(/"message"\s*:\s*"([^"]+)"/i);
+    if (msgMatch?.[1]) {
+        return msgMatch[1].trim();
+    }
+    // 4. Standard HTTP status patterns
     if (err.includes("401") || err.includes("Unauthorized")) {
-        return "Unauthorized (Session or Dealer Access Blocked)";
+        return "Unauthorized (Dealer Access Blocked)";
     }
     if (err.includes("403") || err.includes("Forbidden")) {
         return "Forbidden (Insufficient Permissions)";
@@ -30,8 +50,11 @@ export function sanitizeSetupError(rawError) {
     if (err.includes("timeout") || err.includes("ETIMEDOUT") || err.includes("504")) {
         return "Request Timed Out";
     }
-    // Strip leading "Error: " prefix if present
-    return err.replace(/^Error:\s*/i, "");
+    if (err.includes("500") || err.includes("Internal Server Error")) {
+        return "Server Error (500)";
+    }
+    // Fallback for long or nested responses: trim cleanly
+    return err.length > 32 ? `${err.slice(0, 32)}…` : err;
 }
 /**
  * Setup data is "complete" only when EVERY part was fetched with a value:

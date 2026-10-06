@@ -28,12 +28,6 @@ export const STORE_EXPORT_HEADERS = [
     "Fixed Ops Tracking",
     "Variable Ops",
     "Variable Ops Tracking",
-    "SignOff Parts",
-    "SignOff Parts Last Released Time",
-    "SignOff Service",
-    "SignOff Service Last Released Time",
-    "SignOff Accounting",
-    "SignOff Accounting Last Released Time",
     "Testing",
     "Not Worked?",
     "Status Fetched At",
@@ -143,7 +137,6 @@ export function sanitizeExcelTimestamp(rawVal) {
     const str = String(rawVal).trim();
     if (!str)
         return "—";
-    // If it's an unevaluated formula string from a newly injected cell, return placeholder
     if (str.startsWith("="))
         return "—";
     // 1. Already formatted as 12-hour timestamp: e.g. "1:01:10 PM" or "01:01:10 PM"
@@ -232,12 +225,6 @@ export function mapStoreToExcelRow(store) {
         "Fixed Ops Tracking": buildLatestFieldTrackingText(store.tekion_id, "fixed_ops_status", false),
         "Variable Ops": store.variable_ops_status || "TO DO",
         "Variable Ops Tracking": buildLatestFieldTrackingText(store.tekion_id, "variable_ops_status", false),
-        "SignOff Parts": toStatusText(store.signoff_statuses?.parts),
-        "SignOff Parts Last Released Time": formatDateTimePrecise(store.signoff_statuses?.parts_last_released_time),
-        "SignOff Service": toStatusText(store.signoff_statuses?.service),
-        "SignOff Service Last Released Time": formatDateTimePrecise(store.signoff_statuses?.service_last_released_time),
-        "SignOff Accounting": toStatusText(store.signoff_statuses?.accounting),
-        "SignOff Accounting Last Released Time": formatDateTimePrecise(store.signoff_statuses?.accounting_last_released_time),
         Testing: store.testing_status || "TO DO",
         "Not Worked?": store.not_worked || "",
         "Status Fetched At": formatDateTimePrecise(store.onboarding_status_fetched_at),

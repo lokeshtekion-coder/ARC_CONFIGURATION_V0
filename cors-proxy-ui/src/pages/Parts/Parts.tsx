@@ -31,6 +31,11 @@ interface Props {
   onBack: () => void;
 }
 
+interface PartsNavItem {
+  key: PartsSectionKey;
+  label: string;
+}
+
 const SELECTED_DEALER_PROFILE_KEY = "arc_selected_dealer_profile_id_v1";
 
 const PAGE_STYLE: React.CSSProperties = {
@@ -228,7 +233,7 @@ const PartsLayout: React.FC<Props & { selectedDealerTenant: string }> = ({
         <div className="parts-responsive-grid" style={LAYOUT_STYLE}>
           <aside style={SIDEBAR_STYLE}>
             <div style={{ display: "grid", gap: 6 }}>
-              {PARTS_NAV_ITEMS.map((item, index) => {
+              {PARTS_NAV_ITEMS.map((item: PartsNavItem, index: number) => {
                 const isActive = item.key === activeKey;
 
                 return (

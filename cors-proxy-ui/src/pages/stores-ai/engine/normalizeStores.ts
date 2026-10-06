@@ -1,4 +1,4 @@
-import type { ExtendedStoreRecord } from "../Stores";
+import type { ExtendedStoreRecord } from "../../Stores";
 import type { StoreFact } from "../types/queryDsl";
 import { calculateDiffDays } from "./timeline";
 

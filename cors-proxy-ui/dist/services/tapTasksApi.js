@@ -251,7 +251,7 @@ export async function fetchTaskAttachmentsOrNull(taskId, context) {
                 return null;
             }
             if (upstreamStatus >= 400) {
-                console.warn(`[tapTasksApi] ⚠️ Upstream error ${upstreamStatus} on task #${idNum}:`, wrapper.body);
+                console.warn(`[tapTasksApi] ⚠️️ Upstream error ${upstreamStatus} on task #${idNum}:`, wrapper.body);
                 return null;
             }
             let parsed = wrapper.body;
@@ -575,26 +575,35 @@ function readAsBase64(file) {
         reader.readAsDataURL(file);
     });
 }
+/**
+ * Uploads an attachment to a task with direct multipart upload support.
+ * Bypasses local proxy payload limitations (e.g., files > 4MB/10MB)
+ * while falling back cleanly to the proxy if CORS requires it.
+ */
 export async function uploadTapTaskAttachment(taskId, file, context) {
-    const headers = buildTapHeaders(context);
-    delete headers["content-type"];
+    const rawHeaders = buildTapHeaders(context);
+    // Clean headers for multipart/form-data:
+    // Must NOT include content-type or content-length so the browser can calculate the boundary
+    const directHeaders = {};
+    for (const [k, v] of Object.entries(rawHeaders)) {
+        const lk = k.toLowerCase();
+        if (lk !== "content-type" && lk !== "content-length") {
+            directHeaders[lk] = v;
+        }
+    }
     console.info(`[tapTasksApi] 📎 Uploading attachment to task #${taskId}...`, {
         taskId,
         fileName: file.name,
         fileSizeKb: Math.round(file.size / 1024),
         dealerContext: context,
     });
-    let base64;
-    try {
-        base64 = await readAsBase64(file);
-    }
-    catch (error) {
-        console.error("[tapTasksApi] ❌ File read failure", error);
-        throw new TapTaskApiError();
-    }
     const candidateUploads = [
         {
             url: `${ATTACHMENT_API_BASE}/tasks/${encodeURIComponent(String(taskId))}/attachments?isDeletable=true`,
+            fieldName: "file",
+        },
+        {
+            url: `${ATTACHMENT_API_BASE}/tasks/${encodeURIComponent(String(taskId))}/attachments`,
             fieldName: "file",
         },
         {
@@ -602,64 +611,135 @@ export async function uploadTapTaskAttachment(taskId, file, context) {
             fieldName: "files",
         },
         {
-            url: `${ATTACHMENT_API_BASE}/tasks/${encodeURIComponent(String(taskId))}/attachments`,
-            fieldName: "file",
-        },
-        {
             url: `${TAP_API_BASE}/tasks/${encodeURIComponent(String(taskId))}/attachments?isDeletable=true`,
             fieldName: "file",
         },
     ];
-    let lastError = null;
+    let lastErrorDetail = null;
     let succeeded = false;
+    // STRATEGY 1: Direct browser fetch via native FormData
+    // This bypasses the node proxy size limit completely.
     for (const candidate of candidateUploads) {
         try {
-            const response = await fetch("/api/proxy", {
+            const formData = new FormData();
+            formData.append(candidate.fieldName, file, file.name);
+            formData.append("isDeletable", "true");
+            const response = await fetch(candidate.url, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    url: candidate.url,
-                    method: "POST",
-                    headers,
-                    timeout: 60000,
-                    multipartBase64: {
-                        fields: { isDeletable: "true" },
-                        file: {
-                            fieldName: candidate.fieldName,
-                            name: file.name,
-                            type: file.type || "application/octet-stream",
-                            base64,
-                        },
-                    },
-                }),
+                headers: directHeaders,
+                body: formData,
             });
-            const wrapper = (await response.json());
-            const upstreamStatus = typeof wrapper.status === "number" ? wrapper.status : response.status;
-            if (response.ok && upstreamStatus < 400) {
-                console.info(`[tapTasksApi] 🟢 Success (${upstreamStatus}) POST attachment to task #${taskId}`, {
+            if (response.ok && response.status < 400) {
+                let respBody = null;
+                try {
+                    respBody = await response.json();
+                }
+                catch {
+                    respBody = await response.text();
+                }
+                console.info(`[tapTasksApi] 🟢 Direct upload success (${response.status}) POST attachment to task #${taskId}`, {
                     taskId,
                     fileName: file.name,
                     urlUsed: candidate.url,
-                    fieldNameUsed: candidate.fieldName,
-                    responseBody: wrapper.body,
+                    responseBody: respBody,
                 });
                 succeeded = true;
                 break;
             }
             else {
-                lastError = wrapper.body;
+                const errorText = await response.text().catch(() => "");
+                lastErrorDetail = {
+                    strategy: "direct",
+                    status: response.status,
+                    statusText: response.statusText,
+                    url: candidate.url,
+                    errorText,
+                };
+                console.warn(`[tapTasksApi] ⚠️ Direct upload returned ${response.status} on ${candidate.url}:`, errorText);
             }
         }
-        catch (err) {
-            lastError = err;
+        catch (directErr) {
+            lastErrorDetail = {
+                strategy: "direct-exception",
+                url: candidate.url,
+                error: String(directErr),
+            };
+            // Likely CORS or network error; continue to try next candidate or proxy fallback
+        }
+    }
+    // STRATEGY 2: If direct fetch failed and file size is <= 8MB, try /api/proxy with base64
+    if (!succeeded && file.size <= 8 * 1024 * 1024) {
+        console.info(`[tapTasksApi] 🔄 Direct upload not completed, trying proxy base64 fallback...`);
+        let base64 = "";
+        try {
+            base64 = await readAsBase64(file);
+        }
+        catch (error) {
+            console.error("[tapTasksApi] ❌ File read failure for fallback", error);
+        }
+        if (base64) {
+            for (const candidate of candidateUploads) {
+                try {
+                    const response = await fetch("/api/proxy", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            url: candidate.url,
+                            method: "POST",
+                            headers: directHeaders,
+                            timeout: 60000,
+                            multipartBase64: {
+                                fields: { isDeletable: "true" },
+                                file: {
+                                    fieldName: candidate.fieldName,
+                                    name: file.name,
+                                    type: file.type || "application/octet-stream",
+                                    base64,
+                                },
+                            },
+                        }),
+                    });
+                    const wrapper = (await response.json());
+                    const upstreamStatus = typeof wrapper.status === "number" ? wrapper.status : response.status;
+                    if (response.ok && upstreamStatus < 400) {
+                        console.info(`[tapTasksApi] 🟢 Proxy fallback success (${upstreamStatus}) POST attachment to task #${taskId}`, {
+                            taskId,
+                            fileName: file.name,
+                            urlUsed: candidate.url,
+                            responseBody: wrapper.body,
+                        });
+                        succeeded = true;
+                        break;
+                    }
+                    else {
+                        lastErrorDetail = {
+                            strategy: "proxy",
+                            status: upstreamStatus,
+                            url: candidate.url,
+                            body: wrapper.body || wrapper.error,
+                        };
+                    }
+                }
+                catch (err) {
+                    lastErrorDetail = {
+                        strategy: "proxy-exception",
+                        url: candidate.url,
+                        error: String(err),
+                    };
+                }
+            }
         }
     }
     if (!succeeded) {
         console.error("[tapTasksApi] ❌ Attachment upload failed on all candidate configurations", {
             taskId,
-            lastError,
+            fileName: file.name,
+            fileSizeKb: Math.round(file.size / 1024),
+            lastError: lastErrorDetail,
         });
-        throw new TapTaskApiError();
+        throw new TapTaskApiError(typeof lastErrorDetail === "object" && lastErrorDetail !== null
+            ? `Upload failed: ${JSON.stringify(lastErrorDetail)}`
+            : "TAP attachment upload failed");
     }
 }
 export function normalizeTaskStatus(status) {
@@ -690,13 +770,6 @@ export function calculateFixedOpsStatus(tasks) {
     }
     return "WIP";
 }
-/**
- * Task-Level Granular Diffing Engine:
- * - Queries lightweight task metadata for each store.
- * - Indexes previous tasks in memory by taskId.
- * - If status is unchanged and attachments are already loaded, REUSES them immediately without network calls.
- * - Only queries attachments for newly discovered or updated tasks.
- */
 export async function batchFetchRealTapStatuses(stores, onProgress, onStoreUpdated) {
     const eligible = stores.filter((s) => Boolean(extractEffectiveProjectId(s)));
     console.info(`[tapTasksApi] batchFetchRealTapStatuses starting for ${eligible.length} eligible stores`);
@@ -731,7 +804,6 @@ export async function batchFetchRealTapStatuses(stores, onProgress, onStoreUpdat
                 ...(prevTasks.serviceTasks || []),
                 ...(prevTasks.accountingTasks || []),
             ].map((pt) => [String(pt.taskId || pt.id), pt]));
-            // TASK-LEVEL GRANULAR DIFFING HYDRATION
             const hydrateList = async (tasks) => {
                 let count = 0;
                 let failed = false;
@@ -741,7 +813,6 @@ export async function batchFetchRealTapStatuses(stores, onProgress, onStoreUpdat
                     const prev = prevByTaskId.get(tIdStr);
                     const isAttachmentResolved = prev?.attachments !== undefined && Array.isArray(prev.attachments);
                     const isStatusUnchanged = prev && String(prev.status || "").toLowerCase() === currentStatus;
-                    // Reuse cache if attachments are loaded and status is unchanged
                     if (isAttachmentResolved && isStatusUnchanged) {
                         totalSkippedTasks++;
                         t.attachments = prev.attachments;
@@ -750,7 +821,6 @@ export async function batchFetchRealTapStatuses(stores, onProgress, onStoreUpdat
                         count += t.taskAttachmentCount ?? 0;
                         continue;
                     }
-                    // Fetch only if new, status-changed, or attachments missing
                     const atts = await fetchTaskAttachmentsOrNull(t.taskId, {
                         tenantId: store.tenant_id,
                         dealerId: store.dealer_id,

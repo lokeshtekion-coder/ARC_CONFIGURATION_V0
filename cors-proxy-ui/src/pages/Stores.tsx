@@ -128,6 +128,24 @@ function isBlueprintDone(status: unknown): boolean {
   return false;
 }
 
+function getDealerTextColor(fixedOpsStatus?: string): string {
+  const norm = (fixedOpsStatus || "").trim().toUpperCase();
+  if (norm === "COMPLETED" || norm === "DONE" || norm === "COMPLETE") {
+    return "#4ade80"; // Green
+  }
+  if (
+    norm === "WIP" ||
+    norm === "IN PROGRESS" ||
+    norm === "TO DO" ||
+    norm === "TO" ||
+    norm.includes("PROGRESS") ||
+    norm.includes("WIP")
+  ) {
+    return "#facc15"; // Yellow
+  }
+  return "#f1f5f9"; // Default clean light gray
+}
+
 function mergeIncomingStore(existing: ExtendedStoreRecord | undefined, incoming: StoreRecord): ExtendedStoreRecord {
   if (!existing) return incoming as ExtendedStoreRecord;
   const merged: Record<string, any> = { ...existing };
@@ -359,7 +377,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     setError("");
     setTokenExpiredMessage("");
     try {
-      // Fetch up to 150 days when on "ALL", otherwise fetch selected range
       const fetchRange: TRange = range === "ALL" ? 150 : range;
       const rawStores = await fetchStores(fetchRange);
       const existingDbStores = await getStores();
@@ -823,7 +840,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         const normalizedImp = cleanImpType(item.implementation_type);
         const matchesImplementationType = !implementationType || normalizedImp === implementationType;
 
-        // Date Matcher: If fromDate or toDate is not set (e.g. range === "ALL"), matchesDate is true
         const launch = parseLaunchDate(item.launch_date);
         const launchUnix = launch ? Math.floor(launch.getTime() / 1000) : null;
         const matchesDate =
@@ -870,7 +886,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           return false;
         }
 
-        // Blueprint Multi Checkbox Filters
         if (selectedBlueprintChecks.length > 0) {
           const bp = item.blueprint_statuses;
           if (!bp) return false;
@@ -1199,7 +1214,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         </div>
 
         <div className="stores-topbar-right">
-          {/* Subtle Live Bot Capsule */}
+          {/* Live Bot Capsule */}
           <div
             className="stores-bot-capsule"
             onClick={() => storesBotRunner.setEnabled(!botState.enabled)}
@@ -1388,7 +1403,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                 />
               </div>
 
-              {/* T-Range Presets Grid including "All Stores" */}
               <div className="stores-field">
                 <label className="stores-label">T-Range Presets</label>
                 <div className="stores-preset-grid">
@@ -1402,7 +1416,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                       T-{days}
                     </button>
                   ))}
-                  {/* Preset to view ALL Stores without any date boundaries */}
                   <button
                     type="button"
                     className={range === "ALL" ? "btn-postman" : "btn-secondary btn-sm"}
@@ -1534,7 +1547,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     <th>Not Worked?</th>
                   </tr>
 
-                  {/* FROZEN ROW 2: Per-Column Filter Controls (Aligned at middle) */}
+                  {/* FROZEN ROW 2: Per-Column Filter Controls */}
                   <tr className="stores-table-filter-row">
                     <th>
                       <input
@@ -1643,7 +1656,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                         </span>
                       </button>
 
-                      {/* Portal Popup Mounted directly onto document.body to avoid clipping */}
                       {isBlueprintDropdownOpen &&
                         createPortal(
                           <div
@@ -1756,7 +1768,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                       </select>
                     </th>
 
-                    {/* Fixed Ops Assignee Filter (Directly after Setup Data) */}
                     <th>
                       <select
                         style={filterInputStyle}
@@ -1771,7 +1782,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                       </select>
                     </th>
 
-                    {/* Variable Ops Assignee Filter (Directly after Setup Data) */}
                     <th>
                       <select
                         style={filterInputStyle}
@@ -1863,6 +1873,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                       (row.fetched_blueprint_tasks?.accountingTasks || []).reduce((acc: number, t: any) => acc + (t.taskAttachmentCount || 0), 0);
 
                     const isDecommissioned = /decommissioned/i.test(row.pre_production_environment_status || "");
+                    const dealerNameColor = getDealerTextColor(row.fixed_ops_status);
 
                     return (
                       <tr key={row.tekion_id}>
@@ -1897,6 +1908,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                               </button>
                             </div>
 
+                            {/* Dealership Name Button Styled with colored text only */}
                             <button
                               type="button"
                               className="stores-copy-btn"
@@ -1904,17 +1916,17 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                               onClick={() => handleCopy(row.dba_name, `dba-${row.tekion_id}`)}
                               style={{
                                 textAlign: "left",
-                                color: "#f1f5f9",
+                                color: dealerNameColor,
+                                background: "transparent",
+                                border: "none",
+                                padding: "2px 0",
                                 fontSize: 15,
                                 fontWeight: 800,
                                 lineHeight: 1.3,
                                 whiteSpace: "normal",
                                 wordBreak: "break-word",
-                                padding: "2px 0",
-                                borderRadius: 4,
-                                background: "transparent",
-                                border: "none",
                                 cursor: "pointer",
+                                transition: "color 0.15s ease",
                               }}
                             >
                               {copiedKey === `dba-${row.tekion_id}` ? (
@@ -1985,12 +1997,10 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                           />
                         </td>
 
-                        {/* Setup Data Column */}
                         <td>
                           <SetupDataCell row={row} />
                         </td>
 
-                        {/* Fixed Ops Assignee (Directly after Setup Data) */}
                         <td style={{ minWidth: 130 }}>
                           <select
                             value={fixedAssignee}
@@ -2013,7 +2023,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                           </select>
                         </td>
 
-                        {/* Variable Ops Assignee (Directly after Setup Data) */}
                         <td style={{ minWidth: 130 }}>
                           <select
                             value={variableAssignee}
@@ -2038,7 +2047,10 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
                         <td>
                           <div className="stores-status-cell-wrap">
-                            <CustomStatusSelect value={row.fixed_ops_status} onChange={(val) => void updateCustomStatus(row.tekion_id, "fixed_ops_status", val)} />
+                            <CustomStatusSelect
+                              value={row.fixed_ops_status}
+                              onChange={(val) => void updateCustomStatus(row.tekion_id, "fixed_ops_status", val)}
+                            />
                             <div style={{ marginTop: 3 }}>
                               <span
                                 style={{

@@ -1,5 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 // @ts-ignore - raw import for Vite/bundler
 import slackCsvText from "./DATA/Slack.csv?raw";
 import { storesBotRunner } from "../services/storesBotRunner";
@@ -34,18 +35,44 @@ const BLUEPRINT_CHECKBOX_KEYS = [
     { key: "crm", label: "CRM BP Completed" },
     { key: "analytics", label: "Analytics BP Completed" },
 ];
-const SIGN_OFF_FILTER_OPTIONS = [
-    "COMPLETED",
-    "IN_PROGRESS",
-    "NOT_STARTED",
-    "BLOCKED",
-    "NOT_APPLICABLE",
-];
+const ENTERPRISE_TENANTS = new Set([
+    "kengarffautomotive",
+    "asburyautomotivemanagementllc",
+]);
+function resolveDefaultNotWorked(store, existingValue) {
+    if (existingValue && existingValue.trim())
+        return existingValue;
+    const tenantCandidate = (store.tenant_code || store.tenant_name || "").toLowerCase().trim();
+    if (ENTERPRISE_TENANTS.has(tenantCandidate)) {
+        return "Enterprise";
+    }
+    return store.not_worked || "";
+}
 function isBlueprintDone(status) {
     if (!status)
         return false;
-    const s = status.trim().toUpperCase();
-    return s === "COMPLETED" || s === "DONE" || s === "COMPLETE";
+    if (typeof status === "string") {
+        const s = status.trim().toUpperCase();
+        return s === "COMPLETED" || s === "DONE" || s === "COMPLETE" || s === "TRUE";
+    }
+    if (typeof status === "boolean")
+        return status;
+    return false;
+}
+function getDealerTextColor(fixedOpsStatus) {
+    const norm = (fixedOpsStatus || "").trim().toUpperCase();
+    if (norm === "COMPLETED" || norm === "DONE" || norm === "COMPLETE") {
+        return "#4ade80"; // Green
+    }
+    if (norm === "WIP" ||
+        norm === "IN PROGRESS" ||
+        norm === "TO DO" ||
+        norm === "TO" ||
+        norm.includes("PROGRESS") ||
+        norm.includes("WIP")) {
+        return "#facc15"; // Yellow
+    }
+    return "#f1f5f9"; // Default clean light gray
 }
 function mergeIncomingStore(existing, incoming) {
     if (!existing)
@@ -105,6 +132,8 @@ const filterInputStyle = {
     padding: "3px 6px",
     fontSize: 11,
     outline: "none",
+    height: 26,
+    verticalAlign: "middle",
 };
 export const Stores = ({ onBack }) => {
     const [records, setRecords] = useState([]);
@@ -121,37 +150,34 @@ export const Stores = ({ onBack }) => {
     const [copiedKey, setCopiedKey] = useState(null);
     const [trackingTick, setTrackingTick] = useState(0);
     const [isCopilotOpen, setIsCopilotOpen] = useState(false);
+    const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+    const moreMenuRef = useRef(null);
     // Global Sidebar Filter States
     const [range, setRange] = useState(90);
     const [search, setSearch] = useState("");
     const [superpodId, setSuperpodId] = useState("");
     const [implementationType, setImplementationType] = useState("");
-    const [productType, setProductType] = useState("");
-    const [selectedMonth, setSelectedMonth] = useState("");
-    const [fixedAssigneeFilter, setFixedAssigneeFilter] = useState("");
-    const [variableAssigneeFilter, setVariableAssigneeFilter] = useState("");
-    const [notWorkedFilter, setNotWorkedFilter] = useState("");
     const [activeDealerPopup, setActiveDealerPopup] = useState(null);
     // Per-Column Filter States
     const [colFilterStore, setColFilterStore] = useState("");
-    const [colFilterGoLive, setColFilterGoLive] = useState("");
-    const [colFilterFixedAssignee, setColFilterFixedAssignee] = useState("");
-    const [colFilterVarAssignee, setColFilterVarAssignee] = useState("");
+    const [colFilterMonth, setColFilterMonth] = useState("");
     const [colFilterImpType, setColFilterImpType] = useState("");
     const [colFilterProduct, setColFilterProduct] = useState("");
     const [colFilterPreProd, setColFilterPreProd] = useState("");
     const [colFilterPod, setColFilterPod] = useState("");
-    // Multi-checkbox Blueprint Filter State
+    // Multi-checkbox Blueprint Filter State with Portal Tracking
     const [selectedBlueprintChecks, setSelectedBlueprintChecks] = useState([]);
     const [isBlueprintDropdownOpen, setIsBlueprintDropdownOpen] = useState(false);
-    const blueprintDropdownRef = useRef(null);
+    const [blueprintDropdownPos, setBlueprintDropdownPos] = useState({ top: 0, left: 0 });
+    const blueprintButtonRef = useRef(null);
+    const blueprintPopupRef = useRef(null);
     const [colFilterSetupData, setColFilterSetupData] = useState("");
+    const [colFilterFixedAssignee, setColFilterFixedAssignee] = useState("");
+    const [colFilterVarAssignee, setColFilterVarAssignee] = useState("");
     const [colFilterFixedStatus, setColFilterFixedStatus] = useState("");
     const [colFilterVarStatus, setColFilterVarStatus] = useState("");
-    const [colFilterSignoff, setColFilterSignoff] = useState("");
     const [colFilterTestingStatus, setColFilterTestingStatus] = useState("");
     const [colFilterNotWorked, setColFilterNotWorked] = useState("");
-    // Listen for captured extension tokens including Pre-Prod MAP API
     useEffect(() => {
         const handleBridgeMessage = (event) => {
             if (event.data?.type === "ARC_EXTENSION_SYNC_CAPTURE" && event.data?.payload?.preprodMapHeaders) {
@@ -161,17 +187,33 @@ export const Stores = ({ onBack }) => {
         window.addEventListener("message", handleBridgeMessage);
         return () => window.removeEventListener("message", handleBridgeMessage);
     }, []);
+    // Multi-menu Outside Click Handler
     useEffect(() => {
         const handleOutsideClick = (e) => {
-            if (blueprintDropdownRef.current && !blueprintDropdownRef.current.contains(e.target)) {
+            const target = e.target;
+            if (blueprintButtonRef.current &&
+                !blueprintButtonRef.current.contains(target) &&
+                blueprintPopupRef.current &&
+                !blueprintPopupRef.current.contains(target)) {
                 setIsBlueprintDropdownOpen(false);
             }
+            if (moreMenuRef.current && !moreMenuRef.current.contains(target)) {
+                setIsMoreMenuOpen(false);
+            }
         };
-        if (isBlueprintDropdownOpen) {
-            document.addEventListener("mousedown", handleOutsideClick);
-        }
+        const handleScrollOrResize = () => {
+            if (isBlueprintDropdownOpen && blueprintButtonRef.current) {
+                const rect = blueprintButtonRef.current.getBoundingClientRect();
+                setBlueprintDropdownPos({ top: rect.bottom + 4, left: rect.left });
+            }
+        };
+        document.addEventListener("mousedown", handleOutsideClick);
+        window.addEventListener("scroll", handleScrollOrResize, true);
+        window.addEventListener("resize", handleScrollOrResize);
         return () => {
             document.removeEventListener("mousedown", handleOutsideClick);
+            window.removeEventListener("scroll", handleScrollOrResize, true);
+            window.removeEventListener("resize", handleScrollOrResize);
         };
     }, [isBlueprintDropdownOpen]);
     const toggleBlueprintFilter = (key) => {
@@ -187,13 +229,19 @@ export const Stores = ({ onBack }) => {
             onboarding_project_id: resolvedProjectId || latest.onboarding_project_id,
         };
     }, [activeDealerPopup, records]);
-    const presetRange = useMemo(() => getTDaysRange(range), [range]);
-    const [fromDate, setFromDate] = useState(toInputDate(presetRange.fromDate));
-    const [toDate, setToDate] = useState(toInputDate(presetRange.toDate));
+    const presetRange = useMemo(() => (range === "ALL" ? null : getTDaysRange(range)), [range]);
+    const [fromDate, setFromDate] = useState(() => (presetRange ? toInputDate(presetRange.fromDate) : ""));
+    const [toDate, setToDate] = useState(() => (presetRange ? toInputDate(presetRange.toDate) : ""));
     useEffect(() => {
-        setFromDate(toInputDate(presetRange.fromDate));
-        setToDate(toInputDate(presetRange.toDate));
-    }, [range, presetRange.fromDate, presetRange.toDate]);
+        if (range === "ALL") {
+            setFromDate("");
+            setToDate("");
+        }
+        else if (presetRange) {
+            setFromDate(toInputDate(presetRange.fromDate));
+            setToDate(toInputDate(presetRange.toDate));
+        }
+    }, [range, presetRange]);
     const tapWorkordersUrl = useMemo(() => buildTapWorkordersUrl(fromDate, toDate), [fromDate, toDate]);
     const [botState, setBotState] = useState(() => storesBotRunner.getState());
     useEffect(() => {
@@ -231,7 +279,8 @@ export const Stores = ({ onBack }) => {
         setError("");
         setTokenExpiredMessage("");
         try {
-            const rawStores = await fetchStores(range);
+            const fetchRange = range === "ALL" ? 150 : range;
+            const rawStores = await fetchStores(fetchRange);
             const existingDbStores = await getStores();
             const existingMap = new Map(existingDbStores.map((s) => [s.tekion_id, s]));
             const vault = getStoredStatusVault();
@@ -239,6 +288,7 @@ export const Stores = ({ onBack }) => {
                 const existing = existingMap.get(store.tekion_id);
                 const override = vault[store.tekion_id];
                 const base = mergeIncomingStore(existing, store);
+                const resolvedNotWorked = resolveDefaultNotWorked(store, override?.not_worked || existing?.not_worked);
                 return [
                     store.tekion_id,
                     {
@@ -248,7 +298,7 @@ export const Stores = ({ onBack }) => {
                         fixed_ops_status: override?.fixed_ops_status || existing?.fixed_ops_status || existing?.configuration_status || "TO DO",
                         variable_ops_status: override?.variable_ops_status || existing?.variable_ops_status || existing?.configuration_status || "TO DO",
                         testing_status: override?.testing_status || existing?.testing_status || existing?.configuration_status || "TO DO",
-                        not_worked: override?.not_worked || existing?.not_worked || store.not_worked,
+                        not_worked: resolvedNotWorked,
                         custom_assignee: override?.custom_assignee || existing?.custom_assignee || store.custom_assignee,
                         custom_variable_assignee: override?.custom_variable_assignee || existing?.custom_variable_assignee || store.custom_variable_assignee,
                     },
@@ -261,7 +311,7 @@ export const Stores = ({ onBack }) => {
             ];
             setRecords(uniqueStores);
             await saveStores(uniqueStores);
-            showToast(`✅ Refreshed ${fetchedStores.length} stores (${uniqueStores.length} total kept)`);
+            showToast(`✅ Refreshed ${fetchedStores.length} stores`);
             void (async () => {
                 try {
                     const { updatedStores, hasChanges } = await pullStatusUpdatesFromGraph(uniqueStores);
@@ -312,6 +362,7 @@ export const Stores = ({ onBack }) => {
             const vault = getStoredStatusVault();
             const uniqueData = Array.from(new Map(rawData.map((store) => {
                 const override = vault[store.tekion_id];
+                const resolvedNotWorked = resolveDefaultNotWorked(store, override?.not_worked || store.not_worked);
                 return [
                     store.tekion_id,
                     {
@@ -319,7 +370,7 @@ export const Stores = ({ onBack }) => {
                         fixed_ops_status: override?.fixed_ops_status || store.fixed_ops_status || store.configuration_status || "TO DO",
                         variable_ops_status: override?.variable_ops_status || store.variable_ops_status || store.configuration_status || "TO DO",
                         testing_status: override?.testing_status || store.testing_status || store.configuration_status || "TO DO",
-                        not_worked: override?.not_worked || store.not_worked,
+                        not_worked: resolvedNotWorked,
                         custom_assignee: override?.custom_assignee || store.custom_assignee,
                         custom_variable_assignee: override?.custom_variable_assignee || store.custom_variable_assignee,
                     },
@@ -347,7 +398,7 @@ export const Stores = ({ onBack }) => {
                                 return safelyMerged;
                             });
                             setTrackingTick((prev) => prev + 1);
-                            showToast("⚡ Refreshed & updated cache from Excel");
+                            showToast("⚡ Cache updated from Excel");
                         }
                         void syncProdDealersToGraph(storesForProd);
                     }
@@ -417,7 +468,7 @@ export const Stores = ({ onBack }) => {
             return updated;
         });
         bulkUpdateStatusVault([{ tekionId: tekion_id, custom_assignee: newAssignee }]);
-        showToast(`✅ Updated Fixed Ops Assignee to ${newAssignee || "Unassigned"}`);
+        showToast(`✅ Assigned Fixed Ops to ${newAssignee || "Unassigned"}`);
         void (async () => {
             const success = await patchSingleStoreAssigneeInGraph(tekion_id, newAssignee);
             if (success)
@@ -431,7 +482,7 @@ export const Stores = ({ onBack }) => {
             return updated;
         });
         bulkUpdateStatusVault([{ tekionId: tekion_id, custom_variable_assignee: newAssignee }]);
-        showToast(`✅ Updated Variable Ops Assignee to ${newAssignee || "Unassigned"}`);
+        showToast(`✅ Assigned Variable Ops to ${newAssignee || "Unassigned"}`);
         void (async () => {
             const success = await patchSingleStoreVariableAssigneeInGraph(tekion_id, newAssignee);
             if (success)
@@ -579,67 +630,61 @@ export const Stores = ({ onBack }) => {
     }, [records]);
     const clearColumnFilters = useCallback(() => {
         setColFilterStore("");
-        setColFilterGoLive("");
-        setColFilterFixedAssignee("");
-        setColFilterVarAssignee("");
+        setColFilterMonth("");
         setColFilterImpType("");
         setColFilterProduct("");
         setColFilterPreProd("");
         setColFilterPod("");
         setSelectedBlueprintChecks([]);
         setColFilterSetupData("");
+        setColFilterFixedAssignee("");
+        setColFilterVarAssignee("");
         setColFilterFixedStatus("");
         setColFilterVarStatus("");
-        setColFilterSignoff("");
         setColFilterTestingStatus("");
         setColFilterNotWorked("");
     }, []);
     const hasAnyColumnFilter = useMemo(() => {
         return Boolean(colFilterStore ||
-            colFilterGoLive ||
-            colFilterFixedAssignee ||
-            colFilterVarAssignee ||
+            colFilterMonth ||
             colFilterImpType ||
             colFilterProduct ||
             colFilterPreProd ||
             colFilterPod ||
             selectedBlueprintChecks.length > 0 ||
             colFilterSetupData ||
+            colFilterFixedAssignee ||
+            colFilterVarAssignee ||
             colFilterFixedStatus ||
             colFilterVarStatus ||
-            colFilterSignoff ||
             colFilterTestingStatus ||
             colFilterNotWorked);
     }, [
         colFilterStore,
-        colFilterGoLive,
-        colFilterFixedAssignee,
-        colFilterVarAssignee,
+        colFilterMonth,
         colFilterImpType,
         colFilterProduct,
         colFilterPreProd,
         colFilterPod,
         selectedBlueprintChecks.length,
         colFilterSetupData,
+        colFilterFixedAssignee,
+        colFilterVarAssignee,
         colFilterFixedStatus,
         colFilterVarStatus,
-        colFilterSignoff,
         colFilterTestingStatus,
         colFilterNotWorked,
     ]);
     const filtered = useMemo(() => {
         const q = search.trim().toLowerCase();
-        const fromUnix = startOfDayUnix(fromDate);
-        const toUnix = endOfDayUnix(toDate);
+        const fromUnix = fromDate ? startOfDayUnix(fromDate) : null;
+        const toUnix = toDate ? endOfDayUnix(toDate) : null;
         const cStore = colFilterStore.trim().toLowerCase();
-        const cGoLive = colFilterGoLive.trim().toLowerCase();
-        const cProduct = colFilterProduct.trim().toLowerCase();
         const cPreProd = colFilterPreProd.trim().toLowerCase();
         return records
             .filter((item) => {
             const fixedAssignee = resolveStoreAssignee(item);
             const variableAssignee = item.custom_variable_assignee || "";
-            // Global Sidebar Filter Matches
             const matchesSearch = !q ||
                 item.tekion_id.toLowerCase().includes(q) ||
                 item.dealer_id.toLowerCase().includes(q) ||
@@ -652,98 +697,54 @@ export const Stores = ({ onBack }) => {
             const matchesSuperpod = !superpodId || item.superpod_id === superpodId;
             const normalizedImp = cleanImpType(item.implementation_type);
             const matchesImplementationType = !implementationType || normalizedImp === implementationType;
-            const matchesProductType = !productType || (item.product_types || "").toLowerCase().includes(productType.toLowerCase());
-            const matchesMonth = !selectedMonth || getMonthYearString(item.launch_date) === selectedMonth;
-            const matchesFixedAssignee = !fixedAssigneeFilter || fixedAssignee === fixedAssigneeFilter;
-            const matchesVarAssignee = !variableAssigneeFilter || variableAssignee === variableAssigneeFilter;
-            const matchesNotWorked = !notWorkedFilter
-                ? true
-                : notWorkedFilter === "HANDLED_BY_ARC"
-                    ? !item.not_worked || item.not_worked.trim() === ""
-                    : item.not_worked === notWorkedFilter;
             const launch = parseLaunchDate(item.launch_date);
             const launchUnix = launch ? Math.floor(launch.getTime() / 1000) : null;
-            const matchesDate = launchUnix == null ? true : launchUnix >= fromUnix && launchUnix <= toUnix;
+            const matchesDate = (!fromUnix || (launchUnix !== null && launchUnix >= fromUnix)) &&
+                (!toUnix || (launchUnix !== null && launchUnix <= toUnix));
             if (!matchesSearch ||
                 !matchesSuperpod ||
                 !matchesImplementationType ||
-                !matchesProductType ||
-                !matchesMonth ||
-                !matchesFixedAssignee ||
-                !matchesVarAssignee ||
-                !matchesNotWorked ||
                 !matchesDate) {
                 return false;
             }
-            // Per-Column Table Filter Matches
-            // 1. Store & IDs
             if (cStore &&
                 !(item.tekion_id.toLowerCase().includes(cStore) ||
                     item.dealer_id.toLowerCase().includes(cStore) ||
                     (item.dba_name || "").toLowerCase().includes(cStore))) {
                 return false;
             }
-            // 2. Go Live
-            if (cGoLive) {
-                const uiDate = formatLaunchDateUI(item.launch_date);
-                const tLabel = getTLabel(item.launch_date);
-                const combinedLaunch = `${uiDate.weekday} ${uiDate.date} ${tLabel.label} ${item.launch_date || ""}`.toLowerCase();
-                if (!combinedLaunch.includes(cGoLive))
-                    return false;
+            if (colFilterMonth && getMonthYearString(item.launch_date) !== colFilterMonth) {
+                return false;
             }
-            // 3. Fixed Ops Assignee
-            if (colFilterFixedAssignee) {
-                if (colFilterFixedAssignee === "UNASSIGNED") {
-                    if (fixedAssignee)
-                        return false;
-                }
-                else if (fixedAssignee !== colFilterFixedAssignee) {
-                    return false;
-                }
-            }
-            // 4. Variable Ops Assignee
-            if (colFilterVarAssignee) {
-                if (colFilterVarAssignee === "UNASSIGNED") {
-                    if (variableAssignee)
-                        return false;
-                }
-                else if (variableAssignee !== colFilterVarAssignee) {
-                    return false;
-                }
-            }
-            // 5. IMP Type
             if (colFilterImpType && normalizedImp !== colFilterImpType) {
                 return false;
             }
-            // 6. Products
-            if (cProduct && !(item.product_types || "").toLowerCase().includes(cProduct)) {
+            if (colFilterProduct && !(item.product_types || "").toLowerCase().includes(colFilterProduct.toLowerCase())) {
                 return false;
             }
-            // 7. Pre-Prod
             if (cPreProd && !(item.pre_production_environment_status || "").toLowerCase().includes(cPreProd)) {
                 return false;
             }
-            // 8. Superpod
             if (colFilterPod && item.superpod_id !== colFilterPod) {
                 return false;
             }
-            // 9. Blueprint Multi Checkbox Filters
             if (selectedBlueprintChecks.length > 0) {
                 const bp = item.blueprint_statuses;
+                if (!bp)
+                    return false;
                 for (const reqCheck of selectedBlueprintChecks) {
-                    if (reqCheck === "parts" && !isBlueprintDone(bp?.parts))
+                    if (reqCheck === "parts" && !isBlueprintDone(bp.parts))
                         return false;
-                    if (reqCheck === "service" && !isBlueprintDone(bp?.service))
+                    if (reqCheck === "service" && !isBlueprintDone(bp.service))
                         return false;
-                    if (reqCheck === "accounting" && !isBlueprintDone(bp?.accounting))
+                    if (reqCheck === "accounting" && !isBlueprintDone(bp.accounting))
                         return false;
-                    if (reqCheck === "crm" && !isBlueprintDone(bp?.crm))
+                    if (reqCheck === "crm" && !isBlueprintDone(bp.crm))
                         return false;
-                    if (reqCheck === "analytics" && !isBlueprintDone(bp?.analytics))
+                    if (reqCheck === "analytics" && !isBlueprintDone(bp.analytics))
                         return false;
                 }
             }
-            // 10. Setup Data
             if (colFilterSetupData) {
                 const isComplete = isSetupDataComplete(item);
                 if (colFilterSetupData === "COMPLETE" && !isComplete)
@@ -753,27 +754,33 @@ export const Stores = ({ onBack }) => {
                 if (colFilterSetupData === "ERROR" && !item.setup_data_error)
                     return false;
             }
-            // 11. Fixed Ops Status
-            if (colFilterFixedStatus && item.fixed_ops_status !== colFilterFixedStatus) {
-                return false;
-            }
-            // 12. Variable Ops Status
-            if (colFilterVarStatus && item.variable_ops_status !== colFilterVarStatus) {
-                return false;
-            }
-            // 13. Sign-Off
-            if (colFilterSignoff) {
-                const so = item.signoff_statuses;
-                const statuses = [so?.parts, so?.service, so?.accounting].map((s) => (s || "").toUpperCase());
-                if (!statuses.includes(colFilterSignoff.toUpperCase())) {
+            if (colFilterFixedAssignee) {
+                if (colFilterFixedAssignee === "UNASSIGNED") {
+                    if (fixedAssignee)
+                        return false;
+                }
+                else if (fixedAssignee !== colFilterFixedAssignee) {
                     return false;
                 }
             }
-            // 14. Testing Status
+            if (colFilterVarAssignee) {
+                if (colFilterVarAssignee === "UNASSIGNED") {
+                    if (variableAssignee)
+                        return false;
+                }
+                else if (variableAssignee !== colFilterVarAssignee) {
+                    return false;
+                }
+            }
+            if (colFilterFixedStatus && item.fixed_ops_status !== colFilterFixedStatus) {
+                return false;
+            }
+            if (colFilterVarStatus && item.variable_ops_status !== colFilterVarStatus) {
+                return false;
+            }
             if (colFilterTestingStatus && item.testing_status !== colFilterTestingStatus) {
                 return false;
             }
-            // 15. Not Worked
             if (colFilterNotWorked) {
                 if (colFilterNotWorked === "HANDLED_BY_ARC") {
                     if (item.not_worked && item.not_worked.trim() !== "")
@@ -795,26 +802,20 @@ export const Stores = ({ onBack }) => {
         search,
         superpodId,
         implementationType,
-        productType,
-        selectedMonth,
-        fixedAssigneeFilter,
-        variableAssigneeFilter,
-        notWorkedFilter,
         fromDate,
         toDate,
         colFilterStore,
-        colFilterGoLive,
-        colFilterFixedAssignee,
-        colFilterVarAssignee,
+        colFilterMonth,
         colFilterImpType,
         colFilterProduct,
         colFilterPreProd,
         colFilterPod,
         selectedBlueprintChecks,
         colFilterSetupData,
+        colFilterFixedAssignee,
+        colFilterVarAssignee,
         colFilterFixedStatus,
         colFilterVarStatus,
-        colFilterSignoff,
         colFilterTestingStatus,
         colFilterNotWorked,
     ]);
@@ -832,6 +833,7 @@ export const Stores = ({ onBack }) => {
         let fetched = 0;
         let skipped = 0;
         let failed = 0;
+        let mapFallbacks = 0;
         try {
             const latestMap = new Map(records.map((r) => [r.tekion_id, r]));
             const queue = filtered.filter((row) => {
@@ -844,42 +846,54 @@ export const Stores = ({ onBack }) => {
             for (let i = 0; i < queue.length; i++) {
                 const current = latestMap.get(queue[i].tekion_id) ?? queue[i];
                 setTapSyncProgress(`Setup ${i + 1}/${queue.length}`);
+                let setupData;
+                let setupError = "";
                 try {
-                    const setupData = await fetchSetupDataForStore(current, { force: true });
-                    // Execute 4-step Pre-Prod MAP pipeline for tenant validation & account number count
-                    let preprodValidation;
+                    setupData = await fetchSetupDataForStore(current, { force: true });
+                }
+                catch (err) {
+                    setupError = err instanceof Error ? err.message : "Setup Data Fetch Failed";
+                }
+                const isNowComplete = setupData ? isSetupDataComplete({ ...current, setup_data: setupData }) : false;
+                let preprodValidation;
+                if (!isNowComplete) {
                     const tenantCandidate = current.tenant_code || current.tenant_name || "";
                     if (tenantCandidate) {
+                        setTapSyncProgress(`MAP Fallback ${i + 1}/${queue.length}`);
                         try {
                             preprodValidation = await executePreprodMapPipeline(tenantCandidate, current.dealer_id);
+                            mapFallbacks++;
                         }
-                        catch (err) {
-                            logger.warn(`Failed Pre-Prod MAP verification for ${tenantCandidate}:`, err);
+                        catch (mapErr) {
+                            logger.warn(`MAP fallback failed for ${tenantCandidate}:`, mapErr);
                         }
                     }
-                    setRecords((prev) => {
-                        const updated = prev.map((row) => row.tekion_id === current.tekion_id
-                            ? {
-                                ...row,
-                                setup_data: setupData,
-                                setup_data_fetched_at: setupData.fetchedAt,
-                                setup_data_error: "",
-                                preprod_validation: preprodValidation ?? row.preprod_validation,
-                            }
-                            : row);
-                        void saveStores(updated);
-                        return updated;
-                    });
+                }
+                setRecords((prev) => {
+                    const updated = prev.map((row) => row.tekion_id === current.tekion_id
+                        ? {
+                            ...row,
+                            ...(setupData
+                                ? { setup_data: setupData, setup_data_fetched_at: setupData.fetchedAt }
+                                : {}),
+                            setup_data_error: setupError,
+                            preprod_validation: preprodValidation ?? row.preprod_validation,
+                        }
+                        : row);
+                    void saveStores(updated);
+                    return updated;
+                });
+                if (setupData && isNowComplete) {
                     fetched++;
                 }
-                catch {
+                else {
                     failed++;
                 }
             }
-            showToast(`✅ Setup data: ${fetched} fetched, ${skipped} complete (skipped)` + (failed ? `, ${failed} failed` : ""));
+            showToast(`✅ Processed ${queue.length} stores (${fetched} setup complete, ${skipped} already complete, ${mapFallbacks} fallback MAP verified)`);
         }
         catch (error) {
-            showToast(`❌ ${error instanceof Error ? error.message : "Failed setup fetch"}`);
+            showToast(`❌ ${error instanceof Error ? error.message : "Failed batch fetch"}`);
         }
         finally {
             setTapSyncProgress("");
@@ -1012,24 +1026,86 @@ export const Stores = ({ onBack }) => {
         setSearch("");
         setSuperpodId("");
         setImplementationType("");
-        setProductType("");
-        setSelectedMonth("");
-        setFixedAssigneeFilter("");
-        setVariableAssigneeFilter("");
-        setNotWorkedFilter("");
-        setFromDate(toInputDate(presetRange.fromDate));
-        setToDate(toInputDate(presetRange.toDate));
+        setRange("ALL");
+        setFromDate("");
+        setToDate("");
         clearColumnFilters();
     };
-    return (_jsxs("div", { className: "stores-shell", children: [_jsxs("div", { className: "stores-topbar", children: [_jsxs("div", { className: "stores-topbar-left", children: [_jsx("button", { className: "btn-secondary btn-sm", onClick: onBack, children: "\u2190 Back" }), _jsxs("div", { children: [_jsx("div", { className: "stores-page-title", children: "\uD83C\uDFEC Store Onboarding Tracker" }), _jsx("div", { className: "stores-page-subtitle", children: "Manage blueprints, operational sign-offs, and go-live readiness" })] })] }), _jsxs("div", { className: "stores-topbar-right", children: [_jsxs("div", { style: { display: "inline-flex", alignItems: "center", gap: 8, marginRight: 8 }, children: [_jsx("button", { type: "button", className: `btn-sm ${botState.enabled ? "btn-postman" : "btn-secondary"}`, onClick: () => storesBotRunner.setEnabled(!botState.enabled), style: { fontWeight: 700 }, title: botState.enabled ? "Click to Pause Autonomous Bot" : "Click to Enable Autonomous Bot", children: botState.enabled ? "🤖 Bot: ON" : "⏸ Bot: OFF" }), _jsx("span", { style: {
-                                            fontSize: 11,
-                                            fontWeight: 600,
-                                            color: botState.error ? "#f87171" : botState.enabled ? "#4ade80" : "#94a3b8",
-                                            maxWidth: 240,
-                                            overflow: "hidden",
-                                            textOverflow: "ellipsis",
-                                            whiteSpace: "nowrap",
-                                        }, children: botState.statusText })] }), _jsx("button", { className: "btn-secondary btn-sm", onClick: () => void handleLoadIndexedDb(), children: "Cache" }), _jsxs("div", { className: "stores-export-group", children: [_jsx("button", { className: "btn-secondary btn-sm", onClick: handleExportExcel, children: "Export Excel" }), _jsx("button", { className: "btn-secondary btn-sm", onClick: exportJson, children: "JSON" })] }), _jsx("button", { className: "btn-secondary btn-sm", onClick: () => void handleSyncExcel(), disabled: syncingExcel || Boolean(tokenExpiredMessage), children: syncingExcel ? "⏳ Syncing..." : "☁ Sync Excel" }), _jsx("button", { className: "btn-secondary btn-sm", onClick: () => void handleFetchSetupVisible(), disabled: loadingSetupAll, children: loadingSetupAll ? "⏳ Setup..." : "🧩 Fetch Setup Data" }), _jsx("button", { className: "btn-secondary btn-sm", onClick: () => void handleSendAllThreeReportsManual(), disabled: dispatching3Reports || records.length === 0, style: { borderColor: "rgba(168, 85, 247, 0.4)", color: "#c084fc", fontWeight: 700 }, title: "Manually dispatch Analytics, Fixed Ops & Variable Ops reports to Slack and reset 4-hour countdown", children: dispatching3Reports ? "⏳ Sending 3 Reports..." : "📢 Send 3 Reports (4h Window)" }), _jsx("button", { className: "btn-secondary btn-sm", onClick: () => void handleSyncRealTapStatuses(), disabled: syncingTapStatuses || Boolean(tokenExpiredMessage) || records.length === 0, style: { borderColor: "rgba(56, 189, 248, 0.4)", color: "#38bdf8", fontWeight: 700 }, title: "Fetch real blueprint tasks and attachment counts from TAP and update stores", children: syncingTapStatuses ? `⏳ ${tapSyncProgress || "Syncing TAP..."}` : "⚡ Sync TAP Statuses" }), _jsx("button", { className: "btn-postman stores-refresh-btn", onClick: () => void handleFetch(true), disabled: loadingStores, children: loadingStores ? "⏳ Fetching..." : "🔄 Refresh" })] })] }), toastMessage && _jsx("div", { className: "stores-toast", children: toastMessage }), tokenExpiredMessage && (_jsxs("div", { className: "bx-error stores-token-expired-alert", children: [_jsxs("span", { children: ["\u26A0 ", tokenExpiredMessage] }), _jsx("a", { href: tapWorkordersUrl, target: "_blank", rel: "noreferrer", children: "Open TAP to recapture API \u2197" })] })), _jsxs("div", { className: `stores-layout ${filtersCollapsed ? "filters-collapsed" : ""}`, children: [!filtersCollapsed && (_jsx("aside", { className: "stores-sidebar", children: _jsxs("div", { className: "stores-panel", children: [_jsxs("div", { className: "stores-panel-header", children: [_jsx("span", { className: "stores-panel-title", children: "Filters" }), _jsx("button", { type: "button", onClick: clearFilters, children: "Reset all" })] }), _jsxs("div", { className: "stores-field", children: [_jsx("label", { className: "stores-label", children: "Search" }), _jsx("input", { className: "stores-input", value: search, onChange: (e) => setSearch(e.target.value), placeholder: "ID, Dealer, Name, or Assignee..." })] }), _jsxs("div", { className: "stores-field", children: [_jsx("label", { className: "stores-label", children: "T-Range Presets" }), _jsx("div", { className: "stores-preset-grid", children: [7, 30, 60, 90, 150].map((days) => (_jsxs("button", { type: "button", className: range === days ? "btn-postman" : "btn-secondary btn-sm", onClick: () => setRange(days), children: ["T-", days] }, days))) })] }), _jsxs("div", { className: "stores-field", children: [_jsx("label", { className: "stores-label", children: "Launch Window" }), _jsxs("div", { className: "stores-date-grid", children: [_jsx("input", { type: "date", className: "stores-input", value: fromDate, onChange: (e) => setFromDate(e.target.value) }), _jsx("input", { type: "date", className: "stores-input", value: toDate, onChange: (e) => setToDate(e.target.value) })] })] }), _jsxs("div", { className: "stores-field", children: [_jsx("label", { className: "stores-label", children: "Go-Live Month" }), _jsxs("select", { className: "stores-input", value: selectedMonth, onChange: (e) => setSelectedMonth(e.target.value), children: [_jsx("option", { value: "", children: "All Months" }), monthOptions.map((m) => (_jsx("option", { value: m, children: m }, m)))] })] }), _jsxs("div", { className: "stores-field", children: [_jsx("label", { className: "stores-label", children: "Ownership / Not Worked" }), _jsxs("select", { className: "stores-input", value: notWorkedFilter, onChange: (e) => setNotWorkedFilter(e.target.value), children: [_jsx("option", { value: "", children: "All Stores" }), _jsx("option", { value: "HANDLED_BY_ARC", children: "Handled by ARC Only" }), NOT_WORKED_OPTIONS.map((opt) => (_jsx("option", { value: opt, children: opt }, opt)))] })] }), _jsxs("div", { className: "stores-field", children: [_jsx("label", { className: "stores-label", children: "Fixed Ops Assignee" }), _jsxs("select", { className: "stores-input", value: fixedAssigneeFilter, onChange: (e) => setFixedAssigneeFilter(e.target.value), children: [_jsx("option", { value: "", children: "All Assignees" }), ASSIGNEE_OPTIONS.map((name) => (_jsx("option", { value: name, children: name }, name)))] })] }), _jsxs("div", { className: "stores-field", children: [_jsx("label", { className: "stores-label", children: "Variable Ops Assignee" }), _jsxs("select", { className: "stores-input", value: variableAssigneeFilter, onChange: (e) => setVariableAssigneeFilter(e.target.value), children: [_jsx("option", { value: "", children: "All Assignees" }), ASSIGNEE_OPTIONS.map((name) => (_jsx("option", { value: name, children: name }, name)))] })] }), _jsxs("div", { className: "stores-field", children: [_jsx("label", { className: "stores-label", children: "Pre-Prod POD" }), _jsxs("select", { className: "stores-input", value: superpodId, onChange: (e) => setSuperpodId(e.target.value), children: [_jsx("option", { value: "", children: "All PODs" }), superpodOptions.map((item) => (_jsx("option", { value: item, children: item }, item)))] })] }), _jsxs("div", { className: "stores-field", children: [_jsx("label", { className: "stores-label", children: "Implementation Type" }), _jsxs("select", { className: "stores-input", value: implementationType, onChange: (e) => setImplementationType(e.target.value), children: [_jsx("option", { value: "", children: "All Types" }), implementationTypeOptions.map((item) => (_jsx("option", { value: item, children: item }, item)))] })] }), _jsxs("div", { className: "stores-field", children: [_jsx("label", { className: "stores-label", children: "Product Type" }), _jsxs("select", { className: "stores-input", value: productType, onChange: (e) => setProductType(e.target.value), children: [_jsx("option", { value: "", children: "All Products" }), productTypeOptions.map((item) => (_jsx("option", { value: item, children: item }, item)))] })] }), hasAnyColumnFilter && (_jsx("div", { style: { marginTop: 12 }, children: _jsx("button", { type: "button", className: "btn-secondary btn-sm", onClick: clearColumnFilters, style: { width: "100%", color: "#f87171", borderColor: "rgba(248, 113, 113, 0.4)" }, children: "Clear Table Column Filters" }) })), error && _jsxs("div", { className: "bx-error", children: ["\u274C ", error] })] }) })), _jsx("section", { className: "stores-content", children: _jsxs("div", { className: "stores-table-card", children: [_jsxs("div", { className: "stores-table-header", children: [_jsxs("div", { className: "stores-table-header-left", children: [_jsx("span", { className: "stores-table-title", children: "Store Records" }), _jsxs("span", { className: "stores-table-count", children: ["Showing ", _jsx("strong", { children: filtered.length }), " of ", records.length, " stores"] }), _jsxs("div", { className: "stores-quick-links", children: [_jsx("a", { href: tapWorkordersUrl, target: "_blank", rel: "noreferrer", title: "Open TAP Workorders", className: "stores-quick-icon", children: _jsx("img", { src: "https://com-tekioncloud-tap-assets.s3.us-west-1.amazonaws.com/assets/common/toc-logo.svg", alt: "TAP Workorders" }) }), _jsx("a", { href: "https://app.slack.com/client/E08DG6QMMDG/C0C5QBWEM8X", target: "_blank", rel: "noreferrer", title: "Open Operations Slack Channel (C0C5QBWEM8X)", className: "stores-quick-icon", children: _jsx("img", { src: "https://cdn.brandfetch.io/idJ_HhtG0Z/theme/dark/symbol.svg?c=1dxbfHSJFAPEGdCLU4o5B", alt: "Slack" }) }), _jsx("a", { href: "https://app.tekioncloud.com/internal/approval-management/dashboard/requests", target: "_blank", rel: "noreferrer", title: "Open Production Approval Management", className: "stores-quick-btn stores-quick-btn-prod", children: "PROD" }), _jsx("a", { href: "http://outlook.office365.com/mail/inbox", target: "_blank", rel: "noreferrer", title: "Open Outlook Inbox", className: "stores-quick-icon", children: _jsx("img", { src: "https://cdn.brandfetch.io/idgdw68PEO/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B", alt: "Outlook" }) }), _jsx("a", { href: "https://preprodapp.tekioncloud.com/accounting/chartOfAccounts/list", target: "_blank", rel: "noreferrer", title: "Open Pre-Prod Chart of Accounts", className: "stores-quick-btn stores-quick-btn-preprod", children: "PRE-PROD" }), _jsx("a", { href: "https://preprod-map.tekioncloud.com/map/blueprintValidation", target: "_blank", rel: "noreferrer", title: "Open PreProd MAP Blueprint Validation", className: "stores-quick-btn stores-quick-btn-map", children: "PreProd MAP" }), _jsx("a", { href: "https://tap.tekioncloud.com/timetracker/employee-view", target: "_blank", rel: "noreferrer", title: "Open TAP Time Tracker Employee View", className: "stores-quick-btn stores-quick-btn-timesheet", children: "Time Sheet" })] })] }), _jsxs("div", { style: { display: "flex", alignItems: "center", gap: 8 }, children: [hasAnyColumnFilter && (_jsx("button", { className: "btn-secondary btn-sm", onClick: clearColumnFilters, title: "Reset all per-column table filter boxes", children: "Clear Col Filters" })), _jsx("button", { className: "btn-secondary btn-sm", onClick: () => setFiltersCollapsed((prev) => !prev), children: filtersCollapsed ? "☰ Show Filters" : "✕ Hide Filters" })] })] }), _jsxs("div", { className: "stores-table-wrap stores-table-wrap-tall", children: [_jsxs("table", { className: "stores-table", children: [_jsxs("thead", { children: [_jsxs("tr", { children: [_jsx("th", { children: "Store & IDs" }), _jsx("th", { children: "Go Live" }), _jsx("th", { children: "Fixed Ops Assignee" }), _jsx("th", { children: "Variable Ops Assignee" }), _jsx("th", { children: "IMP Type" }), _jsx("th", { children: "Products" }), _jsx("th", { children: "Pre-Prod" }), _jsx("th", { children: "POD" }), _jsx("th", { children: "Blueprint" }), _jsx("th", { children: "Setup Data" }), _jsx("th", { children: "Fixed Ops" }), _jsx("th", { children: "Variable Ops" }), _jsx("th", { children: "Sign_Off" }), _jsx("th", { children: "Testing" }), _jsx("th", { children: "Not Worked?" })] }), _jsxs("tr", { className: "stores-table-filter-row", style: { background: "#0b1329" }, children: [_jsx("th", { style: { padding: "4px 6px" }, children: _jsx("input", { type: "text", style: filterInputStyle, placeholder: "Filter ID/Name...", value: colFilterStore, onChange: (e) => setColFilterStore(e.target.value) }) }), _jsx("th", { style: { padding: "4px 6px" }, children: _jsx("input", { type: "text", style: filterInputStyle, placeholder: "Date/T-Day...", value: colFilterGoLive, onChange: (e) => setColFilterGoLive(e.target.value) }) }), _jsx("th", { style: { padding: "4px 6px" }, children: _jsxs("select", { style: filterInputStyle, value: colFilterFixedAssignee, onChange: (e) => setColFilterFixedAssignee(e.target.value), children: [_jsx("option", { value: "", children: "All" }), _jsx("option", { value: "UNASSIGNED", children: "Unassigned" }), ASSIGNEE_OPTIONS.map((name) => (_jsx("option", { value: name, children: name }, name)))] }) }), _jsx("th", { style: { padding: "4px 6px" }, children: _jsxs("select", { style: filterInputStyle, value: colFilterVarAssignee, onChange: (e) => setColFilterVarAssignee(e.target.value), children: [_jsx("option", { value: "", children: "All" }), _jsx("option", { value: "UNASSIGNED", children: "Unassigned" }), ASSIGNEE_OPTIONS.map((name) => (_jsx("option", { value: name, children: name }, name)))] }) }), _jsx("th", { style: { padding: "4px 6px" }, children: _jsxs("select", { style: filterInputStyle, value: colFilterImpType, onChange: (e) => setColFilterImpType(e.target.value), children: [_jsx("option", { value: "", children: "All" }), implementationTypeOptions.map((item) => (_jsx("option", { value: item, children: item }, item)))] }) }), _jsx("th", { style: { padding: "4px 6px" }, children: _jsx("input", { type: "text", style: filterInputStyle, placeholder: "Product...", value: colFilterProduct, onChange: (e) => setColFilterProduct(e.target.value) }) }), _jsx("th", { style: { padding: "4px 6px" }, children: _jsx("input", { type: "text", style: filterInputStyle, placeholder: "Pre-Prod...", value: colFilterPreProd, onChange: (e) => setColFilterPreProd(e.target.value) }) }), _jsx("th", { style: { padding: "4px 6px" }, children: _jsxs("select", { style: filterInputStyle, value: colFilterPod, onChange: (e) => setColFilterPod(e.target.value), children: [_jsx("option", { value: "", children: "All" }), superpodOptions.map((item) => (_jsx("option", { value: item, children: item }, item)))] }) }), _jsxs("th", { style: { padding: "4px 6px", position: "relative" }, ref: blueprintDropdownRef, children: [_jsxs("button", { type: "button", onClick: () => setIsBlueprintDropdownOpen((prev) => !prev), style: {
+    return (_jsxs("div", { className: "stores-shell", children: [_jsxs("div", { className: "stores-topbar", children: [_jsxs("div", { className: "stores-topbar-left", children: [_jsx("button", { className: "btn-secondary btn-sm", onClick: onBack, children: "\u2190 Back" }), _jsxs("div", { children: [_jsx("div", { className: "stores-page-title", children: "\uD83C\uDFEC Store Onboarding Tracker" }), _jsx("div", { className: "stores-page-subtitle", children: "Blueprints, operational sign-offs, and go-live readiness" })] })] }), _jsxs("div", { className: "stores-topbar-right", children: [_jsxs("div", { className: "stores-bot-capsule", onClick: () => storesBotRunner.setEnabled(!botState.enabled), title: botState.enabled ? "Click to Pause Bot" : "Click to Enable Bot", children: [_jsx("span", { className: `stores-bot-dot ${botState.enabled ? "on" : "off"}` }), _jsx("span", { style: { fontWeight: 700, color: botState.enabled ? "#4ade80" : "#94a3b8" }, children: botState.enabled ? "Bot Active" : "Bot Paused" }), _jsx("span", { style: { color: "#64748b", fontSize: 10 }, children: botState.statusText ? `• ${botState.statusText}` : "" })] }), _jsxs("div", { className: "stores-toolbar-group", children: [_jsx("button", { className: "btn-secondary btn-sm", onClick: () => void handleFetchSetupVisible(), disabled: loadingSetupAll, title: "Batch fetch setup data (and run MAP 2nd automation on errors)", children: loadingSetupAll ? "⏳ Setup..." : "🧩 Setup Data" }), _jsx("button", { className: "btn-secondary btn-sm", onClick: () => void handleSyncRealTapStatuses(), disabled: syncingTapStatuses || Boolean(tokenExpiredMessage) || records.length === 0, style: { color: "#38bdf8" }, title: "Fetch real blueprint tasks and attachment counts from TAP", children: syncingTapStatuses ? `⏳ ${tapSyncProgress || "Syncing..."}` : "⚡ Sync TAP" }), _jsx("button", { className: "btn-secondary btn-sm", onClick: () => void handleSyncExcel(), disabled: syncingExcel || Boolean(tokenExpiredMessage), title: "Two-way sync with SharePoint Excel", children: syncingExcel ? "⏳..." : "☁ Sync Excel" })] }), _jsxs("div", { style: { position: "relative" }, ref: moreMenuRef, children: [_jsx("button", { className: "btn-secondary btn-sm", onClick: () => setIsMoreMenuOpen((prev) => !prev), title: "Exports and background tasks", children: "\u2699 Tools \u25BE" }), isMoreMenuOpen && (_jsxs("div", { style: {
+                                            position: "absolute",
+                                            right: 0,
+                                            top: "100%",
+                                            marginTop: 6,
+                                            background: "#0f172a",
+                                            border: "1px solid rgba(148, 163, 184, 0.2)",
+                                            borderRadius: 6,
+                                            boxShadow: "0 10px 25px -5px rgba(0,0,0,0.7)",
+                                            zIndex: 99999,
+                                            minWidth: 190,
+                                            padding: "4px 0",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                        }, children: [_jsx("button", { type: "button", style: {
+                                                    background: "transparent",
+                                                    border: "none",
+                                                    color: "#cbd5e1",
+                                                    textAlign: "left",
+                                                    padding: "7px 12px",
+                                                    fontSize: 11,
+                                                    cursor: "pointer",
+                                                }, onClick: () => {
+                                                    handleExportExcel();
+                                                    setIsMoreMenuOpen(false);
+                                                }, children: "\uD83D\uDCCA Export to Excel" }), _jsx("button", { type: "button", style: {
+                                                    background: "transparent",
+                                                    border: "none",
+                                                    color: "#cbd5e1",
+                                                    textAlign: "left",
+                                                    padding: "7px 12px",
+                                                    fontSize: 11,
+                                                    cursor: "pointer",
+                                                }, onClick: () => {
+                                                    exportJson();
+                                                    setIsMoreMenuOpen(false);
+                                                }, children: "\uD83D\uDCCB Export JSON" }), _jsx("button", { type: "button", style: {
+                                                    background: "transparent",
+                                                    border: "none",
+                                                    color: "#cbd5e1",
+                                                    textAlign: "left",
+                                                    padding: "7px 12px",
+                                                    fontSize: 11,
+                                                    cursor: "pointer",
+                                                }, onClick: () => {
+                                                    void handleLoadIndexedDb();
+                                                    setIsMoreMenuOpen(false);
+                                                }, children: "\u26A1 Reload IndexedDB Cache" }), _jsx("div", { style: { height: 1, background: "rgba(148,163,184,0.1)", margin: "4px 0" } }), _jsx("button", { type: "button", style: {
+                                                    background: "transparent",
+                                                    border: "none",
+                                                    color: "#c084fc",
+                                                    fontWeight: 700,
+                                                    textAlign: "left",
+                                                    padding: "7px 12px",
+                                                    fontSize: 11,
+                                                    cursor: "pointer",
+                                                }, onClick: () => {
+                                                    void handleSendAllThreeReportsManual();
+                                                    setIsMoreMenuOpen(false);
+                                                }, children: "\uD83D\uDCE2 Dispatch 3 Slack Reports" })] }))] }), _jsx("button", { className: "btn-postman btn-sm", style: { fontWeight: 800 }, onClick: () => void handleFetch(true), disabled: loadingStores, children: loadingStores ? "⏳ Refreshing..." : "🔄 Refresh" })] })] }), toastMessage && _jsx("div", { className: "stores-toast", children: toastMessage }), tokenExpiredMessage && (_jsxs("div", { className: "bx-error stores-token-expired-alert", children: [_jsxs("span", { children: ["\u26A0 ", tokenExpiredMessage] }), _jsx("a", { href: tapWorkordersUrl, target: "_blank", rel: "noreferrer", children: "Open TAP to recapture API \u2197" })] })), _jsxs("div", { className: `stores-layout ${filtersCollapsed ? "filters-collapsed" : ""}`, children: [!filtersCollapsed && (_jsx("aside", { className: "stores-sidebar", children: _jsxs("div", { className: "stores-panel", children: [_jsxs("div", { className: "stores-panel-header", children: [_jsx("span", { className: "stores-panel-title", children: "Filters" }), _jsx("button", { type: "button", onClick: clearFilters, children: "Reset all" })] }), _jsxs("div", { className: "stores-field", children: [_jsx("label", { className: "stores-label", children: "Search" }), _jsx("input", { className: "stores-input", value: search, onChange: (e) => setSearch(e.target.value), placeholder: "ID, Dealer, Name, or Assignee..." })] }), _jsxs("div", { className: "stores-field", children: [_jsx("label", { className: "stores-label", children: "T-Range Presets" }), _jsxs("div", { className: "stores-preset-grid", children: [[7, 30, 60, 90, 150].map((days) => (_jsxs("button", { type: "button", className: range === days ? "btn-postman" : "btn-secondary btn-sm", onClick: () => setRange(days), children: ["T-", days] }, days))), _jsx("button", { type: "button", className: range === "ALL" ? "btn-postman" : "btn-secondary btn-sm", onClick: () => setRange("ALL"), style: { fontWeight: 800 }, title: "View all stores without date cutoffs", children: "All Stores" })] })] }), _jsxs("div", { className: "stores-field", children: [_jsx("label", { className: "stores-label", children: "Launch Window" }), _jsxs("div", { className: "stores-date-grid", children: [_jsx("input", { type: "date", className: "stores-input", value: fromDate, onChange: (e) => {
+                                                        setFromDate(e.target.value);
+                                                        if (range !== "ALL")
+                                                            setRange(90);
+                                                    } }), _jsx("input", { type: "date", className: "stores-input", value: toDate, onChange: (e) => {
+                                                        setToDate(e.target.value);
+                                                        if (range !== "ALL")
+                                                            setRange(90);
+                                                    } })] })] }), _jsxs("div", { className: "stores-field", children: [_jsx("label", { className: "stores-label", children: "Pre-Prod POD" }), _jsxs("select", { className: "stores-input", value: superpodId, onChange: (e) => setSuperpodId(e.target.value), children: [_jsx("option", { value: "", children: "All PODs" }), superpodOptions.map((item) => (_jsx("option", { value: item, children: item }, item)))] })] }), _jsxs("div", { className: "stores-field", children: [_jsx("label", { className: "stores-label", children: "Implementation Type" }), _jsxs("select", { className: "stores-input", value: implementationType, onChange: (e) => setImplementationType(e.target.value), children: [_jsx("option", { value: "", children: "All Types" }), implementationTypeOptions.map((item) => (_jsx("option", { value: item, children: item }, item)))] })] }), hasAnyColumnFilter && (_jsx("div", { style: { marginTop: 12 }, children: _jsx("button", { type: "button", className: "btn-secondary btn-sm", onClick: clearColumnFilters, style: { width: "100%", color: "#f87171", borderColor: "rgba(248, 113, 113, 0.4)" }, children: "Clear Column Filters" }) })), error && _jsxs("div", { className: "bx-error", children: ["\u274C ", error] })] }) })), _jsx("section", { className: "stores-content", children: _jsxs("div", { className: "stores-table-card", children: [_jsxs("div", { className: "stores-table-header", children: [_jsxs("div", { className: "stores-table-header-left", children: [_jsx("span", { className: "stores-table-title", style: { fontSize: 13, fontWeight: 700 }, children: "Dealership Stores" }), _jsxs("span", { className: "stores-table-count", style: { fontSize: 11, color: "#64748b" }, children: ["Showing ", _jsx("strong", { children: filtered.length }), " of ", records.length] }), _jsxs("div", { className: "stores-quick-links", style: { marginLeft: 12 }, children: [_jsx("a", { href: tapWorkordersUrl, target: "_blank", rel: "noreferrer", title: "Open TAP Workorders", className: "stores-quick-icon", children: _jsx("img", { src: "https://com-tekioncloud-tap-assets.s3.us-west-1.amazonaws.com/assets/common/toc-logo.svg", alt: "TAP" }) }), _jsx("a", { href: "https://app.slack.com/client/E08DG6QMMDG/C0C5QBWEM8X", target: "_blank", rel: "noreferrer", title: "Open Operations Slack Channel", className: "stores-quick-icon", children: _jsx("img", { src: "https://cdn.brandfetch.io/idJ_HhtG0Z/theme/dark/symbol.svg?c=1dxbfHSJFAPEGdCLU4o5B", alt: "Slack" }) }), _jsx("a", { href: "https://app.tekioncloud.com/internal/approval-management/dashboard/requests", target: "_blank", rel: "noreferrer", title: "Open Production Approvals", className: "stores-quick-btn stores-quick-btn-prod", children: "PROD" }), _jsx("a", { href: "http://outlook.office365.com/mail/inbox", target: "_blank", rel: "noreferrer", title: "Open Outlook Inbox", className: "stores-quick-icon", children: _jsx("img", { src: "https://cdn.brandfetch.io/idgdw68PEO/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B", alt: "Outlook" }) }), _jsx("a", { href: "https://preprodapp.tekioncloud.com/accounting/chartOfAccounts/list", target: "_blank", rel: "noreferrer", title: "Open Pre-Prod COA", className: "stores-quick-btn stores-quick-btn-preprod", children: "PRE-PROD" }), _jsx("a", { href: "https://preprod-map.tekioncloud.com/map/blueprintValidation", target: "_blank", rel: "noreferrer", title: "Open PreProd MAP Blueprint Validation", className: "stores-quick-btn stores-quick-btn-map", children: "PreProd MAP" }), _jsx("a", { href: "https://tap.tekioncloud.com/timetracker/employee-view", target: "_blank", rel: "noreferrer", title: "Open TAP Time Tracker", className: "stores-quick-btn stores-quick-btn-timesheet", children: "Time Sheet" })] })] }), _jsxs("div", { style: { display: "flex", alignItems: "center", gap: 8 }, children: [hasAnyColumnFilter && (_jsx("button", { className: "btn-secondary btn-sm", onClick: clearColumnFilters, title: "Reset all per-column table filter boxes", children: "Clear Filters" })), _jsx("button", { className: "btn-secondary btn-sm", onClick: () => setFiltersCollapsed((prev) => !prev), children: filtersCollapsed ? "☰ Show Filters" : "✕ Hide Filters" })] })] }), _jsxs("div", { className: "stores-table-wrap stores-table-wrap-tall", children: [_jsxs("table", { className: "stores-table", children: [_jsxs("thead", { children: [_jsxs("tr", { children: [_jsx("th", { children: "Store & IDs" }), _jsx("th", { children: "Go Live" }), _jsx("th", { children: "IMP Type" }), _jsx("th", { children: "Products" }), _jsx("th", { children: "Pre-Prod" }), _jsx("th", { children: "POD" }), _jsx("th", { children: "Blueprint" }), _jsx("th", { children: "Setup Data" }), _jsx("th", { children: "Fixed Ops Assignee" }), _jsx("th", { children: "Variable Ops Assignee" }), _jsx("th", { children: "Fixed Ops" }), _jsx("th", { children: "Variable Ops" }), _jsx("th", { children: "Testing" }), _jsx("th", { children: "Not Worked?" })] }), _jsxs("tr", { className: "stores-table-filter-row", children: [_jsx("th", { children: _jsx("input", { type: "text", style: filterInputStyle, placeholder: "Filter ID/Name...", value: colFilterStore, onChange: (e) => setColFilterStore(e.target.value) }) }), _jsx("th", { children: _jsxs("select", { style: filterInputStyle, value: colFilterMonth, onChange: (e) => setColFilterMonth(e.target.value), children: [_jsx("option", { value: "", children: "All Months" }), monthOptions.map((m) => (_jsx("option", { value: m, children: m }, m)))] }) }), _jsx("th", { children: _jsxs("select", { style: filterInputStyle, value: colFilterImpType, onChange: (e) => setColFilterImpType(e.target.value), children: [_jsx("option", { value: "", children: "All" }), implementationTypeOptions.map((item) => (_jsx("option", { value: item, children: item }, item)))] }) }), _jsx("th", { children: _jsxs("select", { style: filterInputStyle, value: colFilterProduct, onChange: (e) => setColFilterProduct(e.target.value), children: [_jsx("option", { value: "", children: "All Products" }), productTypeOptions.map((item) => (_jsx("option", { value: item, children: item }, item)))] }) }), _jsx("th", { children: _jsx("input", { type: "text", style: filterInputStyle, placeholder: "Pre-Prod...", value: colFilterPreProd, onChange: (e) => setColFilterPreProd(e.target.value) }) }), _jsx("th", { children: _jsxs("select", { style: filterInputStyle, value: colFilterPod, onChange: (e) => setColFilterPod(e.target.value), children: [_jsx("option", { value: "", children: "All" }), superpodOptions.map((item) => (_jsx("option", { value: item, children: item }, item)))] }) }), _jsxs("th", { style: { verticalAlign: "middle" }, children: [_jsxs("button", { ref: blueprintButtonRef, type: "button", onClick: (e) => {
+                                                                                e.stopPropagation();
+                                                                                if (!isBlueprintDropdownOpen && blueprintButtonRef.current) {
+                                                                                    const rect = blueprintButtonRef.current.getBoundingClientRect();
+                                                                                    setBlueprintDropdownPos({ top: rect.bottom + 4, left: rect.left });
+                                                                                }
+                                                                                setIsBlueprintDropdownOpen((prev) => !prev);
+                                                                            }, style: {
                                                                                 ...filterInputStyle,
                                                                                 display: "flex",
                                                                                 alignItems: "center",
@@ -1037,53 +1113,71 @@ export const Stores = ({ onBack }) => {
                                                                                 cursor: "pointer",
                                                                                 color: selectedBlueprintChecks.length > 0 ? "#38bdf8" : "#94a3b8",
                                                                                 borderColor: selectedBlueprintChecks.length > 0 ? "rgba(56, 189, 248, 0.6)" : "rgba(148, 163, 248, 0.25)",
-                                                                                background: selectedBlueprintChecks.length > 0 ? "rgba(56, 189, 248, 0.1)" : "#0f172a",
+                                                                                background: selectedBlueprintChecks.length > 0 ? "rgba(56, 189, 248, 0.12)" : "#0f172a",
                                                                                 fontWeight: selectedBlueprintChecks.length > 0 ? 700 : 500,
                                                                                 textAlign: "left",
+                                                                                userSelect: "none",
+                                                                                height: 26,
+                                                                                margin: 0,
                                                                             }, title: "Filter by Completed Blueprint Areas (Multi-select)", children: [_jsx("span", { style: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }, children: selectedBlueprintChecks.length === 0
                                                                                         ? "All Blueprints"
-                                                                                        : `${selectedBlueprintChecks.length} Completed selected` }), _jsx("span", { style: { fontSize: 9, marginLeft: 4 }, children: "\u25BC" })] }), isBlueprintDropdownOpen && (_jsxs("div", { style: {
-                                                                                position: "absolute",
-                                                                                top: "100%",
-                                                                                left: 4,
-                                                                                minWidth: 205,
-                                                                                background: "#0f172a",
-                                                                                border: "1px solid rgba(56, 189, 248, 0.4)",
-                                                                                borderRadius: 6,
-                                                                                boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.7)",
-                                                                                zIndex: 99999,
-                                                                                padding: 8,
-                                                                                display: "flex",
-                                                                                flexDirection: "column",
-                                                                                gap: 6,
-                                                                                marginTop: 4,
-                                                                                textAlign: "left",
-                                                                            }, children: [_jsxs("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(148,163,184,0.15)", paddingBottom: 4 }, children: [_jsx("span", { style: { fontSize: 10, fontWeight: 800, color: "#38bdf8", letterSpacing: "0.5px", textTransform: "uppercase" }, children: "Blueprint Completed:" }), selectedBlueprintChecks.length > 0 && (_jsx("button", { type: "button", onClick: () => setSelectedBlueprintChecks([]), style: {
-                                                                                                background: "transparent",
-                                                                                                border: "none",
-                                                                                                color: "#f87171",
-                                                                                                fontSize: 10,
-                                                                                                cursor: "pointer",
-                                                                                                fontWeight: 700,
-                                                                                                padding: 0,
-                                                                                            }, children: "Clear" }))] }), BLUEPRINT_CHECKBOX_KEYS.map(({ key, label }) => {
-                                                                                    const checked = selectedBlueprintChecks.includes(key);
-                                                                                    return (_jsxs("label", { style: {
+                                                                                        : `${selectedBlueprintChecks.length} Selected` }), _jsx("span", { style: { fontSize: 9, marginLeft: 4 }, children: isBlueprintDropdownOpen ? "▲" : "▼" })] }), isBlueprintDropdownOpen &&
+                                                                            createPortal(_jsxs("div", { ref: blueprintPopupRef, onClick: (e) => e.stopPropagation(), style: {
+                                                                                    position: "fixed",
+                                                                                    top: blueprintDropdownPos.top,
+                                                                                    left: blueprintDropdownPos.left,
+                                                                                    minWidth: 210,
+                                                                                    background: "#0b1329",
+                                                                                    border: "1px solid rgba(56, 189, 248, 0.4)",
+                                                                                    borderRadius: 6,
+                                                                                    boxShadow: "0 14px 30px rgba(0, 0, 0, 0.85), 0 4px 10px rgba(0, 0, 0, 0.5)",
+                                                                                    zIndex: 999999,
+                                                                                    padding: "8px 10px",
+                                                                                    display: "flex",
+                                                                                    flexDirection: "column",
+                                                                                    gap: 6,
+                                                                                    textAlign: "left",
+                                                                                }, children: [_jsxs("div", { style: {
                                                                                             display: "flex",
+                                                                                            justifyContent: "space-between",
                                                                                             alignItems: "center",
-                                                                                            gap: 7,
-                                                                                            fontSize: 11,
-                                                                                            color: checked ? "#f8fafc" : "#cbd5e1",
-                                                                                            cursor: "pointer",
-                                                                                            userSelect: "none",
-                                                                                            padding: "2px 4px",
-                                                                                            borderRadius: 4,
-                                                                                            background: checked ? "rgba(56, 189, 248, 0.12)" : "transparent",
-                                                                                        }, children: [_jsx("input", { type: "checkbox", checked: checked, onChange: () => toggleBlueprintFilter(key), style: { cursor: "pointer", accentColor: "#38bdf8" } }), _jsx("span", { children: label })] }, key));
-                                                                                })] }))] }), _jsx("th", { style: { padding: "4px 6px" }, children: _jsxs("select", { style: filterInputStyle, value: colFilterSetupData, onChange: (e) => setColFilterSetupData(e.target.value), children: [_jsx("option", { value: "", children: "All" }), _jsx("option", { value: "COMPLETE", children: "Complete" }), _jsx("option", { value: "INCOMPLETE", children: "Pending / Incomplete" }), _jsx("option", { value: "ERROR", children: "Error" })] }) }), _jsx("th", { style: { padding: "4px 6px" }, children: _jsxs("select", { style: filterInputStyle, value: colFilterFixedStatus, onChange: (e) => setColFilterFixedStatus(e.target.value), children: [_jsx("option", { value: "", children: "All" }), phaseStatusOptions.map((status) => (_jsx("option", { value: status, children: status }, status)))] }) }), _jsx("th", { style: { padding: "4px 6px" }, children: _jsxs("select", { style: filterInputStyle, value: colFilterVarStatus, onChange: (e) => setColFilterVarStatus(e.target.value), children: [_jsx("option", { value: "", children: "All" }), phaseStatusOptions.map((status) => (_jsx("option", { value: status, children: status }, status)))] }) }), _jsx("th", { style: { padding: "4px 6px" }, children: _jsxs("select", { style: filterInputStyle, value: colFilterSignoff, onChange: (e) => setColFilterSignoff(e.target.value), children: [_jsx("option", { value: "", children: "All" }), SIGN_OFF_FILTER_OPTIONS.map((status) => (_jsx("option", { value: status, children: status }, status)))] }) }), _jsx("th", { style: { padding: "4px 6px" }, children: _jsxs("select", { style: filterInputStyle, value: colFilterTestingStatus, onChange: (e) => setColFilterTestingStatus(e.target.value), children: [_jsx("option", { value: "", children: "All" }), phaseStatusOptions.map((status) => (_jsx("option", { value: status, children: status }, status)))] }) }), _jsx("th", { style: { padding: "4px 6px" }, children: _jsxs("select", { style: filterInputStyle, value: colFilterNotWorked, onChange: (e) => setColFilterNotWorked(e.target.value), children: [_jsx("option", { value: "", children: "All" }), _jsx("option", { value: "HANDLED_BY_ARC", children: "Handled by ARC Only" }), NOT_WORKED_OPTIONS.map((opt) => (_jsx("option", { value: opt, children: opt }, opt)))] }) })] })] }), _jsx("tbody", { children: filtered.map((row) => {
+                                                                                            borderBottom: "1px solid rgba(148, 163, 184, 0.15)",
+                                                                                            paddingBottom: 5,
+                                                                                        }, children: [_jsx("span", { style: {
+                                                                                                    fontSize: 10,
+                                                                                                    fontWeight: 800,
+                                                                                                    color: "#38bdf8",
+                                                                                                    letterSpacing: "0.5px",
+                                                                                                    textTransform: "uppercase",
+                                                                                                }, children: "Completed Blueprint:" }), selectedBlueprintChecks.length > 0 && (_jsx("button", { type: "button", onClick: (e) => {
+                                                                                                    e.stopPropagation();
+                                                                                                    setSelectedBlueprintChecks([]);
+                                                                                                }, style: {
+                                                                                                    background: "transparent",
+                                                                                                    border: "none",
+                                                                                                    color: "#f87171",
+                                                                                                    fontSize: 10,
+                                                                                                    cursor: "pointer",
+                                                                                                    fontWeight: 700,
+                                                                                                    padding: 0,
+                                                                                                }, children: "Clear" }))] }), BLUEPRINT_CHECKBOX_KEYS.map(({ key, label }) => {
+                                                                                        const checked = selectedBlueprintChecks.includes(key);
+                                                                                        return (_jsxs("label", { onClick: (e) => e.stopPropagation(), style: {
+                                                                                                display: "flex",
+                                                                                                alignItems: "center",
+                                                                                                gap: 8,
+                                                                                                fontSize: 11,
+                                                                                                color: checked ? "#f8fafc" : "#94a3b8",
+                                                                                                cursor: "pointer",
+                                                                                                userSelect: "none",
+                                                                                                padding: "3px 6px",
+                                                                                                borderRadius: 4,
+                                                                                                background: checked ? "rgba(56, 189, 248, 0.15)" : "transparent",
+                                                                                                transition: "background 0.12s ease",
+                                                                                            }, children: [_jsx("input", { type: "checkbox", checked: checked, onChange: () => toggleBlueprintFilter(key), style: { cursor: "pointer", accentColor: "#38bdf8" } }), _jsx("span", { children: label })] }, key));
+                                                                                    })] }), document.body)] }), _jsx("th", { children: _jsxs("select", { style: filterInputStyle, value: colFilterSetupData, onChange: (e) => setColFilterSetupData(e.target.value), children: [_jsx("option", { value: "", children: "All" }), _jsx("option", { value: "COMPLETE", children: "Complete" }), _jsx("option", { value: "INCOMPLETE", children: "Pending / Incomplete" }), _jsx("option", { value: "ERROR", children: "Error" })] }) }), _jsx("th", { children: _jsxs("select", { style: filterInputStyle, value: colFilterFixedAssignee, onChange: (e) => setColFilterFixedAssignee(e.target.value), children: [_jsx("option", { value: "", children: "All" }), _jsx("option", { value: "UNASSIGNED", children: "Unassigned" }), ASSIGNEE_OPTIONS.map((name) => (_jsx("option", { value: name, children: name }, name)))] }) }), _jsx("th", { children: _jsxs("select", { style: filterInputStyle, value: colFilterVarAssignee, onChange: (e) => setColFilterVarAssignee(e.target.value), children: [_jsx("option", { value: "", children: "All" }), _jsx("option", { value: "UNASSIGNED", children: "Unassigned" }), ASSIGNEE_OPTIONS.map((name) => (_jsx("option", { value: name, children: name }, name)))] }) }), _jsx("th", { children: _jsxs("select", { style: filterInputStyle, value: colFilterFixedStatus, onChange: (e) => setColFilterFixedStatus(e.target.value), children: [_jsx("option", { value: "", children: "All" }), phaseStatusOptions.map((status) => (_jsx("option", { value: status, children: status }, status)))] }) }), _jsx("th", { children: _jsxs("select", { style: filterInputStyle, value: colFilterVarStatus, onChange: (e) => setColFilterVarStatus(e.target.value), children: [_jsx("option", { value: "", children: "All" }), phaseStatusOptions.map((status) => (_jsx("option", { value: status, children: status }, status)))] }) }), _jsx("th", { children: _jsxs("select", { style: filterInputStyle, value: colFilterTestingStatus, onChange: (e) => setColFilterTestingStatus(e.target.value), children: [_jsx("option", { value: "", children: "All" }), phaseStatusOptions.map((status) => (_jsx("option", { value: status, children: status }, status)))] }) }), _jsx("th", { children: _jsxs("select", { style: filterInputStyle, value: colFilterNotWorked, onChange: (e) => setColFilterNotWorked(e.target.value), children: [_jsx("option", { value: "", children: "All" }), _jsx("option", { value: "HANDLED_BY_ARC", children: "Handled by ARC Only" }), NOT_WORKED_OPTIONS.map((opt) => (_jsx("option", { value: opt, children: opt }, opt)))] }) })] })] }), _jsx("tbody", { children: filtered.map((row) => {
                                                         const tLabel = getTLabel(row.launch_date);
                                                         const blueprint = row.blueprint_statuses;
-                                                        const signoff = row.signoff_statuses;
                                                         const podStyle = getPodStyle(row.superpod_id);
                                                         const cleanedImp = cleanImpType(row.implementation_type);
                                                         const uiDate = formatLaunchDateUI(row.launch_date);
@@ -1097,36 +1191,37 @@ export const Stores = ({ onBack }) => {
                                                                 (row.fetched_blueprint_tasks?.serviceTasks || []).reduce((acc, t) => acc + (t.taskAttachmentCount || 0), 0));
                                                         const varAttCount = row.variable_ops_attachments ??
                                                             (row.fetched_blueprint_tasks?.accountingTasks || []).reduce((acc, t) => acc + (t.taskAttachmentCount || 0), 0);
-                                                        const mapValidation = row.preprod_validation;
+                                                        const isDecommissioned = /decommissioned/i.test(row.pre_production_environment_status || "");
+                                                        const dealerNameColor = getDealerTextColor(row.fixed_ops_status);
                                                         return (_jsxs("tr", { children: [_jsx("td", { style: { minWidth: 230, maxWidth: 340 }, children: _jsxs("div", { style: { display: "flex", flexDirection: "column", gap: 4 }, children: [_jsxs("div", { style: { display: "flex", alignItems: "center", gap: 8, flexWrap: "nowrap" }, children: [_jsx("button", { type: "button", className: "stores-copy-btn", title: "Copy Tekion ID", onClick: () => handleCopy(row.tekion_id, `tek-${row.tekion_id}`), style: { fontWeight: 800, color: "#f8fafc" }, children: copiedKey === `tek-${row.tekion_id}` ? "Copied!" : row.tekion_id }), _jsx("button", { type: "button", className: "stores-copy-btn", title: "Copy Dealer ID", onClick: () => handleCopy(row.dealer_id, `dlr-${row.tekion_id}`), style: { color: "#38bdf8", fontWeight: 700 }, children: copiedKey === `dlr-${row.tekion_id}` ? "Copied!" : row.dealer_id }), _jsx("button", { type: "button", className: "stores-slack-trigger-btn", onClick: () => setActiveDealerPopup(row), style: { marginLeft: "auto" }, children: "\uD83D\uDCAC Update" })] }), _jsx("button", { type: "button", className: "stores-copy-btn", title: "Click to copy dealership name", onClick: () => handleCopy(row.dba_name, `dba-${row.tekion_id}`), style: {
                                                                                     textAlign: "left",
-                                                                                    color: "#94a3b8",
-                                                                                    fontSize: 12,
-                                                                                    lineHeight: 1.35,
-                                                                                    whiteSpace: "normal",
-                                                                                    wordBreak: "break-word",
-                                                                                    padding: "2px 4px",
-                                                                                    borderRadius: 4,
+                                                                                    color: dealerNameColor,
                                                                                     background: "transparent",
                                                                                     border: "none",
+                                                                                    padding: "2px 0",
+                                                                                    fontSize: 15,
+                                                                                    fontWeight: 800,
+                                                                                    lineHeight: 1.3,
+                                                                                    whiteSpace: "normal",
+                                                                                    wordBreak: "break-word",
                                                                                     cursor: "pointer",
-                                                                                }, children: copiedKey === `dba-${row.tekion_id}` ? _jsx("span", { style: { color: "#4ade80", fontWeight: 700 }, children: "Copied!" }) : row.dba_name || "—" }), mapValidation && (_jsx("div", { style: { marginTop: 2 }, children: mapValidation.isValidTenant ? (_jsx("span", { style: {
-                                                                                        fontSize: 10,
-                                                                                        fontWeight: 700,
-                                                                                        color: "#4ade80",
-                                                                                        background: "rgba(74, 222, 128, 0.1)",
-                                                                                        border: "1px solid rgba(74, 222, 128, 0.25)",
-                                                                                        padding: "1px 5px",
-                                                                                        borderRadius: 4,
-                                                                                    }, title: `Valid tenant: ${mapValidation.tenantName}`, children: "\u2713 Tenant Valid" })) : (_jsx("span", { style: {
-                                                                                        fontSize: 10,
-                                                                                        fontWeight: 700,
-                                                                                        color: "#f87171",
-                                                                                        background: "rgba(248, 113, 113, 0.12)",
-                                                                                        border: "1px solid rgba(248, 113, 113, 0.3)",
-                                                                                        padding: "1px 5px",
-                                                                                        borderRadius: 4,
-                                                                                    }, title: mapValidation.validationError || "Tenant validation failed", children: "\u26A0\uFE0F Tenant Invalid" })) }))] }) }), _jsx("td", { children: _jsxs("div", { className: "stores-launch-date-cell", children: [_jsxs("div", { style: { display: "flex", alignItems: "center", gap: 5 }, children: [uiDate.weekday && _jsx("span", { style: { fontSize: 11, fontWeight: 500, color: "#64748b", letterSpacing: "0.2px" }, children: uiDate.weekday }), _jsx("span", { style: { fontSize: 11, fontWeight: 800, color: "#38bdf8", background: "rgba(56, 189, 248, 0.12)", border: "1px solid rgba(56, 189, 248, 0.3)", padding: "2px 6px", borderRadius: 5, letterSpacing: "0.3px" }, children: uiDate.date })] }), _jsx("div", { style: { fontSize: 10, color: "#94a3b8", marginTop: 3 }, children: tLabel.label })] }) }), _jsx("td", { style: { minWidth: 130 }, children: _jsxs("select", { value: fixedAssignee, onChange: (e) => void updateStoreFixedAssignee(row.tekion_id, e.target.value), style: {
+                                                                                    transition: "color 0.15s ease",
+                                                                                }, children: copiedKey === `dba-${row.tekion_id}` ? (_jsx("span", { style: { color: "#4ade80", fontWeight: 700 }, children: "Copied!" })) : (row.dba_name || "—") })] }) }), _jsx("td", { children: _jsxs("div", { className: "stores-launch-date-cell", style: { display: "flex", flexDirection: "column", gap: 2 }, children: [_jsx("span", { style: { fontSize: 13, fontWeight: 700, color: "#f8fafc", letterSpacing: "0.2px" }, children: uiDate.date || "—" }), _jsxs("div", { style: { fontSize: 11, color: "#94a3b8", display: "flex", alignItems: "center", gap: 4 }, children: [uiDate.weekday && _jsx("span", { children: uiDate.weekday }), uiDate.weekday && _jsx("span", { children: "\u2022" }), _jsx("span", { style: { fontWeight: 600, color: "#cbd5e1" }, children: tLabel.label })] })] }) }), _jsx("td", { children: cleanedImp || "—" }), _jsx("td", { children: row.product_types || "—" }), _jsx("td", { children: row.pre_production_environment_status ? (isDecommissioned ? (_jsx("span", { style: {
+                                                                            color: "#f87171",
+                                                                            background: "rgba(248, 113, 113, 0.12)",
+                                                                            border: "1px solid rgba(248, 113, 113, 0.28)",
+                                                                            padding: "2px 6px",
+                                                                            borderRadius: 4,
+                                                                            fontSize: 11,
+                                                                            fontWeight: 700,
+                                                                            display: "inline-block",
+                                                                        }, children: row.pre_production_environment_status })) : (_jsx("span", { children: row.pre_production_environment_status }))) : ("—") }), _jsx("td", { children: _jsx("span", { className: "stores-pod-badge", style: { background: podStyle.bg, color: podStyle.color, border: `1px solid ${podStyle.border}` }, children: row.superpod_id || "—" }) }), _jsx("td", { children: _jsx(StatusChipGroup, { items: [
+                                                                            { short: "P", fullName: "Blueprint - Parts", status: blueprint?.parts ?? "UNKNOWN" },
+                                                                            { short: "S", fullName: "Blueprint - Service", status: blueprint?.service ?? "UNKNOWN" },
+                                                                            { short: "A", fullName: "Blueprint - Accounting", status: blueprint?.accounting ?? "UNKNOWN" },
+                                                                            { short: "C", fullName: "Blueprint - CRM", status: blueprint?.crm ?? "UNKNOWN" },
+                                                                            { short: "AN", fullName: "Blueprint - Analytics", status: blueprint?.analytics ?? "UNKNOWN" },
+                                                                        ] }) }), _jsx("td", { children: _jsx(SetupDataCell, { row: row }) }), _jsx("td", { style: { minWidth: 130 }, children: _jsxs("select", { value: fixedAssignee, onChange: (e) => void updateStoreFixedAssignee(row.tekion_id, e.target.value), style: {
                                                                             width: "100%",
                                                                             background: fixedAssignee ? "rgba(168, 85, 247, 0.15)" : "rgba(148, 163, 184, 0.1)",
                                                                             color: fixedAssignee ? "#c084fc" : "#64748b",
@@ -1148,24 +1243,7 @@ export const Stores = ({ onBack }) => {
                                                                             fontWeight: 700,
                                                                             cursor: "pointer",
                                                                             outline: "none",
-                                                                        }, children: [_jsx("option", { value: "", children: "\u2014 Unassigned \u2014" }), ASSIGNEE_OPTIONS.map((name) => (_jsx("option", { value: name, children: name }, name)))] }) }), _jsx("td", { children: cleanedImp || "—" }), _jsx("td", { children: row.product_types || "—" }), _jsx("td", { children: row.pre_production_environment_status || "—" }), _jsx("td", { children: _jsx("span", { className: "stores-pod-badge", style: { background: podStyle.bg, color: podStyle.color, border: `1px solid ${podStyle.border}` }, children: row.superpod_id || "—" }) }), _jsx("td", { children: _jsx(StatusChipGroup, { items: [
-                                                                            { short: "P", fullName: "Blueprint - Parts", status: blueprint?.parts ?? "UNKNOWN" },
-                                                                            { short: "S", fullName: "Blueprint - Service", status: blueprint?.service ?? "UNKNOWN" },
-                                                                            { short: "A", fullName: "Blueprint - Accounting", status: blueprint?.accounting ?? "UNKNOWN" },
-                                                                            { short: "C", fullName: "Blueprint - CRM", status: blueprint?.crm ?? "UNKNOWN" },
-                                                                            { short: "AN", fullName: "Blueprint - Analytics", status: blueprint?.analytics ?? "UNKNOWN" },
-                                                                        ] }) }), _jsxs("td", { children: [_jsx(SetupDataCell, { row: row }), mapValidation?.accountNumberCount !== undefined && (_jsx("div", { style: { marginTop: 4 }, children: _jsxs("span", { style: {
-                                                                                    display: "inline-flex",
-                                                                                    alignItems: "center",
-                                                                                    gap: 4,
-                                                                                    fontSize: 10,
-                                                                                    fontWeight: 800,
-                                                                                    color: "#38bdf8",
-                                                                                    background: "rgba(56, 189, 248, 0.12)",
-                                                                                    border: "1px solid rgba(56, 189, 248, 0.3)",
-                                                                                    padding: "2px 6px",
-                                                                                    borderRadius: 4,
-                                                                                }, title: "acct_dms_account_number Count from Pre-Prod MAP", children: [_jsx("span", { children: "#\uFE0F\u20E3 Accounts:" }), _jsx("span", { children: mapValidation.accountNumberCount.toLocaleString() })] }) }))] }), _jsx("td", { children: _jsxs("div", { className: "stores-status-cell-wrap", children: [_jsx(CustomStatusSelect, { value: row.fixed_ops_status, onChange: (val) => void updateCustomStatus(row.tekion_id, "fixed_ops_status", val) }), _jsx("div", { style: { marginTop: 3 }, children: _jsxs("span", { style: {
+                                                                        }, children: [_jsx("option", { value: "", children: "\u2014 Unassigned \u2014" }), ASSIGNEE_OPTIONS.map((name) => (_jsx("option", { value: name, children: name }, name)))] }) }), _jsx("td", { children: _jsxs("div", { className: "stores-status-cell-wrap", children: [_jsx(CustomStatusSelect, { value: row.fixed_ops_status, onChange: (val) => void updateCustomStatus(row.tekion_id, "fixed_ops_status", val) }), _jsx("div", { style: { marginTop: 3 }, children: _jsxs("span", { style: {
                                                                                         display: "inline-flex",
                                                                                         alignItems: "center",
                                                                                         gap: 3,
@@ -1187,11 +1265,7 @@ export const Stores = ({ onBack }) => {
                                                                                         background: varAttCount > 0 ? "rgba(56, 189, 248, 0.16)" : "rgba(148, 163, 184, 0.08)",
                                                                                         color: varAttCount > 0 ? "#38bdf8" : "#64748b",
                                                                                         border: `1px solid ${varAttCount > 0 ? "rgba(56, 189, 248, 0.3)" : "rgba(148, 163, 184, 0.16)"}`,
-                                                                                    }, title: "Total attachments across Accounting blueprint tasks", children: [_jsx("span", { children: "\uD83D\uDCCE" }), _jsxs("span", { children: [varAttCount, row.attachments_incomplete ? "+" : "", " Attachment", varAttCount === 1 ? "" : "s"] })] }) }), variableOpsTime !== "—" && _jsx("span", { className: "stores-tracking-timestamp", children: variableOpsTime })] }) }), _jsx("td", { children: _jsx(StatusChipGroup, { items: [
-                                                                            { short: "P", fullName: "Parts Operational Sign-Off", status: signoff?.parts ?? "UNKNOWN" },
-                                                                            { short: "S", fullName: "Service Operational Sign-Off", status: signoff?.service ?? "UNKNOWN" },
-                                                                            { short: "A", fullName: "Accounting Operational Sign-Off", status: signoff?.accounting ?? "UNKNOWN" },
-                                                                        ] }) }), _jsx("td", { children: _jsx(CustomStatusSelect, { value: row.testing_status, onChange: (val) => void updateCustomStatus(row.tekion_id, "testing_status", val) }) }), _jsx("td", { style: { minWidth: 200 }, children: _jsxs("select", { value: row.not_worked || "", onChange: (e) => void updateStoreNotWorked(row.tekion_id, e.target.value), style: {
+                                                                                    }, title: "Total attachments across Accounting blueprint tasks", children: [_jsx("span", { children: "\uD83D\uDCCE" }), _jsxs("span", { children: [varAttCount, row.attachments_incomplete ? "+" : "", " Attachment", varAttCount === 1 ? "" : "s"] })] }) }), variableOpsTime !== "—" && _jsx("span", { className: "stores-tracking-timestamp", children: variableOpsTime })] }) }), _jsx("td", { children: _jsx(CustomStatusSelect, { value: row.testing_status, onChange: (val) => void updateCustomStatus(row.tekion_id, "testing_status", val) }) }), _jsx("td", { style: { minWidth: 200 }, children: _jsxs("select", { value: row.not_worked || "", onChange: (e) => void updateStoreNotWorked(row.tekion_id, e.target.value), style: {
                                                                             width: "100%",
                                                                             background: row.not_worked ? "rgba(244, 63, 94, 0.15)" : "rgba(148, 163, 184, 0.1)",
                                                                             color: row.not_worked ? "#fb7185" : "#64748b",
