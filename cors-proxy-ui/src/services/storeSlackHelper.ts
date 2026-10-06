@@ -437,7 +437,6 @@ async function proxySlackRequest(input: {
 
   const targetTeam = input.teamId || TEKION_SLACK_TEAM_ID;
 
-  // Route URL parameters to Enterprise Grid workspace context
   const parsedUrl = new URL(targetUrl);
   parsedUrl.searchParams.set("slack_route", `${TEKION_SLACK_ENTERPRISE_ID}:${targetTeam}`);
   targetUrl = parsedUrl.toString();
@@ -579,28 +578,42 @@ export async function openSlackConversation(input: {
   return channelId;
 }
 
-export async function sendSlackMessage(input: {
-  userId: string;
+export interface SendSlackMessageInput {
+  userId?: string;
+  channelId?: string;
   email?: string;
   fullName?: string;
   text: string;
-}): Promise<{ channelId: string; ts?: string }> {
-  const channelId = await openSlackConversation({
-    userId: input.userId,
-    email: input.email,
-    fullName: input.fullName,
-  });
+}
+
+/**
+ * Sends a message either to a DM (using userId) or directly to a target channel (using channelId).
+ */
+export async function sendSlackMessage(
+  input: SendSlackMessageInput
+): Promise<{ channelId: string; ts?: string }> {
+  let targetChannelId = input.channelId;
+
+  if (!targetChannelId) {
+    if (!input.userId) {
+      throw new Error("Either channelId or userId must be provided to send a Slack message.");
+    }
+    targetChannelId = await openSlackConversation({
+      userId: input.userId,
+      email: input.email,
+      fullName: input.fullName,
+    });
+  }
 
   logger.info("Sending Slack chat.postMessage", {
+    channelId: targetChannelId,
     userId: input.userId,
-    fullName: input.fullName,
-    channelId,
   });
 
   const response = await proxySlackRequest({
     url: `${SLACK_API_BASE}/chat.postMessage`,
     body: {
-      channel: channelId,
+      channel: targetChannelId,
       text: input.text,
       client_context_team_id: TEKION_SLACK_TEAM_ID,
       team_id: TEKION_SLACK_TEAM_ID,
@@ -608,7 +621,7 @@ export async function sendSlackMessage(input: {
   });
 
   return {
-    channelId,
+    channelId: targetChannelId,
     ts: response.ts,
   };
 }
@@ -630,14 +643,6 @@ export async function sendSlackChannelMessage(input: {
   return { ts: response.ts };
 }
 
-/**
- * Uploads an HTML or XLSX document directly to Slack and shares it as an
- * authentic, downloadable file card attached to the message.
- */
-/**
- * Uploads an HTML or XLSX document directly to a designated Slack channel/conversation.
- * Completes upload directly into the target channel so Slack renders the native downloadable file card.
- */
 export async function sendSlackDocument(input: {
   channelId: string;
   fileName: string;
@@ -672,7 +677,6 @@ export async function sendSlackDocument(input: {
     );
   }
 
-  // 1. Request upload ticket from Slack
   const getUrlRes = await proxySlackRequest({
     url: `${SLACK_API_BASE}/files.getUploadURLExternal`,
     teamId: targetTeamId,
@@ -701,7 +705,6 @@ export async function sendSlackDocument(input: {
     ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     : "text/html; charset=utf-8";
 
-  // 2. Stream binary payload directly to Slack cloud storage
   const uploadProxyRes = await fetch("/api/proxy", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -741,8 +744,6 @@ export async function sendSlackDocument(input: {
     teamId: targetTeamId,
   });
 
-  // 3. Complete and publish directly into the channel
-  // Passing channel_id here makes Slack render the real, downloadable attachment card
   const completeRes = await proxySlackRequest({
     url: `${SLACK_API_BASE}/files.completeUploadExternal`,
     teamId: targetTeamId,

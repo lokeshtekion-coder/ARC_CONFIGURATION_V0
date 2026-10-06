@@ -1,13 +1,9 @@
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { createPortal } from "react-dom";
 // @ts-ignore - raw import for Vite/bundler
 import slackCsvText from "./DATA/Slack.csv?raw";
 import { storesBotRunner, type BotState } from "../services/storesBotRunner";
-import {
-  fetchStores,
-  getTDaysRange,
-  ExpiredCaptureTokenError,
-} from "../services/tekionStoresApi";
-import type { TRange } from "../services/tekionStoresApi";
+import { fetchStores, getTDaysRange, ExpiredCaptureTokenError, type TRange } from "../services/tekionStoresApi";
 import {
   getStores,
   saveStores,
@@ -22,12 +18,7 @@ import {
   type CustomPhaseStatus,
   type StoreSetupData,
 } from "../services/storesDb";
-import type {
-  OnboardingStatus,
-  StoreBlueprintStatuses,
-  StoreSignoffStatuses,
-} from "../services/storeOnboardingStatusApi";
-import { fetchStoreOnboardingStatuses } from "../services/storeOnboardingStatusApi";
+import { fetchStoreOnboardingStatuses, type StoreBlueprintStatuses, type StoreSignoffStatuses } from "../services/storeOnboardingStatusApi";
 import { exportStoresToExcel } from "../services/storesExcelExport";
 import {
   syncStoresToGraphWorkbook,
@@ -39,21 +30,9 @@ import {
   syncProdDealersToGraph,
 } from "../services/storesGraphSync";
 import { buildLatestFieldTrackingText } from "../services/storesExcelShared";
-import {
-  buildStoreSlackDraftContext,
-  getSlackSession,
-  sendSlackMessage,
-  type SlackRecipientCandidate,
-  type SlackDirectoryUser,
-} from "../services/storeSlackHelper";
-import { fetchSetupDataForStore, isSetupDataComplete } from "../services/storeSetupDataService";
+import { isSetupDataComplete, fetchSetupDataForStore } from "../services/storeSetupDataService";
 import { isUserAdmin } from "../services/authHelper";
-import {
-  runSlackAlerts,
-  maybeSendDailyDigest,
-  dispatchAllThreeReports,
-  isSlackSessionActive,
-} from "../services/slackAlertsService";
+import { runSlackAlerts, maybeSendDailyDigest, dispatchAllThreeReports, isSlackSessionActive } from "../services/slackAlertsService";
 import {
   ASSIGNEE_OPTIONS,
   resolveStoreAssignee,
@@ -63,9 +42,30 @@ import {
   runAutoAssign,
 } from "../services/assigneeService";
 import { batchFetchRealTapStatuses } from "../services/tapTasksApi";
-import DealerTasksPanel, {
-  type StoreBlueprintTasks,
-} from "./DealerTasksPanel";
+import type { StoreBlueprintTasks } from "./DealerTasksPanel";
+import { StoresAI } from "./StoresAI";
+import {
+  parseSlackCsv,
+  cleanImpType,
+  parseLaunchDate,
+  formatLaunchDateUI,
+  getMonthYearString,
+  getMonthYearSortKey,
+  getTLabel,
+  toInputDate,
+  startOfDayUnix,
+  endOfDayUnix,
+  buildTapWorkordersUrl,
+  isSameLocalDay,
+  getPodStyle,
+} from "./stores-components/storesHelpers";
+import { StatusChipGroup, SetupDataCell, CustomStatusSelect } from "./stores-components/StoreTableCells";
+import { DealerMetaModal } from "./stores-components/DealerMetaModal";
+import {
+  executePreprodMapPipeline,
+  storeCapturedMapHeaders,
+  type PreprodValidationResult,
+} from "../services/preprodMapApiService";
 import "./Stores.css";
 
 interface Props {
@@ -73,6 +73,7 @@ interface Props {
 }
 
 export type AssigneeName = typeof ASSIGNEE_OPTIONS[number];
+export type ExtendedTRange = TRange | "ALL";
 
 export type ExtendedStoreRecord = StoreRecord & {
   fetched_blueprint_tasks?: StoreBlueprintTasks;
@@ -81,6 +82,7 @@ export type ExtendedStoreRecord = StoreRecord & {
   fixed_ops_attachments?: number;
   variable_ops_attachments?: number;
   attachments_incomplete?: boolean;
+  preprod_validation?: PreprodValidationResult;
 };
 
 const logger = {
@@ -90,280 +92,43 @@ const logger = {
   error: (...args: unknown[]) => console.error("[Stores]", ...args),
 };
 
-function parseCsvLine(line: string): string[] {
-  const result: string[] = [];
-  let current = "";
-  let inQuotes = false;
+const STATIC_SLACK_MAP = parseSlackCsv(typeof slackCsvText === "string" ? slackCsvText : "");
 
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    if (char === '"') {
-      inQuotes = !inQuotes;
-    } else if (char === "," && !inQuotes) {
-      result.push(current.trim().replace(/^"|"$/g, ""));
-      current = "";
-    } else {
-      current += char;
-    }
+const BLUEPRINT_CHECKBOX_KEYS = [
+  { key: "parts", label: "Parts BP Completed" },
+  { key: "service", label: "Service BP Completed" },
+  { key: "accounting", label: "Accounting BP Completed" },
+  { key: "crm", label: "CRM BP Completed" },
+  { key: "analytics", label: "Analytics BP Completed" },
+] as const;
+
+type BlueprintCheckboxKey = typeof BLUEPRINT_CHECKBOX_KEYS[number]["key"];
+
+const ENTERPRISE_TENANTS = new Set([
+  "kengarffautomotive",
+  "asburyautomotivemanagementllc",
+]);
+
+function resolveDefaultNotWorked(store: StoreRecord, existingValue?: string): string {
+  if (existingValue && existingValue.trim()) return existingValue;
+  const tenantCandidate = (store.tenant_code || (store as any).tenant_name || "").toLowerCase().trim();
+  if (ENTERPRISE_TENANTS.has(tenantCandidate)) {
+    return "Enterprise";
   }
-  result.push(current.trim().replace(/^"|"$/g, ""));
-  return result;
+  return store.not_worked || "";
 }
 
-function parseSlackCsv(csvContent?: string): Map<string, SlackDirectoryUser> {
-  const map = new Map<string, SlackDirectoryUser>();
-  if (!csvContent || typeof csvContent !== "string") return map;
-
-  const lines = csvContent.split(/\r?\n/);
-  if (lines.length < 2) return map;
-
-  const headers = parseCsvLine(lines[0]).map((h) => h.toLowerCase().trim());
-  let userIdIdx = headers.findIndex((h) => h === "user id" || h === "id");
-  let nameIdx = headers.findIndex((h) => h === "full name" || h === "name");
-  let emailIdx = headers.findIndex((h) => h === "email");
-  let jobTitleIdx = headers.findIndex((h) => h === "job title" || h === "title");
-
-  if (userIdIdx === -1) userIdIdx = 0;
-  if (nameIdx === -1) nameIdx = 1;
-  if (emailIdx === -1) emailIdx = 2;
-  if (jobTitleIdx === -1) jobTitleIdx = 3;
-
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
-    const cols = parseCsvLine(line);
-    if (cols.length > Math.max(userIdIdx, nameIdx, emailIdx)) {
-      const userId = cols[userIdIdx] || "";
-      const fullName = cols[nameIdx] || "";
-      const email = (cols[emailIdx] || "").toLowerCase();
-      const jobTitle = cols[jobTitleIdx] || "";
-      if (email) {
-        map.set(email, { userId, fullName, email, jobTitle });
-      }
-    }
+function isBlueprintDone(status: unknown): boolean {
+  if (!status) return false;
+  if (typeof status === "string") {
+    const s = status.trim().toUpperCase();
+    return s === "COMPLETED" || s === "DONE" || s === "COMPLETE" || s === "TRUE";
   }
-  return map;
+  if (typeof status === "boolean") return status;
+  return false;
 }
 
-const STATIC_SLACK_MAP = parseSlackCsv(
-  typeof slackCsvText === "string" ? slackCsvText : ""
-);
-
-function cleanImpType(value?: string): string {
-  if (!value) return "";
-  return value
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean)
-    .join(", ");
-}
-
-function parseLaunchDate(value: string): Date | null {
-  if (!value) return null;
-
-  if (/^\d+$/.test(value)) {
-    const num = Number(value);
-    const ms = value.length <= 10 ? num * 1000 : num;
-    const d = new Date(ms);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? null : d;
-}
-
-function formatLaunchDateUI(value: string): { weekday: string; date: string } {
-  const d = parseLaunchDate(value);
-  if (!d) return { weekday: "", date: value || "—" };
-
-  const weekday = d.toLocaleDateString("en-US", { weekday: "short" });
-  const month = `${d.getMonth() + 1}`.padStart(2, "0");
-  const day = `${d.getDate()}`.padStart(2, "0");
-  const year = d.getFullYear();
-
-  return { weekday, date: `${month}/${day}/${year}` };
-}
-
-function getMonthYearString(value: string): string | null {
-  const d = parseLaunchDate(value);
-  if (!d) return null;
-  return d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
-}
-
-function getMonthYearSortKey(value: string): number {
-  const d = parseLaunchDate(value);
-  if (!d) return 0;
-  return d.getFullYear() * 100 + d.getMonth();
-}
-
-function getTLabel(
-  value: string
-): { label: string; tone: "future" | "today" | "past" | "unknown" } {
-  const d = parseLaunchDate(value);
-  if (!d) return { label: "Unknown", tone: "unknown" };
-
-  const today = new Date();
-  const startToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const launchDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  const diffMs = launchDay.getTime() - startToday.getTime();
-  const diffDays = Math.round(diffMs / 86400000);
-
-  if (diffDays > 0) return { label: `T-${diffDays}`, tone: "future" };
-  if (diffDays === 0) return { label: "T", tone: "today" };
-  return { label: "Launched", tone: "past" };
-}
-
-function getStoreFixedAssignee(row: ExtendedStoreRecord): string {
-  return resolveStoreAssignee(row);
-}
-
-function getStoreVariableAssignee(row: ExtendedStoreRecord): string {
-  return row.custom_variable_assignee || "";
-}
-
-function toInputDate(d: Date): string {
-  const yyyy = d.getFullYear();
-  const mm = `${d.getMonth() + 1}`.padStart(2, "0");
-  const dd = `${d.getDate()}`.padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
-}
-
-function startOfDayUnix(dateStr: string): number {
-  const d = new Date(`${dateStr}T00:00:00`);
-  return Math.floor(d.getTime() / 1000);
-}
-
-function endOfDayUnix(dateStr: string): number {
-  const d = new Date(`${dateStr}T23:59:59`);
-  return Math.floor(d.getTime() / 1000);
-}
-
-function startOfDayMs(dateStr: string): number {
-  const d = new Date(`${dateStr}T00:00:00`);
-  return d.getTime();
-}
-
-function endOfDayMs(dateStr: string): number {
-  const d = new Date(`${dateStr}T23:59:59.999`);
-  return d.getTime();
-}
-
-function buildTapWorkordersUrl(fromDate: string, toDate: string): string {
-  const filters = [
-    {
-      type: "actual_launch_date",
-      operator: "BTW",
-      values: [startOfDayMs(fromDate), endOfDayMs(toDate)],
-    },
-    {
-      type: "product_types",
-      operator: "IN",
-      values: ["Analytics", "ARC", "CRM"],
-    },
-  ];
-
-  const sort = {
-    actual_launch_date: "ASC",
-  };
-
-  const params = new URLSearchParams({
-    filters: JSON.stringify(filters),
-    searchField: "All",
-    sort: JSON.stringify(sort),
-  });
-
-  return `https://tap.tekioncloud.com/workorders/list?${params.toString()}`;
-}
-
-function isSameLocalDay(isoString?: string): boolean {
-  if (!isoString) return false;
-  const d = new Date(isoString);
-  if (Number.isNaN(d.getTime())) return false;
-
-  const now = new Date();
-  return (
-    d.getFullYear() === now.getFullYear() &&
-    d.getMonth() === now.getMonth() &&
-    d.getDate() === now.getDate()
-  );
-}
-
-function shouldAutoFetchStatuses(records: ExtendedStoreRecord[]): boolean {
-  if (records.length === 0) return true;
-  return records.some((row) => !isSameLocalDay(row.onboarding_status_fetched_at));
-}
-
-function getStatusVisual(status: OnboardingStatus) {
-  if (status === "COMPLETED") {
-    return {
-      symbol: "✓",
-      background: "rgba(34, 197, 94, 0.16)",
-      color: "#22c55e",
-      border: "rgba(34, 197, 94, 0.30)",
-      label: "Completed",
-    };
-  }
-
-  if (status === "IN_PROGRESS") {
-    return {
-      symbol: "⏳",
-      background: "rgba(245, 158, 11, 0.16)",
-      color: "#f59e0b",
-      border: "rgba(245, 158, 11, 0.30)",
-      label: "In Progress",
-    };
-  }
-
-  return {
-    symbol: "○",
-    background: "rgba(148, 163, 184, 0.14)",
-    color: "#94a3b8",
-    border: "rgba(148, 163, 184, 0.24)",
-    label: status === "NOT_YET_STARTED" ? "Not Yet Started" : "Unknown",
-  };
-}
-
-function getPodStyle(superpodId?: string) {
-  const norm = (superpodId || "").trim().toLowerCase();
-  if (norm === "2" || norm === "pod 2" || norm === "pod-2") {
-    return {
-      bg: "rgba(59, 130, 246, 0.16)",
-      color: "#60a5fa",
-      border: "rgba(59, 130, 246, 0.30)",
-    };
-  }
-  if (norm === "1" || norm === "pod 1" || norm === "pod-1") {
-    return {
-      bg: "rgba(168, 85, 247, 0.16)",
-      color: "#c084fc",
-      border: "rgba(168, 85, 247, 0.30)",
-    };
-  }
-  if (norm === "3" || norm === "pod 3" || norm === "pod-3") {
-    return {
-      bg: "rgba(236, 72, 153, 0.16)",
-      color: "#f472b6",
-      border: "rgba(236, 72, 153, 0.30)",
-    };
-  }
-  if (norm === "4" || norm === "pod 4" || norm === "pod-4") {
-    return {
-      bg: "rgba(168, 85, 247, 0.16)",
-      color: "#34d399",
-      border: "rgba(168, 85, 247, 0.30)",
-    };
-  }
-  return {
-    bg: "rgba(148, 163, 184, 0.12)",
-    color: "#cbd5e1",
-    border: "rgba(148, 163, 184, 0.22)",
-  };
-}
-
-function mergeIncomingStore(
-  existing: ExtendedStoreRecord | undefined,
-  incoming: StoreRecord
-): ExtendedStoreRecord {
+function mergeIncomingStore(existing: ExtendedStoreRecord | undefined, incoming: StoreRecord): ExtendedStoreRecord {
   if (!existing) return incoming as ExtendedStoreRecord;
   const merged: Record<string, any> = { ...existing };
   for (const [key, value] of Object.entries(incoming)) {
@@ -377,10 +142,7 @@ function mergeIncomingStore(
   return merged as ExtendedStoreRecord;
 }
 
-function safelyMergeStatusFields(
-  prevRecords: ExtendedStoreRecord[],
-  updatedStores: StoreRecord[]
-): ExtendedStoreRecord[] {
+function safelyMergeStatusFields(prevRecords: ExtendedStoreRecord[], updatedStores: StoreRecord[]): ExtendedStoreRecord[] {
   const prevMap = new Map(prevRecords.map((s) => [s.tekion_id, s]));
   return updatedStores.map((uStore) => {
     const prev = prevMap.get(uStore.tekion_id);
@@ -392,263 +154,21 @@ function safelyMergeStatusFields(
       testing_status: uStore.testing_status,
       not_worked: uStore.not_worked ?? prev.not_worked,
       custom_assignee: (uStore as any).custom_assignee ?? prev.custom_assignee,
-      custom_variable_assignee:
-        (uStore as any).custom_variable_assignee ?? prev.custom_variable_assignee,
+      custom_variable_assignee: (uStore as any).custom_variable_assignee ?? prev.custom_variable_assignee,
       fixed_ops_attachments: (uStore as any).fixed_ops_attachments ?? prev.fixed_ops_attachments,
       variable_ops_attachments: (uStore as any).variable_ops_attachments ?? prev.variable_ops_attachments,
       fetched_blueprint_tasks: (uStore as any).fetched_blueprint_tasks ?? prev.fetched_blueprint_tasks,
       attachments_incomplete: (uStore as any).attachments_incomplete ?? prev.attachments_incomplete,
+      preprod_validation: (uStore as any).preprod_validation ?? prev.preprod_validation,
     };
   });
 }
 
-const StatusChip: React.FC<{
-  short: string;
-  fullName: string;
-  status: OnboardingStatus;
-}> = ({ short, fullName, status }) => {
-  const visual = getStatusVisual(status);
-
-  return (
-    <span
-      title={`${fullName}: ${visual.label}`}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 3,
-        padding: "3px 6px",
-        borderRadius: 6,
-        background: visual.background,
-        color: visual.color,
-        border: `1px solid ${visual.border}`,
-        fontSize: 10,
-        fontWeight: 700,
-        lineHeight: 1,
-        whiteSpace: "nowrap",
-      }}
-    >
-      <span>{short}</span>
-      <span style={{ fontSize: 9 }}>{visual.symbol}</span>
-    </span>
-  );
-};
-
-const StatusChipGroup: React.FC<{
-  items: Array<{
-    short: string;
-    fullName: string;
-    status: OnboardingStatus;
-  }>;
-}> = ({ items }) => (
-  <div style={{ display: "inline-flex", gap: 4, flexWrap: "nowrap", alignItems: "center" }}>
-    {items.map((item) => (
-      <StatusChip
-        key={item.fullName}
-        short={item.short}
-        fullName={item.fullName}
-        status={item.status}
-      />
-    ))}
-  </div>
-);
-
-const SetupDataChip: React.FC<{
-  label: string;
-  value: string | number;
-  hasData: boolean;
-  title: string;
-}> = ({ label, value, hasData, title }) => (
-  <span
-    title={title}
-    style={{
-      display: "inline-flex",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: 3,
-      padding: "3px 6px",
-      borderRadius: 6,
-      background: hasData ? "rgba(56, 189, 248, 0.14)" : "rgba(148, 163, 184, 0.12)",
-      color: hasData ? "#38bdf8" : "#94a3b8",
-      border: `1px solid ${hasData ? "rgba(56, 189, 248, 0.28)" : "rgba(148, 163, 184, 0.22)"}`,
-      fontSize: 10,
-      fontWeight: 700,
-      lineHeight: 1,
-      whiteSpace: "nowrap",
-    }}
-  >
-    <span style={{ opacity: 0.85 }}>{label}</span>
-    <span style={{ fontSize: 9 }}>{value}</span>
-  </span>
-);
-
-const SetupDataCell: React.FC<{ row: ExtendedStoreRecord }> = ({ row }) => {
-  if (row.setup_data_error) {
-    return (
-      <span
-        title={row.setup_data_error}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 4,
-          padding: "3px 7px",
-          borderRadius: 6,
-          background: "rgba(239, 68, 68, 0.14)",
-          color: "#f87171",
-          border: "1px solid rgba(239, 68, 68, 0.30)",
-          fontSize: 10,
-          fontWeight: 700,
-          lineHeight: 1,
-          whiteSpace: "nowrap",
-        }}
-      >
-        <span>⚠</span>
-        <span>Error</span>
-      </span>
-    );
-  }
-
-  if (!row.setup_data) {
-    return (
-      <span
-        title="Setup data has not been fetched yet"
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          padding: "3px 8px",
-          borderRadius: 6,
-          background: "rgba(148, 163, 184, 0.10)",
-          color: "#64748b",
-          border: "1px solid rgba(148, 163, 184, 0.20)",
-          fontSize: 10,
-          fontWeight: 600,
-          lineHeight: 1,
-          whiteSpace: "nowrap",
-        }}
-      >
-        — Not Fetched
-      </span>
-    );
-  }
-
-  const oemCodes = row.setup_data.oemDealerCodes || [];
-  const hasOem = oemCodes.length > 0;
-  const firstCode = oemCodes[0] || "—";
-  const oemDisplay =
-    oemCodes.length > 1 ? `${firstCode} (+${oemCodes.length - 1})` : firstCode;
-  const oemFull = hasOem ? oemCodes.join(", ") : "None";
-
-  const journalsCount = row.setup_data.journalsAccessibleDealerCount ?? 0;
-  const salesChainsCount = row.setup_data.salesChainsAccessibleDealerCount ?? 0;
-  const coaCount = row.setup_data.coaAccessibleDealerCount ?? 0;
-
-  return (
-    <div style={{ display: "inline-flex", gap: 4, flexWrap: "nowrap", alignItems: "center" }}>
-      <SetupDataChip
-        label="OEM"
-        value={oemDisplay}
-        hasData={hasOem}
-        title={`OEM Codes: ${oemFull}`}
-      />
-      <SetupDataChip
-        label="JRN"
-        value={journalsCount}
-        hasData={journalsCount > 0}
-        title={`Accessible Journals: ${journalsCount}`}
-      />
-      <SetupDataChip
-        label="SC"
-        value={salesChainsCount}
-        hasData={salesChainsCount > 0}
-        title={`Sales Chains: ${salesChainsCount}`}
-      />
-      <SetupDataChip
-        label="COA"
-        value={coaCount}
-        hasData={coaCount > 0}
-        title={`Chart of Accounts: ${coaCount}`}
-      />
-    </div>
-  );
-};
-
-const CustomStatusSelect: React.FC<{
-  value?: CustomPhaseStatus;
-  onChange: (newVal: CustomPhaseStatus) => void;
-}> = ({ value, onChange }) => {
-  const currentVal = value || "TO DO";
-  const colors = {
-    "TO DO": {
-      bg: "rgba(148, 163, 184, 0.14)",
-      text: "#94a3b8",
-      border: "rgba(148, 163, 184, 0.24)",
-    },
-    WIP: {
-      bg: "rgba(245, 158, 11, 0.16)",
-      text: "#f59e0b",
-      border: "rgba(245, 158, 11, 0.30)",
-    },
-    Completed: {
-      bg: "rgba(34, 197, 94, 0.16)",
-      text: "#22c55e",
-      border: "rgba(34, 197, 94, 0.30)",
-    },
-  } as const;
-
-  const style = colors[currentVal];
-
-  return (
-    <div style={{ position: "relative", display: "inline-block", width: 110, minWidth: 110 }}>
-      <select
-        value={currentVal}
-        onChange={(e) => onChange(e.target.value as CustomPhaseStatus)}
-        style={{
-          width: "100%",
-          minWidth: 110,
-          background: style.bg,
-          color: style.text,
-          border: `1px solid ${style.border}`,
-          borderRadius: 8,
-          padding: "5px 22px 5px 8px",
-          fontSize: 11,
-          fontWeight: 700,
-          cursor: "pointer",
-          appearance: "none",
-        }}
-      >
-        <option value="TO DO">TO DO</option>
-        <option value="WIP">WIP</option>
-        <option value="Completed">Completed</option>
-      </select>
-      <span
-        style={{
-          position: "absolute",
-          right: 8,
-          top: "50%",
-          transform: "translateY(-50%)",
-          pointerEvents: "none",
-          fontSize: 8,
-          color: style.text,
-        }}
-      >
-        ▼
-      </span>
-    </div>
-  );
-};
-
 function withOnboardingStatuses(
   stores: ExtendedStoreRecord[],
-  statusMap: Record<
-    string,
-    {
-      blueprint_statuses: StoreBlueprintStatuses;
-      signoff_statuses: StoreSignoffStatuses;
-    }
-  >
+  statusMap: Record<string, { blueprint_statuses: StoreBlueprintStatuses; signoff_statuses: StoreSignoffStatuses }>
 ): ExtendedStoreRecord[] {
   const fetchedAt = new Date().toISOString();
-
   return stores.map((store) => {
     const statuses = statusMap[store.tekion_id];
     return {
@@ -660,450 +180,18 @@ function withOnboardingStatuses(
   });
 }
 
-const SlackRecipientRow: React.FC<{
-  candidate: SlackRecipientCandidate;
-  checked: boolean;
-  onToggle: () => void;
-}> = ({ candidate, checked, onToggle }) => {
-  const isAvailable = Boolean(candidate.matchedUser?.userId);
-
-  return (
-    <label className="slack-recipient-row">
-      <input
-        type="checkbox"
-        checked={checked}
-        disabled={!isAvailable}
-        onChange={onToggle}
-      />
-      <div style={{ minWidth: 0, flex: 1 }}>
-        <div>
-          <span>{candidate.label}</span>{" "}
-          <span style={{ color: "#94a3b8" }}>
-            ({candidate.matchedUser?.fullName || "Not found"})
-          </span>
-        </div>
-        <div style={{ color: "#64748b", fontSize: 11 }}>
-          {candidate.normalizedEmail || candidate.matchedUser?.userId || "No ID"}
-        </div>
-      </div>
-    </label>
-  );
-};
-
-const DealerMetaModal: React.FC<{
-  row: ExtendedStoreRecord | null;
-  onClose: () => void;
-  onToast: (message: string) => void;
-  onSetupFetched: (tekionId: string, setupData: StoreSetupData) => void;
-  onTasksSnapshot?: (tekionId: string, tasks: any, complete: boolean) => void;
-  onTaskOperationalStatusChange: (
-    tekionId: string,
-    field: "fixed_ops_status" | "variable_ops_status",
-    value: CustomPhaseStatus
-  ) => Promise<void> | void;
-}> = ({ row, onClose, onToast, onSetupFetched, onTaskOperationalStatusChange, onTasksSnapshot }) => {
-  const [tab, setTab] = useState<"tasks" | "slack">("tasks");
-  const draftContext = useMemo(() => {
-    return row ? buildStoreSlackDraftContext(row) : null;
-  }, [row]);
-
-  const slackSession = useMemo(() => getSlackSession(), [row]);
-  const [selectedRecipientKeys, setSelectedRecipientKeys] = useState<string[]>([]);
-  const [messageText, setMessageText] = useState("");
-  const [sendingKey, setSendingKey] = useState("");
-  const [isSendingAll, setIsSendingAll] = useState(false);
-  const [editorMode, setEditorMode] = useState<"edit" | "preview">("edit");
-  const [slackEmailMap, setSlackEmailMap] = useState<Map<string, SlackDirectoryUser>>(STATIC_SLACK_MAP);
-  const [loadingSetup, setLoadingSetup] = useState(false);
-
-  useEffect(() => {
-    const merged = new Map(slackEmailMap);
-
-    if (draftContext?.recipients) {
-      for (const r of draftContext.recipients) {
-        if (r.normalizedEmail && r.matchedUser) {
-          merged.set(r.normalizedEmail.toLowerCase(), {
-            userId: r.matchedUser.userId,
-            fullName: r.matchedUser.fullName,
-            email: r.matchedUser.email || r.normalizedEmail,
-            jobTitle: r.matchedUser.jobTitle || "",
-          });
-        }
-      }
-    }
-
-    setSlackEmailMap(merged);
-  }, [draftContext]);
-
-  const allRecipients = useMemo(() => {
-    if (!draftContext) return [];
-    const recipients = [...draftContext.recipients];
-
-    const hasConversion = recipients.some(
-      (r) =>
-        r.key.toLowerCase().includes("conversion") ||
-        r.label.toLowerCase().includes("conversion")
-    );
-
-    if (!hasConversion && row?.conversion_track_lead_1773369950325147526) {
-      const raw = row.conversion_track_lead_1773369950325147526.trim();
-      const email = raw.toLowerCase().replace(/^[<"]+|[>"]+$/g, "");
-      const matched = slackEmailMap.get(email);
-
-      recipients.push({
-        key: "conversion_track_lead",
-        label: "Conversion",
-        rawValue: raw,
-        normalizedEmail: email,
-        matchedUser: matched
-          ? {
-              userId: matched.userId,
-              fullName: matched.fullName,
-              email: matched.email,
-              jobTitle: matched.jobTitle || "",
-            }
-          : undefined,
-      });
-    }
-
-    return recipients;
-  }, [draftContext, row, slackEmailMap]);
-
-  useEffect(() => {
-    if (!draftContext) {
-      setSelectedRecipientKeys([]);
-      setMessageText("");
-      return;
-    }
-
-    setSelectedRecipientKeys(draftContext.defaultSelectedRecipientKeys);
-    setMessageText(draftContext.draftMessage);
-    setSendingKey("");
-    setEditorMode("edit");
-  }, [draftContext]);
-
-  if (!row || !draftContext) return null;
-
-  const selectedRecipients = allRecipients.filter(
-    (recipient) =>
-      selectedRecipientKeys.includes(recipient.key) && recipient.matchedUser?.userId
-  );
-
-  const handleToggleRecipient = (key: string) => {
-    setSelectedRecipientKeys((prev) =>
-      prev.includes(key) ? prev.filter((item) => item !== key) : [...prev, key]
-    );
-  };
-
-  const handleSendSingle = async (recipient: SlackRecipientCandidate) => {
-    if (!recipient.matchedUser?.userId) return;
-
-    setSendingKey(recipient.key);
-
-    try {
-      await sendSlackMessage({
-        userId: recipient.matchedUser.userId,
-        email: recipient.matchedUser.email,
-        fullName: recipient.matchedUser.fullName,
-        text: messageText,
-      });
-
-      onToast(`✅ Sent to ${recipient.matchedUser.fullName}`);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : "Failed to send";
-      onToast(`❌ ${message}`);
-    } finally {
-      setSendingKey("");
-    }
-  };
-
-  const handleSendAll = async () => {
-    if (selectedRecipients.length === 0) return;
-
-    setIsSendingAll(true);
-    let successCount = 0;
-    let failCount = 0;
-
-    for (const recipient of selectedRecipients) {
-      if (!recipient.matchedUser?.userId) continue;
-
-      try {
-        await sendSlackMessage({
-          userId: recipient.matchedUser.userId,
-          email: recipient.matchedUser.email,
-          fullName: recipient.matchedUser.fullName,
-          text: messageText,
-        });
-        successCount++;
-      } catch {
-        failCount++;
-      }
-    }
-
-    setIsSendingAll(false);
-    if (failCount === 0) {
-      onToast(`✅ Successfully dispatched message to ${successCount} recipient(s)`);
-    } else {
-      onToast(`⚠ Sent ${successCount}, failed ${failCount}`);
-    }
-  };
-
-  const handleFetchSetup = async () => {
-    if (!row) return;
-
-    setLoadingSetup(true);
-    try {
-      const setupData = await fetchSetupDataForStore(row, { force: true });
-      onSetupFetched(row.tekion_id, setupData);
-      onToast("✅ Setup data fetched");
-    } catch (error: unknown) {
-      onToast(`❌ ${error instanceof Error ? error.message : "Failed to fetch setup data"}`);
-    } finally {
-      setLoadingSetup(false);
-    }
-  };
-
-  const hasSlackSession = Boolean(slackSession.slackToken && slackSession.slackDCookie);
-
-  // Guarantee resolved project ID using fallback logic
-  const resolvedProjectId = resolveStoreProjectId(row);
-
-  const trackingId =
-    row.project_implementation_tm_sync_status_tracking_id ||
-    row.implementation_tm_sync_status_tracking_id ||
-    row.base_entity_instance_id ||
-    resolvedProjectId;
-
-  const token = `${row.tenant_code || ""}_${row.tenant_id || ""}_${row.dealer_id || ""}`;
-  const preprodSchedulingUrl = `https://preprod-conscheduling.tekioncloud.com/consumer-scheduling/sign-in/phone?accessToken=${encodeURIComponent(token)}`;
-  const prodSchedulingUrl = `https://conscheduling.tekioncloud.com/consumer-scheduling/sign-in/phone?accessToken=${encodeURIComponent(token)}`;
-
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="update-modal-dialog" onClick={(e) => e.stopPropagation()}>
-        <div className="update-modal-header">
-          <div className="update-header-meta">
-            <span className="update-header-title">{row.dba_name || "Dealership"}</span>
-            <div className="update-header-badges">
-              <span className="hud-badge accent">Dealer #{row.dealer_id}</span>
-              <span className="hud-badge">Tekion ID: {row.tekion_id}</span>
-            </div>
-          </div>
-          <button className="btn-secondary btn-sm" onClick={onClose}>
-            ✕
-          </button>
-        </div>
-
-        <div className="update-store-hud">
-          <div className="hud-telemetry-group">
-            <div className="hud-telemetry-item">
-              <span className="hud-label">Project:</span>
-              <span
-                className="hud-value"
-                title={`Resolved project: ${resolvedProjectId || "None"}`}
-              >
-                {resolvedProjectId || "—"}
-              </span>
-            </div>
-            <div className="hud-telemetry-item">
-              <span className="hud-label">Tracking:</span>
-              {trackingId ? (
-                <a
-                  className="tracking-link-tag"
-                  target="_blank"
-                  rel="noreferrer"
-                  href={`https://tap.tekioncloud.com/workorders/details/${encodeURIComponent(
-                    trackingId
-                  )}?tab=tasks`}
-                >
-                  Tasks ↗
-                </a>
-              ) : (
-                <span className="hud-value">—</span>
-              )}
-            </div>
-            <div className="hud-telemetry-item">
-              <span className="hud-label">Tenant:</span>
-              <span className="hud-value">
-                {row.tenant_code || "—"} ({row.tenant_id || "—"})
-              </span>
-            </div>
-            <div className="hud-telemetry-item">
-              <span className="hud-label">Consumer:</span>
-              <a
-                href={preprodSchedulingUrl}
-                target="_blank"
-                rel="noreferrer"
-                style={{ color: "#38bdf8", textDecoration: "none", fontSize: 11 }}
-              >
-                Pre-Prod ↗
-              </a>
-              <span style={{ color: "#475569" }}>•</span>
-              <a
-                href={prodSchedulingUrl}
-                target="_blank"
-                rel="noreferrer"
-                style={{ color: "#4ade80", textDecoration: "none", fontSize: 11 }}
-              >
-                Prod ↗
-              </a>
-            </div>
-          </div>
-
-          <div className="hud-setup-strip">
-            <button
-              className="btn-postman btn-sm"
-              disabled={loadingSetup}
-              onClick={() => void handleFetchSetup()}
-              style={{ fontWeight: 700 }}
-            >
-              {loadingSetup ? "⏳ Loading..." : "🧩 Get Setup Data"}
-            </button>
-
-            {row.setup_data ? (
-              <span className="dealer-setup-summary">
-                OEM: <strong>{row.setup_data.oemDealerCodes?.join(", ") || "—"}</strong> JRN:{" "}
-                <strong>{row.setup_data.journalsAccessibleDealerCount ?? 0}</strong> SC:{" "}
-                <strong>{row.setup_data.salesChainsAccessibleDealerCount ?? 0}</strong> COA:{" "}
-                <strong>{row.setup_data.coaAccessibleDealerCount ?? 0}</strong>
-              </span>
-            ) : row.setup_data_error ? (
-              <span style={{ fontSize: 11, color: "#f87171", fontWeight: 600 }}>
-                ⚠ {row.setup_data_error}
-              </span>
-            ) : (
-              <span style={{ fontSize: 11, color: "#64748b" }}>
-                Setup data not fetched yet
-              </span>
-            )}
-          </div>
-        </div>
-
-        <div className="update-nav-segmented">
-          <button
-            type="button"
-            className={`update-nav-tab ${tab === "tasks" ? "active" : ""}`}
-            onClick={() => setTab("tasks")}
-          >
-            <span className="update-tab-dot" />
-            ✅ TAP Tasks
-          </button>
-          <button
-            type="button"
-            className={`update-nav-tab ${tab === "slack" ? "active" : ""}`}
-            onClick={() => setTab("slack")}
-          >
-            <span className="update-tab-dot" />
-            💬 Slack Update
-          </button>
-        </div>
-
-        <div style={{ overflowY: "auto", flex: 1 }}>
-          {tab === "tasks" && (
-            <DealerTasksPanel
-              row={row}
-              onToast={onToast}
-              onOperationalStatusChange={onTaskOperationalStatusChange}
-              onTasksSnapshot={onTasksSnapshot}
-            />
-          )}
-
-          {tab === "slack" && (
-            <div
-              className="slack-workspace-layout"
-              style={{ padding: "16px 20px 20px 20px" }}
-            >
-              <div className="slack-recipients-card">
-                <div className="slack-card-header">
-                  <span className="slack-card-title">
-                    Recipients ({selectedRecipients.length})
-                  </span>
-                  <span
-                    className={`slack-session-badge ${
-                      hasSlackSession ? "slack-session-active" : "slack-session-inactive"
-                    }`}
-                  >
-                    {hasSlackSession ? "Session Active" : "No Session"}
-                  </span>
-                </div>
-
-                <div style={{ display: "grid", gap: 6 }}>
-                  {allRecipients.map((recipient) => (
-                    <SlackRecipientRow
-                      key={recipient.key}
-                      candidate={recipient}
-                      checked={selectedRecipientKeys.includes(recipient.key)}
-                      onToggle={() => handleToggleRecipient(recipient.key)}
-                    />
-                  ))}
-                </div>
-
-                <div className="slack-dispatches-wrap">
-                  Individual Dispatches:
-                  <div>
-                    {selectedRecipients.map((rec) => (
-                      <div key={rec.key} className="slack-dispatch-item">
-                        <span>{rec.matchedUser?.fullName}</span>
-                        <button
-                          type="button"
-                          className="btn-secondary btn-sm"
-                          disabled={!hasSlackSession || sendingKey === rec.key || isSendingAll}
-                          onClick={() => void handleSendSingle(rec)}
-                        >
-                          {sendingKey === rec.key ? "..." : "Send"}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="slack-draft-card">
-                <div className="slack-card-header">
-                  <span className="slack-card-title">Slack Message Draft</span>
-
-                  <div className="slack-toggle-group">
-                    <button type="button" onClick={() => setEditorMode("edit")}>
-                      Edit
-                    </button>
-                    <button type="button" onClick={() => setEditorMode("preview")}>
-                      Preview
-                    </button>
-                  </div>
-                </div>
-
-                {editorMode === "edit" ? (
-                  <textarea
-                    className="composer-textarea"
-                    style={{ minHeight: 220 }}
-                    value={messageText}
-                    onChange={(e) => setMessageText(e.target.value)}
-                  />
-                ) : (
-                  <div className="slack-editor-preview">
-                    {messageText || "Empty draft."}
-                  </div>
-                )}
-
-                <div className="slack-submit-wrap">
-                  <button
-                    type="button"
-                    className="btn-postman"
-                    disabled={!hasSlackSession || selectedRecipients.length === 0 || isSendingAll}
-                    onClick={() => void handleSendAll()}
-                  >
-                    {isSendingAll
-                      ? "⏳ Dispatched..."
-                      : `Send to Selected (${selectedRecipients.length})`}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
+const filterInputStyle: React.CSSProperties = {
+  width: "100%",
+  boxSizing: "border-box",
+  background: "#0f172a",
+  color: "#f8fafc",
+  border: "1px solid rgba(148, 163, 248, 0.25)",
+  borderRadius: 4,
+  padding: "3px 6px",
+  fontSize: 11,
+  outline: "none",
+  height: 26,
+  verticalAlign: "middle",
 };
 
 export const Stores: React.FC<Props> = ({ onBack }) => {
@@ -1120,21 +208,93 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
   const [toastMessage, setToastMessage] = useState("");
   const [filtersCollapsed, setFiltersCollapsed] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
-
   const [trackingTick, setTrackingTick] = useState(0);
 
-  const [range, setRange] = useState<TRange>(90);
+  const [isCopilotOpen, setIsCopilotOpen] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
+
+  // Global Sidebar Filter States
+  const [range, setRange] = useState<ExtendedTRange>(90);
   const [search, setSearch] = useState("");
   const [superpodId, setSuperpodId] = useState("");
   const [implementationType, setImplementationType] = useState("");
-  const [productType, setProductType] = useState("");
-  const [selectedMonth, setSelectedMonth] = useState("");
-  const [fixedAssigneeFilter, setFixedAssigneeFilter] = useState<AssigneeName | "">("");
-  const [variableAssigneeFilter, setVariableAssigneeFilter] = useState<AssigneeName | "">("");
-  const [notWorkedFilter, setNotWorkedFilter] = useState<string>("");
   const [activeDealerPopup, setActiveDealerPopup] = useState<ExtendedStoreRecord | null>(null);
 
-  // Synchronize modal store with latest data and guarantee resolved onboarding_project_id
+  // Per-Column Filter States
+  const [colFilterStore, setColFilterStore] = useState("");
+  const [colFilterMonth, setColFilterMonth] = useState("");
+  const [colFilterImpType, setColFilterImpType] = useState<string>("");
+  const [colFilterProduct, setColFilterProduct] = useState<string>("");
+  const [colFilterPreProd, setColFilterPreProd] = useState<string>("");
+  const [colFilterPod, setColFilterPod] = useState<string>("");
+
+  // Multi-checkbox Blueprint Filter State with Portal Tracking
+  const [selectedBlueprintChecks, setSelectedBlueprintChecks] = useState<BlueprintCheckboxKey[]>([]);
+  const [isBlueprintDropdownOpen, setIsBlueprintDropdownOpen] = useState(false);
+  const [blueprintDropdownPos, setBlueprintDropdownPos] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const blueprintButtonRef = useRef<HTMLButtonElement>(null);
+  const blueprintPopupRef = useRef<HTMLDivElement>(null);
+
+  const [colFilterSetupData, setColFilterSetupData] = useState<string>("");
+  const [colFilterFixedAssignee, setColFilterFixedAssignee] = useState<string>("");
+  const [colFilterVarAssignee, setColFilterVarAssignee] = useState<string>("");
+  const [colFilterFixedStatus, setColFilterFixedStatus] = useState<string>("");
+  const [colFilterVarStatus, setColFilterVarStatus] = useState<string>("");
+  const [colFilterTestingStatus, setColFilterTestingStatus] = useState<string>("");
+  const [colFilterNotWorked, setColFilterNotWorked] = useState<string>("");
+
+  useEffect(() => {
+    const handleBridgeMessage = (event: MessageEvent) => {
+      if (event.data?.type === "ARC_EXTENSION_SYNC_CAPTURE" && event.data?.payload?.preprodMapHeaders) {
+        storeCapturedMapHeaders(event.data.payload.preprodMapHeaders);
+      }
+    };
+    window.addEventListener("message", handleBridgeMessage);
+    return () => window.removeEventListener("message", handleBridgeMessage);
+  }, []);
+
+  // Multi-menu Outside Click Handler
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      const target = e.target as Node;
+      if (
+        blueprintButtonRef.current &&
+        !blueprintButtonRef.current.contains(target) &&
+        blueprintPopupRef.current &&
+        !blueprintPopupRef.current.contains(target)
+      ) {
+        setIsBlueprintDropdownOpen(false);
+      }
+      if (moreMenuRef.current && !moreMenuRef.current.contains(target)) {
+        setIsMoreMenuOpen(false);
+      }
+    };
+
+    const handleScrollOrResize = () => {
+      if (isBlueprintDropdownOpen && blueprintButtonRef.current) {
+        const rect = blueprintButtonRef.current.getBoundingClientRect();
+        setBlueprintDropdownPos({ top: rect.bottom + 4, left: rect.left });
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    window.addEventListener("scroll", handleScrollOrResize, true);
+    window.addEventListener("resize", handleScrollOrResize);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      window.removeEventListener("scroll", handleScrollOrResize, true);
+      window.removeEventListener("resize", handleScrollOrResize);
+    };
+  }, [isBlueprintDropdownOpen]);
+
+  const toggleBlueprintFilter = (key: BlueprintCheckboxKey) => {
+    setSelectedBlueprintChecks((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
+
   const currentModalRecord = useMemo(() => {
     if (!activeDealerPopup) return null;
     const latest = records.find((r) => r.tekion_id === activeDealerPopup.tekion_id) || activeDealerPopup;
@@ -1145,26 +305,25 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     };
   }, [activeDealerPopup, records]);
 
-  const presetRange = useMemo(() => getTDaysRange(range), [range]);
-  const [fromDate, setFromDate] = useState(toInputDate(presetRange.fromDate));
-  const [toDate, setToDate] = useState(toInputDate(presetRange.toDate));
+  const presetRange = useMemo(() => (range === "ALL" ? null : getTDaysRange(range)), [range]);
+  const [fromDate, setFromDate] = useState(() => (presetRange ? toInputDate(presetRange.fromDate) : ""));
+  const [toDate, setToDate] = useState(() => (presetRange ? toInputDate(presetRange.toDate) : ""));
 
   useEffect(() => {
-    setFromDate(toInputDate(presetRange.fromDate));
-    setToDate(toInputDate(presetRange.toDate));
-  }, [range, presetRange.fromDate, presetRange.toDate]);
+    if (range === "ALL") {
+      setFromDate("");
+      setToDate("");
+    } else if (presetRange) {
+      setFromDate(toInputDate(presetRange.fromDate));
+      setToDate(toInputDate(presetRange.toDate));
+    }
+  }, [range, presetRange]);
 
-  const tapWorkordersUrl = useMemo(
-    () => buildTapWorkordersUrl(fromDate, toDate),
-    [fromDate, toDate]
-  );
-
+  const tapWorkordersUrl = useMemo(() => buildTapWorkordersUrl(fromDate, toDate), [fromDate, toDate]);
   const [botState, setBotState] = useState<BotState>(() => storesBotRunner.getState());
 
   useEffect(() => {
-    const unsubscribe = storesBotRunner.subscribe((state) => {
-      setBotState(state);
-    });
+    const unsubscribe = storesBotRunner.subscribe((state) => setBotState(state));
     return () => unsubscribe();
   }, []);
 
@@ -1181,17 +340,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
   const loadStatusesForStores = useCallback(async (stores: ExtendedStoreRecord[]) => {
     const tekionIds = stores.map((item) => item.tekion_id).filter(Boolean);
-
-    if (tekionIds.length === 0) {
-      return;
-    }
-
+    if (tekionIds.length === 0) return;
     try {
-      const statusMap = await fetchStoreOnboardingStatuses(tekionIds, {
-        chunkSize: 25,
-        concurrency: 3,
-      });
-
+      const statusMap = await fetchStoreOnboardingStatuses(tekionIds, { chunkSize: 25, concurrency: 3 });
       setRecords((prevRecords) => {
         const baseStores = prevRecords.length > 0 ? prevRecords : stores;
         const merged = withOnboardingStatuses(baseStores, statusMap);
@@ -1203,163 +354,118 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     }
   }, []);
 
-  const handleFetch = useCallback(
-    async (forceStatusRefresh = true) => {
-      setLoadingStores(true);
-      setError("");
-      setTokenExpiredMessage("");
+  const handleFetch = useCallback(async (forceStatusRefresh = true) => {
+    setLoadingStores(true);
+    setError("");
+    setTokenExpiredMessage("");
+    try {
+      // Fetch up to 150 days when on "ALL", otherwise fetch selected range
+      const fetchRange: TRange = range === "ALL" ? 150 : range;
+      const rawStores = await fetchStores(fetchRange);
+      const existingDbStores = await getStores();
+      const existingMap = new Map(existingDbStores.map((s) => [s.tekion_id, s]));
+      const vault = getStoredStatusVault();
 
-      try {
-        const rawStores = await fetchStores(range);
+      const fetchedStores: ExtendedStoreRecord[] = Array.from(
+        new Map<string, ExtendedStoreRecord>(
+          rawStores.map((store) => {
+            const existing = existingMap.get(store.tekion_id) as ExtendedStoreRecord | undefined;
+            const override = vault[store.tekion_id];
+            const base = mergeIncomingStore(existing, store);
+            const resolvedNotWorked = resolveDefaultNotWorked(store, override?.not_worked || existing?.not_worked);
 
-        const existingDbStores = await getStores();
-        const existingMap = new Map(existingDbStores.map((s) => [s.tekion_id, s]));
-        const vault = getStoredStatusVault();
+            return [
+              store.tekion_id,
+              {
+                ...base,
+                onboarding_project_id: store.onboarding_project_id || existing?.onboarding_project_id,
+                ds_onboarding_project_id: store.ds_onboarding_project_id || existing?.ds_onboarding_project_id,
+                fixed_ops_status: override?.fixed_ops_status || existing?.fixed_ops_status || existing?.configuration_status || "TO DO",
+                variable_ops_status: override?.variable_ops_status || existing?.variable_ops_status || existing?.configuration_status || "TO DO",
+                testing_status: override?.testing_status || existing?.testing_status || existing?.configuration_status || "TO DO",
+                not_worked: resolvedNotWorked,
+                custom_assignee: override?.custom_assignee || existing?.custom_assignee || (store as any).custom_assignee,
+                custom_variable_assignee: override?.custom_variable_assignee || existing?.custom_variable_assignee || (store as any).custom_variable_assignee,
+              },
+            ];
+          })
+        ).values()
+      );
 
-        const fetchedStores: ExtendedStoreRecord[] = Array.from(
-          new Map<string, ExtendedStoreRecord>(
-            rawStores.map((store) => {
-              const existing = existingMap.get(store.tekion_id) as ExtendedStoreRecord | undefined;
-              const override = vault[store.tekion_id];
-              const base = mergeIncomingStore(existing, store);
+      const fetchedIds = new Set(fetchedStores.map((s) => s.tekion_id));
+      const uniqueStores: ExtendedStoreRecord[] = [
+        ...fetchedStores,
+        ...(existingDbStores as ExtendedStoreRecord[]).filter((s) => !fetchedIds.has(s.tekion_id)),
+      ];
 
-              return [
-                store.tekion_id,
-                {
-                  ...base,
-                  onboarding_project_id: store.onboarding_project_id || existing?.onboarding_project_id,
-                  ds_onboarding_project_id: store.ds_onboarding_project_id || existing?.ds_onboarding_project_id,
-                  fixed_ops_status:
-                    override?.fixed_ops_status ||
-                    existing?.fixed_ops_status ||
-                    existing?.configuration_status ||
-                    "TO DO",
-                  variable_ops_status:
-                    override?.variable_ops_status ||
-                    existing?.variable_ops_status ||
-                    existing?.configuration_status ||
-                    "TO DO",
-                  testing_status:
-                    override?.testing_status ||
-                    existing?.testing_status ||
-                    existing?.configuration_status ||
-                    "TO DO",
-                  not_worked:
-                    override?.not_worked ||
-                    existing?.not_worked ||
-                    store.not_worked,
-                  custom_assignee:
-                    override?.custom_assignee ||
-                    existing?.custom_assignee ||
-                    (store as any).custom_assignee,
-                  custom_variable_assignee:
-                    override?.custom_variable_assignee ||
-                    existing?.custom_variable_assignee ||
-                    (store as any).custom_variable_assignee,
-                },
-              ];
-            })
-          ).values()
-        );
+      setRecords(uniqueStores);
+      await saveStores(uniqueStores);
+      showToast(`✅ Refreshed ${fetchedStores.length} stores`);
 
-        const fetchedIds = new Set(fetchedStores.map((s) => s.tekion_id));
-        const uniqueStores: ExtendedStoreRecord[] = [
-          ...fetchedStores,
-          ...(existingDbStores as ExtendedStoreRecord[]).filter((s) => !fetchedIds.has(s.tekion_id)),
-        ];
-
-        setRecords(uniqueStores);
-        await saveStores(uniqueStores);
-        showToast(`✅ Refreshed ${fetchedStores.length} stores (${uniqueStores.length} total kept)`);
-
-        void (async () => {
-          try {
-            const { updatedStores, hasChanges } = await pullStatusUpdatesFromGraph(uniqueStores);
-            const storesForProd = hasChanges ? updatedStores : uniqueStores;
-
-            if (hasChanges) {
-              setRecords((prev) => {
-                const safelyMerged = safelyMergeStatusFields(prev, updatedStores);
-
-                void saveStores(safelyMerged);
-                bulkUpdateStatusVault(
-                  safelyMerged.map((s) => ({
-                    tekionId: s.tekion_id,
-                    fixed_ops_status: s.fixed_ops_status,
-                    variable_ops_status: s.variable_ops_status,
-                    testing_status: s.testing_status,
-                    custom_assignee: s.custom_assignee,
-                    custom_variable_assignee: s.custom_variable_assignee,
-                    not_worked: s.not_worked,
-                  }))
-                );
-                return safelyMerged;
-              });
-              setTrackingTick((prev) => prev + 1);
-            }
-
-            void syncProdDealersToGraph(storesForProd);
-          } catch (e) {
-            logger.debug("Background Excel check skipped on fetch:", e);
+      void (async () => {
+        try {
+          const { updatedStores, hasChanges } = await pullStatusUpdatesFromGraph(uniqueStores);
+          const storesForProd = hasChanges ? updatedStores : uniqueStores;
+          if (hasChanges) {
+            setRecords((prev) => {
+              const safelyMerged = safelyMergeStatusFields(prev, updatedStores);
+              void saveStores(safelyMerged);
+              bulkUpdateStatusVault(
+                safelyMerged.map((s) => ({
+                  tekionId: s.tekion_id,
+                  fixed_ops_status: s.fixed_ops_status,
+                  variable_ops_status: s.variable_ops_status,
+                  testing_status: s.testing_status,
+                  custom_assignee: s.custom_assignee,
+                  custom_variable_assignee: s.custom_variable_assignee,
+                  not_worked: s.not_worked,
+                }))
+              );
+              return safelyMerged;
+            });
+            setTrackingTick((prev) => prev + 1);
           }
-        })();
-
-        if (forceStatusRefresh) {
-          void loadStatusesForStores(uniqueStores);
+          void syncProdDealersToGraph(storesForProd);
+        } catch (e) {
+          logger.debug("Background Excel check skipped on fetch:", e);
         }
-      } catch (err: unknown) {
-        logger.error("handleFetch failed", err);
+      })();
 
-        if (err instanceof ExpiredCaptureTokenError) {
-          setTokenExpiredMessage(err.message);
-          setError("");
-        } else {
-          setError(err instanceof Error ? err.message : "Failed to fetch stores");
-        }
-      } finally {
-        setLoadingStores(false);
+      if (forceStatusRefresh) {
+        void loadStatusesForStores(uniqueStores);
       }
-    },
-    [range, loadStatusesForStores, showToast]
-  );
+    } catch (err: unknown) {
+      if (err instanceof ExpiredCaptureTokenError) {
+        setTokenExpiredMessage(err.message);
+        setError("");
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to fetch stores");
+      }
+    } finally {
+      setLoadingStores(false);
+    }
+  }, [range, loadStatusesForStores, showToast]);
 
   const handleLoadIndexedDb = useCallback(async () => {
     try {
       const rawData = await getStores();
       const vault = getStoredStatusVault();
-
       const uniqueData: ExtendedStoreRecord[] = Array.from(
         new Map<string, ExtendedStoreRecord>(
           rawData.map((store) => {
             const override = vault[store.tekion_id];
+            const resolvedNotWorked = resolveDefaultNotWorked(store, override?.not_worked || store.not_worked);
+
             return [
               store.tekion_id,
               {
                 ...store,
-                fixed_ops_status:
-                  override?.fixed_ops_status ||
-                  store.fixed_ops_status ||
-                  store.configuration_status ||
-                  "TO DO",
-                variable_ops_status:
-                  override?.variable_ops_status ||
-                  store.variable_ops_status ||
-                  store.configuration_status ||
-                  "TO DO",
-                testing_status:
-                  override?.testing_status ||
-                  store.testing_status ||
-                  store.configuration_status ||
-                  "TO DO",
-                not_worked:
-                  override?.not_worked ||
-                  store.not_worked,
-                custom_assignee:
-                  override?.custom_assignee ||
-                  store.custom_assignee,
-                custom_variable_assignee:
-                  override?.custom_variable_assignee ||
-                  store.custom_variable_assignee,
+                fixed_ops_status: override?.fixed_ops_status || store.fixed_ops_status || store.configuration_status || "TO DO",
+                variable_ops_status: override?.variable_ops_status || store.variable_ops_status || store.configuration_status || "TO DO",
+                testing_status: override?.testing_status || store.testing_status || store.configuration_status || "TO DO",
+                not_worked: resolvedNotWorked,
+                custom_assignee: override?.custom_assignee || store.custom_assignee,
+                custom_variable_assignee: override?.custom_variable_assignee || store.custom_variable_assignee,
               },
             ];
           })
@@ -1373,11 +479,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           try {
             const { updatedStores, hasChanges } = await pullStatusUpdatesFromGraph(uniqueData);
             const storesForProd = hasChanges ? updatedStores : uniqueData;
-
             if (hasChanges) {
               setRecords((prev) => {
                 const safelyMerged = safelyMergeStatusFields(prev, updatedStores);
-
                 void saveStores(safelyMerged);
                 bulkUpdateStatusVault(
                   safelyMerged.map((s) => ({
@@ -1392,11 +496,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                 );
                 return safelyMerged;
               });
-
               setTrackingTick((prev) => prev + 1);
-              showToast("⚡ Refreshed & updated cache from Excel");
+              showToast("⚡ Cache updated from Excel");
             }
-
             void syncProdDealersToGraph(storesForProd);
           } catch (e) {
             logger.debug("Initial Excel cache pull skipped:", e);
@@ -1404,7 +506,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         })();
       }
 
-      if (shouldAutoFetchStatuses(uniqueData) && uniqueData.length > 0) {
+      if (uniqueData.some((row) => !isSameLocalDay(row.onboarding_status_fetched_at)) && uniqueData.length > 0) {
         void loadStatusesForStores(uniqueData);
       }
     } catch (err: unknown) {
@@ -1430,9 +532,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     }
 
     setRecords((prev) => {
-      const updatedRecords = prev.map((r) =>
-        r.tekion_id === tekion_id ? { ...r, [field]: value } : r
-      );
+      const updatedRecords = prev.map((r) => (r.tekion_id === tekion_id ? { ...r, [field]: value } : r));
       void saveStores(updatedRecords).catch((err) => logger.error("Failed to save DB", err));
       return updatedRecords;
     });
@@ -1451,118 +551,84 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     })();
   };
 
-  const updateStoreNotWorked = useCallback(
-    async (tekion_id: string, value: string) => {
-      setRecords((prev) => {
-        const updated = prev.map((r) =>
-          r.tekion_id === tekion_id ? { ...r, not_worked: value } : r
-        );
-        void saveStores(updated).catch((err) => logger.error("Failed saving not_worked", err));
-        return updated;
-      });
+  const updateStoreNotWorked = useCallback(async (tekion_id: string, value: string) => {
+    setRecords((prev) => {
+      const updated = prev.map((r) => (r.tekion_id === tekion_id ? { ...r, not_worked: value } : r));
+      void saveStores(updated).catch((err) => logger.error("Failed saving not_worked", err));
+      return updated;
+    });
+    saveNotWorkedToVault(tekion_id, value);
+    bulkUpdateStatusVault([{ tekionId: tekion_id, not_worked: value }]);
+    showToast(`✅ Updated 'Not Worked?' to ${value || "Handled by ARC"}`);
+    void (async () => {
+      const success = await patchSingleStoreNotWorkedInGraph(tekion_id, value);
+      if (success) showToast(`✅ Synced 'Not Worked?' to Excel`);
+    })();
+  }, [showToast]);
 
-      saveNotWorkedToVault(tekion_id, value);
-      bulkUpdateStatusVault([{ tekionId: tekion_id, not_worked: value }]);
-      showToast(`✅ Updated 'Not Worked?' to ${value || "Handled by ARC"}`);
+  const updateStoreFixedAssignee = useCallback(async (tekion_id: string, newAssignee: AssigneeName | "") => {
+    const target = records.find((r) => r.tekion_id === tekion_id);
+    if (target) recordManualAssignment(target, newAssignee);
+    setRecords((prev) => {
+      const updated = prev.map((r) => (r.tekion_id === tekion_id ? { ...r, custom_assignee: newAssignee } : r));
+      void saveStores(updated).catch((err) => logger.error("Failed saving assignee", err));
+      return updated;
+    });
+    bulkUpdateStatusVault([{ tekionId: tekion_id, custom_assignee: newAssignee }]);
+    showToast(`✅ Assigned Fixed Ops to ${newAssignee || "Unassigned"}`);
+    void (async () => {
+      const success = await patchSingleStoreAssigneeInGraph(tekion_id, newAssignee);
+      if (success) showToast(`✅ Synced Fixed Ops Assignee to Excel`);
+    })();
+  }, [showToast, records]);
 
-      void (async () => {
-        const success = await patchSingleStoreNotWorkedInGraph(tekion_id, value);
-        if (success) {
-          showToast(`✅ Synced 'Not Worked?' to Excel`);
+  const updateStoreVariableAssignee = useCallback(async (tekion_id: string, newAssignee: AssigneeName | "") => {
+    setRecords((prev) => {
+      const updated = prev.map((r) => (r.tekion_id === tekion_id ? { ...r, custom_variable_assignee: newAssignee } : r));
+      void saveStores(updated).catch((err) => logger.error("Failed saving variable assignee", err));
+      return updated;
+    });
+    bulkUpdateStatusVault([{ tekionId: tekion_id, custom_variable_assignee: newAssignee }]);
+    showToast(`✅ Assigned Variable Ops to ${newAssignee || "Unassigned"}`);
+    void (async () => {
+      const success = await patchSingleStoreVariableAssigneeInGraph(tekion_id, newAssignee);
+      if (success) showToast(`✅ Synced Variable Ops Assignee to Excel`);
+    })();
+  }, [showToast]);
+
+  const handleTasksSnapshot = useCallback((tekionId: string, tasks: any, complete: boolean) => {
+    const sum = (list: any[]) =>
+      (list || []).reduce((acc, t) => acc + Number(t.taskAttachmentCount ?? t.attachments?.length ?? 0), 0);
+    const fixedNow = sum(tasks.parts) + sum(tasks.service);
+    const varNow = sum(tasks.accounting);
+
+    setRecords((prev) => {
+      let changed: ExtendedStoreRecord | null = null;
+      const next = prev.map((r) => {
+        if (r.tekion_id !== tekionId) return r;
+        const fixed = complete ? fixedNow : Math.max(r.fixed_ops_attachments ?? 0, fixedNow);
+        const variable = complete ? varNow : Math.max(r.variable_ops_attachments ?? 0, varNow);
+        if (fixed === r.fixed_ops_attachments && variable === r.variable_ops_attachments && r.attachments_incomplete === !complete) {
+          return r;
         }
-      })();
-    },
-    [showToast]
-  );
-
-  const updateStoreFixedAssignee = useCallback(
-    async (tekion_id: string, newAssignee: AssigneeName | "") => {
-      const target = records.find((r) => r.tekion_id === tekion_id);
-      if (target) recordManualAssignment(target, newAssignee);
-      setRecords((prev) => {
-        const updated = prev.map((r) =>
-          r.tekion_id === tekion_id ? { ...r, custom_assignee: newAssignee } : r
-        );
-        void saveStores(updated).catch((err) => logger.error("Failed saving assignee", err));
-        return updated;
+        changed = {
+          ...r,
+          fixed_ops_attachments: fixed,
+          variable_ops_attachments: variable,
+          attachments_incomplete: !complete,
+          fetched_blueprint_tasks: {
+            partsTasks: tasks.parts,
+            serviceTasks: tasks.service,
+            accountingTasks: tasks.accounting,
+            fetchedAt: new Date().toISOString(),
+          },
+        };
+        return changed;
       });
-
-      bulkUpdateStatusVault([{ tekionId: tekion_id, custom_assignee: newAssignee }]);
-      showToast(`✅ Updated Fixed Ops Assignee to ${newAssignee || "Unassigned"}`);
-
-      void (async () => {
-        const success = await patchSingleStoreAssigneeInGraph(tekion_id, newAssignee);
-        if (success) {
-          showToast(`✅ Synced Fixed Ops Assignee to Excel`);
-        }
-      })();
-    },
-    [showToast, records]
-  );
-
-  const updateStoreVariableAssignee = useCallback(
-    async (tekion_id: string, newAssignee: AssigneeName | "") => {
-      setRecords((prev) => {
-        const updated = prev.map((r) =>
-          r.tekion_id === tekion_id ? { ...r, custom_variable_assignee: newAssignee } : r
-        );
-        void saveStores(updated).catch((err) => logger.error("Failed saving variable assignee", err));
-        return updated;
-      });
-
-      bulkUpdateStatusVault([{ tekionId: tekion_id, custom_variable_assignee: newAssignee }]);
-      showToast(`✅ Updated Variable Ops Assignee to ${newAssignee || "Unassigned"}`);
-
-      void (async () => {
-        const success = await patchSingleStoreVariableAssigneeInGraph(tekion_id, newAssignee);
-        if (success) {
-          showToast(`✅ Synced Variable Ops Assignee to Excel`);
-        }
-      })();
-    },
-    [showToast]
-  );
-
-  const handleTasksSnapshot = useCallback(
-    (tekionId: string, tasks: any, complete: boolean) => {
-      const sum = (list: any[]) =>
-        (list || []).reduce((acc, t) => acc + Number(t.taskAttachmentCount ?? t.attachments?.length ?? 0), 0);
-      const fixedNow = sum(tasks.parts) + sum(tasks.service);
-      const varNow = sum(tasks.accounting);
-
-      setRecords((prev) => {
-        let changed: ExtendedStoreRecord | null = null;
-        const next = prev.map((r) => {
-          if (r.tekion_id !== tekionId) return r;
-          const fixed = complete ? fixedNow : Math.max(r.fixed_ops_attachments ?? 0, fixedNow);
-          const variable = complete ? varNow : Math.max(r.variable_ops_attachments ?? 0, varNow);
-          if (
-            fixed === r.fixed_ops_attachments &&
-            variable === r.variable_ops_attachments &&
-            r.attachments_incomplete === !complete
-          ) {
-            return r;
-          }
-          changed = {
-            ...r,
-            fixed_ops_attachments: fixed,
-            variable_ops_attachments: variable,
-            attachments_incomplete: !complete,
-            fetched_blueprint_tasks: {
-              partsTasks: tasks.parts,
-              serviceTasks: tasks.service,
-              accountingTasks: tasks.accounting,
-              fetchedAt: new Date().toISOString(),
-            },
-          };
-          return changed;
-        });
-        if (changed) void saveStores([changed]);
-        return changed ? next : prev;
-      });
-    },
-    []
-  );
+      if (changed) void saveStores([changed]);
+      return changed ? next : prev;
+    });
+  }, []);
 
   useEffect(() => {
     if (records.length === 0) return;
@@ -1575,7 +641,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
   useEffect(() => {
     if (records.length === 0) return;
     reconcileAssignments(records);
-
     const config = loadAssigneeConfig();
     if (!config.autoAssignEnabled) return;
 
@@ -1597,28 +662,22 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       for (const u of updated) {
         try {
           await patchSingleStoreAssigneeInGraph(u.tekion_id, String((u as ExtendedStoreRecord).custom_assignee));
-        } catch {
-          /* Excel catches up on next sync */
-        }
+        } catch {}
       }
     })();
   }, [records, showToast]);
 
   useEffect(() => {
     let isCancelled = false;
-
     const checkForExcelUpdates = async () => {
-      const currentRecords = records;
-      if (currentRecords.length === 0 || syncingExcel) return;
-
-      const { updatedStores, hasChanges } = await pullStatusUpdatesFromGraph(currentRecords);
-      const activeList = updatedStores.length > 0 ? updatedStores : currentRecords;
+      if (records.length === 0 || syncingExcel) return;
+      const { updatedStores, hasChanges } = await pullStatusUpdatesFromGraph(records);
+      const activeList = updatedStores.length > 0 ? updatedStores : records;
 
       if (!isCancelled && hasChanges) {
         setRecords((prev) => {
           const merged = safelyMergeStatusFields(prev, updatedStores);
           void saveStores(merged);
-
           bulkUpdateStatusVault(
             merged.map((s) => ({
               tekionId: s.tekion_id,
@@ -1632,22 +691,15 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           );
           return merged;
         });
-
         setTrackingTick((prev) => prev + 1);
         showToast("⚡ Auto-synced updates from Excel");
       }
-
       void syncProdDealersToGraph(activeList);
     };
 
-    const interval = setInterval(() => {
-      void checkForExcelUpdates();
-    }, 12000);
-
+    const interval = setInterval(() => void checkForExcelUpdates(), 12000);
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        void checkForExcelUpdates();
-      }
+      if (document.visibilityState === "visible") void checkForExcelUpdates();
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
@@ -1662,41 +714,99 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     () => Array.from(new Set(records.map((r) => r.superpod_id).filter(Boolean))).sort(),
     [records]
   );
-
   const implementationTypeOptions = useMemo(
-    () =>
-      Array.from(
-        new Set(records.map((r) => cleanImpType(r.implementation_type)).filter(Boolean))
-      ).sort(),
+    () => Array.from(new Set(records.map((r) => cleanImpType(r.implementation_type)).filter(Boolean))).sort(),
     [records]
   );
-
   const productTypeOptions = useMemo(() => ["ARC", "CRM", "Analytics"], []);
+
+  const phaseStatusOptions = useMemo(() => {
+    const set = new Set<string>();
+    records.forEach((r) => {
+      if (r.fixed_ops_status) set.add(r.fixed_ops_status);
+      if (r.variable_ops_status) set.add(r.variable_ops_status);
+      if (r.testing_status) set.add(r.testing_status);
+    });
+    if (set.size === 0) {
+      set.add("TO DO");
+      set.add("In Progress");
+      set.add("Completed");
+    }
+    return Array.from(set).filter(Boolean).sort();
+  }, [records]);
 
   const monthOptions = useMemo(() => {
     const map = new Map<string, number>();
-
     records.forEach((r) => {
       const label = getMonthYearString(r.launch_date);
-      if (label) {
-        map.set(label, getMonthYearSortKey(r.launch_date));
-      }
+      if (label) map.set(label, getMonthYearSortKey(r.launch_date));
     });
-
-    return Array.from(map.entries())
-      .sort((a, b) => a[1] - b[1])
-      .map((entry) => entry[0]);
+    return Array.from(map.entries()).sort((a, b) => a[1] - b[1]).map((entry) => entry[0]);
   }, [records]);
+
+  const clearColumnFilters = useCallback(() => {
+    setColFilterStore("");
+    setColFilterMonth("");
+    setColFilterImpType("");
+    setColFilterProduct("");
+    setColFilterPreProd("");
+    setColFilterPod("");
+    setSelectedBlueprintChecks([]);
+    setColFilterSetupData("");
+    setColFilterFixedAssignee("");
+    setColFilterVarAssignee("");
+    setColFilterFixedStatus("");
+    setColFilterVarStatus("");
+    setColFilterTestingStatus("");
+    setColFilterNotWorked("");
+  }, []);
+
+  const hasAnyColumnFilter = useMemo(() => {
+    return Boolean(
+      colFilterStore ||
+      colFilterMonth ||
+      colFilterImpType ||
+      colFilterProduct ||
+      colFilterPreProd ||
+      colFilterPod ||
+      selectedBlueprintChecks.length > 0 ||
+      colFilterSetupData ||
+      colFilterFixedAssignee ||
+      colFilterVarAssignee ||
+      colFilterFixedStatus ||
+      colFilterVarStatus ||
+      colFilterTestingStatus ||
+      colFilterNotWorked
+    );
+  }, [
+    colFilterStore,
+    colFilterMonth,
+    colFilterImpType,
+    colFilterProduct,
+    colFilterPreProd,
+    colFilterPod,
+    selectedBlueprintChecks.length,
+    colFilterSetupData,
+    colFilterFixedAssignee,
+    colFilterVarAssignee,
+    colFilterFixedStatus,
+    colFilterVarStatus,
+    colFilterTestingStatus,
+    colFilterNotWorked,
+  ]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const fromUnix = startOfDayUnix(fromDate);
-    const toUnix = endOfDayUnix(toDate);
+    const fromUnix = fromDate ? startOfDayUnix(fromDate) : null;
+    const toUnix = toDate ? endOfDayUnix(toDate) : null;
+
+    const cStore = colFilterStore.trim().toLowerCase();
+    const cPreProd = colFilterPreProd.trim().toLowerCase();
 
     return records
       .filter((item) => {
-        const fixedAssignee = getStoreFixedAssignee(item);
-        const variableAssignee = getStoreVariableAssignee(item);
+        const fixedAssignee = resolveStoreAssignee(item);
+        const variableAssignee = item.custom_variable_assignee || "";
 
         const matchesSearch =
           !q ||
@@ -1711,74 +821,147 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
 
         const matchesSuperpod = !superpodId || item.superpod_id === superpodId;
         const normalizedImp = cleanImpType(item.implementation_type);
-        const matchesImplementationType =
-          !implementationType || normalizedImp === implementationType;
-        const matchesProductType =
-          !productType ||
-          (item.product_types || "").toLowerCase().includes(productType.toLowerCase());
-        const matchesMonth =
-          !selectedMonth || getMonthYearString(item.launch_date) === selectedMonth;
+        const matchesImplementationType = !implementationType || normalizedImp === implementationType;
 
-        const matchesFixedAssignee = !fixedAssigneeFilter || fixedAssignee === fixedAssigneeFilter;
-        const matchesVarAssignee = !variableAssigneeFilter || variableAssignee === variableAssigneeFilter;
-
-        const matchesNotWorked =
-          !notWorkedFilter
-            ? true
-            : notWorkedFilter === "HANDLED_BY_ARC"
-            ? !item.not_worked || item.not_worked.trim() === ""
-            : item.not_worked === notWorkedFilter;
-
+        // Date Matcher: If fromDate or toDate is not set (e.g. range === "ALL"), matchesDate is true
         const launch = parseLaunchDate(item.launch_date);
         const launchUnix = launch ? Math.floor(launch.getTime() / 1000) : null;
         const matchesDate =
-          launchUnix == null ? true : launchUnix >= fromUnix && launchUnix <= toUnix;
+          (!fromUnix || (launchUnix !== null && launchUnix >= fromUnix)) &&
+          (!toUnix || (launchUnix !== null && launchUnix <= toUnix));
 
-        return (
-          matchesSearch &&
-          matchesSuperpod &&
-          matchesImplementationType &&
-          matchesProductType &&
-          matchesMonth &&
-          matchesFixedAssignee &&
-          matchesVarAssignee &&
-          matchesNotWorked &&
-          matchesDate
-        );
+        if (
+          !matchesSearch ||
+          !matchesSuperpod ||
+          !matchesImplementationType ||
+          !matchesDate
+        ) {
+          return false;
+        }
+
+        if (
+          cStore &&
+          !(
+            item.tekion_id.toLowerCase().includes(cStore) ||
+            item.dealer_id.toLowerCase().includes(cStore) ||
+            (item.dba_name || "").toLowerCase().includes(cStore)
+          )
+        ) {
+          return false;
+        }
+
+        if (colFilterMonth && getMonthYearString(item.launch_date) !== colFilterMonth) {
+          return false;
+        }
+
+        if (colFilterImpType && normalizedImp !== colFilterImpType) {
+          return false;
+        }
+
+        if (colFilterProduct && !(item.product_types || "").toLowerCase().includes(colFilterProduct.toLowerCase())) {
+          return false;
+        }
+
+        if (cPreProd && !(item.pre_production_environment_status || "").toLowerCase().includes(cPreProd)) {
+          return false;
+        }
+
+        if (colFilterPod && item.superpod_id !== colFilterPod) {
+          return false;
+        }
+
+        // Blueprint Multi Checkbox Filters
+        if (selectedBlueprintChecks.length > 0) {
+          const bp = item.blueprint_statuses;
+          if (!bp) return false;
+
+          for (const reqCheck of selectedBlueprintChecks) {
+            if (reqCheck === "parts" && !isBlueprintDone(bp.parts)) return false;
+            if (reqCheck === "service" && !isBlueprintDone(bp.service)) return false;
+            if (reqCheck === "accounting" && !isBlueprintDone(bp.accounting)) return false;
+            if (reqCheck === "crm" && !isBlueprintDone(bp.crm)) return false;
+            if (reqCheck === "analytics" && !isBlueprintDone(bp.analytics)) return false;
+          }
+        }
+
+        if (colFilterSetupData) {
+          const isComplete = isSetupDataComplete(item);
+          if (colFilterSetupData === "COMPLETE" && !isComplete) return false;
+          if (colFilterSetupData === "INCOMPLETE" && (isComplete || Boolean(item.setup_data_error))) return false;
+          if (colFilterSetupData === "ERROR" && !item.setup_data_error) return false;
+        }
+
+        if (colFilterFixedAssignee) {
+          if (colFilterFixedAssignee === "UNASSIGNED") {
+            if (fixedAssignee) return false;
+          } else if (fixedAssignee !== colFilterFixedAssignee) {
+            return false;
+          }
+        }
+
+        if (colFilterVarAssignee) {
+          if (colFilterVarAssignee === "UNASSIGNED") {
+            if (variableAssignee) return false;
+          } else if (variableAssignee !== colFilterVarAssignee) {
+            return false;
+          }
+        }
+
+        if (colFilterFixedStatus && item.fixed_ops_status !== colFilterFixedStatus) {
+          return false;
+        }
+
+        if (colFilterVarStatus && item.variable_ops_status !== colFilterVarStatus) {
+          return false;
+        }
+
+        if (colFilterTestingStatus && item.testing_status !== colFilterTestingStatus) {
+          return false;
+        }
+
+        if (colFilterNotWorked) {
+          if (colFilterNotWorked === "HANDLED_BY_ARC") {
+            if (item.not_worked && item.not_worked.trim() !== "") return false;
+          } else if (item.not_worked !== colFilterNotWorked) {
+            return false;
+          }
+        }
+
+        return true;
       })
       .sort((a, b) => {
         const aDate = parseLaunchDate(a.launch_date);
         const bDate = parseLaunchDate(b.launch_date);
-
-        const aTime = aDate ? aDate.getTime() : Number.MAX_SAFE_INTEGER;
-        const bTime = bDate ? bDate.getTime() : Number.MAX_SAFE_INTEGER;
-
-        return aTime - bTime;
+        return (aDate ? aDate.getTime() : Number.MAX_SAFE_INTEGER) - (bDate ? bDate.getTime() : Number.MAX_SAFE_INTEGER);
       });
   }, [
     records,
     search,
     superpodId,
     implementationType,
-    productType,
-    selectedMonth,
-    fixedAssigneeFilter,
-    variableAssigneeFilter,
-    notWorkedFilter,
     fromDate,
     toDate,
+    colFilterStore,
+    colFilterMonth,
+    colFilterImpType,
+    colFilterProduct,
+    colFilterPreProd,
+    colFilterPod,
+    selectedBlueprintChecks,
+    colFilterSetupData,
+    colFilterFixedAssignee,
+    colFilterVarAssignee,
+    colFilterFixedStatus,
+    colFilterVarStatus,
+    colFilterTestingStatus,
+    colFilterNotWorked,
   ]);
 
   const persistSetupData = useCallback(async (tekionId: string, setupData: StoreSetupData) => {
     setRecords((prev) => {
       const updated = prev.map((row) =>
         row.tekion_id === tekionId
-          ? {
-              ...row,
-              setup_data: setupData,
-              setup_data_fetched_at: setupData.fetchedAt,
-              setup_data_error: "",
-            }
+          ? { ...row, setup_data: setupData, setup_data_fetched_at: setupData.fetchedAt, setup_data_error: "" }
           : row
       );
       void saveStores(updated);
@@ -1791,9 +974,10 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     let fetched = 0;
     let skipped = 0;
     let failed = 0;
+    let mapFallbacks = 0;
+
     try {
       const latestMap = new Map(records.map((r) => [r.tekion_id, r]));
-
       const queue = filtered.filter((row) => {
         const current = latestMap.get(row.tekion_id) ?? row;
         const complete = isSetupDataComplete(current);
@@ -1804,43 +988,76 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       for (let i = 0; i < queue.length; i++) {
         const current = latestMap.get(queue[i].tekion_id) ?? queue[i];
         setTapSyncProgress(`Setup ${i + 1}/${queue.length}`);
+
+        let setupData: StoreSetupData | undefined;
+        let setupError = "";
+
         try {
-          const setupData = await fetchSetupDataForStore(current, { force: true });
-          await persistSetupData(current.tekion_id, setupData);
+          setupData = await fetchSetupDataForStore(current, { force: true });
+        } catch (err: unknown) {
+          setupError = err instanceof Error ? err.message : "Setup Data Fetch Failed";
+        }
+
+        const isNowComplete = setupData ? isSetupDataComplete({ ...current, setup_data: setupData }) : false;
+
+        let preprodValidation: PreprodValidationResult | undefined;
+        if (!isNowComplete) {
+          const tenantCandidate = current.tenant_code || (current as any).tenant_name || "";
+          if (tenantCandidate) {
+            setTapSyncProgress(`MAP Fallback ${i + 1}/${queue.length}`);
+            try {
+              preprodValidation = await executePreprodMapPipeline(tenantCandidate, current.dealer_id);
+              mapFallbacks++;
+            } catch (mapErr) {
+              logger.warn(`MAP fallback failed for ${tenantCandidate}:`, mapErr);
+            }
+          }
+        }
+
+        setRecords((prev) => {
+          const updated = prev.map((row) =>
+            row.tekion_id === current.tekion_id
+              ? {
+                  ...row,
+                  ...(setupData
+                    ? { setup_data: setupData, setup_data_fetched_at: setupData.fetchedAt }
+                    : {}),
+                  setup_data_error: setupError,
+                  preprod_validation: preprodValidation ?? row.preprod_validation,
+                }
+              : row
+          );
+          void saveStores(updated);
+          return updated;
+        });
+
+        if (setupData && isNowComplete) {
           fetched++;
-        } catch (error: unknown) {
+        } else {
           failed++;
-          logger.error("Failed setup data fetch for row", {
-            dealerId: current.dealer_id,
-            tekionId: current.tekion_id,
-            message: error instanceof Error ? error.message : "Unknown error",
-          });
         }
       }
 
       showToast(
-        `✅ Setup data: ${fetched} fetched, ${skipped} already complete (skipped)` +
-          (failed ? `, ${failed} failed` : "")
+        `✅ Processed ${queue.length} stores (${fetched} setup complete, ${skipped} already complete, ${mapFallbacks} fallback MAP verified)`
       );
     } catch (error: unknown) {
-      showToast(`❌ ${error instanceof Error ? error.message : "Failed setup fetch"}`);
+      showToast(`❌ ${error instanceof Error ? error.message : "Failed batch fetch"}`);
     } finally {
       setTapSyncProgress("");
       setLoadingSetupAll(false);
     }
-  }, [filtered, records, persistSetupData, showToast]);
+  }, [filtered, records, showToast]);
 
   const handleSendAllThreeReportsManual = async () => {
     if (records.length === 0) {
       showToast("❌ No store records available to evaluate.");
       return;
     }
-
     if (!isSlackSessionActive()) {
       showToast("❌ Slack session inactive. Please connect Slack first.");
       return;
     }
-
     setDispatching3Reports(true);
     try {
       const result = await dispatchAllThreeReports(records, { force: true });
@@ -1850,9 +1067,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         showToast(`⚠ ${result.reason || "Failed to dispatch reports"}`);
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Failed to dispatch reports";
-      logger.error("Failed to send 3 reports", err);
-      showToast(`❌ ${msg}`);
+      showToast(`❌ ${err instanceof Error ? err.message : "Failed to dispatch reports"}`);
     } finally {
       setDispatching3Reports(false);
     }
@@ -1863,24 +1078,14 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       showToast("❌ No store records available to evaluate.");
       return;
     }
-
     setSyncingTapStatuses(true);
     setTapSyncProgress("Starting TAP scan...");
-
     try {
       const { updatedStores, updatedCount } = await batchFetchRealTapStatuses(
         records,
-        (processed, total, updated) => {
-          setTapSyncProgress(`${processed}/${total} (Updated: ${updated})`);
-        },
+        (processed, total, updated) => setTapSyncProgress(`${processed}/${total} (Updated: ${updated})`),
         (updatedStore) => {
-          setRecords((prev) => {
-            const merged = safelyMergeStatusFields(
-              prev,
-              prev.map((r) => (r.tekion_id === updatedStore.tekion_id ? updatedStore : r))
-            );
-            return merged;
-          });
+          setRecords((prev) => safelyMergeStatusFields(prev, prev.map((r) => (r.tekion_id === updatedStore.tekion_id ? updatedStore : r))));
           void saveStores([updatedStore]);
         }
       );
@@ -1889,7 +1094,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         setRecords((prev) => {
           const merged = safelyMergeStatusFields(prev, updatedStores);
           void saveStores(merged);
-
           bulkUpdateStatusVault(
             merged.map((s) => ({
               tekionId: s.tekion_id,
@@ -1904,22 +1108,13 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           return merged;
         });
         setTrackingTick((prev) => prev + 1);
-
-        syncStoresToGraphWorkbook(updatedStores)
-          .then(() => {
-            logger.info("Successfully synced updated TAP statuses to Excel");
-          })
-          .catch((err) => {
-            logger.warn("Excel sync skipped or Graph token expired:", err);
-          });
-
+        void syncStoresToGraphWorkbook(updatedStores);
         showToast(`✅ Synced real TAP statuses & attachments for ${updatedCount} store(s)!`);
       } else {
         showToast("ℹ Checked TAP tasks: No changes found.");
       }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "TAP batch sync failed";
-      showToast(`❌ ${msg}`);
+      showToast(`❌ ${err instanceof Error ? err.message : "TAP batch sync failed"}`);
     } finally {
       setSyncingTapStatuses(false);
       setTapSyncProgress("");
@@ -1927,9 +1122,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
   };
 
   const exportJson = () => {
-    const blob = new Blob([JSON.stringify(filtered, null, 2)], {
-      type: "application/json",
-    });
+    const blob = new Blob([JSON.stringify(filtered, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -1953,17 +1146,13 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       showToast("❌ No records available to sync");
       return;
     }
-
     setSyncingExcel(true);
-
     try {
       const result = await syncStoresToGraphWorkbook(records);
-
       if (result.updatedStores && result.updatedStores.length > 0) {
         setRecords((prev) => {
           const merged = safelyMergeStatusFields(prev, result.updatedStores!);
           void saveStores(merged);
-
           bulkUpdateStatusVault(
             merged.map((s) => ({
               tekionId: s.tekion_id,
@@ -1977,13 +1166,9 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           );
           return merged;
         });
-
         setTrackingTick((prev) => prev + 1);
       }
-
-      showToast(
-        `✅ Synced & merged ${result.rowCount} stores (${result.sheetCount} sheets)`
-      );
+      showToast(`✅ Synced & merged ${result.rowCount} stores (${result.sheetCount} sheets)`);
     } catch (err: unknown) {
       showToast(`❌ ${err instanceof Error ? err.message : "Graph sync failed"}`);
     } finally {
@@ -1995,119 +1180,182 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     setSearch("");
     setSuperpodId("");
     setImplementationType("");
-    setProductType("");
-    setSelectedMonth("");
-    setFixedAssigneeFilter("");
-    setVariableAssigneeFilter("");
-    setNotWorkedFilter("");
-    setFromDate(toInputDate(presetRange.fromDate));
-    setToDate(toInputDate(presetRange.toDate));
+    setRange("ALL");
+    setFromDate("");
+    setToDate("");
+    clearColumnFilters();
   };
 
   return (
     <div className="stores-shell">
+      {/* Sleek, Non-Intrusive Top Bar */}
       <div className="stores-topbar">
         <div className="stores-topbar-left">
-          <button className="btn-secondary btn-sm" onClick={onBack}>
-            ← Back
-          </button>
+          <button className="btn-secondary btn-sm" onClick={onBack}>← Back</button>
           <div>
             <div className="stores-page-title">🏬 Store Onboarding Tracker</div>
-            <div className="stores-page-subtitle">
-              Manage blueprints, operational sign-offs, and go-live readiness
-            </div>
+            <div className="stores-page-subtitle">Blueprints, operational sign-offs, and go-live readiness</div>
           </div>
         </div>
 
         <div className="stores-topbar-right">
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, marginRight: 8 }}>
-            <button
-              type="button"
-              className={`btn-sm ${botState.enabled ? "btn-postman" : "btn-secondary"}`}
-              onClick={() => storesBotRunner.setEnabled(!botState.enabled)}
-              style={{ fontWeight: 700 }}
-              title={botState.enabled ? "Click to Pause Autonomous Bot" : "Click to Enable Autonomous Bot"}
-            >
-              {botState.enabled ? "🤖 Bot: ON" : "⏸ Bot: OFF"}
-            </button>
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 600,
-                color: botState.error ? "#f87171" : botState.enabled ? "#4ade80" : "#94a3b8",
-                maxWidth: 240,
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {botState.statusText}
+          {/* Subtle Live Bot Capsule */}
+          <div
+            className="stores-bot-capsule"
+            onClick={() => storesBotRunner.setEnabled(!botState.enabled)}
+            title={botState.enabled ? "Click to Pause Bot" : "Click to Enable Bot"}
+          >
+            <span className={`stores-bot-dot ${botState.enabled ? "on" : "off"}`} />
+            <span style={{ fontWeight: 700, color: botState.enabled ? "#4ade80" : "#94a3b8" }}>
+              {botState.enabled ? "Bot Active" : "Bot Paused"}
+            </span>
+            <span style={{ color: "#64748b", fontSize: 10 }}>
+              {botState.statusText ? `• ${botState.statusText}` : ""}
             </span>
           </div>
 
-          <button className="btn-secondary btn-sm" onClick={() => void handleLoadIndexedDb()}>
-            Cache
-          </button>
-
-          <div className="stores-export-group">
-            <button className="btn-secondary btn-sm" onClick={handleExportExcel}>
-              Export Excel
+          {/* Primary Operations Strip */}
+          <div className="stores-toolbar-group">
+            <button
+              className="btn-secondary btn-sm"
+              onClick={() => void handleFetchSetupVisible()}
+              disabled={loadingSetupAll}
+              title="Batch fetch setup data (and run MAP 2nd automation on errors)"
+            >
+              {loadingSetupAll ? "⏳ Setup..." : "🧩 Setup Data"}
             </button>
-            <button className="btn-secondary btn-sm" onClick={exportJson}>
-              JSON
+            <button
+              className="btn-secondary btn-sm"
+              onClick={() => void handleSyncRealTapStatuses()}
+              disabled={syncingTapStatuses || Boolean(tokenExpiredMessage) || records.length === 0}
+              style={{ color: "#38bdf8" }}
+              title="Fetch real blueprint tasks and attachment counts from TAP"
+            >
+              {syncingTapStatuses ? `⏳ ${tapSyncProgress || "Syncing..."}` : "⚡ Sync TAP"}
+            </button>
+            <button
+              className="btn-secondary btn-sm"
+              onClick={() => void handleSyncExcel()}
+              disabled={syncingExcel || Boolean(tokenExpiredMessage)}
+              title="Two-way sync with SharePoint Excel"
+            >
+              {syncingExcel ? "⏳..." : "☁ Sync Excel"}
             </button>
           </div>
 
-          <button
-            className="btn-secondary btn-sm"
-            onClick={() => void handleSyncExcel()}
-            disabled={syncingExcel || Boolean(tokenExpiredMessage)}
-          >
-            {syncingExcel ? "⏳ Syncing..." : "☁ Sync Excel"}
-          </button>
+          {/* Secondary Utilities Dropdown Menu */}
+          <div style={{ position: "relative" }} ref={moreMenuRef}>
+            <button
+              className="btn-secondary btn-sm"
+              onClick={() => setIsMoreMenuOpen((prev) => !prev)}
+              title="Exports and background tasks"
+            >
+              ⚙ Tools ▾
+            </button>
+            {isMoreMenuOpen && (
+              <div
+                style={{
+                  position: "absolute",
+                  right: 0,
+                  top: "100%",
+                  marginTop: 6,
+                  background: "#0f172a",
+                  border: "1px solid rgba(148, 163, 184, 0.2)",
+                  borderRadius: 6,
+                  boxShadow: "0 10px 25px -5px rgba(0,0,0,0.7)",
+                  zIndex: 99999,
+                  minWidth: 190,
+                  padding: "4px 0",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                <button
+                  type="button"
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "#cbd5e1",
+                    textAlign: "left",
+                    padding: "7px 12px",
+                    fontSize: 11,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    handleExportExcel();
+                    setIsMoreMenuOpen(false);
+                  }}
+                >
+                  📊 Export to Excel
+                </button>
+                <button
+                  type="button"
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "#cbd5e1",
+                    textAlign: "left",
+                    padding: "7px 12px",
+                    fontSize: 11,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    exportJson();
+                    setIsMoreMenuOpen(false);
+                  }}
+                >
+                  📋 Export JSON
+                </button>
+                <button
+                  type="button"
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "#cbd5e1",
+                    textAlign: "left",
+                    padding: "7px 12px",
+                    fontSize: 11,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    void handleLoadIndexedDb();
+                    setIsMoreMenuOpen(false);
+                  }}
+                >
+                  ⚡ Reload IndexedDB Cache
+                </button>
+                <div style={{ height: 1, background: "rgba(148,163,184,0.1)", margin: "4px 0" }} />
+                <button
+                  type="button"
+                  style={{
+                    background: "transparent",
+                    border: "none",
+                    color: "#c084fc",
+                    fontWeight: 700,
+                    textAlign: "left",
+                    padding: "7px 12px",
+                    fontSize: 11,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => {
+                    void handleSendAllThreeReportsManual();
+                    setIsMoreMenuOpen(false);
+                  }}
+                >
+                  📢 Dispatch 3 Slack Reports
+                </button>
+              </div>
+            )}
+          </div>
 
+          {/* Primary Refresh Button */}
           <button
-            className="btn-secondary btn-sm"
-            onClick={() => void handleFetchSetupVisible()}
-            disabled={loadingSetupAll}
-          >
-            {loadingSetupAll ? "⏳ Setup..." : "🧩 Fetch Setup Data"}
-          </button>
-
-          <button
-            className="btn-secondary btn-sm"
-            onClick={() => void handleSendAllThreeReportsManual()}
-            disabled={dispatching3Reports || records.length === 0}
-            style={{
-              borderColor: "rgba(168, 85, 247, 0.4)",
-              color: "#c084fc",
-              fontWeight: 700,
-            }}
-            title="Manually dispatch Analytics, Fixed Ops & Variable Ops reports to Slack and reset 4-hour countdown"
-          >
-            {dispatching3Reports ? "⏳ Sending 3 Reports..." : "📢 Send 3 Reports (4h Window)"}
-          </button>
-
-          <button
-            className="btn-secondary btn-sm"
-            onClick={() => void handleSyncRealTapStatuses()}
-            disabled={syncingTapStatuses || Boolean(tokenExpiredMessage) || records.length === 0}
-            style={{
-              borderColor: "rgba(56, 189, 248, 0.4)",
-              color: "#38bdf8",
-              fontWeight: 700,
-            }}
-            title="Fetch real blueprint tasks and attachment counts from TAP and update stores"
-          >
-            {syncingTapStatuses ? `⏳ ${tapSyncProgress || "Syncing TAP..."}` : "⚡ Sync TAP Statuses"}
-          </button>
-
-          <button
-            className="btn-postman stores-refresh-btn"
+            className="btn-postman btn-sm"
+            style={{ fontWeight: 800 }}
             onClick={() => void handleFetch(true)}
             disabled={loadingStores}
           >
-            {loadingStores ? "⏳ Fetching..." : "🔄 Refresh"}
+            {loadingStores ? "⏳ Refreshing..." : "🔄 Refresh"}
           </button>
         </div>
       </div>
@@ -2117,9 +1365,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       {tokenExpiredMessage && (
         <div className="bx-error stores-token-expired-alert">
           <span>⚠ {tokenExpiredMessage}</span>
-          <a href={tapWorkordersUrl} target="_blank" rel="noreferrer">
-            Open TAP to recapture API ↗
-          </a>
+          <a href={tapWorkordersUrl} target="_blank" rel="noreferrer">Open TAP to recapture API ↗</a>
         </div>
       )}
 
@@ -2129,9 +1375,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
             <div className="stores-panel">
               <div className="stores-panel-header">
                 <span className="stores-panel-title">Filters</span>
-                <button type="button" onClick={clearFilters}>
-                  Reset all
-                </button>
+                <button type="button" onClick={clearFilters}>Reset all</button>
               </div>
 
               <div className="stores-field">
@@ -2144,19 +1388,30 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                 />
               </div>
 
+              {/* T-Range Presets Grid including "All Stores" */}
               <div className="stores-field">
                 <label className="stores-label">T-Range Presets</label>
                 <div className="stores-preset-grid">
-                  {[7, 30, 60, 90, 150].map((days) => (
+                  {([7, 30, 60, 90, 150] as const).map((days) => (
                     <button
                       key={days}
                       type="button"
                       className={range === days ? "btn-postman" : "btn-secondary btn-sm"}
-                      onClick={() => setRange(days as TRange)}
+                      onClick={() => setRange(days)}
                     >
                       T-{days}
                     </button>
                   ))}
+                  {/* Preset to view ALL Stores without any date boundaries */}
+                  <button
+                    type="button"
+                    className={range === "ALL" ? "btn-postman" : "btn-secondary btn-sm"}
+                    onClick={() => setRange("ALL")}
+                    style={{ fontWeight: 800 }}
+                    title="View all stores without date cutoffs"
+                  >
+                    All Stores
+                  </button>
                 </div>
               </div>
 
@@ -2167,129 +1422,51 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                     type="date"
                     className="stores-input"
                     value={fromDate}
-                    onChange={(e) => setFromDate(e.target.value)}
+                    onChange={(e) => {
+                      setFromDate(e.target.value);
+                      if (range !== "ALL") setRange(90);
+                    }}
                   />
                   <input
                     type="date"
                     className="stores-input"
                     value={toDate}
-                    onChange={(e) => setToDate(e.target.value)}
+                    onChange={(e) => {
+                      setToDate(e.target.value);
+                      if (range !== "ALL") setRange(90);
+                    }}
                   />
                 </div>
               </div>
 
               <div className="stores-field">
-                <label className="stores-label">Go-Live Month</label>
-                <select
-                  className="stores-input"
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
-                >
-                  <option value="">All Months</option>
-                  {monthOptions.map((m) => (
-                    <option key={m} value={m}>
-                      {m}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="stores-field">
-                <label className="stores-label">Ownership / Not Worked</label>
-                <select
-                  className="stores-input"
-                  value={notWorkedFilter}
-                  onChange={(e) => setNotWorkedFilter(e.target.value)}
-                >
-                  <option value="">All Stores</option>
-                  <option value="HANDLED_BY_ARC">Handled by ARC Only</option>
-                  {NOT_WORKED_OPTIONS.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="stores-field">
-                <label className="stores-label">Fixed Ops Assignee</label>
-                <select
-                  className="stores-input"
-                  value={fixedAssigneeFilter}
-                  onChange={(e) => setFixedAssigneeFilter(e.target.value as AssigneeName | "")}
-                >
-                  <option value="">All Assignees</option>
-                  {ASSIGNEE_OPTIONS.map((name) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="stores-field">
-                <label className="stores-label">Variable Ops Assignee</label>
-                <select
-                  className="stores-input"
-                  value={variableAssigneeFilter}
-                  onChange={(e) => setVariableAssigneeFilter(e.target.value as AssigneeName | "")}
-                >
-                  <option value="">All Assignees</option>
-                  {ASSIGNEE_OPTIONS.map((name) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="stores-field">
                 <label className="stores-label">Pre-Prod POD</label>
-                <select
-                  className="stores-input"
-                  value={superpodId}
-                  onChange={(e) => setSuperpodId(e.target.value)}
-                >
+                <select className="stores-input" value={superpodId} onChange={(e) => setSuperpodId(e.target.value)}>
                   <option value="">All PODs</option>
-                  {superpodOptions.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
+                  {superpodOptions.map((item) => (<option key={item} value={item}>{item}</option>))}
                 </select>
               </div>
 
               <div className="stores-field">
                 <label className="stores-label">Implementation Type</label>
-                <select
-                  className="stores-input"
-                  value={implementationType}
-                  onChange={(e) => setImplementationType(e.target.value)}
-                >
+                <select className="stores-input" value={implementationType} onChange={(e) => setImplementationType(e.target.value)}>
                   <option value="">All Types</option>
-                  {implementationTypeOptions.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
+                  {implementationTypeOptions.map((item) => (<option key={item} value={item}>{item}</option>))}
                 </select>
               </div>
 
-              <div className="stores-field">
-                <label className="stores-label">Product Type</label>
-                <select
-                  className="stores-input"
-                  value={productType}
-                  onChange={(e) => setProductType(e.target.value)}
-                >
-                  <option value="">All Products</option>
-                  {productTypeOptions.map((item) => (
-                    <option key={item} value={item}>
-                      {item}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              {hasAnyColumnFilter && (
+                <div style={{ marginTop: 12 }}>
+                  <button
+                    type="button"
+                    className="btn-secondary btn-sm"
+                    onClick={clearColumnFilters}
+                    style={{ width: "100%", color: "#f87171", borderColor: "rgba(248, 113, 113, 0.4)" }}
+                  >
+                    Clear Column Filters
+                  </button>
+                </div>
+              )}
 
               {error && <div className="bx-error">❌ {error}</div>}
             </div>
@@ -2300,120 +1477,364 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
           <div className="stores-table-card">
             <div className="stores-table-header">
               <div className="stores-table-header-left">
-                <span className="stores-table-title">Store Records</span>
-                <span className="stores-table-count">
-                  Showing <strong>{filtered.length}</strong> of {records.length} stores
+                <span className="stores-table-title" style={{ fontSize: 13, fontWeight: 700 }}>
+                  Dealership Stores
+                </span>
+                <span className="stores-table-count" style={{ fontSize: 11, color: "#64748b" }}>
+                  Showing <strong>{filtered.length}</strong> of {records.length}
                 </span>
 
-                <div className="stores-quick-links">
-                  <a
-                    href={tapWorkordersUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open TAP Workorders"
-                    className="stores-quick-icon"
-                  >
-                    <img
-                      src="https://com-tekioncloud-tap-assets.s3.us-west-1.amazonaws.com/assets/common/toc-logo.svg"
-                      alt="TAP Workorders"
-                    />
+                <div className="stores-quick-links" style={{ marginLeft: 12 }}>
+                  <a href={tapWorkordersUrl} target="_blank" rel="noreferrer" title="Open TAP Workorders" className="stores-quick-icon">
+                    <img src="https://com-tekioncloud-tap-assets.s3.us-west-1.amazonaws.com/assets/common/toc-logo.svg" alt="TAP" />
                   </a>
-
-                  <a
-                    href="https://app.slack.com/client/E08DG6QMMDG/C0C5QBWEM8X"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open Operations Slack Channel (C0C5QBWEM8X)"
-                    className="stores-quick-icon"
-                  >
-                    <img
-                      src="https://cdn.brandfetch.io/idJ_HhtG0Z/theme/dark/symbol.svg?c=1dxbfHSJFAPEGdCLU4o5B"
-                      alt="Slack"
-                    />
+                  <a href="https://app.slack.com/client/E08DG6QMMDG/C0C5QBWEM8X" target="_blank" rel="noreferrer" title="Open Operations Slack Channel" className="stores-quick-icon">
+                    <img src="https://cdn.brandfetch.io/idJ_HhtG0Z/theme/dark/symbol.svg?c=1dxbfHSJFAPEGdCLU4o5B" alt="Slack" />
                   </a>
-
-                  <a
-                    href="https://app.tekioncloud.com/internal/approval-management/dashboard/requests"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open Production Approval Management"
-                    className="stores-quick-btn stores-quick-btn-prod"
-                  >
-                    PROD
+                  <a href="https://app.tekioncloud.com/internal/approval-management/dashboard/requests" target="_blank" rel="noreferrer" title="Open Production Approvals" className="stores-quick-btn stores-quick-btn-prod">PROD</a>
+                  <a href="http://outlook.office365.com/mail/inbox" target="_blank" rel="noreferrer" title="Open Outlook Inbox" className="stores-quick-icon">
+                    <img src="https://cdn.brandfetch.io/idgdw68PEO/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" alt="Outlook" />
                   </a>
-
-                  <a
-                    href="http://outlook.office365.com/mail/inbox"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open Outlook Inbox"
-                    className="stores-quick-icon"
-                  >
-                    <img
-                      src="https://cdn.brandfetch.io/idgdw68PEO/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B"
-                      alt="Outlook"
-                    />
-                  </a>
-
-                  <a
-                    href="https://preprodapp.tekioncloud.com/accounting/chartOfAccounts/list"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open Pre-Prod Chart of Accounts"
-                    className="stores-quick-btn stores-quick-btn-preprod"
-                  >
-                    PRE-PROD
-                  </a>
-
-                  <a
-                    href="https://preprod-map.tekioncloud.com/map/blueprintValidation"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open PreProd MAP Blueprint Validation"
-                    className="stores-quick-btn stores-quick-btn-map"
-                  >
-                    PreProd MAP
-                  </a>
-
-                  <a
-                    href="https://tap.tekioncloud.com/timetracker/employee-view"
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Open TAP Time Tracker Employee View"
-                    className="stores-quick-btn stores-quick-btn-timesheet"
-                  >
-                    Time Sheet
-                  </a>
+                  <a href="https://preprodapp.tekioncloud.com/accounting/chartOfAccounts/list" target="_blank" rel="noreferrer" title="Open Pre-Prod COA" className="stores-quick-btn stores-quick-btn-preprod">PRE-PROD</a>
+                  <a href="https://preprod-map.tekioncloud.com/map/blueprintValidation" target="_blank" rel="noreferrer" title="Open PreProd MAP Blueprint Validation" className="stores-quick-btn stores-quick-btn-map">PreProd MAP</a>
+                  <a href="https://tap.tekioncloud.com/timetracker/employee-view" target="_blank" rel="noreferrer" title="Open TAP Time Tracker" className="stores-quick-btn stores-quick-btn-timesheet">Time Sheet</a>
                 </div>
               </div>
 
-              <button
-                className="btn-secondary btn-sm"
-                onClick={() => setFiltersCollapsed((prev) => !prev)}
-              >
-                {filtersCollapsed ? "☰ Show Filters" : "✕ Hide Filters"}
-              </button>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                {hasAnyColumnFilter && (
+                  <button className="btn-secondary btn-sm" onClick={clearColumnFilters} title="Reset all per-column table filter boxes">
+                    Clear Filters
+                  </button>
+                )}
+                <button className="btn-secondary btn-sm" onClick={() => setFiltersCollapsed((prev) => !prev)}>
+                  {filtersCollapsed ? "☰ Show Filters" : "✕ Hide Filters"}
+                </button>
+              </div>
             </div>
 
             <div className="stores-table-wrap stores-table-wrap-tall">
               <table className="stores-table">
                 <thead>
+                  {/* FROZEN ROW 1: Column Headers */}
                   <tr>
                     <th>Store & IDs</th>
                     <th>Go Live</th>
-                    <th>Fixed Ops Assignee</th>
-                    <th>Variable Ops Assignee</th>
                     <th>IMP Type</th>
                     <th>Products</th>
                     <th>Pre-Prod</th>
                     <th>POD</th>
                     <th>Blueprint</th>
                     <th>Setup Data</th>
+                    <th>Fixed Ops Assignee</th>
+                    <th>Variable Ops Assignee</th>
                     <th>Fixed Ops</th>
                     <th>Variable Ops</th>
-                    <th>Sign_Off</th>
                     <th>Testing</th>
                     <th>Not Worked?</th>
+                  </tr>
+
+                  {/* FROZEN ROW 2: Per-Column Filter Controls (Aligned at middle) */}
+                  <tr className="stores-table-filter-row">
+                    <th>
+                      <input
+                        type="text"
+                        style={filterInputStyle}
+                        placeholder="Filter ID/Name..."
+                        value={colFilterStore}
+                        onChange={(e) => setColFilterStore(e.target.value)}
+                      />
+                    </th>
+                    <th>
+                      <select
+                        style={filterInputStyle}
+                        value={colFilterMonth}
+                        onChange={(e) => setColFilterMonth(e.target.value)}
+                      >
+                        <option value="">All Months</option>
+                        {monthOptions.map((m) => (
+                          <option key={m} value={m}>{m}</option>
+                        ))}
+                      </select>
+                    </th>
+                    <th>
+                      <select
+                        style={filterInputStyle}
+                        value={colFilterImpType}
+                        onChange={(e) => setColFilterImpType(e.target.value)}
+                      >
+                        <option value="">All</option>
+                        {implementationTypeOptions.map((item) => (
+                          <option key={item} value={item}>{item}</option>
+                        ))}
+                      </select>
+                    </th>
+                    <th>
+                      <select
+                        style={filterInputStyle}
+                        value={colFilterProduct}
+                        onChange={(e) => setColFilterProduct(e.target.value)}
+                      >
+                        <option value="">All Products</option>
+                        {productTypeOptions.map((item) => (
+                          <option key={item} value={item}>{item}</option>
+                        ))}
+                      </select>
+                    </th>
+                    <th>
+                      <input
+                        type="text"
+                        style={filterInputStyle}
+                        placeholder="Pre-Prod..."
+                        value={colFilterPreProd}
+                        onChange={(e) => setColFilterPreProd(e.target.value)}
+                      />
+                    </th>
+                    <th>
+                      <select
+                        style={filterInputStyle}
+                        value={colFilterPod}
+                        onChange={(e) => setColFilterPod(e.target.value)}
+                      >
+                        <option value="">All</option>
+                        {superpodOptions.map((item) => (
+                          <option key={item} value={item}>{item}</option>
+                        ))}
+                      </select>
+                    </th>
+
+                    {/* BLUEPRINT MULTI-CHECKBOX PORTAL TRIGGER */}
+                    <th style={{ verticalAlign: "middle" }}>
+                      <button
+                        ref={blueprintButtonRef}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isBlueprintDropdownOpen && blueprintButtonRef.current) {
+                            const rect = blueprintButtonRef.current.getBoundingClientRect();
+                            setBlueprintDropdownPos({ top: rect.bottom + 4, left: rect.left });
+                          }
+                          setIsBlueprintDropdownOpen((prev) => !prev);
+                        }}
+                        style={{
+                          ...filterInputStyle,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          cursor: "pointer",
+                          color: selectedBlueprintChecks.length > 0 ? "#38bdf8" : "#94a3b8",
+                          borderColor: selectedBlueprintChecks.length > 0 ? "rgba(56, 189, 248, 0.6)" : "rgba(148, 163, 248, 0.25)",
+                          background: selectedBlueprintChecks.length > 0 ? "rgba(56, 189, 248, 0.12)" : "#0f172a",
+                          fontWeight: selectedBlueprintChecks.length > 0 ? 700 : 500,
+                          textAlign: "left",
+                          userSelect: "none",
+                          height: 26,
+                          margin: 0,
+                        }}
+                        title="Filter by Completed Blueprint Areas (Multi-select)"
+                      >
+                        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {selectedBlueprintChecks.length === 0
+                            ? "All Blueprints"
+                            : `${selectedBlueprintChecks.length} Selected`}
+                        </span>
+                        <span style={{ fontSize: 9, marginLeft: 4 }}>
+                          {isBlueprintDropdownOpen ? "▲" : "▼"}
+                        </span>
+                      </button>
+
+                      {/* Portal Popup Mounted directly onto document.body to avoid clipping */}
+                      {isBlueprintDropdownOpen &&
+                        createPortal(
+                          <div
+                            ref={blueprintPopupRef}
+                            onClick={(e) => e.stopPropagation()}
+                            style={{
+                              position: "fixed",
+                              top: blueprintDropdownPos.top,
+                              left: blueprintDropdownPos.left,
+                              minWidth: 210,
+                              background: "#0b1329",
+                              border: "1px solid rgba(56, 189, 248, 0.4)",
+                              borderRadius: 6,
+                              boxShadow: "0 14px 30px rgba(0, 0, 0, 0.85), 0 4px 10px rgba(0, 0, 0, 0.5)",
+                              zIndex: 999999,
+                              padding: "8px 10px",
+                              display: "flex",
+                              flexDirection: "column",
+                              gap: 6,
+                              textAlign: "left",
+                            }}
+                          >
+                            <div
+                              style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                borderBottom: "1px solid rgba(148, 163, 184, 0.15)",
+                                paddingBottom: 5,
+                              }}
+                            >
+                              <span
+                                style={{
+                                  fontSize: 10,
+                                  fontWeight: 800,
+                                  color: "#38bdf8",
+                                  letterSpacing: "0.5px",
+                                  textTransform: "uppercase",
+                                }}
+                              >
+                                Completed Blueprint:
+                              </span>
+                              {selectedBlueprintChecks.length > 0 && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedBlueprintChecks([]);
+                                  }}
+                                  style={{
+                                    background: "transparent",
+                                    border: "none",
+                                    color: "#f87171",
+                                    fontSize: 10,
+                                    cursor: "pointer",
+                                    fontWeight: 700,
+                                    padding: 0,
+                                  }}
+                                >
+                                  Clear
+                                </button>
+                              )}
+                            </div>
+
+                            {BLUEPRINT_CHECKBOX_KEYS.map(({ key, label }) => {
+                              const checked = selectedBlueprintChecks.includes(key);
+                              return (
+                                <label
+                                  key={key}
+                                  onClick={(e) => e.stopPropagation()}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 8,
+                                    fontSize: 11,
+                                    color: checked ? "#f8fafc" : "#94a3b8",
+                                    cursor: "pointer",
+                                    userSelect: "none",
+                                    padding: "3px 6px",
+                                    borderRadius: 4,
+                                    background: checked ? "rgba(56, 189, 248, 0.15)" : "transparent",
+                                    transition: "background 0.12s ease",
+                                  }}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    onChange={() => toggleBlueprintFilter(key)}
+                                    style={{ cursor: "pointer", accentColor: "#38bdf8" }}
+                                  />
+                                  <span>{label}</span>
+                                </label>
+                              );
+                            })}
+                          </div>,
+                          document.body
+                        )}
+                    </th>
+
+                    <th>
+                      <select
+                        style={filterInputStyle}
+                        value={colFilterSetupData}
+                        onChange={(e) => setColFilterSetupData(e.target.value)}
+                      >
+                        <option value="">All</option>
+                        <option value="COMPLETE">Complete</option>
+                        <option value="INCOMPLETE">Pending / Incomplete</option>
+                        <option value="ERROR">Error</option>
+                      </select>
+                    </th>
+
+                    {/* Fixed Ops Assignee Filter (Directly after Setup Data) */}
+                    <th>
+                      <select
+                        style={filterInputStyle}
+                        value={colFilterFixedAssignee}
+                        onChange={(e) => setColFilterFixedAssignee(e.target.value)}
+                      >
+                        <option value="">All</option>
+                        <option value="UNASSIGNED">Unassigned</option>
+                        {ASSIGNEE_OPTIONS.map((name) => (
+                          <option key={name} value={name}>{name}</option>
+                        ))}
+                      </select>
+                    </th>
+
+                    {/* Variable Ops Assignee Filter (Directly after Setup Data) */}
+                    <th>
+                      <select
+                        style={filterInputStyle}
+                        value={colFilterVarAssignee}
+                        onChange={(e) => setColFilterVarAssignee(e.target.value)}
+                      >
+                        <option value="">All</option>
+                        <option value="UNASSIGNED">Unassigned</option>
+                        {ASSIGNEE_OPTIONS.map((name) => (
+                          <option key={name} value={name}>{name}</option>
+                        ))}
+                      </select>
+                    </th>
+
+                    <th>
+                      <select
+                        style={filterInputStyle}
+                        value={colFilterFixedStatus}
+                        onChange={(e) => setColFilterFixedStatus(e.target.value)}
+                      >
+                        <option value="">All</option>
+                        {phaseStatusOptions.map((status) => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                    </th>
+                    <th>
+                      <select
+                        style={filterInputStyle}
+                        value={colFilterVarStatus}
+                        onChange={(e) => setColFilterVarStatus(e.target.value)}
+                      >
+                        <option value="">All</option>
+                        {phaseStatusOptions.map((status) => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                    </th>
+                    <th>
+                      <select
+                        style={filterInputStyle}
+                        value={colFilterTestingStatus}
+                        onChange={(e) => setColFilterTestingStatus(e.target.value)}
+                      >
+                        <option value="">All</option>
+                        {phaseStatusOptions.map((status) => (
+                          <option key={status} value={status}>{status}</option>
+                        ))}
+                      </select>
+                    </th>
+                    <th>
+                      <select
+                        style={filterInputStyle}
+                        value={colFilterNotWorked}
+                        onChange={(e) => setColFilterNotWorked(e.target.value)}
+                      >
+                        <option value="">All</option>
+                        <option value="HANDLED_BY_ARC">Handled by ARC Only</option>
+                        {NOT_WORKED_OPTIONS.map((opt) => (
+                          <option key={opt} value={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    </th>
                   </tr>
                 </thead>
 
@@ -2421,83 +1842,51 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                   {filtered.map((row) => {
                     const tLabel = getTLabel(row.launch_date);
                     const blueprint = row.blueprint_statuses;
-                    const signoff = row.signoff_statuses;
+
                     const podStyle = getPodStyle(row.superpod_id);
                     const cleanedImp = cleanImpType(row.implementation_type);
                     const uiDate = formatLaunchDateUI(row.launch_date);
-                    const fixedAssignee = getStoreFixedAssignee(row);
-                    const variableAssignee = getStoreVariableAssignee(row);
+                    const fixedAssignee = resolveStoreAssignee(row);
+                    const variableAssignee = row.custom_variable_assignee || "";
 
                     void trackingTick;
-                    const fixedOpsTime = buildLatestFieldTrackingText(
-                      row.tekion_id,
-                      "fixed_ops_status",
-                      false
-                    );
-                    const variableOpsTime = buildLatestFieldTrackingText(
-                      row.tekion_id,
-                      "variable_ops_status",
-                      false
-                    );
+                    const fixedOpsTime = buildLatestFieldTrackingText(row.tekion_id, "fixed_ops_status", false);
+                    const variableOpsTime = buildLatestFieldTrackingText(row.tekion_id, "variable_ops_status", false);
 
                     const fixedAttCount =
                       row.fixed_ops_attachments ??
-                      ((row.fetched_blueprint_tasks?.partsTasks || []).reduce(
-                        (acc: number, t: any) => acc + (t.taskAttachmentCount || 0),
-                        0
-                      ) +
-                        (row.fetched_blueprint_tasks?.serviceTasks || []).reduce(
-                          (acc: number, t: any) => acc + (t.taskAttachmentCount || 0),
-                          0
-                        ));
+                      ((row.fetched_blueprint_tasks?.partsTasks || []).reduce((acc: number, t: any) => acc + (t.taskAttachmentCount || 0), 0) +
+                        (row.fetched_blueprint_tasks?.serviceTasks || []).reduce((acc: number, t: any) => acc + (t.taskAttachmentCount || 0), 0));
 
                     const varAttCount =
                       row.variable_ops_attachments ??
-                      (row.fetched_blueprint_tasks?.accountingTasks || []).reduce(
-                        (acc: number, t: any) => acc + (t.taskAttachmentCount || 0),
-                        0
-                      );
+                      (row.fetched_blueprint_tasks?.accountingTasks || []).reduce((acc: number, t: any) => acc + (t.taskAttachmentCount || 0), 0);
+
+                    const isDecommissioned = /decommissioned/i.test(row.pre_production_environment_status || "");
 
                     return (
                       <tr key={row.tekion_id}>
                         <td style={{ minWidth: 230, maxWidth: 340 }}>
                           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                                flexWrap: "nowrap",
-                              }}
-                            >
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "nowrap" }}>
                               <button
                                 type="button"
                                 className="stores-copy-btn"
                                 title="Copy Tekion ID"
-                                onClick={() =>
-                                  handleCopy(row.tekion_id, `tek-${row.tekion_id}`)
-                                }
+                                onClick={() => handleCopy(row.tekion_id, `tek-${row.tekion_id}`)}
                                 style={{ fontWeight: 800, color: "#f8fafc" }}
                               >
-                                {copiedKey === `tek-${row.tekion_id}`
-                                  ? "Copied!"
-                                  : row.tekion_id}
+                                {copiedKey === `tek-${row.tekion_id}` ? "Copied!" : row.tekion_id}
                               </button>
-
                               <button
                                 type="button"
                                 className="stores-copy-btn"
                                 title="Copy Dealer ID"
-                                onClick={() =>
-                                  handleCopy(row.dealer_id, `dlr-${row.tekion_id}`)
-                                }
+                                onClick={() => handleCopy(row.dealer_id, `dlr-${row.tekion_id}`)}
                                 style={{ color: "#38bdf8", fontWeight: 700 }}
                               >
-                                {copiedKey === `dlr-${row.tekion_id}`
-                                  ? "Copied!"
-                                  : row.dealer_id}
+                                {copiedKey === `dlr-${row.tekion_id}` ? "Copied!" : row.dealer_id}
                               </button>
-
                               <button
                                 type="button"
                                 className="stores-slack-trigger-btn"
@@ -2512,17 +1901,16 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                               type="button"
                               className="stores-copy-btn"
                               title="Click to copy dealership name"
-                              onClick={() =>
-                                handleCopy(row.dba_name, `dba-${row.tekion_id}`)
-                              }
+                              onClick={() => handleCopy(row.dba_name, `dba-${row.tekion_id}`)}
                               style={{
                                 textAlign: "left",
-                                color: "#94a3b8",
-                                fontSize: 12,
-                                lineHeight: 1.35,
+                                color: "#f1f5f9",
+                                fontSize: 15,
+                                fontWeight: 800,
+                                lineHeight: 1.3,
                                 whiteSpace: "normal",
                                 wordBreak: "break-word",
-                                padding: "2px 4px",
+                                padding: "2px 0",
                                 borderRadius: 4,
                                 background: "transparent",
                                 border: "none",
@@ -2530,9 +1918,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                               }}
                             >
                               {copiedKey === `dba-${row.tekion_id}` ? (
-                                <span style={{ color: "#4ade80", fontWeight: 700 }}>
-                                  Copied!
-                                </span>
+                                <span style={{ color: "#4ade80", fontWeight: 700 }}>Copied!</span>
                               ) : (
                                 row.dba_name || "—"
                               )}
@@ -2541,130 +1927,48 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                         </td>
 
                         <td>
-                          <div className="stores-launch-date-cell">
-                            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-                              {uiDate.weekday && (
-                                <span
-                                  style={{
-                                    fontSize: 11,
-                                    fontWeight: 500,
-                                    color: "#64748b",
-                                    letterSpacing: "0.2px",
-                                  }}
-                                >
-                                  {uiDate.weekday}
-                                </span>
-                              )}
-                              <span
-                                style={{
-                                  fontSize: 11,
-                                  fontWeight: 800,
-                                  color: "#38bdf8",
-                                  background: "rgba(56, 189, 248, 0.12)",
-                                  border: "1px solid rgba(56, 189, 248, 0.3)",
-                                  padding: "2px 6px",
-                                  borderRadius: 5,
-                                  letterSpacing: "0.3px",
-                                }}
-                              >
-                                {uiDate.date}
-                              </span>
-                            </div>
-                            <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 3 }}>
-                              {tLabel.label}
+                          <div className="stores-launch-date-cell" style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: "#f8fafc", letterSpacing: "0.2px" }}>
+                              {uiDate.date || "—"}
+                            </span>
+                            <div style={{ fontSize: 11, color: "#94a3b8", display: "flex", alignItems: "center", gap: 4 }}>
+                              {uiDate.weekday && <span>{uiDate.weekday}</span>}
+                              {uiDate.weekday && <span>•</span>}
+                              <span style={{ fontWeight: 600, color: "#cbd5e1" }}>{tLabel.label}</span>
                             </div>
                           </div>
                         </td>
 
-                        {/* Fixed Ops Assignee */}
-                        <td style={{ minWidth: 130 }}>
-                          <select
-                            value={fixedAssignee}
-                            onChange={(e) =>
-                              void updateStoreFixedAssignee(
-                                row.tekion_id,
-                                e.target.value as AssigneeName | ""
-                              )
-                            }
-                            style={{
-                              width: "100%",
-                              background: fixedAssignee
-                                ? "rgba(168, 85, 247, 0.15)"
-                                : "rgba(148, 163, 184, 0.1)",
-                              color: fixedAssignee ? "#c084fc" : "#64748b",
-                              border: `1px solid ${
-                                fixedAssignee
-                                  ? "rgba(168, 85, 247, 0.35)"
-                                  : "rgba(148, 163, 184, 0.2)"
-                              }`,
-                              borderRadius: 6,
-                              padding: "4px 6px",
-                              fontSize: 11,
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              outline: "none",
-                            }}
-                          >
-                            <option value="">— Unassigned —</option>
-                            {ASSIGNEE_OPTIONS.map((name) => (
-                              <option key={name} value={name}>
-                                {name}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-
-                        {/* Variable Ops Assignee */}
-                        <td style={{ minWidth: 130 }}>
-                          <select
-                            value={variableAssignee}
-                            onChange={(e) =>
-                              void updateStoreVariableAssignee(
-                                row.tekion_id,
-                                e.target.value as AssigneeName | ""
-                              )
-                            }
-                            style={{
-                              width: "100%",
-                              background: variableAssignee
-                                ? "rgba(56, 189, 248, 0.15)"
-                                : "rgba(148, 163, 184, 0.1)",
-                              color: variableAssignee ? "#38bdf8" : "#64748b",
-                              border: `1px solid ${
-                                variableAssignee
-                                  ? "rgba(56, 189, 248, 0.35)"
-                                  : "rgba(148, 163, 184, 0.2)"
-                              }`,
-                              borderRadius: 6,
-                              padding: "4px 6px",
-                              fontSize: 11,
-                              fontWeight: 700,
-                              cursor: "pointer",
-                              outline: "none",
-                            }}
-                          >
-                            <option value="">— Unassigned —</option>
-                            {ASSIGNEE_OPTIONS.map((name) => (
-                              <option key={name} value={name}>
-                                {name}
-                              </option>
-                            ))}
-                          </select>
-                        </td>
-
                         <td>{cleanedImp || "—"}</td>
                         <td>{row.product_types || "—"}</td>
-                        <td>{row.pre_production_environment_status || "—"}</td>
 
                         <td>
-                          <span
-                            className="stores-pod-badge"
-                            style={{
-                              background: podStyle.bg,
-                              color: podStyle.color,
-                              border: `1px solid ${podStyle.border}`,
-                            }}
-                          >
+                          {row.pre_production_environment_status ? (
+                            isDecommissioned ? (
+                              <span
+                                style={{
+                                  color: "#f87171",
+                                  background: "rgba(248, 113, 113, 0.12)",
+                                  border: "1px solid rgba(248, 113, 113, 0.28)",
+                                  padding: "2px 6px",
+                                  borderRadius: 4,
+                                  fontSize: 11,
+                                  fontWeight: 700,
+                                  display: "inline-block",
+                                }}
+                              >
+                                {row.pre_production_environment_status}
+                              </span>
+                            ) : (
+                              <span>{row.pre_production_environment_status}</span>
+                            )
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+
+                        <td>
+                          <span className="stores-pod-badge" style={{ background: podStyle.bg, color: podStyle.color, border: `1px solid ${podStyle.border}` }}>
                             {row.superpod_id || "—"}
                           </span>
                         </td>
@@ -2672,48 +1976,69 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                         <td>
                           <StatusChipGroup
                             items={[
-                              {
-                                short: "P",
-                                fullName: "Blueprint - Parts",
-                                status: blueprint?.parts ?? "UNKNOWN",
-                              },
-                              {
-                                short: "S",
-                                fullName: "Blueprint - Service",
-                                status: blueprint?.service ?? "UNKNOWN",
-                              },
-                              {
-                                short: "A",
-                                fullName: "Blueprint - Accounting",
-                                status: blueprint?.accounting ?? "UNKNOWN",
-                              },
-                              {
-                                short: "C",
-                                fullName: "Blueprint - CRM",
-                                status: blueprint?.crm ?? "UNKNOWN",
-                              },
-                              {
-                                short: "AN",
-                                fullName: "Blueprint - Analytics",
-                                status: blueprint?.analytics ?? "UNKNOWN",
-                              },
+                              { short: "P", fullName: "Blueprint - Parts", status: blueprint?.parts ?? "UNKNOWN" },
+                              { short: "S", fullName: "Blueprint - Service", status: blueprint?.service ?? "UNKNOWN" },
+                              { short: "A", fullName: "Blueprint - Accounting", status: blueprint?.accounting ?? "UNKNOWN" },
+                              { short: "C", fullName: "Blueprint - CRM", status: blueprint?.crm ?? "UNKNOWN" },
+                              { short: "AN", fullName: "Blueprint - Analytics", status: blueprint?.analytics ?? "UNKNOWN" },
                             ]}
                           />
                         </td>
 
+                        {/* Setup Data Column */}
                         <td>
                           <SetupDataCell row={row} />
                         </td>
 
+                        {/* Fixed Ops Assignee (Directly after Setup Data) */}
+                        <td style={{ minWidth: 130 }}>
+                          <select
+                            value={fixedAssignee}
+                            onChange={(e) => void updateStoreFixedAssignee(row.tekion_id, e.target.value as AssigneeName | "")}
+                            style={{
+                              width: "100%",
+                              background: fixedAssignee ? "rgba(168, 85, 247, 0.15)" : "rgba(148, 163, 184, 0.1)",
+                              color: fixedAssignee ? "#c084fc" : "#64748b",
+                              border: `1px solid ${fixedAssignee ? "rgba(168, 85, 247, 0.35)" : "rgba(148, 163, 184, 0.2)"}`,
+                              borderRadius: 6,
+                              padding: "4px 6px",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              outline: "none",
+                            }}
+                          >
+                            <option value="">— Unassigned —</option>
+                            {ASSIGNEE_OPTIONS.map((name) => (<option key={name} value={name}>{name}</option>))}
+                          </select>
+                        </td>
+
+                        {/* Variable Ops Assignee (Directly after Setup Data) */}
+                        <td style={{ minWidth: 130 }}>
+                          <select
+                            value={variableAssignee}
+                            onChange={(e) => void updateStoreVariableAssignee(row.tekion_id, e.target.value as AssigneeName | "")}
+                            style={{
+                              width: "100%",
+                              background: variableAssignee ? "rgba(56, 189, 248, 0.15)" : "rgba(148, 163, 184, 0.1)",
+                              color: variableAssignee ? "#38bdf8" : "#64748b",
+                              border: `1px solid ${variableAssignee ? "rgba(56, 189, 248, 0.35)" : "rgba(148, 163, 184, 0.2)"}`,
+                              borderRadius: 6,
+                              padding: "4px 6px",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              outline: "none",
+                            }}
+                          >
+                            <option value="">— Unassigned —</option>
+                            {ASSIGNEE_OPTIONS.map((name) => (<option key={name} value={name}>{name}</option>))}
+                          </select>
+                        </td>
+
                         <td>
                           <div className="stores-status-cell-wrap">
-                            <CustomStatusSelect
-                              value={row.fixed_ops_status}
-                              onChange={(val) =>
-                                void updateCustomStatus(row.tekion_id, "fixed_ops_status", val)
-                              }
-                            />
-
+                            <CustomStatusSelect value={row.fixed_ops_status} onChange={(val) => void updateCustomStatus(row.tekion_id, "fixed_ops_status", val)} />
                             <div style={{ marginTop: 3 }}>
                               <span
                                 style={{
@@ -2724,43 +2049,23 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                                   fontWeight: 700,
                                   padding: "2px 6px",
                                   borderRadius: 4,
-                                  background:
-                                    fixedAttCount > 0
-                                      ? "rgba(56, 189, 248, 0.16)"
-                                      : "rgba(148, 163, 184, 0.08)",
+                                  background: fixedAttCount > 0 ? "rgba(56, 189, 248, 0.16)" : "rgba(148, 163, 184, 0.08)",
                                   color: fixedAttCount > 0 ? "#38bdf8" : "#64748b",
-                                  border: `1px solid ${
-                                    fixedAttCount > 0
-                                      ? "rgba(56, 189, 248, 0.3)"
-                                      : "rgba(148, 163, 184, 0.16)"
-                                  }`,
+                                  border: `1px solid ${fixedAttCount > 0 ? "rgba(56, 189, 248, 0.3)" : "rgba(148, 163, 184, 0.16)"}`,
                                 }}
                                 title="Total attachments across Parts and Service blueprint tasks"
                               >
                                 <span>📎</span>
-                                <span>
-                                  {fixedAttCount}{row.attachments_incomplete ? "+" : ""} Attachment{fixedAttCount === 1 ? "" : "s"}
-                                </span>
+                                <span>{fixedAttCount}{row.attachments_incomplete ? "+" : ""} Attachment{fixedAttCount === 1 ? "" : "s"}</span>
                               </span>
                             </div>
-
-                            {fixedOpsTime !== "—" && (
-                              <span className="stores-tracking-timestamp">
-                                {fixedOpsTime}
-                              </span>
-                            )}
+                            {fixedOpsTime !== "—" && <span className="stores-tracking-timestamp">{fixedOpsTime}</span>}
                           </div>
                         </td>
 
                         <td>
                           <div className="stores-status-cell-wrap">
-                            <CustomStatusSelect
-                              value={row.variable_ops_status}
-                              onChange={(val) =>
-                                void updateCustomStatus(row.tekion_id, "variable_ops_status", val)
-                              }
-                            />
-
+                            <CustomStatusSelect value={row.variable_ops_status} onChange={(val) => void updateCustomStatus(row.tekion_id, "variable_ops_status", val)} />
                             <div style={{ marginTop: 3 }}>
                               <span
                                 style={{
@@ -2771,83 +2076,33 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                                   fontWeight: 700,
                                   padding: "2px 6px",
                                   borderRadius: 4,
-                                  background:
-                                    varAttCount > 0
-                                      ? "rgba(56, 189, 248, 0.16)"
-                                      : "rgba(148, 163, 184, 0.08)",
+                                  background: varAttCount > 0 ? "rgba(56, 189, 248, 0.16)" : "rgba(148, 163, 184, 0.08)",
                                   color: varAttCount > 0 ? "#38bdf8" : "#64748b",
-                                  border: `1px solid ${
-                                    varAttCount > 0
-                                      ? "rgba(56, 189, 248, 0.3)"
-                                      : "rgba(148, 163, 184, 0.16)"
-                                  }`,
+                                  border: `1px solid ${varAttCount > 0 ? "rgba(56, 189, 248, 0.3)" : "rgba(148, 163, 184, 0.16)"}`,
                                 }}
                                 title="Total attachments across Accounting blueprint tasks"
                               >
                                 <span>📎</span>
-                                <span>
-                                  {varAttCount}{row.attachments_incomplete ? "+" : ""} Attachment{varAttCount === 1 ? "" : "s"}
-                                </span>
+                                <span>{varAttCount}{row.attachments_incomplete ? "+" : ""} Attachment{varAttCount === 1 ? "" : "s"}</span>
                               </span>
                             </div>
-
-                            {variableOpsTime !== "—" && (
-                              <span className="stores-tracking-timestamp">
-                                {variableOpsTime}
-                              </span>
-                            )}
+                            {variableOpsTime !== "—" && <span className="stores-tracking-timestamp">{variableOpsTime}</span>}
                           </div>
                         </td>
 
                         <td>
-                          <StatusChipGroup
-                            items={[
-                              {
-                                short: "P",
-                                fullName: "Parts Operational Sign-Off",
-                                status: signoff?.parts ?? "UNKNOWN",
-                              },
-                              {
-                                short: "S",
-                                fullName: "Service Operational Sign-Off",
-                                status: signoff?.service ?? "UNKNOWN",
-                              },
-                              {
-                                short: "A",
-                                fullName: "Accounting Operational Sign-Off",
-                                status: signoff?.accounting ?? "UNKNOWN",
-                              },
-                            ]}
-                          />
+                          <CustomStatusSelect value={row.testing_status} onChange={(val) => void updateCustomStatus(row.tekion_id, "testing_status", val)} />
                         </td>
 
-                        <td>
-                          <CustomStatusSelect
-                            value={row.testing_status}
-                            onChange={(val) =>
-                              void updateCustomStatus(row.tekion_id, "testing_status", val)
-                            }
-                          />
-                        </td>
-
-                        {/* Not Worked? Column */}
                         <td style={{ minWidth: 200 }}>
                           <select
                             value={row.not_worked || ""}
-                            onChange={(e) =>
-                              void updateStoreNotWorked(row.tekion_id, e.target.value)
-                            }
+                            onChange={(e) => void updateStoreNotWorked(row.tekion_id, e.target.value)}
                             style={{
                               width: "100%",
-                              background: row.not_worked
-                                ? "rgba(244, 63, 94, 0.15)"
-                                : "rgba(148, 163, 184, 0.1)",
+                              background: row.not_worked ? "rgba(244, 63, 94, 0.15)" : "rgba(148, 163, 184, 0.1)",
                               color: row.not_worked ? "#fb7185" : "#64748b",
-                              border: `1px solid ${
-                                row.not_worked
-                                  ? "rgba(244, 63, 94, 0.35)"
-                                  : "rgba(148, 163, 184, 0.2)"
-                              }`,
+                              border: `1px solid ${row.not_worked ? "rgba(244, 63, 94, 0.35)" : "rgba(148, 163, 184, 0.2)"}`,
                               borderRadius: 6,
                               padding: "4px 6px",
                               fontSize: 11,
@@ -2857,11 +2112,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
                             }}
                           >
                             <option value="">— Handled by ARC —</option>
-                            {NOT_WORKED_OPTIONS.map((opt) => (
-                              <option key={opt} value={opt}>
-                                {opt}
-                              </option>
-                            ))}
+                            {NOT_WORKED_OPTIONS.map((opt) => (<option key={opt} value={opt}>{opt}</option>))}
                           </select>
                         </td>
                       </tr>
@@ -2873,12 +2124,8 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
               {!loadingStores && filtered.length === 0 && (
                 <div className="stores-empty" style={{ padding: 40, textAlign: "center" }}>
                   <div style={{ fontSize: 32 }}>🏬</div>
-                  <div style={{ fontSize: 16, fontWeight: 700, marginTop: 8 }}>
-                    No records found
-                  </div>
-                  <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>
-                    Try clearing filters or adjusting your date window
-                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 700, marginTop: 8 }}>No records found</div>
+                  <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>Try clearing filters or adjusting your date window</div>
                 </div>
               )}
             </div>
@@ -2894,12 +2141,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         onSetupFetched={(tekionId, setupData) => {
           setActiveDealerPopup((prev) =>
             prev && prev.tekion_id === tekionId
-              ? {
-                  ...prev,
-                  setup_data: setupData,
-                  setup_data_fetched_at: setupData.fetchedAt,
-                  setup_data_error: "",
-                }
+              ? { ...prev, setup_data: setupData, setup_data_fetched_at: setupData.fetchedAt, setup_data_error: "" }
               : prev
           );
           void persistSetupData(tekionId, setupData);
@@ -2907,6 +2149,45 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
         onTaskOperationalStatusChange={(tekionId, field, value) => {
           void updateCustomStatus(tekionId, field, value);
         }}
+        staticSlackMap={STATIC_SLACK_MAP}
+      />
+
+      <button
+        type="button"
+        onClick={() => setIsCopilotOpen((prev) => !prev)}
+        style={{
+          position: "fixed",
+          bottom: 24,
+          right: 24,
+          height: 48,
+          borderRadius: 24,
+          padding: "0 18px",
+          background: "linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)",
+          border: "1px solid rgba(255,255,255,0.25)",
+          boxShadow: "0 8px 24px rgba(2, 132, 199, 0.45), 0 2px 6px rgba(0,0,0,0.4)",
+          color: "#ffffff",
+          fontWeight: 800,
+          fontSize: 13,
+          cursor: "pointer",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          zIndex: 99998,
+          transition: "transform 0.15s ease, box-shadow 0.15s ease",
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.05)"; }}
+        onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)"; }}
+        title="Open Interactive Stores AI Copilot with Persistent Learning"
+      >
+        <span style={{ fontSize: 16 }}>🤖</span>
+        <span>{isCopilotOpen ? "Close AI" : "Stores Copilot"}</span>
+      </button>
+
+      <StoresAI
+        isOpen={isCopilotOpen}
+        onClose={() => setIsCopilotOpen(false)}
+        records={records}
+        onToast={showToast}
       />
     </div>
   );

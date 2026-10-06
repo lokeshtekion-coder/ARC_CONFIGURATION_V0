@@ -1,4 +1,13 @@
 import { saveTekionApiSettings } from "./tekionApiSettings";
+import {
+  saveTekionCapturedProfiles,
+  loadTekionCapturedProfiles,
+  type TekionCapturedProfile,
+} from "./tekionCapturedProfiles";
+import { storeCapturedMapHeaders } from "./preprodMapApiService";
+
+// Alias for semantic clarity across bridge and storage services
+export type CapturedTekionProfile = TekionCapturedProfile;
 
 export const PAGE_SYNC_EVENT = "ARC_EXTENSION_SYNC_CAPTURE";
 export const PAGE_REQUEST_EVENT = "ARC_EXTENSION_BRIDGE_REQUEST_LATEST";
@@ -70,6 +79,10 @@ export interface ArcCustomCapturedApi {
   headers: Record<string, string>;
 }
 
+export interface HeaderMap {
+  [key: string]: string;
+}
+
 export interface ArcLatestCaptureState {
   graphApiToken?: string;
   graphExpiresAt?: number;
@@ -83,6 +96,12 @@ export interface ArcLatestCaptureState {
   slackDCookie?: string;
   lastSlackSourceUrl?: string;
   lastSlackCaptureAt?: string;
+
+  // Pre-Prod MAP Credentials
+  preprodMapToken?: string;
+  preprodMapHeaders?: Record<string, string>;
+  lastPreprodMapSourceUrl?: string;
+  lastPreprodMapCaptureAt?: string;
 
   graphHeaders?: Record<string, string>;
   tekionImplementationHeaders?: Record<string, string>;
@@ -107,10 +126,6 @@ export interface ArcBridgeSyncResult {
   capture: ArcLatestCaptureState;
 }
 
-export interface HeaderMap {
-  [key: string]: string;
-}
-
 export interface ArcBrowserCaptureState {
   graphApiToken?: string;
   graphExpiresAt?: number;
@@ -119,6 +134,13 @@ export interface ArcBrowserCaptureState {
   tapDuoApiToken?: string;
   slackToken?: string;
   slackDCookie?: string;
+
+  // Pre-Prod MAP Credentials
+  preprodMapToken?: string;
+  preprodMapHeaders?: HeaderMap;
+  lastPreprodMapSourceUrl?: string;
+  lastPreprodMapCaptureAt?: string;
+
   graphHeaders?: HeaderMap;
   tekionImplementationHeaders?: HeaderMap;
   tekionBootstrapHeaders?: HeaderMap;
@@ -139,18 +161,46 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
-function normalizeStringMap(input: unknown): Record<string, string> | undefined {
+/**
+ * Validates and normalizes ISO timestamps. Rejects invalid strings ("hello", numbers, etc.)
+ */
+function normalizeIsoTimestamp(value: unknown): string | undefined {
+  if (typeof value !== "string" || !value.trim()) return undefined;
+  const time = new Date(value.trim()).getTime();
+  return Number.isFinite(time) ? new Date(time).toISOString() : undefined;
+}
+
+/**
+ * Header Normalizer: Lowercases header keys while preserving exact header values.
+ */
+export function normalizeHeaderMap(input: unknown): Record<string, string> | undefined {
   if (!isRecord(input)) return undefined;
   const out: Record<string, string> = {};
   for (const [key, value] of Object.entries(input)) {
-    if (typeof value === "string" && value.trim()) {
-      out[key] = value.trim();
+    if (typeof value === "string") {
+      const normKey = key.trim().toLowerCase();
+      if (normKey) {
+        out[normKey] = value.trim();
+      }
     }
   }
   return Object.keys(out).length ? out : undefined;
 }
 
-function decodeJwt(token: string): ArcDecodedTokenInfo | undefined {
+/**
+ * Strips query parameters from recorded URLs to avoid logging or persisting tokens.
+ */
+function sanitizeSourceUrl(rawUrl?: string): string | undefined {
+  if (!rawUrl || typeof rawUrl !== "string") return undefined;
+  try {
+    const parsed = new URL(rawUrl.trim());
+    return `${parsed.origin}${parsed.pathname}`;
+  } catch {
+    return rawUrl.split("?")[0].trim();
+  }
+}
+
+export function decodeJwt(token: string): ArcDecodedTokenInfo | undefined {
   try {
     const parts = token.split(".");
     if (parts.length !== 3) return undefined;
@@ -181,7 +231,7 @@ function decodeJwt(token: string): ArcDecodedTokenInfo | undefined {
 function extractTokenFromHeaders(headers?: Record<string, string>): string | undefined {
   if (!headers) return undefined;
 
-  const auth = headers.authorization?.trim();
+  const auth = headers["authorization"];
   if (auth && /^bearer\s+/i.test(auth)) {
     return auth.replace(/^bearer\s+/i, "").trim() || undefined;
   }
@@ -201,7 +251,7 @@ function isExpiredByCapturedAt(capturedAt: string, expiryHours: number): boolean
   return Date.now() - ts > expiryHours * 60 * 60 * 1000;
 }
 
-function isCustomCaptureExpired(input: {
+export function isCustomCaptureExpired(input: {
   capturedAt: string;
   expiryHours: number;
   token?: string;
@@ -221,29 +271,46 @@ function isCustomCaptureExpired(input: {
   return isExpiredByCapturedAt(input.capturedAt, input.expiryHours);
 }
 
+export function hasExpiredCustomToken(
+  capture: ArcCustomCapturedApi | null | undefined
+): boolean {
+  if (!capture) return true;
+  return isCustomCaptureExpired({
+    capturedAt: capture.capturedAt,
+    expiryHours: capture.expiryHours || DEFAULT_CUSTOM_EXPIRY_HOURS,
+    token: capture.token,
+    decodedToken: capture.decodedToken,
+  });
+}
+
 function normalizeTekionProfiles(input: unknown): ArcTekionProfile[] | undefined {
   if (!Array.isArray(input)) return undefined;
 
   const profiles = input
     .map((item) => {
       if (!isRecord(item)) return null;
-      if (typeof item.id !== "string") return null;
-      if (typeof item.profileKey !== "string") return null;
-      if (typeof item.capturedAt !== "string") return null;
+      if (typeof item.id !== "string" || !item.id.trim()) return null;
+
+      const validCapturedAt = normalizeIsoTimestamp(item.capturedAt);
+      if (!validCapturedAt) return null;
+
+      const profileKey = typeof item.profileKey === "string" && item.profileKey.trim()
+        ? item.profileKey.trim()
+        : "";
 
       return {
-        id: item.id,
-        profileKey: item.profileKey,
-        capturedAt: item.capturedAt,
-        sourceUrl: typeof item.sourceUrl === "string" ? item.sourceUrl : undefined,
-        dealerId: typeof item.dealerId === "string" ? item.dealerId : undefined,
-        tenantName: typeof item.tenantName === "string" ? item.tenantName : undefined,
-        tekSiteId: typeof item.tekSiteId === "string" ? item.tekSiteId : undefined,
-        roleId: typeof item.roleId === "string" ? item.roleId : undefined,
-        applicationId: typeof item.applicationId === "string" ? item.applicationId : undefined,
-        clientId: typeof item.clientId === "string" ? item.clientId : undefined,
-        locale: typeof item.locale === "string" ? item.locale : undefined,
-        token: typeof item.token === "string" ? item.token : undefined,
+        id: item.id.trim(),
+        profileKey,
+        capturedAt: validCapturedAt,
+        sourceUrl: sanitizeSourceUrl(typeof item.sourceUrl === "string" ? item.sourceUrl : undefined),
+        dealerId: typeof item.dealerId === "string" ? item.dealerId.trim() : undefined,
+        tenantName: typeof item.tenantName === "string" ? item.tenantName.trim() : undefined,
+        tekSiteId: typeof item.tekSiteId === "string" ? item.tekSiteId.trim() : undefined,
+        roleId: typeof item.roleId === "string" ? item.roleId.trim() : undefined,
+        applicationId: typeof item.applicationId === "string" ? item.applicationId.trim() : undefined,
+        clientId: typeof item.clientId === "string" ? item.clientId.trim() : undefined,
+        locale: typeof item.locale === "string" ? item.locale.trim() : undefined,
+        token: typeof item.token === "string" ? item.token.trim() : undefined,
         decodedToken: isRecord(item.decodedToken)
           ? {
               email: typeof item.decodedToken.email === "string" ? item.decodedToken.email : undefined,
@@ -253,15 +320,13 @@ function normalizeTekionProfiles(input: unknown): ArcTekionProfile[] | undefined
                   : undefined,
               exp: typeof item.decodedToken.exp === "number" ? item.decodedToken.exp : undefined,
               iat: typeof item.decodedToken.iat === "number" ? item.decodedToken.iat : undefined,
-              expiresAt:
-                typeof item.decodedToken.expiresAt === "string" ? item.decodedToken.expiresAt : undefined,
-              issuedAt:
-                typeof item.decodedToken.issuedAt === "string" ? item.decodedToken.issuedAt : undefined,
+              expiresAt: normalizeIsoTimestamp(item.decodedToken.expiresAt),
+              issuedAt: normalizeIsoTimestamp(item.decodedToken.issuedAt),
               isExpired:
                 typeof item.decodedToken.isExpired === "boolean" ? item.decodedToken.isExpired : undefined,
             }
           : undefined,
-        bootstrapHeaders: normalizeStringMap(item.bootstrapHeaders),
+        bootstrapHeaders: normalizeHeaderMap(item.bootstrapHeaders),
       } as ArcTekionProfile;
     })
     .filter((item): item is ArcTekionProfile => Boolean(item));
@@ -279,9 +344,9 @@ function normalizeCustomCaptures(
   for (const [key, value] of Object.entries(input)) {
     if (!isRecord(value)) continue;
 
-    const id = typeof value.id === "string" ? value.id : key;
-    const label = typeof value.label === "string" ? value.label : id;
-    const pattern = typeof value.pattern === "string" ? value.pattern : "";
+    const id = typeof value.id === "string" && value.id.trim() ? value.id.trim() : key;
+    const label = typeof value.label === "string" && value.label.trim() ? value.label.trim() : id;
+    const pattern = typeof value.pattern === "string" ? value.pattern.trim() : "";
     const matchMode = value.matchMode === "exact" ? "exact" : "includes";
     const expiryHoursRaw =
       typeof value.expiryHours === "number"
@@ -291,10 +356,10 @@ function normalizeCustomCaptures(
       Number.isFinite(expiryHoursRaw) && expiryHoursRaw > 0
         ? expiryHoursRaw
         : DEFAULT_CUSTOM_EXPIRY_HOURS;
-    const matchedUrl = typeof value.matchedUrl === "string" ? value.matchedUrl : "";
-    const capturedAt = typeof value.capturedAt === "string" ? value.capturedAt : "";
-    const lastSeenAt = typeof value.lastSeenAt === "string" ? value.lastSeenAt : capturedAt;
-    const headers = normalizeStringMap(value.headers) ?? {};
+    const matchedUrl = sanitizeSourceUrl(typeof value.matchedUrl === "string" ? value.matchedUrl : "") || "";
+    const capturedAt = normalizeIsoTimestamp(value.capturedAt);
+    const lastSeenAt = normalizeIsoTimestamp(value.lastSeenAt) || capturedAt;
+    const headers = normalizeHeaderMap(value.headers) ?? {};
 
     if (!id || !pattern || !capturedAt) continue;
 
@@ -304,10 +369,8 @@ function normalizeCustomCaptures(
       ? {
           exp: typeof value.decodedToken.exp === "number" ? value.decodedToken.exp : undefined,
           iat: typeof value.decodedToken.iat === "number" ? value.decodedToken.iat : undefined,
-          expiresAt:
-            typeof value.decodedToken.expiresAt === "string" ? value.decodedToken.expiresAt : undefined,
-          issuedAt:
-            typeof value.decodedToken.issuedAt === "string" ? value.decodedToken.issuedAt : undefined,
+          expiresAt: normalizeIsoTimestamp(value.decodedToken.expiresAt),
+          issuedAt: normalizeIsoTimestamp(value.decodedToken.issuedAt),
           isExpired:
             typeof value.decodedToken.isExpired === "boolean" ? value.decodedToken.isExpired : undefined,
           sub: typeof value.decodedToken.sub === "string" ? value.decodedToken.sub : undefined,
@@ -338,7 +401,7 @@ function normalizeCustomCaptures(
       expiryHours,
       matchedUrl,
       capturedAt,
-      lastSeenAt,
+      lastSeenAt: lastSeenAt || capturedAt,
       token: token || undefined,
       decodedToken,
       headers,
@@ -348,7 +411,7 @@ function normalizeCustomCaptures(
   return Object.keys(out).length ? out : undefined;
 }
 
-function normalizeCapture(input: unknown): ArcLatestCaptureState | null {
+export function normalizeCapture(input: unknown): ArcLatestCaptureState | null {
   if (!isRecord(input)) return null;
 
   const out: ArcLatestCaptureState = {};
@@ -369,6 +432,7 @@ function normalizeCapture(input: unknown): ArcLatestCaptureState | null {
     out.spfxRefreshTokenExpiresAt = input.spfxRefreshTokenExpiresAt;
   }
 
+  // Preserve SharePoint URL without query parameters if safe
   if (typeof input.sharepointWorkbookUrl === "string" && input.sharepointWorkbookUrl.trim()) {
     out.sharepointWorkbookUrl = input.sharepointWorkbookUrl.trim();
   }
@@ -385,48 +449,107 @@ function normalizeCapture(input: unknown): ArcLatestCaptureState | null {
     out.slackDCookie = input.slackDCookie.trim();
   }
 
-  if (typeof input.lastSlackSourceUrl === "string" && input.lastSlackSourceUrl.trim()) {
-    out.lastSlackSourceUrl = input.lastSlackSourceUrl.trim();
-  }
+  out.lastSlackSourceUrl = sanitizeSourceUrl(typeof input.lastSlackSourceUrl === "string" ? input.lastSlackSourceUrl : undefined);
+  out.lastSlackCaptureAt = normalizeIsoTimestamp(input.lastSlackCaptureAt);
 
-  if (typeof input.lastSlackCaptureAt === "string" && input.lastSlackCaptureAt.trim()) {
-    out.lastSlackCaptureAt = input.lastSlackCaptureAt.trim();
+  // Pre-Prod MAP API
+  if (typeof input.preprodMapToken === "string" && input.preprodMapToken.trim()) {
+    out.preprodMapToken = input.preprodMapToken.trim();
   }
+  out.preprodMapHeaders = normalizeHeaderMap(input.preprodMapHeaders);
+  out.lastPreprodMapSourceUrl = sanitizeSourceUrl(typeof input.lastPreprodMapSourceUrl === "string" ? input.lastPreprodMapSourceUrl : undefined);
+  out.lastPreprodMapCaptureAt = normalizeIsoTimestamp(input.lastPreprodMapCaptureAt);
 
-  out.graphHeaders = normalizeStringMap(input.graphHeaders);
-  out.tekionImplementationHeaders = normalizeStringMap(input.tekionImplementationHeaders);
-  out.tekionBootstrapHeaders = normalizeStringMap(input.tekionBootstrapHeaders);
-  out.tekionProdTechMotorsHeaders = normalizeStringMap(input.tekionProdTechMotorsHeaders);
+  out.graphHeaders = normalizeHeaderMap(input.graphHeaders);
+  out.tekionImplementationHeaders = normalizeHeaderMap(input.tekionImplementationHeaders);
+  out.tekionBootstrapHeaders = normalizeHeaderMap(input.tekionBootstrapHeaders);
+  out.tekionProdTechMotorsHeaders = normalizeHeaderMap(input.tekionProdTechMotorsHeaders);
 
-  if (typeof input.lastGraphSourceUrl === "string") {
-    out.lastGraphSourceUrl = input.lastGraphSourceUrl;
-  }
-  if (typeof input.lastGraphCaptureAt === "string") {
-    out.lastGraphCaptureAt = input.lastGraphCaptureAt;
-  }
-  if (typeof input.lastTekionImplementationSourceUrl === "string") {
-    out.lastTekionImplementationSourceUrl = input.lastTekionImplementationSourceUrl;
-  }
-  if (typeof input.lastTekionImplementationCaptureAt === "string") {
-    out.lastTekionImplementationCaptureAt = input.lastTekionImplementationCaptureAt;
-  }
-  if (typeof input.lastTekionBootstrapSourceUrl === "string") {
-    out.lastTekionBootstrapSourceUrl = input.lastTekionBootstrapSourceUrl;
-  }
-  if (typeof input.lastTekionBootstrapCaptureAt === "string") {
-    out.lastTekionBootstrapCaptureAt = input.lastTekionBootstrapCaptureAt;
-  }
-  if (typeof input.lastTekionProdTechMotorsSourceUrl === "string") {
-    out.lastTekionProdTechMotorsSourceUrl = input.lastTekionProdTechMotorsSourceUrl;
-  }
-  if (typeof input.lastTekionProdTechMotorsCaptureAt === "string") {
-    out.lastTekionProdTechMotorsCaptureAt = input.lastTekionProdTechMotorsCaptureAt;
-  }
+  out.lastGraphSourceUrl = sanitizeSourceUrl(typeof input.lastGraphSourceUrl === "string" ? input.lastGraphSourceUrl : undefined);
+  out.lastGraphCaptureAt = normalizeIsoTimestamp(input.lastGraphCaptureAt);
+
+  out.lastTekionImplementationSourceUrl = sanitizeSourceUrl(typeof input.lastTekionImplementationSourceUrl === "string" ? input.lastTekionImplementationSourceUrl : undefined);
+  out.lastTekionImplementationCaptureAt = normalizeIsoTimestamp(input.lastTekionImplementationCaptureAt);
+
+  out.lastTekionBootstrapSourceUrl = sanitizeSourceUrl(typeof input.lastTekionBootstrapSourceUrl === "string" ? input.lastTekionBootstrapSourceUrl : undefined);
+  out.lastTekionBootstrapCaptureAt = normalizeIsoTimestamp(input.lastTekionBootstrapCaptureAt);
+
+  out.lastTekionProdTechMotorsSourceUrl = sanitizeSourceUrl(typeof input.lastTekionProdTechMotorsSourceUrl === "string" ? input.lastTekionProdTechMotorsSourceUrl : undefined);
+  out.lastTekionProdTechMotorsCaptureAt = normalizeIsoTimestamp(input.lastTekionProdTechMotorsCaptureAt);
 
   out.tekionProfiles = normalizeTekionProfiles(input.tekionProfiles);
   out.customCaptures = normalizeCustomCaptures(input.customCaptures);
 
   return out;
+}
+
+/**
+ * Robust identity resolution: avoids returning empty strings or "_" when fields are blank.
+ */
+function getProfileIdentity(profile: ArcTekionProfile | CapturedTekionProfile): string {
+  if (profile.profileKey && profile.profileKey.trim()) {
+    return profile.profileKey.trim();
+  }
+
+  const tenant = profile.tenantName?.trim() ?? "";
+  const dealer = profile.dealerId?.trim() ?? "";
+
+  if (tenant || dealer) {
+    return `${tenant}_${dealer}`;
+  }
+
+  return profile.id;
+}
+
+/**
+ * Merges newly captured Tekion Profiles into the canonical profile repository.
+ * Resolves conflicts by comparing timestamps so older captures never overwrite newer ones.
+ */
+function mergeIncomingProfilesIntoCanonicalStore(newProfiles?: ArcTekionProfile[]): void {
+  if (!newProfiles || newProfiles.length === 0) return;
+
+  const existing = loadTekionCapturedProfiles();
+  const profileMap = new Map<string, CapturedTekionProfile>();
+
+  // Index existing canonical profiles
+  for (const p of existing) {
+    const key = getProfileIdentity(p);
+    profileMap.set(key, p);
+  }
+
+  // Merge in incoming profiles
+  for (const np of newProfiles) {
+    const key = getProfileIdentity(np);
+    const prev = profileMap.get(key);
+
+    const incomingTime = new Date(np.capturedAt).getTime();
+    const previousTime = prev ? new Date(prev.capturedAt).getTime() : -Infinity;
+
+    const useIncoming = Number.isFinite(incomingTime) && incomingTime >= previousTime;
+
+    const merged: CapturedTekionProfile = {
+      id: prev?.id || np.id,
+      profileKey: key,
+      capturedAt: useIncoming ? np.capturedAt : (prev?.capturedAt || np.capturedAt),
+      sourceUrl: useIncoming ? (np.sourceUrl || prev?.sourceUrl) : (prev?.sourceUrl || np.sourceUrl),
+      dealerId: useIncoming ? (np.dealerId || prev?.dealerId) : (prev?.dealerId || np.dealerId),
+      tenantName: useIncoming ? (np.tenantName || prev?.tenantName) : (prev?.tenantName || np.tenantName),
+      tekSiteId: useIncoming ? (np.tekSiteId || prev?.tekSiteId) : (prev?.tekSiteId || np.tekSiteId),
+      roleId: useIncoming ? (np.roleId || prev?.roleId) : (prev?.roleId || np.roleId),
+      applicationId: useIncoming ? (np.applicationId || prev?.applicationId) : (prev?.applicationId || np.applicationId),
+      clientId: useIncoming ? (np.clientId || prev?.clientId) : (prev?.clientId || np.clientId),
+      locale: useIncoming ? (np.locale || prev?.locale) : (prev?.locale || np.locale),
+      token: useIncoming ? (np.token || prev?.token) : (prev?.token || np.token),
+      decodedToken: useIncoming ? (np.decodedToken || prev?.decodedToken) : (prev?.decodedToken || np.decodedToken),
+      bootstrapHeaders: useIncoming
+        ? (np.bootstrapHeaders || prev?.bootstrapHeaders)
+        : (prev?.bootstrapHeaders || np.bootstrapHeaders),
+    };
+
+    profileMap.set(key, merged);
+  }
+
+  saveTekionCapturedProfiles(Array.from(profileMap.values()));
 }
 
 export function loadLatestExtensionCapture(): ArcLatestCaptureState | null {
@@ -444,8 +567,23 @@ export function loadLatestExtensionCapture(): ArcLatestCaptureState | null {
   }
 }
 
+/**
+ * Normalizes all payload data before writing to localStorage and merging profiles.
+ */
 export function saveLatestExtensionCapture(capture: ArcLatestCaptureState): void {
-  localStorage.setItem(LOCAL_CAPTURE_STORAGE_KEY, JSON.stringify(capture));
+  const normalized = normalizeCapture(capture);
+  if (!normalized) return;
+
+  if (normalized.tekionProfiles && normalized.tekionProfiles.length > 0) {
+    mergeIncomingProfilesIntoCanonicalStore(normalized.tekionProfiles);
+  }
+
+  // Auto-sync captured Pre-Prod MAP headers if present
+  if (normalized.preprodMapHeaders && Object.keys(normalized.preprodMapHeaders).length > 0) {
+    storeCapturedMapHeaders(normalized.preprodMapHeaders);
+  }
+
+  localStorage.setItem(LOCAL_CAPTURE_STORAGE_KEY, JSON.stringify(normalized));
 }
 
 export function syncExtensionCaptureToSettings(
@@ -477,12 +615,6 @@ export function syncExtensionCaptureToSettings(
   saveLatestExtensionCapture(capture);
 
   return { savedKeys, capture };
-}
-
-export function hasExpiredCustomToken(
-  capture: ArcCustomCapturedApi | null | undefined
-): boolean {
-  return capture?.decodedToken?.isExpired === true;
 }
 
 export function requestLatestCaptureFromExtension(): void {
@@ -530,49 +662,44 @@ export function subscribeToExtensionRules(
   return () => window.removeEventListener("message", handler);
 }
 
-function normalizeHeaderMap(input: unknown): HeaderMap | undefined {
-  if (!input || typeof input !== "object") return undefined;
-
-  const out: HeaderMap = {};
-  for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
-    if (typeof value === "string") {
-      out[key] = value;
-    }
-  }
-  return out;
-}
-
 function normalizeBrowserCaptureState(input: unknown): ArcBrowserCaptureState {
   if (!input || typeof input !== "object") {
     return {};
   }
 
   const raw = input as Record<string, unknown>;
-  const normalizeString = (value: unknown): string | undefined =>
-    typeof value === "string" ? value : undefined;
+  const normStr = (value: unknown): string | undefined =>
+    typeof value === "string" ? value.trim() : undefined;
 
   return {
-    graphApiToken: normalizeString(raw.graphApiToken),
+    graphApiToken: normStr(raw.graphApiToken),
     graphExpiresAt: typeof raw.graphExpiresAt === "number" ? raw.graphExpiresAt : undefined,
-    spfxRefreshToken: normalizeString(raw.spfxRefreshToken),
-    sharepointWorkbookUrl: normalizeString(raw.sharepointWorkbookUrl),
-    tapDuoApiToken: normalizeString(raw.tapDuoApiToken),
-    slackToken: normalizeString(raw.slackToken),
-    slackDCookie: normalizeString(raw.slackDCookie),
+    spfxRefreshToken: normStr(raw.spfxRefreshToken),
+    sharepointWorkbookUrl: normStr(raw.sharepointWorkbookUrl),
+    tapDuoApiToken: normStr(raw.tapDuoApiToken),
+    slackToken: normStr(raw.slackToken),
+    slackDCookie: normStr(raw.slackDCookie),
+
+    // Pre-Prod MAP Credentials
+    preprodMapToken: normStr(raw.preprodMapToken),
+    preprodMapHeaders: normalizeHeaderMap(raw.preprodMapHeaders),
+    lastPreprodMapSourceUrl: normStr(raw.lastPreprodMapSourceUrl),
+    lastPreprodMapCaptureAt: normalizeIsoTimestamp(raw.lastPreprodMapCaptureAt),
+
     graphHeaders: normalizeHeaderMap(raw.graphHeaders),
     tekionImplementationHeaders: normalizeHeaderMap(raw.tekionImplementationHeaders),
     tekionBootstrapHeaders: normalizeHeaderMap(raw.tekionBootstrapHeaders),
     tekionProdTechMotorsHeaders: normalizeHeaderMap(raw.tekionProdTechMotorsHeaders),
-    lastGraphSourceUrl: normalizeString(raw.lastGraphSourceUrl),
-    lastTekionImplementationSourceUrl: normalizeString(raw.lastTekionImplementationSourceUrl),
-    lastTekionBootstrapSourceUrl: normalizeString(raw.lastTekionBootstrapSourceUrl),
-    lastTekionProdTechMotorsSourceUrl: normalizeString(raw.lastTekionProdTechMotorsSourceUrl),
-    lastSlackSourceUrl: normalizeString(raw.lastSlackSourceUrl),
-    lastGraphCaptureAt: normalizeString(raw.lastGraphCaptureAt),
-    lastTekionImplementationCaptureAt: normalizeString(raw.lastTekionImplementationCaptureAt),
-    lastTekionBootstrapCaptureAt: normalizeString(raw.lastTekionBootstrapCaptureAt),
-    lastTekionProdTechMotorsCaptureAt: normalizeString(raw.lastTekionProdTechMotorsCaptureAt),
-    lastSlackCaptureAt: normalizeString(raw.lastSlackCaptureAt),
+    lastGraphSourceUrl: sanitizeSourceUrl(typeof raw.lastGraphSourceUrl === "string" ? raw.lastGraphSourceUrl : undefined),
+    lastTekionImplementationSourceUrl: sanitizeSourceUrl(typeof raw.lastTekionImplementationSourceUrl === "string" ? raw.lastTekionImplementationSourceUrl : undefined),
+    lastTekionBootstrapSourceUrl: sanitizeSourceUrl(typeof raw.lastTekionBootstrapSourceUrl === "string" ? raw.lastTekionBootstrapSourceUrl : undefined),
+    lastTekionProdTechMotorsSourceUrl: sanitizeSourceUrl(typeof raw.lastTekionProdTechMotorsSourceUrl === "string" ? raw.lastTekionProdTechMotorsSourceUrl : undefined),
+    lastSlackSourceUrl: sanitizeSourceUrl(typeof raw.lastSlackSourceUrl === "string" ? raw.lastSlackSourceUrl : undefined),
+    lastGraphCaptureAt: normalizeIsoTimestamp(raw.lastGraphCaptureAt),
+    lastTekionImplementationCaptureAt: normalizeIsoTimestamp(raw.lastTekionImplementationCaptureAt),
+    lastTekionBootstrapCaptureAt: normalizeIsoTimestamp(raw.lastTekionBootstrapCaptureAt),
+    lastTekionProdTechMotorsCaptureAt: normalizeIsoTimestamp(raw.lastTekionProdTechMotorsCaptureAt),
+    lastSlackCaptureAt: normalizeIsoTimestamp(raw.lastSlackCaptureAt),
   };
 }
 
@@ -595,6 +722,11 @@ export function saveArcBrowserCapture(
     ...current,
     ...normalizedNext,
   };
+
+  // Auto-sync captured Pre-Prod MAP headers if present
+  if (merged.preprodMapHeaders && Object.keys(merged.preprodMapHeaders).length > 0) {
+    storeCapturedMapHeaders(merged.preprodMapHeaders);
+  }
 
   localStorage.setItem(BROWSER_CAPTURE_STORAGE_KEY, JSON.stringify(merged));
   return merged;

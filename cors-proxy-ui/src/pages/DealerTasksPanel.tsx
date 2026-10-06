@@ -1,4 +1,30 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+/**
+ * DealerTasksPanel Component
+ *
+ * Purpose:
+ * Renders an operational management workspace for a dealership's TAP (Tekion Automation Platform)
+ * blueprint tasks across three functional departments: Parts, Service, and Accounting.
+ *
+ * Core Capabilities:
+ * 1. Task Lifecycle & Status Sync:
+ *    - Fetches and caches module-level blueprint tasks via TAP APIs.
+ *    - Allows users to transition task statuses (e.g., 'new' -> 'inprogress' -> 'completed').
+ *    - Automatically derives and rolls up operational statuses for Fixed Ops (Parts + Service)
+ *      and Variable Ops (Accounting), propagating changes back to the parent Stores tracker.
+ *
+ * 2. Attachment Management:
+ *    - Scans and loads task file attachments asynchronously.
+ *    - Emits snapshot updates (`onTasksSnapshot`) with attachment counts to surface metrics
+ *      and incomplete quality-audit flags in the main Stores table.
+ *    - Supports uploading local attachments directly to individual TAP tasks.
+ *
+ * 3. Smart Mention Comments:
+ *    - Auto-populates pre-formatted templates ("Flag Issue" / "Completion Note").
+ *    - Automatically detects relevant department leads from Slack candidate lists to tag
+ *      the appropriate POD/lead email in comments.
+ */
+
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   resolveStoreProjectId,
   type CustomPhaseStatus,
@@ -16,7 +42,6 @@ import {
   type TapTask,
   type TapTaskCommentMention,
   type TapTaskStatus,
-  type TapTasksByModule,
 } from "../services/tapTasksApi";
 import {
   buildStoreSlackDraftContext,
@@ -258,7 +283,7 @@ export default function DealerTasksPanel({
     const complete = all.every((t) => t.attachments !== undefined);
     const anyLoaded = all.some((t) => t.attachments !== undefined);
     if (anyLoaded) onTasksSnapshot(row.tekion_id, tasks, complete);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-dependencies
   }, [tasks]);
 
   const loadTasks = async (forceRemote = false) => {
@@ -363,7 +388,7 @@ export default function DealerTasksPanel({
     setSelectedTaskId(null);
     setCommentTemplate("issue");
     void loadTasks(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-dependencies
   }, [row.tekion_id, resolvedProjectId]);
 
   useEffect(() => {

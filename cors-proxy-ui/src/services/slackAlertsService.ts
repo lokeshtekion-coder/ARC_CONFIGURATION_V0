@@ -5,17 +5,14 @@ import {
   getSlackSession,
 } from "./storeSlackHelper";
 import {
-  ASSIGNEE_OPTIONS,
-  loadAssignmentLog,
-  resolveStoreAssignee,
-} from "./assigneeService";
-import {
   evaluateAnalyticsReport,
   evaluateFixedOpsReport,
   evaluateVariableOpsReport,
   generateHtmlReport,
   generateExcelAuditWorkbook,
-} from "./slaReportGenerator";
+  isFixedOpsExcludedByNotWorked,
+  isVariableOpsExcludedByNotWorked,
+} from "./slaReportGenerator_na";
 import type { ExtendedStoreRecord } from "../pages/Stores";
 
 /** Target Slack Channel for Bot-to-Bot & Operations Communication */
@@ -40,6 +37,16 @@ interface AlertState {
   t7Notified: Record<string, true>;
   digestDate: string;
   initialized: boolean;
+}
+
+interface PrioritizedStoreItem {
+  tekionId: string;
+  dealerId: string;
+  dbaName: string;
+  launchDate: string;
+  tLabel: string;
+  daysUntilLaunch: number;
+  status: string;
 }
 
 function read<T>(key: string, fallback: T): T {
@@ -77,16 +84,43 @@ function saveState(s: AlertState): void {
   localStorage.setItem(STATE_KEY, JSON.stringify(s));
 }
 
+function parseFlexibleDate(value?: string): Date | null {
+  const trimmed = String(value ?? "").trim();
+  if (!trimmed) return null;
+
+  if (/^\d+$/.test(trimmed)) {
+    const num = Number(trimmed);
+    const ms = trimmed.length <= 10 ? num * 1000 : num;
+    const date = new Date(ms);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  const cleaned = trimmed.replace(/^(Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s+/i, "");
+  const date = new Date(cleaned);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
 function daysUntilLaunch(value: string): number | null {
-  if (!value) return null;
-  const d = /^\d+$/.test(value)
-    ? new Date(value.length <= 10 ? Number(value) * 1000 : Number(value))
-    : new Date(value);
-  if (Number.isNaN(d.getTime())) return null;
+  const d = parseFlexibleDate(value);
+  if (!d) return null;
   const now = new Date();
   const a = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
   const b = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
   return Math.round((b - a) / 86400000);
+}
+
+function getTLabel(days: number): string {
+  if (days > 0) return `T-${days}`;
+  if (days === 0) return "T-0 (Launch Today)";
+  return `Launched (+${Math.abs(days)}d)`;
+}
+
+function formatDisplayDate(date: Date | null): string {
+  if (!date) return "—";
+  const dd = `${date.getDate()}`.padStart(2, "0");
+  const mm = `${date.getMonth() + 1}`.padStart(2, "0");
+  const yyyy = date.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
 }
 
 const label = (s: StoreRecord) => `${s.dba_name} (${s.dealer_id} /${s.tekion_id})`;
@@ -129,7 +163,7 @@ export async function dispatchAllThreeReports(
   const dateStr = now.toISOString().slice(0, 10);
   const timeStr = now.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
 
-  // 1. Analytics Report (T-7 focus up to T-90)
+  // 1. Analytics Report (Pending focus: T-7 up to T-90)
   const analyticsData = evaluateAnalyticsReport(records as any);
   const analyticsHtml = generateHtmlReport(analyticsData);
   await sendSlackDocument({
@@ -139,9 +173,9 @@ export async function dispatchAllThreeReports(
     title: `Analytics Report - ${dateStr}${timeStr}`,
     initialComment:
       `📊 *Analytics Status Report (Focus: T-7 to T-90)*\n` +
-      `Total stores in scope: *${analyticsData.totalEvaluated}*\n` +
+      `Pending stores in scope: *${analyticsData.totalEvaluated}*\n` +
       `🚨 *High-Priority T-7 Stores:* *${analyticsData.priorityT7Count}* (due before T-1)\n` +
-      `Analytics BP Completed: *${analyticsData.analyticsCompletedCount}* | In-Progress: *${analyticsData.analyticsInProgressCount}* \vert{} Not Started: *${analyticsData.analyticsNotStartedCount}*.`,
+      `In-Progress: *${analyticsData.analyticsInProgressCount}* \vert{} Not Started / None: *${analyticsData.analyticsNotStartedCount}*.`,
   });
 
   // 2. Fixed Ops Report (T-90, breaches <= 85d)
@@ -187,7 +221,7 @@ export async function dispatchAllThreeReports(
       isBase64: true,
       initialComment:
         `📗 *Unified Operations Audit Excel Spreadsheet* (${dateStr}${timeStr})\n` +
-        `Includes 3 sheets: *Analytics (T-7 to T-90)*, *Fixed Ops (T-90)*, and *Variable Ops (T-65)*.\n` +
+        `Includes 3 sheets: *Pending Analytics (T-90)*, *Pending Fixed Ops (T-90)*, and *Pending Variable Ops (T-65)*.\n` +
         `Directly viewable and editable in Microsoft Excel or Google Sheets.`,
     });
   } catch (excelErr) {
@@ -296,34 +330,156 @@ export async function runSlackAlerts(records: StoreRecord[]): Promise<number> {
   return completedLines.length + t7Lines.length;
 }
 
-export function buildAssigneeDigest(records: StoreRecord[]): string {
-  const counts = new Map<string, number>(ASSIGNEE_OPTIONS.map((n) => [n, 0]));
-  let unassigned = 0;
-  for (const r of records) {
-    const a = resolveStoreAssignee(r);
-    if (a && counts.has(a)) counts.set(a, (counts.get(a) ?? 0) + 1);
-    else unassigned++;
+/**
+ * Builds an actionable daily priority digest for each assignee:
+ * Top 5 most critical Fixed Ops stores + Top 5 most critical Variable Ops stores.
+ */
+export function buildAssigneeDigest(records: (StoreRecord | ExtendedStoreRecord)[]): string {
+  const todayDateStr = new Date().toLocaleDateString("en-US", {
+    month: "numeric",
+    day: "numeric",
+    year: "numeric",
+  });
+
+  const assigneeSet = new Set<string>();
+  records.forEach((r: any) => {
+    if (r.custom_assignee && r.custom_assignee.trim()) {
+      assigneeSet.add(r.custom_assignee.trim());
+    }
+    if (r.custom_variable_assignee && r.custom_variable_assignee.trim()) {
+      assigneeSet.add(r.custom_variable_assignee.trim());
+    }
+  });
+
+  const assignees = Array.from(assigneeSet).sort();
+
+  const lines: string[] = [
+    `🎯 *ARC Daily Actionable Priority Digest (${todayDateStr})*`,
+    `Focusing on the *Top 5 most urgent deadlines* per assignee for today.`,
+    `────────────────────────────────────────`,
+  ];
+
+  for (const assignee of assignees) {
+    const pendingFixed: PrioritizedStoreItem[] = [];
+    const pendingVariable: PrioritizedStoreItem[] = [];
+
+    for (const r of records) {
+      const launchObj = parseFlexibleDate(r.launch_date);
+      if (!launchObj) continue;
+      const days = daysUntilLaunch(r.launch_date);
+      if (days === null || days < 0) continue; // Skip launched stores
+
+      const notWorked = (r as any).not_worked || "";
+
+      // Fixed Ops check
+      const fixedOwner = ((r as any).custom_assignee || "").trim();
+      const fixedStatus = (r.fixed_ops_status || "TO DO").trim();
+      const isFixedPending =
+        fixedOwner === assignee &&
+        fixedStatus.toLowerCase() !== "completed" &&
+        !isFixedOpsExcludedByNotWorked(notWorked);
+
+      if (isFixedPending) {
+        pendingFixed.push({
+          tekionId: r.tekion_id,
+          dealerId: r.dealer_id,
+          dbaName: r.dba_name || "Dealership",
+          launchDate: formatDisplayDate(launchObj),
+          tLabel: getTLabel(days),
+          daysUntilLaunch: days,
+          status: fixedStatus,
+        });
+      }
+
+      // Variable Ops check
+      const varOwner = ((r as any).custom_variable_assignee || "").trim();
+      const varStatus = (r.variable_ops_status || "TO DO").trim();
+      const isVarPending =
+        varOwner === assignee &&
+        varStatus.toLowerCase() !== "completed" &&
+        !isVariableOpsExcludedByNotWorked(notWorked);
+
+      if (isVarPending) {
+        pendingVariable.push({
+          tekionId: r.tekion_id,
+          dealerId: r.dealer_id,
+          dbaName: r.dba_name || "Dealership",
+          launchDate: formatDisplayDate(launchObj),
+          tLabel: getTLabel(days),
+          daysUntilLaunch: days,
+          status: varStatus,
+        });
+      }
+    }
+
+    if (pendingFixed.length === 0 && pendingVariable.length === 0) {
+      continue;
+    }
+
+    pendingFixed.sort((a, b) => a.daysUntilLaunch - b.daysUntilLaunch);
+    pendingVariable.sort((a, b) => a.daysUntilLaunch - b.daysUntilLaunch);
+
+    const top5Fixed = pendingFixed.slice(0, 5);
+    const top5Variable = pendingVariable.slice(0, 5);
+
+    lines.push(`\n👤 *${assignee}*`);
+
+    // Fixed Ops Section
+    lines.push(`  📦 *Fixed Ops Priority (Top ${top5Fixed.length} of${pendingFixed.length} pending):*`);
+    if (top5Fixed.length > 0) {
+      top5Fixed.forEach((s, idx) => {
+        lines.push(
+          `    ${idx + 1}. *#${s.dealerId}*${s.dbaName} • \`${s.tLabel}\` (${s.launchDate}) • [${s.status}]`
+        );
+      });
+    } else {
+      lines.push(`    _All assigned Fixed Ops stores completed or none pending._`);
+    }
+
+    // Variable Ops Section
+    lines.push(`  📊 *Variable Ops Priority (Top ${top5Variable.length} of${pendingVariable.length} pending):*`);
+    if (top5Variable.length > 0) {
+      top5Variable.forEach((s, idx) => {
+        lines.push(
+          `    ${idx + 1}. *#${s.dealerId}*${s.dbaName} • \`${s.tLabel}\` (${s.launchDate}) • [${s.status}]`
+        );
+      });
+    } else {
+      lines.push(`    _All assigned Variable Ops stores completed or none pending._`);
+    }
   }
 
-  const since = Date.now() - 24 * 3600 * 1000;
-  const recent = loadAssignmentLog().filter((e) => new Date(e.at).getTime() >= since);
-  const bot = recent.filter((e) => e.source === "bot").length;
-  const manual = recent.length - bot;
+  // Summary counts for unassigned work
+  const unassignedFixed = records.filter(
+    (r: any) =>
+      !r.custom_assignee &&
+      (r.fixed_ops_status || "TO DO").toLowerCase() !== "completed" &&
+      !isFixedOpsExcludedByNotWorked(r.not_worked)
+  ).length;
 
-  const rows = [...counts.entries()].map(([n, c]) => `${n}: *${c}*`).join("\n");
-  return (
-    `👥 *ARC Daily Assignee Digest* (${new Date().toLocaleDateString()})\n\n` +
-    `${rows}\nUnassigned: *${unassigned}*\n\n` +
-    `_Activity (Last 24h):_ ${bot} assigned by bot,${manual} changed manually/Excel.\n` +
-    `_Active Stores in Scope:_ ${records.length}`
-  );
+  const unassignedVariable = records.filter(
+    (r: any) =>
+      !r.custom_variable_assignee &&
+      (r.variable_ops_status || "TO DO").toLowerCase() !== "completed" &&
+      !isVariableOpsExcludedByNotWorked(r.not_worked)
+  ).length;
+
+  if (unassignedFixed > 0 || unassignedVariable > 0) {
+    lines.push(`\n⚠️ *Unassigned Queue:*`);
+    if (unassignedFixed > 0) lines.push(`• *Fixed Ops Unassigned:* ${unassignedFixed} pending store(s)`);
+    if (unassignedVariable > 0) lines.push(`• *Variable Ops Unassigned:* ${unassignedVariable} pending store(s)`);
+  }
+
+  lines.push(`\n_Tip: Mark tasks completed in the Stores Tracker once verified to cycle in the next batch._`);
+
+  return lines.join("\n");
 }
 
-export async function sendAssigneeDigest(records: StoreRecord[]): Promise<void> {
+export async function sendAssigneeDigest(records: (StoreRecord | ExtendedStoreRecord)[]): Promise<void> {
   await sendSlackChannelMessage({ channelId: ALERT_CHANNEL_ID, text: buildAssigneeDigest(records) });
 }
 
-export async function maybeSendDailyDigest(records: StoreRecord[]): Promise<boolean> {
+export async function maybeSendDailyDigest(records: (StoreRecord | ExtendedStoreRecord)[]): Promise<boolean> {
   if (!loadSlackAlertsConfig().dailyDigest || records.length === 0) return false;
   const now = new Date();
   if (now.getHours() < DIGEST_HOUR || !getSlackSession().slackToken) return false;

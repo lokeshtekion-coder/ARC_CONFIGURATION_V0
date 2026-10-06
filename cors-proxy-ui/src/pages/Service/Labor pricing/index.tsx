@@ -1,9 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { loadGlobalHeaders } from "../../../services/tekionApiSettings";
+import { loadTekionCapturedProfiles } from "../../../services/tekionCapturedProfiles";
+import { loadTekionApiSettingsBundle } from "../../../services/tekionApiSettings";
 import type { KeyValuePair } from "../../../types/proxy.types";
 import { useServiceBlueprint } from "../../../Context/Blueprint_Service_Context";
 
-type OperationKey = "get" | "post";
+const SELECTED_DEALER_PROFILE_KEY = "arc_selected_dealer_profile_id_v1";
+const PROXY_ENDPOINT = "http://localhost:4000/api/proxy";
+const DEFAULT_HOST = "https://preprodapp.tekioncloud.com";
 
 type UiMessage = {
   ok: boolean;
@@ -53,9 +56,6 @@ type LaborPreset = {
   blueprintQuestion: string;
 };
 
-const LABOR_RATE_URL =
-  "https://preprodapp.tekioncloud.com/api/service-module/u/labor-pricing/laborRate";
-
 const PRESET_RATES: LaborPreset[] = [
   {
     key: "cp",
@@ -91,43 +91,35 @@ function normalizeUpper(value: unknown): string {
   return normalize(value).toUpperCase();
 }
 
-/**
- * Extracts a numeric labor rate from clean numbers or conversational sentences.
- * e.g., "$185.00", "185", "Our standard customer rate is $195/hr", "165 an hour"
- */
 function extractRateFromText(value: unknown): string {
   if (value === undefined || value === null) return "";
-  if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+  if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
     return String(value);
   }
 
   const str = String(value).trim();
   if (!str) return "";
 
-  // Direct clean number check (e.g. "185", "185.50", "$185")
   const cleanDirect = str.replace(/[$,\s]/g, "");
-  if (!Number.isNaN(Number(cleanDirect)) && Number(cleanDirect) > 0) {
+  if (!Number.isNaN(Number(cleanDirect)) && Number(cleanDirect) >= 0) {
     return cleanDirect;
   }
 
-  // Regex 1: Explicit dollar sign pattern ($195 or $ 195.50)
   const dollarMatch = str.match(/\$\s*(\d+(?:\.\d{1,2})?)/);
-  if (dollarMatch?.[1] && Number(dollarMatch[1]) > 0) {
+  if (dollarMatch?.[1] && Number(dollarMatch[1]) >= 0) {
     return dollarMatch[1];
   }
 
-  // Regex 2: Number followed by /hr, hr, hour, per hour
   const hourlyMatch = str.match(/\b(\d+(?:\.\d{1,2})?)\s*(?:\/|\bper\b)?\s*(?:hr|hour)\b/i);
-  if (hourlyMatch?.[1] && Number(hourlyMatch[1]) > 0) {
+  if (hourlyMatch?.[1] && Number(hourlyMatch[1]) >= 0) {
     return hourlyMatch[1];
   }
 
-  // Regex 3: Match plausible dealership labor rates (e.g. between 30 and 1500)
   const allNumbers = str.match(/\b\d+(?:\.\d{1,2})?\b/g);
   if (allNumbers && allNumbers.length > 0) {
     const plausible = allNumbers.find((nStr) => {
       const n = parseFloat(nStr);
-      return n >= 30 && n <= 1500;
+      return n >= 0 && n <= 1500;
     });
     if (plausible) return plausible;
     return allNumbers[0];
@@ -136,38 +128,48 @@ function extractRateFromText(value: unknown): string {
   return "";
 }
 
-function toEnabledHeaderMap(headers: KeyValuePair[]): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const row of headers) {
-    if (!row?.enabled) continue;
-    const key = normalize(row.key);
-    const value = normalize(row.value);
-    if (!key || !value) continue;
-    out[key] = value;
-  }
-  return out;
-}
+function resolveActiveHeaders(): { headers: Record<string, string>; baseHost: string; siteId: string } {
+  const storedProfileId = localStorage.getItem(SELECTED_DEALER_PROFILE_KEY);
+  const profiles = loadTekionCapturedProfiles();
 
-function findHeaderValueCaseInsensitive(
-  headers: Record<string, string>,
-  candidates: string[]
-): string {
-  const entries = Object.entries(headers);
-  for (const candidate of candidates) {
-    const found = entries.find(([key]) => key.toLowerCase() === candidate.toLowerCase());
-    if (found?.[1]) return normalize(found[1]);
-  }
-  return "";
-}
+  const matchedProfile = storedProfileId
+    ? profiles.find(
+        (p) =>
+          p.id === storedProfileId ||
+          p.profileKey === storedProfileId ||
+          p.dealerId === storedProfileId
+      )
+    : profiles[0] ?? null;
 
-function extractSiteIdFromHeaders(headers: Record<string, string>): string {
-  return findHeaderValueCaseInsensitive(headers, [
-    "tek-siteid",
-    "tek-siteId",
-    "teksiteid",
-    "siteid",
-    "site-id",
-  ]);
+  let headers: Record<string, string> = {};
+  let baseHost = DEFAULT_HOST;
+  let siteId = matchedProfile?.tekSiteId || "";
+
+  if (matchedProfile?.bootstrapHeaders && Object.keys(matchedProfile.bootstrapHeaders).length > 0) {
+    headers = { ...matchedProfile.bootstrapHeaders };
+    if (matchedProfile.sourceUrl) {
+      try {
+        baseHost = new URL(matchedProfile.sourceUrl).origin;
+      } catch {
+        baseHost = DEFAULT_HOST;
+      }
+    }
+  } else {
+    const bundle = loadTekionApiSettingsBundle();
+    const rows = (bundle.globalHeaders ?? []).filter(
+      (h: KeyValuePair) => h.enabled && h.key?.trim() && String(h.value ?? "").trim()
+    );
+    for (const row of rows) {
+      const lower = row.key.trim().toLowerCase();
+      headers[lower] = String(row.value).trim();
+      if (lower === "tek-siteid" && !siteId) {
+        siteId = String(row.value).trim();
+      }
+    }
+  }
+
+  headers["content-type"] = "application/json";
+  return { headers, baseHost, siteId: siteId || "-1_7896" };
 }
 
 function buildTomorrowInputDate(): string {
@@ -186,18 +188,15 @@ function formatCurrency(value: unknown): string {
 }
 
 function formatDateLabel(value: unknown): string {
-  if (!value) return "—";
+  if (value === null || value === undefined || value === "") return "—";
 
-  if (
-    typeof value !== "string" &&
-    typeof value !== "number" &&
-    !(value instanceof Date)
-  ) {
+  if (typeof value !== "string" && typeof value !== "number" && !(value instanceof Date)) {
     return "—";
   }
 
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "—";
+
   return date.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
@@ -217,79 +216,22 @@ function getDisplayHourlyRate(rate: LaborRateRow): number {
   return Number(latest?.hourLaborRate ?? rate.hourLaborRate ?? 0);
 }
 
-function getDisplayStatus(rate: LaborRateRow): string {
-  const latest = getLatestVersion(rate);
-  return normalize(latest?.effectiveStatus || "INACTIVE") || "INACTIVE";
-}
-
 function getDisplayEffectiveDate(rate: LaborRateRow): string {
   const latest = getLatestVersion(rate);
   return formatDateLabel(latest?.effectiveDate);
 }
 
-function getDisplayRateType(rate: LaborRateRow): string {
-  const name = normalizeUpper(rate.name);
-  const description = normalizeUpper(rate.description);
-
-  if (name === "CP" || description.includes("CUSTOMER")) return "Customer Pay";
-  if (name === "IP" || description.includes("INTERNAL")) return "Internal";
-  if (name === "WP" || description.includes("WARRANTY")) return "Warranty";
-
-  const map: Record<number, string> = {
-    0: "Customer Pay",
-    1: "Warranty",
-    2: "Internal",
-  };
-
-  return map[Number(rate.rateType)] || String(rate.rateType ?? "—");
-}
-
-function getStatusVisual(status: string): {
-  text: string;
-  color: string;
-  background: string;
-  border: string;
-} {
-  const normalized = normalizeUpper(status);
-
-  if (normalized === "ACTIVE") {
-    return {
-      text: "ACTIVE",
-      color: "#86efac",
-      background: "rgba(34,197,94,0.10)",
-      border: "1px solid rgba(34,197,94,0.22)",
-    };
-  }
-
-  if (normalized === "UPCOMING") {
-    return {
-      text: "UPCOMING",
-      color: "#fcd34d",
-      background: "rgba(245,158,11,0.10)",
-      border: "1px solid rgba(245,158,11,0.22)",
-    };
-  }
-
-  if (normalized === "EXPIRED") {
-    return {
-      text: "EXPIRED",
-      color: "#fca5a5",
-      background: "rgba(239,68,68,0.10)",
-      border: "1px solid rgba(239,68,68,0.22)",
-    };
-  }
-
-  return {
-    text: "INACTIVE",
-    color: "#cbd5e1",
-    background: "rgba(148,163,184,0.10)",
-    border: "1px solid rgba(148,163,184,0.20)",
-  };
-}
-
 function buildEffectiveDateInfo(inputDate: string): { iso: string; timestamp: number } {
   const selected = new Date(inputDate);
   const now = new Date();
+
+  if (Number.isNaN(selected.getTime())) {
+    const fallback = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    return {
+      iso: fallback.toISOString(),
+      timestamp: fallback.getTime(),
+    };
+  }
 
   if (selected.getTime() <= now.getTime()) {
     const adjusted = new Date(now.getTime() + 60 * 60 * 1000);
@@ -431,8 +373,8 @@ function tableScrollWrapStyle(maxHeight: number): React.CSSProperties {
 }
 
 const tableElementStyle: React.CSSProperties = {
-  width: "80%",
-  minWidth: 880,
+  width: "100%",
+  minWidth: 650,
   borderCollapse: "collapse",
 };
 
@@ -454,7 +396,7 @@ const tdStyle: React.CSSProperties = {
   padding: "8px 10px",
   fontSize: 13,
   borderBottom: "1px solid rgba(255,255,255,0.05)",
-  verticalAlign: "top",
+  verticalAlign: "middle",
 };
 
 function zebraRowStyle(index: number): React.CSSProperties {
@@ -463,11 +405,8 @@ function zebraRowStyle(index: number): React.CSSProperties {
   };
 }
 
-const LaborPricingView: React.FC = () => {
+export const LaborPricingView: React.FC = () => {
   const { getAnswer, hasBlueprint, loading: blueprintLoading } = useServiceBlueprint();
-
-  const [headerMap, setHeaderMap] = useState<Record<string, string>>({});
-  const [operation, setOperation] = useState<OperationKey>("get");
 
   const [loading, setLoading] = useState(false);
   const [creatingKey, setCreatingKey] = useState<string | null>(null);
@@ -494,22 +433,8 @@ const LaborPricingView: React.FC = () => {
 
   const [search, setSearch] = useState("");
 
-  const refreshHeaders = useCallback(() => {
-    try {
-      const headers = loadGlobalHeaders();
-      setHeaderMap(toEnabledHeaderMap(headers));
-    } catch {
-      setHeaderMap({});
-    }
-  }, []);
-
-  useEffect(() => {
-    refreshHeaders();
-  }, [refreshHeaders]);
-
-  const detectedSiteId = useMemo(() => extractSiteIdFromHeaders(headerMap), [headerMap]);
-  const effectiveSiteId = detectedSiteId || "-1_7896";
-  const headerCount = useMemo(() => Object.keys(headerMap).length, [headerMap]);
+  const { headers: activeHeaders, baseHost, siteId } = useMemo(() => resolveActiveHeaders(), []);
+  const headerCount = useMemo(() => Object.keys(activeHeaders).length, [activeHeaders]);
 
   // Extract Blueprint Rates for presets
   const blueprintRates = useMemo(() => {
@@ -536,7 +461,7 @@ const LaborPricingView: React.FC = () => {
 
       (["cp", "ip", "wp"] as const).forEach((key) => {
         const bpRate = blueprintRates[key];
-        if (bpRate && (prev[key] === "0" || prev[key] === "")) {
+        if (bpRate !== "" && (prev[key] === "0" || prev[key] === "")) {
           next[key] = bpRate;
           changed = true;
         }
@@ -545,20 +470,19 @@ const LaborPricingView: React.FC = () => {
       return changed ? next : prev;
     });
 
-    // Also populate default shared hourlyRate if CP is found
-    if (blueprintRates.cp && (hourlyRate === "0" || !hourlyRate)) {
+    if (blueprintRates.cp !== "" && (hourlyRate === "0" || !hourlyRate)) {
       setHourlyRate(blueprintRates.cp);
     }
   }, [blueprintRates, hasBlueprint, hourlyRate]);
 
   const handleReloadFromBlueprint = useCallback(() => {
     setPresetRates({
-      cp: blueprintRates.cp || "0",
-      ip: blueprintRates.ip || "0",
-      wp: blueprintRates.wp || "0",
+      cp: blueprintRates.cp !== "" ? blueprintRates.cp : "0",
+      ip: blueprintRates.ip !== "" ? blueprintRates.ip : "0",
+      wp: blueprintRates.wp !== "" ? blueprintRates.wp : "0",
     });
 
-    if (blueprintRates.cp) {
+    if (blueprintRates.cp !== "") {
       setHourlyRate(blueprintRates.cp);
     }
 
@@ -574,7 +498,7 @@ const LaborPricingView: React.FC = () => {
       method: "GET" | "POST";
       body?: unknown;
     }) => {
-      const res = await fetch("http://localhost:4000/api/proxy", {
+      const res = await fetch(PROXY_ENDPOINT, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -582,10 +506,7 @@ const LaborPricingView: React.FC = () => {
         body: JSON.stringify({
           url: payload.url,
           method: payload.method,
-          headers: {
-            ...headerMap,
-            ...(payload.body ? { "content-type": "application/json" } : {}),
-          },
+          headers: activeHeaders,
           body: payload.body,
           timeout: 60000,
         }),
@@ -605,20 +526,20 @@ const LaborPricingView: React.FC = () => {
 
       return json?.body ?? json?.data ?? json;
     },
-    [headerMap]
+    [activeHeaders]
   );
 
   const fetchLaborRates = useCallback(async () => {
     setLoading(true);
-    setMessage(null);
-
     try {
       if (headerCount === 0) {
-        throw new Error("Global Headers are empty. Please configure them in Settings first.");
+        throw new Error("Active headers are empty. Please configure a dealer profile in Settings.");
       }
 
+      const targetUrl = `${baseHost}/api/service-module/u/labor-pricing/laborRate`;
+
       const response = (await proxyRequest({
-        url: LABOR_RATE_URL,
+        url: targetUrl,
         method: "GET",
       })) as LaborRateApiResponse;
 
@@ -630,10 +551,6 @@ const LaborPricingView: React.FC = () => {
 
       setRawGetResponse(response);
       setLaborRates(rows);
-      setMessage({
-        ok: true,
-        text: `Fetched ${rows.length} labor rate record(s) successfully.`,
-      });
     } catch (e: unknown) {
       setLaborRates([]);
       setRawGetResponse(null);
@@ -644,7 +561,12 @@ const LaborPricingView: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [headerCount, proxyRequest]);
+  }, [baseHost, headerCount, proxyRequest]);
+
+  // Auto-fetch labor rates on mount
+  useEffect(() => {
+    void fetchLaborRates();
+  }, [fetchLaborRates]);
 
   const createLaborRate = useCallback(
     async (params: {
@@ -659,19 +581,20 @@ const LaborPricingView: React.FC = () => {
 
       try {
         if (headerCount === 0) {
-          throw new Error("Global Headers are empty. Please configure them in Settings first.");
+          throw new Error("Active headers are empty. Please configure a dealer profile in Settings.");
         }
 
         if (!effectiveDate) {
           throw new Error("Please select an effective date.");
         }
 
-        if (!Number.isFinite(params.rateValue) || params.rateValue <= 0) {
-          throw new Error(`Please enter a valid hourly labor rate for ${params.name}.`);
+        // Allows 0 and positive numbers (blocks negative or NaN)
+        if (!Number.isFinite(params.rateValue) || params.rateValue < 0) {
+          throw new Error(`Please enter a valid non-negative hourly labor rate for ${params.name}.`);
         }
 
         const payload = buildCreatePayload({
-          siteId: effectiveSiteId,
+          siteId,
           name: params.name,
           description: params.description,
           rateType: params.rateType,
@@ -679,17 +602,19 @@ const LaborPricingView: React.FC = () => {
           effectiveDateInput: effectiveDate,
         });
 
+        const targetUrl = `${baseHost}/api/service-module/u/labor-pricing/laborRate`;
+
         const response = (await proxyRequest({
-          url: LABOR_RATE_URL,
+          url: targetUrl,
           method: "POST",
           body: payload,
         })) as CreateResponse;
 
         setMessage({
           ok: true,
-          text: `Labor rate "${params.name}" created successfully${
+          text: `✓ Labor rate "${params.name}" created successfully${
             response?.data?.id ? ` (ID: ${response.data.id})` : ""
-          }.`,
+          }. Refreshed server state.`,
         });
 
         if (params.key === "custom") {
@@ -699,6 +624,7 @@ const LaborPricingView: React.FC = () => {
           setShowCustomForm(false);
         }
 
+        // Auto-refresh via GET after POST
         await fetchLaborRates();
       } catch (e: unknown) {
         setMessage({
@@ -709,12 +635,16 @@ const LaborPricingView: React.FC = () => {
         setCreatingKey(null);
       }
     },
-    [effectiveDate, effectiveSiteId, fetchLaborRates, headerCount, proxyRequest]
+    [baseHost, effectiveDate, fetchLaborRates, headerCount, proxyRequest, siteId]
   );
 
   const handleCreatePreset = useCallback(
     async (preset: LaborPreset) => {
-      const specificRate = Number(presetRates[preset.key] || hourlyRate);
+      const presetStr = presetRates[preset.key];
+      // Explicitly check for empty string so '0' is preserved and not bypassed by fallback
+      const chosenStr = presetStr !== "" && presetStr !== undefined ? presetStr : hourlyRate;
+      const specificRate = Number(chosenStr);
+
       await createLaborRate({
         key: preset.key,
         name: preset.code,
@@ -759,24 +689,11 @@ const LaborPricingView: React.FC = () => {
         normalizeUpper(rate.name),
         normalizeUpper(rate.description),
         normalizeUpper(rate.id),
-        normalizeUpper(getDisplayRateType(rate)),
-        normalizeUpper(getDisplayStatus(rate)),
       ].join(" ");
 
       return text.includes(q);
     });
   }, [laborRates, search]);
-
-  const previewPayload = useMemo(() => {
-    return buildCreatePayload({
-      siteId: effectiveSiteId,
-      name: normalizeUpper(customCode) || "CP",
-      description: normalize(customDescription) || "Customer Labor Rate",
-      rateType: 0,
-      hourLaborRate: Number(customRate || presetRates.cp || hourlyRate || 0),
-      effectiveDateInput: effectiveDate || buildTomorrowInputDate(),
-    });
-  }, [customCode, customDescription, customRate, effectiveDate, effectiveSiteId, hourlyRate, presetRates.cp]);
 
   const hasAnyBlueprintRate = Boolean(
     blueprintRates.cp || blueprintRates.ip || blueprintRates.wp
@@ -786,8 +703,7 @@ const LaborPricingView: React.FC = () => {
     <div
       style={{
         display: "grid",
-        gap: 10,
-        maxHeight: "50%",
+        gap: 14,
         overflow: "auto",
       }}
       className="labor-pricing-scroll"
@@ -799,13 +715,13 @@ const LaborPricingView: React.FC = () => {
         .labor-pricing-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.24); }
       `}</style>
 
-      {/* Meta Indicators */}
+      {/* Meta Indicators Header */}
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
         <span style={badgeStyle}>
-          Tek Site ID: <b style={{ color: detectedSiteId ? "#86efac" : "#fcd34d" }}>{effectiveSiteId}</b>
+          Tek Site ID: <b style={{ color: siteId ? "#86efac" : "#fcd34d" }}>{siteId}</b>
         </span>
         <span style={badgeStyle}>
-          Global Headers: <b style={{ color: "#f8fafc" }}>{headerCount}</b>
+          Active Headers: <b style={{ color: "#f8fafc" }}>{headerCount}</b>
         </span>
         <span
           style={{
@@ -839,9 +755,219 @@ const LaborPricingView: React.FC = () => {
             ↻ Sync from Blueprint
           </button>
         )}
+
+        <button
+          className="btn-secondary btn-sm"
+          onClick={() => void fetchLaborRates()}
+          disabled={loading}
+          style={{ marginLeft: "auto" }}
+        >
+          {loading ? "Refreshing..." : "↻ Refresh Server List"}
+        </button>
       </div>
 
-      {/* Action Bar */}
+      {message && (
+        <div
+          style={{
+            borderRadius: 12,
+            padding: "10px 12px",
+            fontSize: 13,
+            color: message.ok ? "#bbf7d0" : "#fecaca",
+            background: message.ok ? "rgba(34,197,94,0.10)" : "rgba(239,68,68,0.10)",
+            border: message.ok ? "1px solid rgba(34,197,94,0.22)" : "1px solid rgba(239,68,68,0.22)",
+          }}
+        >
+          {message.text}
+        </div>
+      )}
+
+      {/* Shared Create Settings */}
+      <div style={cardStyle}>
+        <div style={{ color: "#f8fafc", fontSize: 16, fontWeight: 800, marginBottom: 12 }}>
+          Effective Date & Settings
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: 14,
+          }}
+        >
+          <div>
+            <label style={{ display: "block", color: "#cbd5e1", fontSize: 13, marginBottom: 6 }}>
+              Default Fallback Rate ($)
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={hourlyRate}
+              onChange={(e) => setHourlyRate(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                borderRadius: 8,
+                border: "1px solid rgba(255,255,255,0.10)",
+                background: "rgba(255,255,255,0.03)",
+                color: "#f8fafc",
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+
+          <div>
+            <label style={{ display: "block", color: "#cbd5e1", fontSize: 13, marginBottom: 6 }}>
+              Effective Date
+            </label>
+            <input
+              type="date"
+              value={effectiveDate}
+              onChange={(e) => setEffectiveDate(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "10px 12px",
+                borderRadius: 8,
+                border: "1px solid rgba(255,255,255,0.10)",
+                background: "rgba(255,255,255,0.03)",
+                color: "#f8fafc",
+                outline: "none",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Create Presets */}
+      <div style={cardStyle}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 8,
+            marginBottom: 12,
+          }}
+        >
+          <div>
+            <div style={{ color: "#f8fafc", fontSize: 16, fontWeight: 800 }}>
+              Deploy Standard Labor Rates
+            </div>
+            <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 2 }}>
+              Pre-filled from Service Blueprint. Creates rates and refreshes the server data automatically.
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gap: 10 }}>
+          {PRESET_RATES.map((preset) => {
+            const currentVal = presetRates[preset.key] || "";
+            const bpDetected = blueprintRates[preset.key];
+
+            return (
+              <div
+                key={preset.key}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 12,
+                  flexWrap: "wrap",
+                  padding: "10px 14px",
+                  borderRadius: 10,
+                  border: `1px solid ${preset.accent}24`,
+                  background: `${preset.accent}0d`,
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "4px 10px",
+                      borderRadius: 8,
+                      fontSize: 13,
+                      fontWeight: 800,
+                      color: preset.accent,
+                      background: `${preset.accent}1a`,
+                      border: `1px solid ${preset.accent}33`,
+                      minWidth: 44,
+                    }}
+                  >
+                    {preset.code}
+                  </span>
+
+                  <div>
+                    <div style={{ color: "#f8fafc", fontSize: 14, fontWeight: 600 }}>
+                      {preset.description}
+                    </div>
+                    {bpDetected !== "" && bpDetected !== undefined ? (
+                      <div style={{ color: "#86efac", fontSize: 11, marginTop: 2 }}>
+                        ✨ Blueprint: {formatCurrency(bpDetected)}
+                      </div>
+                    ) : (
+                      <div style={{ color: "#94a3b8", fontSize: 11, marginTop: 2 }}>
+                        No Blueprint rate found
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ color: "#cbd5e1", fontSize: 13 }}>Rate ($):</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={currentVal}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setPresetRates((prev) => ({
+                          ...prev,
+                          [preset.key]: val,
+                        }));
+                      }}
+                      placeholder="0.00"
+                      style={{
+                        width: 100,
+                        padding: "6px 10px",
+                        borderRadius: 8,
+                        border: "1px solid rgba(255,255,255,0.12)",
+                        background: "rgba(0,0,0,0.3)",
+                        color: "#86efac",
+                        fontWeight: 700,
+                        outline: "none",
+                        fontSize: 13,
+                      }}
+                    />
+                  </div>
+
+                  <button
+                    className="btn-primary"
+                    onClick={() => void handleCreatePreset(preset)}
+                    disabled={creatingKey !== null || headerCount === 0}
+                    style={{
+                      background: preset.accent,
+                      borderColor: preset.accent,
+                      padding: "8px 16px",
+                      fontSize: 13,
+                    }}
+                  >
+                    {creatingKey === preset.key ? "Creating..." : `Create ${preset.code}`}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Custom Labor Rate */}
       <div style={cardStyle}>
         <div
           style={{
@@ -850,548 +976,258 @@ const LaborPricingView: React.FC = () => {
             justifyContent: "space-between",
             gap: 12,
             flexWrap: "wrap",
+            marginBottom: showCustomForm ? 12 : 0,
           }}
         >
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button
-              className={operation === "get" ? "btn-primary" : "btn-secondary btn-sm"}
-              onClick={() => {
-                setOperation("get");
-                void fetchLaborRates();
-              }}
-              disabled={loading || headerCount === 0}
-            >
-              {loading && operation === "get" ? "Fetching..." : "📥 GET"}
-            </button>
-            <button
-              className={operation === "post" ? "btn-primary" : "btn-secondary btn-sm"}
-              onClick={() => setOperation("post")}
-            >
-              📤 POST
-            </button>
+          <div>
+            <div style={{ color: "#f8fafc", fontSize: 16, fontWeight: 800 }}>
+              Custom Labor Rate
+            </div>
+            <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 2 }}>
+              Create an ad-hoc custom labor code with a unique description.
+            </div>
           </div>
 
-          <button className="btn-secondary btn-sm" onClick={refreshHeaders}>
-            ⟳ Refresh Headers
+          <button
+            className="btn-secondary btn-sm"
+            onClick={() => setShowCustomForm((v) => !v)}
+          >
+            {showCustomForm ? "Hide Form" : "+ Create Custom"}
           </button>
         </div>
 
-        {message ? (
-          <div
-            style={{
-              marginTop: 12,
-              borderRadius: 12,
-              padding: "10px 12px",
-              fontSize: 13,
-              color: message.ok ? "#bbf7d0" : "#fecaca",
-              background: message.ok
-                ? "rgba(34,197,94,0.10)"
-                : "rgba(239,68,68,0.10)",
-              border: message.ok
-                ? "1px solid rgba(34,197,94,0.22)"
-                : "1px solid rgba(239,68,68,0.22)",
-            }}
-          >
-            {message.text}
-          </div>
-        ) : null}
-      </div>
-
-      {operation === "get" ? (
-        <div style={cardStyle}>
+        {showCustomForm ? (
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 12,
+              alignItems: "flex-end",
+              gap: 10,
               flexWrap: "wrap",
-              marginBottom: 12,
+              padding: "12px 14px",
+              borderRadius: 10,
+              border: "1px solid rgba(255,255,255,0.06)",
+              background: "rgba(255,255,255,0.018)",
             }}
           >
-            <div>
-              <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800 }}>Labor Rate Results</div>
-              <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>
-                Search by name, description, type, ID, or status.
-              </div>
-            </div>
-
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <div style={{ flex: "1 1 110px", minWidth: 100 }}>
+              <label style={{ display: "block", color: "#94a3b8", fontSize: 12, marginBottom: 4 }}>
+                Code
+              </label>
               <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search labor rates..."
+                value={customCode}
+                onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
+                placeholder="e.g. DIAG"
                 style={{
-                  minWidth: 260,
-                  padding: "10px 12px",
-                  borderRadius: 12,
+                  width: "100%",
+                  boxSizing: "border-box",
+                  padding: "9px 12px",
+                  borderRadius: 8,
                   border: "1px solid rgba(255,255,255,0.10)",
                   background: "rgba(255,255,255,0.03)",
                   color: "#f8fafc",
                   outline: "none",
+                  fontSize: 13,
                 }}
               />
-
-              {rawGetResponse ? (
-                <button
-                  className="btn-secondary btn-sm"
-                  onClick={() => setShowRawGetResponse((v) => !v)}
-                >
-                  {showRawGetResponse ? "Hide Raw JSON" : "Show Raw JSON"}
-                </button>
-              ) : null}
             </div>
-          </div>
 
-          <div className="labor-pricing-scroll" style={tableScrollWrapStyle(520)}>
-            <table className="bx-table" style={tableElementStyle}>
-              <thead>
-                <tr>
-                  <th style={stickyThStyle}>Name</th>
-                  <th style={stickyThStyle}>Description</th>
-                  <th style={stickyThStyle}>Rate Type</th>
-                  <th style={stickyThStyle}>Hourly Rate</th>
-                  <th style={stickyThStyle}>Status</th>
-                  <th style={stickyThStyle}>Effective Date</th>
-                  <th style={stickyThStyle}>ID</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRates.length > 0 ? (
-                  filteredRates.map((rate, index) => {
-                    const status = getStatusVisual(getDisplayStatus(rate));
-                    return (
-                      <tr key={`${rate.id || rate.name || "rate"}-${index}`} style={zebraRowStyle(index)}>
-                        <td style={tdStyle}>
-                          <div style={{ color: "#f8fafc", fontWeight: 800 }}>
-                            {rate.name || "—"}
-                          </div>
-                        </td>
-                        <td style={tdStyle}>{rate.description || "—"}</td>
-                        <td style={tdStyle}>{getDisplayRateType(rate)}</td>
-                        <td style={tdStyle}>
-                          <span style={{ color: "#e2e8f0", fontWeight: 700 }}>
-                            {formatCurrency(getDisplayHourlyRate(rate))}
-                          </span>
-                        </td>
-                        <td style={tdStyle}>
-                          <span
-                            style={{
-                              display: "inline-flex",
-                              alignItems: "center",
-                              borderRadius: 999,
-                              padding: "4px 10px",
-                              fontSize: 12,
-                              fontWeight: 700,
-                              color: status.color,
-                              background: status.background,
-                              border: status.border,
-                            }}
-                          >
-                            {status.text}
-                          </span>
-                        </td>
-                        <td style={tdStyle}>{getDisplayEffectiveDate(rate)}</td>
-                        <td style={tdStyle}>
-                          <code style={monoStyle}>{rate.id || "—"}</code>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td style={tdStyle} colSpan={7}>
-                      <div style={{ color: "#94a3b8", padding: "8px 0" }}>
-                        {laborRates.length === 0
-                          ? "No labor rates loaded yet."
-                          : "No labor rates matched your search."}
-                      </div>
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {showRawGetResponse && Boolean(rawGetResponse) && (
-            <div style={{ marginTop: 14 }}>
-              <pre
+            <div style={{ flex: "2 1 200px", minWidth: 180 }}>
+              <label style={{ display: "block", color: "#94a3b8", fontSize: 12, marginBottom: 4 }}>
+                Description
+              </label>
+              <input
+                value={customDescription}
+                onChange={(e) => setCustomDescription(e.target.value)}
+                placeholder="e.g. Diagnostic Labor Rate"
                 style={{
-                  ...monoStyle,
-                  margin: 0,
-                  padding: 12,
-                  borderRadius: 12,
-                  background: "#0f172a",
-                  maxHeight: 320,
-                  overflow: "auto",
+                  width: "100%",
+                  boxSizing: "border-box",
+                  padding: "9px 12px",
+                  borderRadius: 8,
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  background: "rgba(255,255,255,0.03)",
+                  color: "#f8fafc",
+                  outline: "none",
+                  fontSize: 13,
+                }}
+              />
+            </div>
+
+            <div style={{ flex: "1 1 120px", minWidth: 110 }}>
+              <label style={{ display: "block", color: "#94a3b8", fontSize: 12, marginBottom: 4 }}>
+                Rate ($)
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={customRate}
+                onChange={(e) => setCustomRate(e.target.value)}
+                placeholder="0.00"
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  padding: "9px 12px",
+                  borderRadius: 8,
+                  border: "1px solid rgba(255,255,255,0.10)",
+                  background: "rgba(255,255,255,0.03)",
+                  color: "#f8fafc",
+                  outline: "none",
+                  fontSize: 13,
+                }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <button
+                className="btn-primary"
+                onClick={() => void handleCreateCustom()}
+                disabled={creatingKey !== null || headerCount === 0}
+                style={{
+                  background: "#9333ea",
+                  borderColor: "#9333ea",
+                  padding: "9px 14px",
+                  fontSize: 13,
+                  whiteSpace: "nowrap",
                 }}
               >
-                {JSON.stringify(rawGetResponse, null, 2)}
-              </pre>
-            </div>
-          )}
-        </div>
-      ) : null}
-
-      {operation === "post" ? (
-        <>
-          <div style={cardStyle}>
-            <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
-              Shared Create Settings
-            </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-                gap: 14,
-              }}
-            >
-              <div>
-                <label style={{ display: "block", color: "#cbd5e1", fontSize: 13, marginBottom: 6 }}>
-                  Fallback Hourly Labor Rate ($)
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={hourlyRate}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    setHourlyRate(val);
-                  }}
-                  style={{
-                    width: "100%",
-                    padding: "12px 14px",
-                    borderRadius: 12,
-                    border: "1px solid rgba(255,255,255,0.10)",
-                    background: "rgba(255,255,255,0.03)",
-                    color: "#f8fafc",
-                    outline: "none",
-                  }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: "block", color: "#cbd5e1", fontSize: 13, marginBottom: 6 }}>
-                  Effective Date
-                </label>
-                <input
-                  type="date"
-                  value={effectiveDate}
-                  onChange={(e) => setEffectiveDate(e.target.value)}
-                  style={{
-                    width: "100%",
-                    padding: "12px 14px",
-                    borderRadius: 12,
-                    border: "1px solid rgba(255,255,255,0.10)",
-                    background: "rgba(255,255,255,0.03)",
-                    color: "#f8fafc",
-                    outline: "none",
-                  }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Create Presets */}
-          <div style={cardStyle}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: 8,
-                marginBottom: 12,
-              }}
-            >
-              <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800 }}>
-                Quick Create Presets
-              </div>
-              <div style={{ color: "#94a3b8", fontSize: 12 }}>
-                Pre-filled automatically from Conquest Service Blueprint questions.
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gap: 10 }}>
-              {PRESET_RATES.map((preset) => {
-                const currentVal = presetRates[preset.key] || "";
-                const bpDetected = blueprintRates[preset.key];
-
-                return (
-                  <div
-                    key={preset.key}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 12,
-                      flexWrap: "wrap",
-                      padding: "12px 14px",
-                      borderRadius: 12,
-                      border: `1px solid ${preset.accent}24`,
-                      background: `${preset.accent}0d`,
-                    }}
-                  >
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          padding: "4px 10px",
-                          borderRadius: 8,
-                          fontSize: 13,
-                          fontWeight: 800,
-                          color: preset.accent,
-                          background: `${preset.accent}1a`,
-                          border: `1px solid ${preset.accent}33`,
-                          minWidth: 44,
-                        }}
-                      >
-                        {preset.code}
-                      </span>
-
-                      <div>
-                        <div style={{ color: "#f8fafc", fontSize: 14, fontWeight: 600 }}>
-                          {preset.description}
-                        </div>
-                        {bpDetected ? (
-                          <div style={{ color: "#86efac", fontSize: 11, marginTop: 2 }}>
-                            ✨ Blueprint: {formatCurrency(bpDetected)}
-                          </div>
-                        ) : (
-                          <div style={{ color: "#94a3b8", fontSize: 11, marginTop: 2 }}>
-                            No Blueprint value found
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ color: "#cbd5e1", fontSize: 13 }}>Rate ($):</span>
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          value={currentVal}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setPresetRates((prev) => ({
-                              ...prev,
-                              [preset.key]: val,
-                            }));
-                          }}
-                          placeholder={hourlyRate !== "0" ? hourlyRate : "0.00"}
-                          style={{
-                            width: 100,
-                            padding: "6px 10px",
-                            borderRadius: 8,
-                            border: "1px solid rgba(255,255,255,0.12)",
-                            background: "rgba(0,0,0,0.3)",
-                            color: "#86efac",
-                            fontWeight: 700,
-                            outline: "none",
-                            fontSize: 13,
-                          }}
-                        />
-                      </div>
-
-                      <button
-                        className="btn-primary"
-                        onClick={() => void handleCreatePreset(preset)}
-                        disabled={creatingKey !== null || headerCount === 0}
-                        style={{
-                          background: preset.accent,
-                          borderColor: preset.accent,
-                          padding: "8px 16px",
-                          fontSize: 13,
-                        }}
-                      >
-                        {creatingKey === preset.key ? "Creating..." : `Create ${preset.code}`}
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Custom Labor Rate */}
-          <div style={cardStyle}>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-                flexWrap: "wrap",
-                marginBottom: 12,
-              }}
-            >
-              <div>
-                <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800 }}>
-                  Custom Labor Rate
-                </div>
-                <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>
-                  Create any custom labor code with its own description and rate.
-                </div>
-              </div>
+                {creatingKey === "custom" ? "Creating..." : "🚀 Create"}
+              </button>
 
               <button
                 className="btn-secondary btn-sm"
-                onClick={() => setShowCustomForm((v) => !v)}
+                onClick={() => {
+                  setCustomCode("");
+                  setCustomDescription("");
+                  setCustomRate("");
+                }}
+                style={{ padding: "8px 12px" }}
               >
-                {showCustomForm ? "Hide Custom Form" : "Show Custom Form"}
+                Reset
               </button>
             </div>
+          </div>
+        ) : null}
+      </div>
 
-            {showCustomForm ? (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "flex-end",
-                  gap: 10,
-                  flexWrap: "wrap",
-                  padding: "12px 14px",
-                  borderRadius: 12,
-                  border: "1px solid rgba(255,255,255,0.06)",
-                  background: "rgba(255,255,255,0.018)",
-                }}
+      {/* Live Server Rates Table */}
+      <div style={cardStyle}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+            flexWrap: "wrap",
+            marginBottom: 12,
+          }}
+        >
+          <div>
+            <div style={{ color: "#f8fafc", fontSize: 16, fontWeight: 800 }}>
+              Existing Server Labor Rates ({laborRates.length})
+            </div>
+            <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 2 }}>
+              Live server records fetched via GET. Updates automatically after any rate is created.
+            </div>
+          </div>
+
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search server rates..."
+              style={{
+                width: 220,
+                padding: "8px 12px",
+                borderRadius: 8,
+                border: "1px solid rgba(255,255,255,0.10)",
+                background: "rgba(255,255,255,0.03)",
+                color: "#f8fafc",
+                outline: "none",
+                fontSize: 13,
+              }}
+            />
+
+            {rawGetResponse ? (
+              <button
+                className="btn-secondary btn-sm"
+                onClick={() => setShowRawGetResponse((v) => !v)}
               >
-                <div style={{ flex: "1 1 110px", minWidth: 100 }}>
-                  <label style={{ display: "block", color: "#94a3b8", fontSize: 12, marginBottom: 4 }}>
-                    Code
-                  </label>
-                  <input
-                    value={customCode}
-                    onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
-                    placeholder="e.g. DIAG"
-                    style={{
-                      width: "100%",
-                      boxSizing: "border-box",
-                      padding: "9px 12px",
-                      borderRadius: 10,
-                      border: "1px solid rgba(255,255,255,0.10)",
-                      background: "rgba(255,255,255,0.03)",
-                      color: "#f8fafc",
-                      outline: "none",
-                      fontSize: 13,
-                    }}
-                  />
-                </div>
-
-                <div style={{ flex: "2 1 200px", minWidth: 180 }}>
-                  <label style={{ display: "block", color: "#94a3b8", fontSize: 12, marginBottom: 4 }}>
-                    Description
-                  </label>
-                  <input
-                    value={customDescription}
-                    onChange={(e) => setCustomDescription(e.target.value)}
-                    placeholder="e.g. Diagnostic Labor Rate"
-                    style={{
-                      width: "100%",
-                      boxSizing: "border-box",
-                      padding: "9px 12px",
-                      borderRadius: 10,
-                      border: "1px solid rgba(255,255,255,0.10)",
-                      background: "rgba(255,255,255,0.03)",
-                      color: "#f8fafc",
-                      outline: "none",
-                      fontSize: 13,
-                    }}
-                  />
-                </div>
-
-                <div style={{ flex: "1 1 120px", minWidth: 110 }}>
-                  <label style={{ display: "block", color: "#94a3b8", fontSize: 12, marginBottom: 4 }}>
-                    Rate ($)
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={customRate}
-                    onChange={(e) => setCustomRate(e.target.value)}
-                    placeholder="e.g. 150"
-                    style={{
-                      width: "100%",
-                      boxSizing: "border-box",
-                      padding: "9px 12px",
-                      borderRadius: 10,
-                      border: "1px solid rgba(255,255,255,0.10)",
-                      background: "rgba(255,255,255,0.03)",
-                      color: "#f8fafc",
-                      outline: "none",
-                      fontSize: 13,
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: "flex", gap: 8, alignItems: "center", paddingBottom: 1 }}>
-                  <button
-                    className="btn-primary"
-                    onClick={() => void handleCreateCustom()}
-                    disabled={creatingKey !== null || headerCount === 0}
-                    style={{
-                      background: "#9333ea",
-                      borderColor: "#9333ea",
-                      padding: "9px 14px",
-                      fontSize: 13,
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {creatingKey === "custom" ? "Creating..." : "🚀 Create"}
-                  </button>
-
-                  <button
-                    className="btn-secondary btn-sm"
-                    onClick={() => {
-                      setCustomCode("");
-                      setCustomDescription("");
-                      setCustomRate("");
-                    }}
-                    style={{ padding: "8px 12px" }}
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
+                {showRawGetResponse ? "Hide JSON" : "Raw JSON"}
+              </button>
             ) : null}
           </div>
+        </div>
 
-          {/* Payload Preview */}
-          <div style={cardStyle}>
-            <div
+        <div className="labor-pricing-scroll" style={tableScrollWrapStyle(450)}>
+          <table className="bx-table" style={tableElementStyle}>
+            <thead>
+              <tr>
+                <th style={stickyThStyle}>Name</th>
+                <th style={stickyThStyle}>Description</th>
+                <th style={stickyThStyle}>Hourly Rate</th>
+                <th style={stickyThStyle}>Effective Date</th>
+                <th style={stickyThStyle}>ID</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredRates.length > 0 ? (
+                filteredRates.map((rate, index) => {
+                  return (
+                    <tr key={`${rate.id || rate.name || "rate"}-${index}`} style={zebraRowStyle(index)}>
+                      <td style={tdStyle}>
+                        <div style={{ color: "#f8fafc", fontWeight: 800 }}>
+                          {rate.name || "—"}
+                        </div>
+                      </td>
+                      <td style={tdStyle}>{rate.description || "—"}</td>
+                      <td style={tdStyle}>
+                        <span style={{ color: "#86efac", fontWeight: 700 }}>
+                          {formatCurrency(getDisplayHourlyRate(rate))}
+                        </span>
+                      </td>
+                      <td style={tdStyle}>{getDisplayEffectiveDate(rate)}</td>
+                      <td style={tdStyle}>
+                        <code style={monoStyle}>{rate.id || "—"}</code>
+                      </td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td style={tdStyle} colSpan={5}>
+                    <div style={{ color: "#94a3b8", padding: "16px 0", textAlign: "center" }}>
+                      {loading
+                        ? "Fetching current labor rates from server..."
+                        : laborRates.length === 0
+                        ? "No labor rates found on the server."
+                        : "No rates matched your search."}
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {showRawGetResponse && Boolean(rawGetResponse) && (
+          <div style={{ marginTop: 14 }}>
+            <pre
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                gap: 12,
-                flexWrap: "wrap",
-                marginBottom: 12,
+                ...monoStyle,
+                margin: 0,
+                padding: 12,
+                borderRadius: 8,
+                background: "#0f172a",
+                maxHeight: 280,
+                overflow: "auto",
               }}
             >
-              <div>
-                <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800 }}>
-                  Payload Preview
-                </div>
-                <div style={{ color: "#94a3b8", fontSize: 13, marginTop: 4 }}>
-                  Preview of the payload shape that will be sent for create requests.
-                </div>
-              </div>
-            </div>
-
-            <div className="labor-pricing-scroll" style={tableScrollWrapStyle(320)}>
-              <pre style={{ ...monoStyle, margin: 0, padding: 12 }}>
-                {JSON.stringify(previewPayload, null, 2)}
-              </pre>
-            </div>
+              {JSON.stringify(rawGetResponse, null, 2)}
+            </pre>
           </div>
-        </>
-      ) : null}
+        )}
+      </div>
     </div>
   );
 };

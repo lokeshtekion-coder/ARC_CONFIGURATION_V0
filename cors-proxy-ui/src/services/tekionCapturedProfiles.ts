@@ -1,4 +1,3 @@
-///Users/tlreddy/Desktop/ARC_CONFIGURATION_V0/cors-proxy-ui/src/services/tekionCapturedProfiles.ts
 export interface HeaderMap {
   [key: string]: string;
 }
@@ -30,8 +29,11 @@ export interface TekionCapturedProfile {
   token?: string;
   decodedToken?: DecodedProfileTokenInfo;
 
-  bootstrapHeaders: HeaderMap;
+  bootstrapHeaders?: HeaderMap;
 }
+
+// Canonical alias so both interface names work seamlessly across the app
+export type CapturedTekionProfile = TekionCapturedProfile;
 
 const STORAGE_KEY = "arc-tekion-captured-profiles";
 
@@ -45,41 +47,53 @@ function normalizeString(value: unknown): string | undefined {
   return trimmed || undefined;
 }
 
-function normalizeHeaderMap(input: unknown): HeaderMap {
+function normalizeIsoTimestamp(value: unknown): string | undefined {
+  if (typeof value !== "string" || !value.trim()) return undefined;
+  const time = new Date(value.trim()).getTime();
+  return Number.isFinite(time) ? new Date(time).toISOString() : undefined;
+}
+
+/**
+ * Normalizes all header keys to lowercase while preserving exact header values
+ */
+export function normalizeHeaderMap(input: unknown): HeaderMap {
   if (!isRecord(input)) return {};
   const out: HeaderMap = {};
 
   for (const [key, value] of Object.entries(input)) {
-    if (typeof value === "string" && key.trim()) {
-      out[key] = value;
+    if (typeof value === "string") {
+      const lowerKey = key.trim().toLowerCase();
+      if (lowerKey) {
+        out[lowerKey] = value;
+      }
     }
   }
 
   return out;
 }
 
-function safeDecodeJwt(token: string): DecodedProfileTokenInfo | undefined {
+export function safeDecodeJwt(token: string): DecodedProfileTokenInfo | undefined {
   try {
     const parts = token.split(".");
     if (parts.length !== 3) return undefined;
 
-    const payload = JSON.parse(
-      atob(parts[1].replace(/-/g, "+").replace(/_/g, "/"))
-    ) as Record<string, unknown>;
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const padded = base64 + "=".repeat((4 - (base64.length % 4 || 4)) % 4);
+    const payload = JSON.parse(atob(padded)) as Record<string, unknown>;
 
     const exp = typeof payload.exp === "number" ? payload.exp : undefined;
     const iat = typeof payload.iat === "number" ? payload.iat : undefined;
 
     return {
-      email: typeof payload.email === "string" ? payload.email : undefined,
+      email: typeof payload.email === "string" ? payload.email.trim() : undefined,
       originalTenantId:
         typeof payload.originalTenantId === "string"
-          ? payload.originalTenantId
+          ? payload.originalTenantId.trim()
           : undefined,
       exp,
       iat,
-      expiresAt: exp ? new Date(exp * 1000).toLocaleString() : undefined,
-      issuedAt: iat ? new Date(iat * 1000).toLocaleString() : undefined,
+      expiresAt: exp ? new Date(exp * 1000).toISOString() : undefined,
+      issuedAt: iat ? new Date(iat * 1000).toISOString() : undefined,
       isExpired: exp ? Date.now() >= exp * 1000 : undefined,
     };
   } catch {
@@ -87,38 +101,38 @@ function safeDecodeJwt(token: string): DecodedProfileTokenInfo | undefined {
   }
 }
 
-function buildProfileKey(headers: HeaderMap, decoded?: DecodedProfileTokenInfo): string {
-  return [
-    headers["tenantname"] || decoded?.originalTenantId || "",
-    headers["dealerid"] || "",
-    headers["tek-siteid"] || "",
-    headers["roleid"] || "",
-  ].join("::");
+export function buildProfileKey(headers: HeaderMap, decoded?: DecodedProfileTokenInfo): string {
+  const tenant = headers["tenantname"] || decoded?.originalTenantId || "";
+  const dealer = headers["dealerid"] || "";
+  const site = headers["tek-siteid"] || "";
+  const role = headers["roleid"] || "";
+
+  return [tenant, dealer, site, role].join("::");
 }
 
 function normalizeProfile(input: unknown): TekionCapturedProfile | null {
   if (!isRecord(input)) return null;
 
-  const bootstrapHeaders = normalizeHeaderMap(input.bootstrapHeaders);
   const id = normalizeString(input.id);
-  const profileKey = normalizeString(input.profileKey);
-  const capturedAt = normalizeString(input.capturedAt);
+  const capturedAt = normalizeIsoTimestamp(input.capturedAt);
+  if (!id || !capturedAt) return null;
 
-  if (!id || !profileKey || !capturedAt) return null;
+  const bootstrapHeaders = normalizeHeaderMap(input.bootstrapHeaders);
+  const profileKey = normalizeString(input.profileKey) || id;
 
   return {
     id,
     profileKey,
     capturedAt,
     sourceUrl: normalizeString(input.sourceUrl),
-    dealerId: normalizeString(input.dealerId),
-    tenantName: normalizeString(input.tenantName),
-    tekSiteId: normalizeString(input.tekSiteId),
-    roleId: normalizeString(input.roleId),
-    applicationId: normalizeString(input.applicationId),
-    clientId: normalizeString(input.clientId),
-    locale: normalizeString(input.locale),
-    token: normalizeString(input.token),
+    dealerId: normalizeString(input.dealerId) || bootstrapHeaders["dealerid"],
+    tenantName: normalizeString(input.tenantName) || bootstrapHeaders["tenantname"],
+    tekSiteId: normalizeString(input.tekSiteId) || bootstrapHeaders["tek-siteid"],
+    roleId: normalizeString(input.roleId) || bootstrapHeaders["roleid"],
+    applicationId: normalizeString(input.applicationId) || bootstrapHeaders["applicationid"],
+    clientId: normalizeString(input.clientId) || bootstrapHeaders["clientid"],
+    locale: normalizeString(input.locale) || bootstrapHeaders["locale"],
+    token: normalizeString(input.token) || bootstrapHeaders["tekion-api-token"],
     decodedToken: isRecord(input.decodedToken)
       ? {
           email: normalizeString(input.decodedToken.email),
@@ -131,15 +145,15 @@ function normalizeProfile(input: unknown): TekionCapturedProfile | null {
             typeof input.decodedToken.iat === "number"
               ? input.decodedToken.iat
               : undefined,
-          expiresAt: normalizeString(input.decodedToken.expiresAt),
-          issuedAt: normalizeString(input.decodedToken.issuedAt),
+          expiresAt: normalizeIsoTimestamp(input.decodedToken.expiresAt),
+          issuedAt: normalizeIsoTimestamp(input.decodedToken.issuedAt),
           isExpired:
             typeof input.decodedToken.isExpired === "boolean"
               ? input.decodedToken.isExpired
               : undefined,
         }
       : undefined,
-    bootstrapHeaders,
+    bootstrapHeaders: Object.keys(bootstrapHeaders).length ? bootstrapHeaders : undefined,
   };
 }
 
@@ -167,8 +181,18 @@ export function loadTekionCapturedProfiles(): TekionCapturedProfile[] {
 export function saveTekionCapturedProfiles(
   profiles: TekionCapturedProfile[]
 ): TekionCapturedProfile[] {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(profiles));
-  return profiles;
+  // Normalize and sort by newest capture first before saving
+  const sanitized = profiles
+    .map(normalizeProfile)
+    .filter((item): item is TekionCapturedProfile => Boolean(item))
+    .sort((a, b) => {
+      const at = new Date(a.capturedAt).getTime();
+      const bt = new Date(b.capturedAt).getTime();
+      return bt - at;
+    });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitized));
+  return sanitized;
 }
 
 export function clearTekionCapturedProfiles(): void {
@@ -198,7 +222,7 @@ export function upsertTekionCapturedProfileFromBootstrapCapture(input: {
     return loadTekionCapturedProfiles();
   }
 
-  const capturedAt = input.capturedAt || new Date().toISOString();
+  const capturedAt = normalizeIsoTimestamp(input.capturedAt) || new Date().toISOString();
   const profiles = loadTekionCapturedProfiles();
 
   const profile: TekionCapturedProfile = {
@@ -221,23 +245,18 @@ export function upsertTekionCapturedProfileFromBootstrapCapture(input: {
   const existingIndex = profiles.findIndex((item) => item.profileKey === profileKey);
 
   if (existingIndex >= 0) {
+    const prev = profiles[existingIndex];
     profiles[existingIndex] = {
-      ...profiles[existingIndex],
+      ...prev,
       ...profile,
       bootstrapHeaders: {
-        ...profiles[existingIndex].bootstrapHeaders,
-        ...profile.bootstrapHeaders,
+        ...(prev.bootstrapHeaders || {}),
+        ...headers,
       },
     };
   } else {
     profiles.unshift(profile);
   }
 
-  const sorted = [...profiles].sort((a, b) => {
-    const at = new Date(a.capturedAt).getTime();
-    const bt = new Date(b.capturedAt).getTime();
-    return bt - at;
-  });
-
-  return saveTekionCapturedProfiles(sorted);
+  return saveTekionCapturedProfiles(profiles);
 }

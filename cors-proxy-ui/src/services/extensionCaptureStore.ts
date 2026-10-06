@@ -4,10 +4,19 @@ export interface HeaderMap {
 
 export interface ArcBrowserCaptureState {
   graphApiToken?: string;
+  graphExpiresAt?: number;
+  spfxRefreshToken?: string;
+  sharepointWorkbookUrl?: string;
   tapDuoApiToken?: string;
 
   slackToken?: string;
   slackDCookie?: string;
+
+  // Pre-Prod MAP Credentials
+  preprodMapToken?: string;
+  preprodMapHeaders?: HeaderMap;
+  lastPreprodMapSourceUrl?: string;
+  lastPreprodMapCaptureAt?: string;
 
   graphHeaders?: HeaderMap;
   tekionImplementationHeaders?: HeaderMap;
@@ -30,25 +39,30 @@ export interface ArcBrowserCaptureState {
 const STORAGE_KEY = "arc-extension-browser-capture";
 
 function normalizeString(value: unknown): string | undefined {
-  return typeof value === "string" ? value : undefined;
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed || undefined;
 }
 
 function normalizeHeaderMap(input: unknown): HeaderMap | undefined {
-  if (!input || typeof input !== "object") return undefined;
+  if (!input || typeof input !== "object" || Array.isArray(input)) return undefined;
 
   const out: HeaderMap = {};
 
   for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
     if (typeof value === "string") {
-      out[key] = value;
+      const normKey = key.trim().toLowerCase();
+      if (normKey) {
+        out[normKey] = value.trim();
+      }
     }
   }
 
-  return out;
+  return Object.keys(out).length ? out : undefined;
 }
 
 function normalizeCaptureState(input: unknown): ArcBrowserCaptureState {
-  if (!input || typeof input !== "object") {
+  if (!input || typeof input !== "object" || Array.isArray(input)) {
     return {};
   }
 
@@ -56,10 +70,19 @@ function normalizeCaptureState(input: unknown): ArcBrowserCaptureState {
 
   return {
     graphApiToken: normalizeString(raw.graphApiToken),
+    graphExpiresAt: typeof raw.graphExpiresAt === "number" ? raw.graphExpiresAt : undefined,
+    spfxRefreshToken: normalizeString(raw.spfxRefreshToken),
+    sharepointWorkbookUrl: normalizeString(raw.sharepointWorkbookUrl),
     tapDuoApiToken: normalizeString(raw.tapDuoApiToken),
 
     slackToken: normalizeString(raw.slackToken),
     slackDCookie: normalizeString(raw.slackDCookie),
+
+    // Pre-Prod MAP
+    preprodMapToken: normalizeString(raw.preprodMapToken),
+    preprodMapHeaders: normalizeHeaderMap(raw.preprodMapHeaders),
+    lastPreprodMapSourceUrl: normalizeString(raw.lastPreprodMapSourceUrl),
+    lastPreprodMapCaptureAt: normalizeString(raw.lastPreprodMapCaptureAt),
 
     graphHeaders: normalizeHeaderMap(raw.graphHeaders),
     tekionImplementationHeaders: normalizeHeaderMap(raw.tekionImplementationHeaders),

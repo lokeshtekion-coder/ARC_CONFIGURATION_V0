@@ -1,0 +1,546 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useEffect, useMemo, useState } from "react";
+import { loadTekionCapturedProfiles } from "../../../../services/tekionCapturedProfiles";
+import { loadTekionApiSettingsBundle } from "../../../../services/tekionApiSettings";
+import { usePartsBlueprint } from "../../../../Context/Blueprint_Parts_Context";
+const SELECTED_DEALER_PROFILE_KEY = "arc_selected_dealer_profile_id_v1";
+const PROXY_ENDPOINT = "http://127.0.0.1:4000/api/proxy";
+const DEFAULT_HOST = "https://preprodapp.tekioncloud.com";
+const TARGET_RETURN_REASON = {
+    reasonCode: "Customer Return w/ Restocking",
+    description: "Customer Return w/ Restocking",
+    active: true,
+    restocking: true,
+    restockingFee: "SALE_PERCENTAGE_FEE",
+    reviewRequired: false,
+    refundFreight: false,
+};
+const logger = {
+    debug: (...args) => console.debug("[Parts][ReturnReasons]", ...args),
+    info: (...args) => console.info("[Parts][ReturnReasons]", ...args),
+    warn: (...args) => console.warn("[Parts][ReturnReasons]", ...args),
+    error: (...args) => console.error("[Parts][ReturnReasons]", ...args),
+};
+function normalizeText(value) {
+    return String(value ?? "").trim();
+}
+function normalizeLower(value) {
+    return normalizeText(value).toLowerCase();
+}
+function parsePositiveInteger(value) {
+    const trimmed = value.trim();
+    if (!trimmed || !/^\d+$/.test(trimmed))
+        return null;
+    const num = Number(trimmed);
+    return Number.isFinite(num) ? num : null;
+}
+/**
+ * Parses blueprint responses into structured decision objects.
+ * Accurately extracts comments for freeform/Others options.
+ */
+function parseBlueprintRestockDecision(val) {
+    if (val === null || val === undefined) {
+        return { isYes: null, isOthers: false };
+    }
+    const rawStr = Array.isArray(val) ? String(val[0] ?? "") : String(val);
+    const trimmed = rawStr.trim();
+    const lower = trimmed.toLowerCase();
+    if (!trimmed) {
+        return { isYes: null, isOthers: false };
+    }
+    // Handle "Others:", custom comments, or notes like "not currently..."
+    if (lower.startsWith("others:") ||
+        lower.startsWith("other:") ||
+        lower.includes("not currently") ||
+        lower.includes("special order")) {
+        const comment = trimmed.replace(/^others?:\s*/i, "").trim();
+        return {
+            isYes: null,
+            isOthers: true,
+            comment: comment || trimmed,
+        };
+    }
+    if (["yes", "y", "true", "1"].includes(lower)) {
+        return { isYes: true, isOthers: false };
+    }
+    if (["no", "n", "false", "0"].includes(lower)) {
+        return { isYes: false, isOthers: false };
+    }
+    return { isYes: null, isOthers: false, comment: trimmed };
+}
+/**
+ * Extracts percentage digits from text formats:
+ * "20%", "20 %", "Cost + 15%", "15 percent", or empty text -> defaults to "0"
+ */
+function extractRestockPercentage(raw) {
+    if (raw === null || raw === undefined)
+        return "0";
+    if (typeof raw === "number")
+        return String(Math.max(0, Math.round(raw)));
+    const str = String(raw).trim();
+    if (!str)
+        return "0";
+    const match = str.match(/(\d+(?:\.\d+)?)/);
+    if (match) {
+        const num = Math.round(parseFloat(match[1]));
+        return String(Math.max(0, num));
+    }
+    return "0";
+}
+/**
+ * Resolves active dealer headers from canonical profile first,
+ * falling back to global settings headers.
+ */
+function resolveActiveHeaders() {
+    const storedProfileId = localStorage.getItem(SELECTED_DEALER_PROFILE_KEY);
+    const profiles = loadTekionCapturedProfiles();
+    const matchedProfile = storedProfileId
+        ? profiles.find((p) => p.id === storedProfileId ||
+            p.profileKey === storedProfileId ||
+            p.dealerId === storedProfileId)
+        : profiles[0] ?? null;
+    let headers = {};
+    let baseHost = DEFAULT_HOST;
+    if (matchedProfile?.bootstrapHeaders && Object.keys(matchedProfile.bootstrapHeaders).length > 0) {
+        headers = { ...matchedProfile.bootstrapHeaders };
+        if (matchedProfile.sourceUrl) {
+            try {
+                baseHost = new URL(matchedProfile.sourceUrl).origin;
+            }
+            catch {
+                baseHost = DEFAULT_HOST;
+            }
+        }
+    }
+    else {
+        const bundle = loadTekionApiSettingsBundle();
+        headers = (bundle.globalHeaders ?? [])
+            .filter((h) => Boolean(h.enabled) && normalizeText(h.key) && normalizeText(h.value))
+            .reduce((acc, h) => {
+            acc[normalizeText(h.key).toLowerCase()] = normalizeText(h.value);
+            return acc;
+        }, {});
+    }
+    headers["content-type"] = "application/json";
+    return { headers, baseHost };
+}
+/**
+ * Executes an HTTP request via the local CORS proxy to avoid browser preflight issues.
+ */
+async function executeViaProxy(options) {
+    const proxyPayload = {
+        url: options.url,
+        method: options.method,
+        headers: options.headers,
+        body: options.body,
+        timeout: 30000,
+    };
+    const res = await fetch(PROXY_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(proxyPayload),
+    });
+    if (!res.ok) {
+        const errorJson = await res.json().catch(() => ({}));
+        throw new Error(errorJson?.error?.message ||
+            errorJson?.message ||
+            `Proxy request failed with HTTP ${res.status}`);
+    }
+    const result = await res.json();
+    if (result.status >= 400) {
+        throw new Error(`Upstream Tekion error (${result.status}): ${typeof result.body === "string" ? result.body : JSON.stringify(result.body)}`);
+    }
+    return result.body;
+}
+export const ReturnReasonsView = () => {
+    const { hasBlueprint, getAnswer } = usePartsBlueprint();
+    const [rows, setRows] = useState([]);
+    const [runState, setRunState] = useState("idle");
+    const [statusText, setStatusText] = useState("Ready to check return reasons");
+    const [errorText, setErrorText] = useState("");
+    const [amountInput, setAmountInput] = useState("0");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showInfo, setShowInfo] = useState(false);
+    // 1. Resolve blueprint answers
+    const rawChargesFeeAnswer = useMemo(() => {
+        if (!hasBlueprint)
+            return null;
+        return (getAnswer("Do you charge a restocking fee?") ??
+            getAnswer("charge a restocking fee") ??
+            getAnswer("restocking fee"));
+    }, [hasBlueprint, getAnswer]);
+    const rawFeeAmountAnswer = useMemo(() => {
+        if (!hasBlueprint)
+            return null;
+        return (getAnswer("what amount is your restocking fee") ??
+            getAnswer("If yes, what amount is your restocking fee?") ??
+            getAnswer("restocking fee amount"));
+    }, [hasBlueprint, getAnswer]);
+    const blueprintDecision = useMemo(() => {
+        return parseBlueprintRestockDecision(rawChargesFeeAnswer);
+    }, [rawChargesFeeAnswer]);
+    const extractedBlueprintAmount = useMemo(() => {
+        if (blueprintDecision.isYes === false || blueprintDecision.isOthers)
+            return "0";
+        return extractRestockPercentage(rawFeeAmountAnswer);
+    }, [blueprintDecision, rawFeeAmountAnswer]);
+    // 2. Pre-fill input from Blueprint
+    useEffect(() => {
+        if (blueprintDecision.isOthers) {
+            setAmountInput("0");
+            setStatusText(`ℹ️ Blueprint has a custom note: "${blueprintDecision.comment}". Defaulted to 0% (review before creating).`);
+            setRunState("warning");
+            return;
+        }
+        if (blueprintDecision.isYes === false) {
+            setAmountInput("0");
+            setStatusText('Blueprint specifies "No" to Restocking Fee. Creation is not required.');
+            setRunState("warning");
+        }
+        else if (blueprintDecision.isYes === true) {
+            setAmountInput(extractedBlueprintAmount);
+            setStatusText(`✓ Blueprint specifies "Yes" with ${extractedBlueprintAmount}% Restock Fee.`);
+            setRunState("idle");
+        }
+    }, [blueprintDecision, extractedBlueprintAmount]);
+    const handleResetToBlueprint = () => {
+        if (blueprintDecision.isOthers) {
+            setAmountInput("0");
+            setStatusText(`Reset to 0% for custom review: "${blueprintDecision.comment}"`);
+            setRunState("warning");
+            return;
+        }
+        if (blueprintDecision.isYes === null) {
+            setStatusText("Blueprint answer for the restocking-fee question could not be determined - leaving input unchanged.");
+            setRunState("warning");
+            return;
+        }
+        if (blueprintDecision.isYes === false) {
+            setAmountInput("0");
+        }
+        else {
+            setAmountInput(extractedBlueprintAmount);
+        }
+    };
+    const matchedRecord = useMemo(() => {
+        return (rows.find((r) => normalizeLower(r.reasonCode) === normalizeLower(TARGET_RETURN_REASON.reasonCode)) ?? null);
+    }, [rows]);
+    const parsedAmount = useMemo(() => parsePositiveInteger(amountInput), [amountInput]);
+    const refreshData = async (targetUrl, headers) => {
+        const res = await executeViaProxy({
+            url: targetUrl,
+            method: "GET",
+            headers,
+        });
+        const items = Array.isArray(res?.data) ? res.data : [];
+        setRows(items);
+        return items;
+    };
+    const handleFetchAndValidate = async () => {
+        setRunState("loading");
+        setStatusText("Fetching latest return reasons via proxy...");
+        setErrorText("");
+        try {
+            const { headers, baseHost } = resolveActiveHeaders();
+            const targetUrl = `${baseHost}/api/parts/proxy/u/settings/return-reason`;
+            if (Object.keys(headers).length === 0 || (!headers["tekion-api-token"] && !headers["authorization"])) {
+                setRunState("error");
+                setStatusText("Authentication headers missing");
+                setErrorText("No active dealer token found. Ensure a valid profile is selected in Settings or captured via the extension.");
+                return;
+            }
+            const latestRows = await refreshData(targetUrl, headers);
+            const exists = latestRows.some((r) => normalizeLower(r.reasonCode) === normalizeLower(TARGET_RETURN_REASON.reasonCode));
+            setRunState(exists ? "success" : "warning");
+            setStatusText(exists
+                ? `✓ "${TARGET_RETURN_REASON.reasonCode}" exists on server`
+                : `⚠ "${TARGET_RETURN_REASON.reasonCode}" is missing from server`);
+        }
+        catch (err) {
+            logger.error("Fetch failed", err);
+            setRunState("error");
+            setStatusText("Validation failed");
+            setErrorText(err instanceof Error ? err.message : String(err));
+        }
+    };
+    const handleSmartSave = async () => {
+        if (parsedAmount === null) {
+            setRunState("error");
+            setStatusText("Invalid restock fee");
+            setErrorText("Please enter a valid non-negative integer percentage.");
+            return;
+        }
+        setIsSubmitting(true);
+        setRunState("loading");
+        setErrorText("");
+        try {
+            const { headers, baseHost } = resolveActiveHeaders();
+            const targetUrl = `${baseHost}/api/parts/proxy/u/settings/return-reason`;
+            if (Object.keys(headers).length === 0 || (!headers["tekion-api-token"] && !headers["authorization"])) {
+                setRunState("error");
+                setStatusText("Authentication headers missing");
+                setErrorText("No active dealer token found. Ensure a valid profile is selected in Settings or captured via the extension.");
+                return;
+            }
+            const currentRows = rows.length > 0 ? rows : await refreshData(targetUrl, headers);
+            const existing = currentRows.find((r) => normalizeLower(r.reasonCode) === normalizeLower(TARGET_RETURN_REASON.reasonCode));
+            const payload = {
+                active: TARGET_RETURN_REASON.active,
+                reasonCode: TARGET_RETURN_REASON.reasonCode,
+                detail: {
+                    description: TARGET_RETURN_REASON.description,
+                    restocking: TARGET_RETURN_REASON.restocking,
+                    restockingFee: TARGET_RETURN_REASON.restockingFee,
+                    reviewRequired: TARGET_RETURN_REASON.reviewRequired,
+                    amount: parsedAmount,
+                    refundFreight: TARGET_RETURN_REASON.refundFreight,
+                    languages: null,
+                },
+            };
+            if (existing) {
+                setStatusText(`Updating "${TARGET_RETURN_REASON.reasonCode}"...`);
+                await executeViaProxy({
+                    url: `${targetUrl}/${normalizeText(existing.id)}`,
+                    method: "PUT",
+                    headers,
+                    body: payload,
+                });
+                setStatusText(`✓ Successfully updated "${TARGET_RETURN_REASON.reasonCode}"`);
+            }
+            else {
+                setStatusText(`Creating "${TARGET_RETURN_REASON.reasonCode}"...`);
+                await executeViaProxy({
+                    url: targetUrl,
+                    method: "POST",
+                    headers,
+                    body: payload,
+                });
+                setStatusText(`✓ Successfully created "${TARGET_RETURN_REASON.reasonCode}"`);
+            }
+            await refreshData(targetUrl, headers);
+            setRunState("success");
+        }
+        catch (err) {
+            logger.error("Save failed", err);
+            setRunState("error");
+            setStatusText("Save operation failed");
+            setErrorText(err instanceof Error ? err.message : String(err));
+        }
+        finally {
+            setIsSubmitting(false);
+        }
+    };
+    const banner = useMemo(() => {
+        switch (runState) {
+            case "error":
+                return { bg: "rgba(239,68,68,0.1)", border: "rgba(239,68,68,0.25)", text: "#fecaca" };
+            case "success":
+                return { bg: "rgba(34,197,94,0.1)", border: "rgba(34,197,94,0.25)", text: "#bbf7d0" };
+            case "warning":
+                return { bg: "rgba(245,158,11,0.1)", border: "rgba(245,158,11,0.25)", text: "#fde68a" };
+            default:
+                return { bg: "rgba(255,255,255,0.03)", border: "rgba(255,255,255,0.08)", text: "#cbd5e1" };
+        }
+    }, [runState]);
+    return (_jsxs("div", { style: { display: "grid", gap: 16 }, children: [_jsxs("div", { style: {
+                    borderRadius: 16,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(255,255,255,0.03)",
+                    padding: 18,
+                    display: "grid",
+                    gap: 14,
+                }, children: [_jsxs("div", { style: {
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            gap: 12,
+                        }, children: [_jsxs("div", { style: { display: "flex", alignItems: "center", gap: 8 }, children: [_jsx("div", { style: { fontSize: 20, fontWeight: 800, color: "#f8fafc" }, children: "Return reasons" }), _jsx("button", { type: "button", onClick: () => setShowInfo((p) => !p), style: {
+                                            width: 20,
+                                            height: 20,
+                                            borderRadius: 999,
+                                            background: "rgba(255,255,255,0.08)",
+                                            border: "1px solid rgba(255,255,255,0.15)",
+                                            color: "#94a3b8",
+                                            fontSize: 11,
+                                            cursor: "pointer",
+                                            fontWeight: 700,
+                                        }, title: "Toggle Info", children: "i" })] }), _jsxs("div", { style: { display: "flex", alignItems: "center", gap: 8 }, children: [_jsx("button", { className: "btn-postman", type: "button", onClick: () => void handleFetchAndValidate(), disabled: runState === "loading" || isSubmitting, children: runState === "loading" && !isSubmitting ? "Running..." : "GET" }), _jsx("button", { className: "btn-secondary btn-sm", type: "button", onClick: () => void handleSmartSave(), disabled: isSubmitting || runState === "loading", children: isSubmitting
+                                            ? "Processing..."
+                                            : matchedRecord
+                                                ? "Update Target"
+                                                : "Create Target" })] })] }), showInfo && (_jsxs("div", { style: {
+                            padding: 12,
+                            borderRadius: 10,
+                            background: "rgba(255,255,255,0.02)",
+                            border: "1px solid rgba(255,255,255,0.06)",
+                            color: "#94a3b8",
+                            fontSize: 12,
+                            lineHeight: 1.6,
+                        }, children: ["Validates whether ", _jsx("code", { children: TARGET_RETURN_REASON.reasonCode }), " exists on the server. The action button automatically routes to ", _jsx("b", { children: "Update" }), " if found or ", _jsx("b", { children: "Create" }), " if missing."] })), hasBlueprint && rawChargesFeeAnswer !== null && (_jsxs("div", { style: {
+                            padding: "10px 14px",
+                            borderRadius: 10,
+                            background: blueprintDecision.isOthers
+                                ? "rgba(168, 85, 247, 0.08)"
+                                : blueprintDecision.isYes
+                                    ? "rgba(59, 130, 246, 0.08)"
+                                    : blueprintDecision.isYes === false
+                                        ? "rgba(245, 158, 11, 0.08)"
+                                        : "rgba(248, 113, 113, 0.08)",
+                            border: `1px solid ${blueprintDecision.isOthers
+                                ? "rgba(168, 85, 247, 0.3)"
+                                : blueprintDecision.isYes
+                                    ? "rgba(59, 130, 246, 0.25)"
+                                    : blueprintDecision.isYes === false
+                                        ? "rgba(245, 158, 11, 0.25)"
+                                        : "rgba(248, 113, 113, 0.3)"}`,
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            flexWrap: "wrap",
+                            gap: 10,
+                        }, children: [_jsxs("div", { children: [_jsx("span", { style: {
+                                            fontSize: 11,
+                                            fontWeight: 700,
+                                            color: blueprintDecision.isOthers
+                                                ? "#c084fc"
+                                                : blueprintDecision.isYes
+                                                    ? "#60a5fa"
+                                                    : blueprintDecision.isYes === false
+                                                        ? "#fbbf24"
+                                                        : "#f87171",
+                                            textTransform: "uppercase",
+                                        }, children: "\uD83D\uDCCB Blueprint Response:" }), _jsxs("div", { style: { color: "#f8fafc", fontSize: 12, marginTop: 2 }, children: ["Charge Restocking Fee:", " ", _jsx("b", { children: blueprintDecision.isOthers
+                                                    ? "Custom / Others"
+                                                    : blueprintDecision.isYes
+                                                        ? "Yes"
+                                                        : blueprintDecision.isYes === false
+                                                            ? "No"
+                                                            : "Unknown" }), blueprintDecision.isOthers && (_jsxs("span", { style: { color: "#e9d5ff" }, children: [" ", "\u2014 Note: ", _jsxs("i", { children: ["\"", blueprintDecision.comment, "\""] }), ". (Review with dealership before enabling)."] })), blueprintDecision.isYes === true && (_jsxs("span", { children: [" ", "\u2022 Answered Amount: ", _jsx("b", { children: normalizeText(rawFeeAmountAnswer) || "None (defaulted to 0%)" })] })), blueprintDecision.isYes === false && (_jsxs("span", { style: { color: "#fde68a" }, children: [" ", "\u2014 Dealer does not charge a restock fee. Creation is not needed."] }))] })] }), _jsx("button", { type: "button", className: "btn-secondary btn-sm", onClick: handleResetToBlueprint, title: "Reset input to blueprint answers", children: "\u21BA Reset to Blueprint" })] })), _jsxs("div", { style: {
+                            display: "grid",
+                            gridTemplateColumns: "1fr 140px",
+                            gap: 12,
+                            alignItems: "end",
+                        }, children: [_jsxs("div", { children: [_jsx("div", { style: labelStyle, children: "Target Preset" }), _jsx("div", { style: {
+                                            ...inputStyle,
+                                            display: "flex",
+                                            alignItems: "center",
+                                            background: "rgba(255,255,255,0.02)",
+                                            border: "1px solid rgba(255,255,255,0.06)",
+                                            color: "#e2e8f0",
+                                            fontWeight: 600,
+                                        }, children: TARGET_RETURN_REASON.reasonCode })] }), _jsxs("div", { children: [_jsx("div", { style: labelStyle, children: "Restock Fee (%)" }), _jsx("input", { className: "st-input", type: "text", value: amountInput, onChange: (e) => setAmountInput(e.target.value), placeholder: "0", style: inputStyle })] })] }), _jsxs("div", { style: {
+                            borderRadius: 12,
+                            padding: "10px 14px",
+                            fontSize: 13,
+                            border: `1px solid ${banner.border}`,
+                            background: banner.bg,
+                            color: banner.text,
+                        }, children: [_jsx("div", { style: { fontWeight: 700 }, children: statusText }), errorText && _jsx("div", { style: { fontSize: 12, marginTop: 4 }, children: errorText })] })] }), _jsxs("div", { style: {
+                    borderRadius: 16,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(255,255,255,0.03)",
+                    padding: 16,
+                    display: "grid",
+                    gap: 10,
+                }, children: [_jsxs("div", { style: {
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                        }, children: [_jsx("div", { style: { fontSize: 14, fontWeight: 800, color: "#f8fafc" }, children: "Target Configuration Snapshot" }), _jsx("span", { style: {
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    padding: "2px 8px",
+                                    borderRadius: 999,
+                                    fontSize: 11,
+                                    fontWeight: 700,
+                                    background: matchedRecord ? "rgba(34,197,94,0.12)" : "rgba(245,158,11,0.12)",
+                                    color: matchedRecord ? "#86efac" : "#fde68a",
+                                    border: `1px solid ${matchedRecord ? "rgba(34,197,94,0.25)" : "rgba(245,158,11,0.25)"}`,
+                                }, children: matchedRecord ? "✓ Configured on Server" : "○ Not on Server" })] }), _jsxs("div", { style: {
+                            display: "grid",
+                            gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                            gap: 8,
+                        }, children: [_jsx(StatMini, { label: "Restocking Active", value: "Yes" }), _jsx(StatMini, { label: "Fee Strategy", value: "Percentage of Sale" }), _jsx(StatMini, { label: "Refund Freight", value: "No" }), _jsx(StatMini, { label: "Configured Fee", value: `${parsedAmount ?? 0}%` }), _jsx(StatMini, { label: "Server Record ID", value: matchedRecord ? normalizeText(matchedRecord.id) : "—" })] })] }), _jsxs("div", { style: {
+                    borderRadius: 16,
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    background: "rgba(255,255,255,0.03)",
+                    padding: 16,
+                }, children: [_jsx("div", { style: {
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                            marginBottom: 12,
+                        }, children: _jsxs("div", { style: { fontSize: 14, fontWeight: 800, color: "#f8fafc" }, children: ["Existing Return Reasons", " ", rows.length > 0 && (_jsxs("span", { style: { color: "#94a3b8", fontSize: 12 }, children: ["(", rows.length, ")"] }))] }) }), rows.length === 0 ? (_jsx("div", { style: {
+                            borderRadius: 12,
+                            border: "1px dashed rgba(255,255,255,0.1)",
+                            padding: 24,
+                            color: "#94a3b8",
+                            textAlign: "center",
+                            fontSize: 13,
+                        }, children: "No data loaded yet. Click GET." })) : (_jsx("div", { style: { overflowX: "auto" }, children: _jsxs("table", { style: { width: "100%", borderCollapse: "collapse", minWidth: 800 }, children: [_jsx("thead", { children: _jsxs("tr", { style: { background: "rgba(255,255,255,0.04)" }, children: [_jsx("th", { style: thStyle, children: "#" }), _jsx("th", { style: thStyle, children: "ID" }), _jsx("th", { style: thStyle, children: "Reason Code" }), _jsx("th", { style: thStyle, children: "Restock" }), _jsx("th", { style: thStyle, children: "Fee Strategy" }), _jsx("th", { style: thStyle, children: "Amount" }), _jsx("th", { style: thStyle, children: "Active" }), _jsx("th", { style: thStyle, children: "Status" })] }) }), _jsx("tbody", { children: rows.map((row, index) => {
+                                        const isTarget = normalizeLower(TARGET_RETURN_REASON.reasonCode) ===
+                                            normalizeLower(row.reasonCode);
+                                        return (_jsxs("tr", { style: {
+                                                borderTop: "1px solid rgba(255,255,255,0.06)",
+                                                background: isTarget ? "rgba(59,130,246,0.06)" : "transparent",
+                                            }, children: [_jsx("td", { style: tdStyle, children: index + 1 }), _jsx("td", { style: tdMonoStyle, children: normalizeText(row.id) || "—" }), _jsx("td", { style: tdStyle, children: normalizeText(row.reasonCode) || "—" }), _jsx("td", { style: tdStyle, children: row.detail?.restocking ? "Yes" : "No" }), _jsx("td", { style: tdStyle, children: normalizeText(row.detail?.restockingFee) || "—" }), _jsx("td", { style: tdStyle, children: normalizeText(row.detail?.amount) || "—" }), _jsx("td", { style: tdStyle, children: row.active ? "Yes" : "No" }), _jsx("td", { style: tdStyle, children: isTarget ? (_jsx("span", { style: {
+                                                            display: "inline-flex",
+                                                            padding: "2px 8px",
+                                                            borderRadius: 999,
+                                                            background: "rgba(59,130,246,0.15)",
+                                                            color: "#93c5fd",
+                                                            border: "1px solid rgba(59,130,246,0.3)",
+                                                            fontSize: 11,
+                                                            fontWeight: 700,
+                                                        }, children: "Target" })) : ("—") })] }, `${row.id}-${index}`));
+                                    }) })] }) }))] })] }));
+};
+const StatMini = ({ label, value }) => (_jsxs("div", { style: {
+        padding: "8px 10px",
+        borderRadius: 8,
+        background: "rgba(255,255,255,0.02)",
+        border: "1px solid rgba(255,255,255,0.05)",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        fontSize: 12,
+    }, children: [_jsx("span", { style: { color: "#94a3b8" }, children: label }), _jsx("strong", { style: { color: "#f8fafc" }, children: value })] }));
+const labelStyle = {
+    color: "#94a3b8",
+    fontSize: 11,
+    fontWeight: 700,
+    marginBottom: 4,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+};
+const inputStyle = {
+    width: "100%",
+    height: 38,
+    borderRadius: 8,
+    padding: "8px 10px",
+    fontSize: 13,
+    boxSizing: "border-box",
+};
+const thStyle = {
+    textAlign: "left",
+    padding: "10px 8px",
+    color: "#94a3b8",
+    fontSize: 11,
+    fontWeight: 800,
+    textTransform: "uppercase",
+    letterSpacing: 0.5,
+    whiteSpace: "nowrap",
+};
+const tdStyle = {
+    textAlign: "left",
+    padding: "10px 8px",
+    color: "#e2e8f0",
+    fontSize: 12,
+    verticalAlign: "middle",
+};
+const tdMonoStyle = {
+    ...tdStyle,
+    fontFamily: "ui-monospace, monospace",
+};
+export default ReturnReasonsView;

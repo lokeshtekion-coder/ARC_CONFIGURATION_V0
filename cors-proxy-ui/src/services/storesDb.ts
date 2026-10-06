@@ -9,6 +9,7 @@ export const NOT_WORKED_OPTIONS = [
   "Fixed Ops OFS",
   "Variable Ops OFS",
   "Fixed + Variable OFS",
+  "Enterprise",
 ] as const;
 
 export type NotWorkedOption = typeof NOT_WORKED_OPTIONS[number];

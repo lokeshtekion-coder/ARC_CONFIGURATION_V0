@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { loadTekionApiSettingsBundle } from "../../../../services/tekionApiSettings";
+import { loadTekionCapturedProfiles } from "../../../../services/tekionCapturedProfiles";
 import type { KeyValuePair } from "../../../../types/proxy.types";
 import "./VoidPartsReasonsView.css";
 
 const TARGET_REASON_CODE = "Customer Cancelled - with Lost Sale";
 const TARGET_REASON_ID = "23";
-const BASE_URL =
-  "https://preprodapp.tekioncloud.com/api/parts/proxy/u/settings/void-reason";
+const DEFAULT_ENDPOINT = "/api/parts/proxy/u/settings/void-reason";
+const SELECTED_DEALER_PROFILE_KEY = "arc_selected_dealer_profile_id_v1";
+const PROXY_URL = "http://127.0.0.1:4000/api/proxy";
 
 // Required default reasons configuration
 const REQUIRED_REASONS: Array<{
@@ -22,7 +24,7 @@ const REQUIRED_REASONS: Array<{
   {
     reasonCode: "Customer Cancelled - with Lost Sale",
     type: "SALES_ORDER",
-    countInLostSale: true, // Configured with lost sale enabled
+    countInLostSale: true,
   },
   {
     reasonCode: "Part No Longer Available",
@@ -88,25 +90,106 @@ interface VoidReasonPayload {
 
 type RunState = "idle" | "loading" | "success" | "error" | "warning";
 
-function getEnabledGlobalHeaders(): Record<string, string> {
+/**
+ * Resolves target base URL and headers from the active dealer profile,
+ * falling back to global settings.
+ */
+function resolveActiveContext(): { baseUrl: string; headers: Record<string, string> } {
+  const storedProfileId = localStorage.getItem(SELECTED_DEALER_PROFILE_KEY);
+  const profiles = loadTekionCapturedProfiles();
+  const activeProfile = profiles.find(
+    (p) => p.id === storedProfileId || p.profileKey === storedProfileId || p.dealerId === storedProfileId
+  );
+
   const bundle = loadTekionApiSettingsBundle();
+  const resolvedHeaders: Record<string, string> = {};
 
-  const headers = (bundle.globalHeaders ?? [])
-    .filter(
-      (header: KeyValuePair) =>
-        header.enabled && header.key.trim() && String(header.value).trim()
-    )
-    .reduce<Record<string, string>>((acc: Record<string, string>, header: KeyValuePair) => {
-      acc[header.key] = String(header.value);
-      return acc;
-    }, {});
-
-  logger.info("loaded global headers from settings", {
-    count: Object.keys(headers).length,
-    keys: Object.keys(headers),
+  // 1. Load global headers as base
+  (bundle.globalHeaders ?? []).forEach((h: KeyValuePair) => {
+    if (h.enabled && h.key.trim() && String(h.value).trim()) {
+      resolvedHeaders[h.key.trim().toLowerCase()] = String(h.value).trim();
+    }
   });
 
-  return headers;
+  // 2. Overlay dealer-specific headers from canonical profile
+  if (activeProfile?.bootstrapHeaders) {
+    Object.entries(activeProfile.bootstrapHeaders).forEach(([k, v]) => {
+      if (k.trim() && typeof v === "string" && v.trim()) {
+        resolvedHeaders[k.trim().toLowerCase()] = v.trim();
+      }
+    });
+  }
+
+  // Ensure authorization token is aligned
+  if (activeProfile?.token) {
+    resolvedHeaders["tekion-api-token"] = activeProfile.token;
+    resolvedHeaders["authorization"] = `Bearer ${activeProfile.token}`;
+  }
+
+  // 3. Resolve host
+  let host = "https://preprodapp.tekioncloud.com";
+  if (activeProfile?.sourceUrl) {
+    try {
+      const parsed = new URL(activeProfile.sourceUrl);
+      host = parsed.origin;
+    } catch {
+      // keep fallback
+    }
+  }
+
+  const baseUrl = `${host}${DEFAULT_ENDPOINT}`;
+
+  logger.info("Resolved active context", {
+    dealerId: activeProfile?.dealerId,
+    baseUrl,
+    headerCount: Object.keys(resolvedHeaders).length,
+  });
+
+  return { baseUrl, headers: resolvedHeaders };
+}
+
+/**
+ * Sends request via proxy to bypass CORS and apply secure headers
+ */
+async function sendProxyRequest<T>(params: {
+  url: string;
+  method: "GET" | "POST" | "PUT";
+  headers: Record<string, string>;
+  body?: unknown;
+}): Promise<T> {
+  const payload = {
+    url: params.url,
+    method: params.method,
+    headers: params.headers,
+    body: params.body,
+    timeout: 30000,
+  };
+
+  const response = await fetch(PROXY_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorJson = await response.json().catch(() => ({}));
+    throw new Error(
+      errorJson?.error?.message ||
+        `Proxy request failed with status ${response.status} (${response.statusText})`
+    );
+  }
+
+  const result = await response.json();
+
+  if (result.status >= 400) {
+    const upstreamBody =
+      typeof result.body === "string" ? result.body : JSON.stringify(result.body);
+    throw new Error(`Upstream ${params.method} failed (${result.status}): ${upstreamBody}`);
+  }
+
+  return result.body as T;
 }
 
 function findTargetReason(items: VoidReasonRecord[]): VoidReasonRecord | null {
@@ -134,154 +217,41 @@ function buildUpdatePayload(item: VoidReasonRecord): VoidReasonPayload {
   };
 }
 
-function isValidVoidReasonRecord(value: unknown): value is VoidReasonRecord {
-  if (!value || typeof value !== "object") return false;
-
-  const record = value as Partial<VoidReasonRecord>;
-
-  return (
-    (typeof record.id === "string" || typeof record.id === "number") &&
-    typeof record.active === "boolean" &&
-    typeof record.type === "string" &&
-    !!record.detail &&
-    typeof record.detail.reasonCode === "string" &&
-    typeof record.detail.countInLostSale === "boolean"
-  );
-}
-
-function isValidVoidReasonsResponse(value: unknown): value is VoidReasonsResponse {
-  if (!value || typeof value !== "object") return false;
-
-  const response = value as Partial<VoidReasonsResponse>;
-  return Array.isArray(response.data) && response.data.every(isValidVoidReasonRecord);
-}
-
-async function fetchVoidReasons(
-  headers: Record<string, string>
-): Promise<VoidReasonsResponse> {
-  logger.info("GET request started", {
-    url: BASE_URL,
-    headerKeys: Object.keys(headers),
-  });
-
-  const response = await fetch(BASE_URL, {
-    method: "GET",
-    headers,
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    logger.error("GET failed", {
-      status: response.status,
-      body: text,
-    });
-    throw new Error(`GET failed with status ${response.status}`);
-  }
-
-  const json: unknown = await response.json();
-  logger.debug("GET response json", json);
-
-  if (!isValidVoidReasonsResponse(json)) {
-    logger.error("GET response validation failed", json);
-    throw new Error("Invalid GET response structure for void reasons");
-  }
-
-  return json;
-}
-
-async function createVoidReason(
-  payload: VoidReasonPayload,
-  headers: Record<string, string>
-): Promise<void> {
-  logger.info("POST create void reason started", payload);
-
-  const response = await fetch(BASE_URL, {
-    method: "POST",
-    headers: {
-      ...headers,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    logger.error("POST failed", {
-      status: response.status,
-      body: text,
-      payload,
-    });
-    throw new Error(`Failed to create reason "${payload.detail.reasonCode}" (${response.status})`);
-  }
-
-  logger.info(`Created reason: ${payload.detail.reasonCode}`);
-}
-
-async function updateVoidReason(
-  target: VoidReasonRecord,
-  payload: VoidReasonPayload,
-  headers: Record<string, string>
-): Promise<void> {
-  const url = `${BASE_URL}/${String(target.id)}`;
-
-  logger.info("PUT request started", {
-    url,
-    targetId: String(target.id),
-    targetReasonCode: target.detail.reasonCode,
-    payload,
-  });
-
-  const response = await fetch(url, {
-    method: "PUT",
-    headers: {
-      ...headers,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    logger.error("PUT failed", {
-      status: response.status,
-      body: text,
-    });
-    throw new Error(`PUT failed with status ${response.status}`);
-  }
-}
-
 export const VoidPartsReasonsView: React.FC = () => {
   const [rows, setRows] = useState<VoidReasonRecord[]>([]);
   const [runState, setRunState] = useState<RunState>("idle");
   const [statusText, setStatusText] = useState("Ready");
   const [errorText, setErrorText] = useState("");
 
-  useEffect(() => {
-    logger.info("component mounted");
-    return () => logger.info("component unmounted");
-  }, []);
+  const activeContext = useMemo(() => resolveActiveContext(), []);
 
   const handleRun = async (): Promise<void> => {
-    logger.info("run button clicked");
+    logger.info("Run button clicked");
     setRunState("loading");
-    setStatusText("Fetching current void reasons...");
+    setStatusText("Fetching current void reasons via proxy...");
     setErrorText("");
 
     try {
-      const headers = getEnabledGlobalHeaders();
+      const { baseUrl, headers } = resolveActiveContext();
 
       if (Object.keys(headers).length === 0) {
         setRunState("error");
-        setStatusText("Global headers are missing");
+        setStatusText("Authentication headers are missing");
         setErrorText(
-          "No active global headers found. Go to Settings, select a dealer profile, and save/apply Global Headers."
+          "No active headers found. Please select a valid dealer profile in Settings or verify extension sync."
         );
         return;
       }
 
       // 1. Fetch current reasons
-      let res = await fetchVoidReasons(headers);
-      let currentItems = res.data;
+      let currentItems: VoidReasonRecord[] = [];
+      const res = await sendProxyRequest<VoidReasonsResponse>({
+        url: baseUrl,
+        method: "GET",
+        headers,
+      });
+
+      currentItems = Array.isArray(res?.data) ? res.data : [];
       setRows(currentItems);
 
       let createdCount = 0;
@@ -298,8 +268,14 @@ export const VoidPartsReasonsView: React.FC = () => {
 
         if (!exists) {
           setStatusText(`Creating missing reason: "${req.reasonCode}"...`);
-          await createVoidReason(
-            {
+          await sendProxyRequest({
+            url: baseUrl,
+            method: "POST",
+            headers: {
+              ...headers,
+              "content-type": "application/json",
+            },
+            body: {
               active: true,
               detail: {
                 countInLostSale: req.countInLostSale,
@@ -308,35 +284,51 @@ export const VoidPartsReasonsView: React.FC = () => {
               },
               type: req.type,
             },
-            headers
-          );
+          });
           createdCount++;
         }
       }
 
-      // 3. If items were created, re-fetch list to inspect full state with IDs
+      // 3. Re-fetch list if items were added
       if (createdCount > 0) {
         setStatusText("Re-fetching void reasons after creation...");
-        res = await fetchVoidReasons(headers);
-        currentItems = res.data;
+        const refreshedRes = await sendProxyRequest<VoidReasonsResponse>({
+          url: baseUrl,
+          method: "GET",
+          headers,
+        });
+        currentItems = Array.isArray(refreshedRes?.data) ? refreshedRes.data : [];
         setRows(currentItems);
       }
 
-      // 4. Check if "Customer Cancelled - with Lost Sale" needs countInLostSale enabled
+      // 4. Update TARGET_REASON_CODE if countInLostSale is disabled
       const target = findTargetReason(currentItems);
-
       if (target && needsFix(target)) {
         setStatusText(`Enabling Count in Lost Sale for "${TARGET_REASON_CODE}"...`);
+        const updateUrl = `${baseUrl}/${String(target.id)}`;
         const updatePayload = buildUpdatePayload(target);
-        await updateVoidReason(target, updatePayload, headers);
+
+        await sendProxyRequest({
+          url: updateUrl,
+          method: "PUT",
+          headers: {
+            ...headers,
+            "content-type": "application/json",
+          },
+          body: updatePayload,
+        });
         updatedCount++;
 
-        // Re-fetch after update
-        res = await fetchVoidReasons(headers);
-        setRows(res.data);
+        // Final list refresh
+        const finalRes = await sendProxyRequest<VoidReasonsResponse>({
+          url: baseUrl,
+          method: "GET",
+          headers,
+        });
+        setRows(Array.isArray(finalRes?.data) ? finalRes.data : []);
       }
 
-      // 5. Finalize status presentation
+      // 5. Final status message
       setRunState("success");
       if (createdCount > 0 || updatedCount > 0) {
         setStatusText(
@@ -348,7 +340,7 @@ export const VoidPartsReasonsView: React.FC = () => {
         );
       }
     } catch (error: unknown) {
-      logger.error("run failed", error);
+      logger.error("Run failed", error);
       setRunState("error");
       setStatusText("Process failed");
       setErrorText(error instanceof Error ? error.message : String(error));

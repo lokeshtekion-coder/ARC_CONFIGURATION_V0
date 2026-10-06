@@ -26,7 +26,7 @@ import {
   shouldSendScheduledReports,
   dispatchAllThreeReports,
 } from "./slackAlertsService";
-import { getSlackSession } from "./storeSlackHelper";
+import { getSlackSession, sendSlackMessage } from "./storeSlackHelper";
 import type { ExtendedStoreRecord } from "../pages/Stores";
 
 export type BotPhase =
@@ -36,22 +36,33 @@ export type BotPhase =
   | "enriching_statuses"
   | "scanning_tap"
   | "enriching_setup"
+  | "ai_reasoning"
   | "reconciling_assignees"
   | "syncing_excel"
-  | "evaluating_sla";
+  | "evaluating_sla"
+  | "standby";
 
 export interface BotState {
   enabled: boolean;
   phase: BotPhase;
   statusText: string;
   lastRunTimestamp: string | null;
+  nextRunTimestamp: string | null;
   error: string | null;
+  isLeader: boolean;
 }
 
 const BOT_CONFIG_KEY = "arc-stores-bot-config";
 const TAP_SCAN_CACHE_KEY = "arc_tap_scan_cache_v1";
-const DEFAULT_INTERVAL_MS = 60 * 60 * 1000; // Run every 1 hour while app is open
-const SETUP_FETCH_DELAY_MS = 600;
+const TAB_LOCK_KEY = "arc_stores_bot_leader_lock";
+const SYNC_BUS_NAME = "arc_stores_bus";
+const NEXT_RUN_STORAGE_KEY = "arc_stores_bot_next_run_ms";
+const DEFAULT_INTERVAL_MS = 60 * 60 * 1000; // 1 hour cadence
+const SETUP_CONCURRENCY = 3;
+
+// Internal Tekion TGPT Configuration
+const TGPT_TOKEN_KEY = "tgpt_access_token";
+const TGPT_BASE = "https://tapapi.tekioncloud.com/tapapi/tgpt";
 
 function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -69,10 +80,43 @@ function isSameLocalDay(isoString?: string): boolean {
   );
 }
 
-function loadTapScanCache(): Record<string, string> {
+function formatNextRunText(nextRunMs: number | null): string {
+  if (!nextRunMs) return "Bot active";
+  const diffMs = nextRunMs - Date.now();
+  if (diffMs <= 0) return "Running shortly...";
+
+  const targetDate = new Date(nextRunMs);
+  const timeStr = targetDate.toLocaleTimeString("en-US", {
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+
+  const remainingMinutes = Math.max(1, Math.round(diffMs / 60000));
+  if (remainingMinutes < 60) {
+    return `Next run at ${timeStr} (in${remainingMinutes}m)`;
+  }
+
+  const hours = Math.floor(remainingMinutes / 60);
+  const mins = remainingMinutes % 60;
+  return `Next run at ${timeStr} (in ${hours}h${mins}m)`;
+}
+
+function loadAndPruneTapScanCache(): Record<string, string> {
   try {
     const raw = localStorage.getItem(TAP_SCAN_CACHE_KEY);
-    return raw ? JSON.parse(raw) : {};
+    if (!raw) return {};
+    const parsed: Record<string, string> = JSON.parse(raw);
+    const now = Date.now();
+    const pruned: Record<string, string> = {};
+
+    for (const [id, iso] of Object.entries(parsed)) {
+      const timestamp = new Date(iso).getTime();
+      if (!Number.isNaN(timestamp) && now - timestamp < 48 * 3600 * 1000) {
+        pruned[id] = iso;
+      }
+    }
+    return pruned;
   } catch {
     return {};
   }
@@ -104,7 +148,6 @@ function mergeIncomingStore(
 function checkTokensValid(): { valid: boolean; reason?: string } {
   const capture = loadLatestExtensionCapture() ?? {};
 
-  // 1. Check Graph token
   if (!capture.graphApiToken) {
     return { valid: false, reason: "Missing Graph API Token" };
   }
@@ -112,13 +155,11 @@ function checkTokensValid(): { valid: boolean; reason?: string } {
     return { valid: false, reason: "Graph API Token Expired" };
   }
 
-  // 2. Check Slack session
   const slack = getSlackSession();
   if (!slack.slackToken || !slack.slackDCookie) {
     return { valid: false, reason: "Missing Slack session" };
   }
 
-  // 3. Check TOC API / tapDuo token
   const hasTocApi = Object.values(capture.customCaptures ?? {}).some((c) => {
     const pat = (c.pattern || "").toLowerCase();
     const url = (c.matchedUrl || "").toLowerCase();
@@ -132,9 +173,95 @@ function checkTokensValid(): { valid: boolean; reason?: string } {
   return { valid: true };
 }
 
+async function queryStoresAi(prompt: string, systemPrompt?: string): Promise<string> {
+  const token = localStorage.getItem(TGPT_TOKEN_KEY);
+  if (!token) return "";
+
+  try {
+    const createRes = await fetch(`${TGPT_BASE}/conversations`, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-5.4",
+        title: "StoresBot Operations Intelligence",
+        is_temporary: true,
+        thinking: false,
+      }),
+    });
+
+    if (!createRes.ok) return "";
+    const { id: convId } = await createRes.json();
+
+    const fullContent = systemPrompt ? `${systemPrompt}\n\nDATA TO ANALYZE:\n${prompt}` : prompt;
+
+    const streamRes = await fetch(`${TGPT_BASE}/conversations/${convId}/messages/stream`, {
+      method: "POST",
+      headers: {
+        accept: "*/*",
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        content: fullContent,
+        attachments: [],
+        thinking: false,
+        web_search_enabled: false,
+        code_execution_enabled: false,
+        artifacts_enabled: false,
+      }),
+    });
+
+    if (!streamRes.ok || !streamRes.body) return "";
+
+    const reader = streamRes.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    let assistantContent = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const parts = buffer.split("\n\n");
+      buffer = parts.pop() || "";
+
+      for (const part of parts) {
+        if (!part.trim()) continue;
+        const lines = part.split("\n");
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const rawData = line.substring(6).trim();
+          if (rawData === "[DONE]") continue;
+
+          try {
+            const data = JSON.parse(rawData);
+            if (data.type === "content_delta") {
+              assistantContent += data.delta || "";
+            }
+          } catch {}
+        }
+      }
+    }
+
+    return assistantContent.trim();
+  } catch (err) {
+    console.warn("[StoresBot AI] TGPT request bypassed:", err);
+    return "";
+  }
+}
+
 class StoresBotRunner {
-  private timer: ReturnType<typeof setInterval> | null = null;
+  private heartbeatTimer: ReturnType<typeof setInterval> | null = null;
+  private nextRunTimestampMs: number | null = null;
   private isExecuting = false;
+  private isLeader = false;
+  private tabLockAbort: AbortController | null = null;
+  private syncChannel: BroadcastChannel | null = null;
   private listeners: Set<(state: BotState) => void> = new Set();
 
   private state: BotState = {
@@ -142,12 +269,84 @@ class StoresBotRunner {
     phase: "idle",
     statusText: "Bot Idle",
     lastRunTimestamp: null,
+    nextRunTimestamp: null,
     error: null,
+    isLeader: false,
   };
 
   constructor() {
-    if (this.state.enabled) {
-      this.start();
+    const savedNextRun = Number(localStorage.getItem(NEXT_RUN_STORAGE_KEY) || 0);
+    if (savedNextRun && savedNextRun > Date.now()) {
+      this.nextRunTimestampMs = savedNextRun;
+      this.state.nextRunTimestamp = new Date(savedNextRun).toISOString();
+    }
+
+    this.initBroadcastChannel();
+    this.initVisibilityListener();
+    this.acquireTabLeaderLock();
+  }
+
+  private initBroadcastChannel() {
+    if (typeof BroadcastChannel !== "undefined") {
+      this.syncChannel = new BroadcastChannel(SYNC_BUS_NAME);
+      this.syncChannel.addEventListener("message", (event) => {
+        if (event.data?.type === "BOT_CYCLE_COMPLETED" && !this.isLeader) {
+          console.info("[StoresBot] 📡 Synced with primary tab completion.");
+        }
+      });
+    }
+  }
+
+  private initVisibilityListener() {
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", () => {
+        if (
+          document.visibilityState === "visible" &&
+          this.isLeader &&
+          this.state.enabled &&
+          !this.isExecuting
+        ) {
+          if (this.nextRunTimestampMs && Date.now() >= this.nextRunTimestampMs) {
+            console.info("[StoresBot] ⏰ Time elapsed while inactive. Triggering cycle now...");
+            void this.executeCycle(false);
+          } else {
+            this.updateCountdownDisplay();
+          }
+        }
+      });
+    }
+  }
+
+  private acquireTabLeaderLock() {
+    if (typeof navigator !== "undefined" && "locks" in navigator) {
+      this.tabLockAbort = new AbortController();
+      navigator.locks
+        .request(TAB_LOCK_KEY, { signal: this.tabLockAbort.signal }, async () => {
+          this.isLeader = true;
+          this.state.isLeader = true;
+          console.info("[StoresBot] 👑 Acquired leader lock for this tab.");
+          this.notify();
+
+          if (this.state.enabled) {
+            this.start();
+          }
+
+          return new Promise<void>(() => {});
+        })
+        .catch((err) => {
+          if (err.name !== "AbortError") {
+            this.isLeader = false;
+            this.state.isLeader = false;
+            console.warn("[StoresBot] Secondary tab. Standing by.");
+            this.updateStatus("standby", "Standby (Another tab is primary runner)");
+          }
+        });
+    } else {
+      this.isLeader = true;
+      this.state.isLeader = true;
+      if (this.state.enabled) {
+        this.start();
+      }
     }
   }
 
@@ -176,7 +375,7 @@ class StoresBotRunner {
   public setEnabled(enabled: boolean) {
     this.state.enabled = enabled;
     localStorage.setItem(BOT_CONFIG_KEY, String(enabled));
-    if (enabled) {
+    if (enabled && this.isLeader) {
       this.start();
       void this.executeCycle(true);
     } else {
@@ -185,47 +384,93 @@ class StoresBotRunner {
     this.notify();
   }
 
+  private scheduleNextRun() {
+    this.nextRunTimestampMs = Date.now() + DEFAULT_INTERVAL_MS;
+    localStorage.setItem(NEXT_RUN_STORAGE_KEY, String(this.nextRunTimestampMs));
+    this.state.nextRunTimestamp = new Date(this.nextRunTimestampMs).toISOString();
+  }
+
+  private updateCountdownDisplay() {
+    if (this.state.phase === "idle" && this.state.enabled && this.nextRunTimestampMs) {
+      this.updateStatus("idle", formatNextRunText(this.nextRunTimestampMs));
+    }
+  }
+
   public start() {
-    if (this.timer) clearInterval(this.timer);
-    this.timer = setInterval(() => {
-      void this.executeCycle(false);
-    }, DEFAULT_INTERVAL_MS);
-    this.updateStatus("idle", "Bot active (waiting for next run)");
+    if (!this.isLeader) {
+      this.updateStatus("standby", "Standby (Another tab is primary runner)");
+      return;
+    }
+
+    if (this.heartbeatTimer) clearInterval(this.heartbeatTimer);
+
+    if (!this.nextRunTimestampMs || this.nextRunTimestampMs <= Date.now()) {
+      this.scheduleNextRun();
+    }
+
+    this.heartbeatTimer = setInterval(() => {
+      if (!this.state.enabled || !this.isLeader || this.isExecuting) return;
+
+      const now = Date.now();
+      if (this.nextRunTimestampMs && now >= this.nextRunTimestampMs) {
+        console.info("[StoresBot] 🚀 Heartbeat triggered scheduled cycle.");
+        void this.executeCycle(false);
+      } else {
+        this.updateCountdownDisplay();
+      }
+    }, 5000);
+
+    this.updateCountdownDisplay();
   }
 
   public stop() {
-    if (this.timer) {
-      clearInterval(this.timer);
-      this.timer = null;
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = null;
     }
+    this.nextRunTimestampMs = null;
+    localStorage.removeItem(NEXT_RUN_STORAGE_KEY);
+    this.state.nextRunTimestamp = null;
     this.updateStatus("idle", "Bot paused");
   }
 
   /**
-   * Main Autonomous Execution Pipeline
+   * Main Autonomous Pipeline with Distinct Active T-90 vs Historical Scope
    */
   public async executeCycle(force = false): Promise<void> {
-    if (this.isExecuting) return;
+    if (this.isExecuting) {
+      console.warn("[StoresBot] Cycle already in progress. Skipping.");
+      return;
+    }
+    if (!this.isLeader && !force) {
+      console.warn("[StoresBot] Not leader tab. Skipping.");
+      return;
+    }
     if (!this.state.enabled && !force) return;
 
     this.isExecuting = true;
+    console.info(`[StoresBot] 🎬 Starting execution cycle at ${new Date().toLocaleTimeString()}...`);
+
     try {
-      // 0. Verify Tokens
+      // Phase 0: Token Freshness
       this.updateStatus("token_check", "Verifying token freshness...");
       const tokenCheck = checkTokensValid();
       if (!tokenCheck.valid) {
+        console.warn(`[StoresBot] Token check failed: ${tokenCheck.reason}`);
+        this.scheduleNextRun();
         this.updateStatus("idle", `Paused: ${tokenCheck.reason}`);
         return;
       }
 
-      // 1. Ingest T-90 stores
+      // Phase 1: Ingest T-90 Stores and establish active vs. historical partition
       this.updateStatus("ingesting_stores", "Auto-refreshing store records...");
       const rawStores = await fetchStores(90);
-      const existingDb = await getStores();
-      const existingMap = new Map(existingDb.map((s) => [s.tekion_id, s]));
+      const allStoredRecords = await getStores();
+      const existingMap = new Map(allStoredRecords.map((s) => [s.tekion_id, s]));
       const vault = getStoredStatusVault();
 
-      const mergedStores: ExtendedStoreRecord[] = Array.from(
+      // Active T-90 stores live from the TAP API
+      let activeT90Records: ExtendedStoreRecord[] = Array.from(
         new Map<string, ExtendedStoreRecord>(
           rawStores.map((store) => {
             const existing = existingMap.get(store.tekion_id) as ExtendedStoreRecord | undefined;
@@ -237,26 +482,12 @@ class StoresBotRunner {
                 ...base,
                 onboarding_project_id: store.onboarding_project_id || existing?.onboarding_project_id,
                 ds_onboarding_project_id: store.ds_onboarding_project_id || existing?.ds_onboarding_project_id,
-                fixed_ops_status:
-                  override?.fixed_ops_status ||
-                  existing?.fixed_ops_status ||
-                  "TO DO",
-                variable_ops_status:
-                  override?.variable_ops_status ||
-                  existing?.variable_ops_status ||
-                  "TO DO",
-                testing_status:
-                  override?.testing_status ||
-                  existing?.testing_status ||
-                  "TO DO",
-                not_worked:
-                  override?.not_worked ||
-                  existing?.not_worked ||
-                  store.not_worked,
+                fixed_ops_status: override?.fixed_ops_status || existing?.fixed_ops_status || "TO DO",
+                variable_ops_status: override?.variable_ops_status || existing?.variable_ops_status || "TO DO",
+                testing_status: override?.testing_status || existing?.testing_status || "TO DO",
+                not_worked: override?.not_worked || existing?.not_worked || store.not_worked,
                 custom_assignee:
-                  override?.custom_assignee ||
-                  existing?.custom_assignee ||
-                  (store as any).custom_assignee,
+                  override?.custom_assignee || existing?.custom_assignee || (store as any).custom_assignee,
                 custom_variable_assignee:
                   override?.custom_variable_assignee ||
                   existing?.custom_variable_assignee ||
@@ -266,73 +497,64 @@ class StoresBotRunner {
                 fixed_ops_attachments: existing?.fixed_ops_attachments,
                 variable_ops_attachments: existing?.variable_ops_attachments,
                 tap_tasks_scanned_at: (existing as any)?.tap_tasks_scanned_at,
+                setup_data: existing?.setup_data,
+                setup_data_fetched_at: existing?.setup_data_fetched_at,
+                setup_data_error: existing?.setup_data_error,
+                setup_data_error_at: (existing as any)?.setup_data_error_at,
               },
             ];
           })
         ).values()
       );
 
-      const fetchedIds = new Set(mergedStores.map((s) => s.tekion_id));
-      let currentRecords: ExtendedStoreRecord[] = [
-        ...mergedStores,
-        ...(existingDb as ExtendedStoreRecord[]).filter((s) => !fetchedIds.has(s.tekion_id)),
-      ];
-      await saveStores(currentRecords);
+      const fetchedIds = new Set(activeT90Records.map((s) => s.tekion_id));
 
-      // 2. Blueprint / Sign-Off Onboarding Statuses
-      this.updateStatus("enriching_statuses", "Checking blueprint statuses...");
-      const needsStatusCheck = currentRecords.filter((r) => !isSameLocalDay(r.onboarding_status_fetched_at));
-      if (needsStatusCheck.length > 0) {
-        const ids = needsStatusCheck.map((s) => s.tekion_id);
-        const statusMap = await fetchStoreOnboardingStatuses(ids, { chunkSize: 25, concurrency: 3 });
-        const nowIso = new Date().toISOString();
-        currentRecords = currentRecords.map((r) => {
-          const s = statusMap[r.tekion_id];
-          return s
-            ? {
-                ...r,
-                blueprint_statuses: s.blueprint_statuses,
-                signoff_statuses: s.signoff_statuses,
-                onboarding_status_fetched_at: nowIso,
-              }
-            : r;
-        });
-        await saveStores(currentRecords);
+      // Stores outside active T-90 (T-180, past launched, etc.) kept for historical persistence
+      const historicalRecords: ExtendedStoreRecord[] = (allStoredRecords as ExtendedStoreRecord[]).filter(
+        (s) => !fetchedIds.has(s.tekion_id)
+      );
+
+      // Save complete dataset back to local DB so historical data is never lost
+      await saveStores([...activeT90Records, ...historicalRecords]);
+
+      // Phase 2: Blueprint / Sign-Off Onboarding Statuses (Active T-90 Only)
+      try {
+        this.updateStatus("enriching_statuses", `Checking blueprint statuses for ${activeT90Records.length} T-90 stores...`);
+        const needsStatusCheck = activeT90Records.filter((r) => !isSameLocalDay(r.onboarding_status_fetched_at));
+        if (needsStatusCheck.length > 0) {
+          const ids = needsStatusCheck.map((s) => s.tekion_id);
+          const statusMap = await fetchStoreOnboardingStatuses(ids, { chunkSize: 25, concurrency: 3 });
+          const nowIso = new Date().toISOString();
+          activeT90Records = activeT90Records.map((r) => {
+            const s = statusMap[r.tekion_id];
+            return s
+              ? {
+                  ...r,
+                  blueprint_statuses: s.blueprint_statuses,
+                  signoff_statuses: s.signoff_statuses,
+                  onboarding_status_fetched_at: nowIso,
+                }
+              : r;
+          });
+          await saveStores([...activeT90Records, ...historicalRecords]);
+        }
+      } catch (bpErr) {
+        console.warn("[StoresBot] Blueprint statuses check warning:", bpErr);
       }
 
-      // 3. Scan Real TAP Tasks with Granular Task-Level Diffing
-      const scanCache = loadTapScanCache();
-
-      const storesNeedingTapScan = currentRecords.filter((r) => {
-        // Skip stores that are already 100% Completed
-        if (r.fixed_ops_status === "Completed" && r.variable_ops_status === "Completed") {
-          return false;
-        }
-
-        // Must have an active TAP project ID
-        if (!r.onboarding_project_id && !r.ds_onboarding_project_id) {
-          return false;
-        }
-
-        // Skip if scanned today and has complete attachments
+      // Phase 3: Scan Real TAP Tasks (Active T-90 Only)
+      const scanCache = loadAndPruneTapScanCache();
+      const storesNeedingTapScan = activeT90Records.filter((r) => {
+        if (r.fixed_ops_status === "Completed" && r.variable_ops_status === "Completed") return false;
+        if (!r.onboarding_project_id && !r.ds_onboarding_project_id) return false;
         const lastScanned =
-          scanCache[r.tekion_id] ||
-          (r as any).tap_tasks_scanned_at ||
-          r.fetched_blueprint_tasks?.fetchedAt;
-
-        if (lastScanned && isSameLocalDay(lastScanned) && !r.attachments_incomplete) {
-          return false;
-        }
-
+          scanCache[r.tekion_id] || (r as any).tap_tasks_scanned_at || r.fetched_blueprint_tasks?.fetchedAt;
+        if (lastScanned && isSameLocalDay(lastScanned) && !r.attachments_incomplete) return false;
         return true;
       });
 
       if (storesNeedingTapScan.length > 0) {
-        this.updateStatus(
-          "scanning_tap",
-          `Scanning TAP tasks: 0/${storesNeedingTapScan.length} pending stores...`
-        );
-
+        this.updateStatus("scanning_tap", `Scanning TAP tasks: 0/${storesNeedingTapScan.length} pending T-90 stores...`);
         try {
           const { updatedStores, updatedCount } = await batchFetchRealTapStatuses(
             storesNeedingTapScan,
@@ -340,94 +562,193 @@ class StoresBotRunner {
               if (this.state.enabled) {
                 this.updateStatus(
                   "scanning_tap",
-                  `Scanning TAP tasks: Store ${processed}/${total} (Updated: ${updated}, Cached Tasks: ${skippedTasks})`
+                  `Scanning TAP tasks: Store ${processed}/${total} (Updated: ${updated}, Cached Tasks:${skippedTasks ?? 0})`
                 );
               }
             }
           );
 
           const nowIso = new Date().toISOString();
+          const updatedSet = new Set(updatedStores.map((u) => u.tekion_id));
           for (const s of storesNeedingTapScan) {
-            scanCache[s.tekion_id] = nowIso;
-            (s as any).tap_tasks_scanned_at = nowIso;
+            if (updatedSet.has(s.tekion_id) || !s.attachments_incomplete) {
+              scanCache[s.tekion_id] = nowIso;
+              (s as any).tap_tasks_scanned_at = nowIso;
+            }
           }
           saveTapScanCache(scanCache);
 
           if (updatedCount > 0) {
             const updatedMap = new Map(updatedStores.map((u) => [u.tekion_id, u as ExtendedStoreRecord]));
-            currentRecords = currentRecords.map((r) => {
+            activeT90Records = activeT90Records.map((r) => {
               const u = updatedMap.get(r.tekion_id);
               return u ? { ...u, tap_tasks_scanned_at: nowIso } : r;
             });
           }
-
-          await saveStores(currentRecords);
-        } catch (err) {
-          console.warn("[StoresBot] TAP tasks background scan skipped:", err);
+          await saveStores([...activeT90Records, ...historicalRecords]);
+        } catch (tapErr) {
+          console.warn("[StoresBot] TAP tasks scan warning:", tapErr);
         }
       } else {
-        this.updateStatus("scanning_tap", "TAP tasks up to date (0 pending stores)");
+        this.updateStatus("scanning_tap", "TAP tasks up to date (0 pending T-90 stores)");
       }
 
-      // 4. Auto-Enrich Missing Setup Data
-      this.updateStatus("enriching_setup", "Scanning for missing setup data...");
-      const missingSetup = currentRecords.filter((r) => !isSetupDataComplete(r));
-      let setupFetched = 0;
-      let hasSetupUpdates = false;
+      // Phase 4: Setup Data Enrichment (Active T-90 Only)
+      try {
+        this.updateStatus("enriching_setup", "Scanning for missing setup data in T-90 scope...");
 
-      for (const record of missingSetup) {
-        if (!this.state.enabled) break;
-        this.updateStatus(
-          "enriching_setup",
-          `Fetching setup data: ${record.dealer_id} (${setupFetched + 1}/${missingSetup.length})`
-        );
-        try {
-          const setup = await fetchSetupDataForStore(record, { force: true });
-          record.setup_data = setup;
-          record.setup_data_fetched_at = setup.fetchedAt;
-          record.setup_data_error = "";
-          setupFetched++;
-          hasSetupUpdates = true;
-          await delay(SETUP_FETCH_DELAY_MS);
-        } catch (err) {
-          record.setup_data_error = err instanceof Error ? err.message : "Setup error";
-        }
-      }
+        const missingSetup = activeT90Records.filter((r) => {
+          if (isSetupDataComplete(r)) return false;
 
-      if (hasSetupUpdates) {
-        await saveStores(currentRecords);
-      }
+          const lastErrorAt = (r as any).setup_data_error_at;
+          if (lastErrorAt && isSameLocalDay(lastErrorAt)) {
+            return false;
+          }
 
-      // 5. Auto-Reconcile & Run Auto-Assign Bot
-      this.updateStatus("reconciling_assignees", "Running auto-assign bot rules...");
-      reconcileAssignments(currentRecords);
-      const assignConfig = loadAssigneeConfig();
-      if (assignConfig.autoAssignEnabled) {
-        const { updated } = runAutoAssign(currentRecords, assignConfig);
-        if (updated.length > 0) {
-          const updatedMap = new Map(updated.map((u) => [u.tekion_id, u as ExtendedStoreRecord]));
-          currentRecords = currentRecords.map((r) => {
-            const u = updatedMap.get(r.tekion_id);
-            return u && !r.custom_assignee ? { ...r, custom_assignee: u.custom_assignee } : r;
+          return true;
+        });
+
+        let setupFetched = 0;
+        const failedSetupDealers: Array<{ dealerId: string; dbaName: string; error: string }> = [];
+
+        for (let i = 0; i < missingSetup.length; i += SETUP_CONCURRENCY) {
+          if (!this.state.enabled) break;
+          const chunk = missingSetup.slice(i, i + SETUP_CONCURRENCY);
+
+          this.updateStatus(
+            "enriching_setup",
+            `Fetching setup data: (${Math.min(i + chunk.length, missingSetup.length)}/${missingSetup.length})`
+          );
+
+          const nowIso = new Date().toISOString();
+
+          await Promise.all(
+            chunk.map(async (record) => {
+              try {
+                const setup = await fetchSetupDataForStore(record, { force: true });
+                record.setup_data = setup;
+                record.setup_data_fetched_at = setup.fetchedAt;
+                record.setup_data_error = "";
+                (record as any).setup_data_error_at = undefined;
+                setupFetched++;
+              } catch (err) {
+                const errorMsg = err instanceof Error ? err.message : "Setup error";
+                record.setup_data_error = errorMsg;
+                (record as any).setup_data_error_at = nowIso;
+                failedSetupDealers.push({
+                  dealerId: record.dealer_id,
+                  dbaName: record.dba_name || "Unknown Dealer",
+                  error: errorMsg,
+                });
+              }
+            })
+          );
+
+          const freshDb = await getStores();
+          const freshMap = new Map(freshDb.map((s) => [s.tekion_id, s]));
+
+          activeT90Records = activeT90Records.map((memStore) => {
+            const fresh = freshMap.get(memStore.tekion_id);
+            return {
+              ...memStore,
+              setup_data: memStore.setup_data ?? fresh?.setup_data,
+              setup_data_fetched_at: memStore.setup_data_fetched_at ?? fresh?.setup_data_fetched_at,
+              setup_data_error: memStore.setup_data_error ?? fresh?.setup_data_error,
+              setup_data_error_at: (memStore as any)?.setup_data_error_at ?? (fresh as any)?.setup_data_error_at,
+            };
           });
-          await saveStores(currentRecords);
-          for (const u of updated) {
-            try {
-              await patchSingleStoreAssigneeInGraph(u.tekion_id, String((u as ExtendedStoreRecord).custom_assignee));
-            } catch {
-              /* Excel catches up on sync */
+          await saveStores([...activeT90Records, ...historicalRecords]);
+
+          await delay(250);
+        }
+
+        // AI Error Root-Cause & Action Recommendation for active setup failures
+        if (failedSetupDealers.length > 0) {
+          this.updateStatus("ai_reasoning", "TGPT analyzing setup errors & drafting solution...");
+
+          const aiPrompt = `Here is a list of Tekion DMS setup fetch errors for preprod stores:\n${JSON.stringify(
+            failedSetupDealers,
+            null,
+            2
+          )}\n\nGive 2 concise bullet points: 1) The exact root cause for these failures. 2) The exact operational action the ARC engineer should take. Format cleanly for Slack.`;
+
+          const aiDiagnosis = await queryStoresAi(
+            aiPrompt,
+            "You are a Tekion DMS Data Architect. Be concise, precise, and practical."
+          );
+
+          try {
+            const slack = getSlackSession();
+            const targetUserId =
+              (slack as any)?.slackUserId ||
+              localStorage.getItem("slack_user_id") ||
+              localStorage.getItem("current_user_slack_id") ||
+              "";
+
+            if (slack.slackToken && slack.slackDCookie && targetUserId) {
+              const lines = failedSetupDealers.map(
+                (f) => `*Dealer #${f.dealerId}* (${f.dbaName}): \`${f.error}\``
+              );
+
+              const alertSections = [
+                `⚠️ *Setup Data Fetch Daily Failure Alert*`,
+                `Encountered errors for *${failedSetupDealers.length}* dealer(s) (will retry tomorrow):`,
+                "",
+                ...lines,
+              ];
+
+              if (aiDiagnosis) {
+                alertSections.push("", `🧠 *TGPT AI Diagnostic & Solution:*`, aiDiagnosis);
+              }
+
+              await sendSlackMessage({
+                userId: targetUserId,
+                email: "tlreddy@tekion.com",
+                fullName: "Admin",
+                text: alertSections.join("\n"),
+              });
+            }
+          } catch (slackAlertErr) {
+            console.warn("[StoresBot] Could not send setup failure alert to Slack:", slackAlertErr);
+          }
+        }
+      } catch (setupPhaseErr) {
+        console.warn("[StoresBot] Setup enrichment warning:", setupPhaseErr);
+      }
+
+      // Phase 5: Auto-Reconcile & Auto-Assign (Active T-90 Only)
+      try {
+        this.updateStatus("reconciling_assignees", "Running auto-assign bot rules on T-90 stores...");
+        reconcileAssignments(activeT90Records);
+        const assignConfig = loadAssigneeConfig();
+        if (assignConfig.autoAssignEnabled) {
+          const { updated } = runAutoAssign(activeT90Records, assignConfig);
+          if (updated.length > 0) {
+            const updatedMap = new Map(updated.map((u) => [u.tekion_id, u as ExtendedStoreRecord]));
+            activeT90Records = activeT90Records.map((r) => {
+              const u = updatedMap.get(r.tekion_id);
+              return u && !r.custom_assignee ? { ...r, custom_assignee: u.custom_assignee } : r;
+            });
+            await saveStores([...activeT90Records, ...historicalRecords]);
+            for (const u of updated) {
+              try {
+                await patchSingleStoreAssigneeInGraph(u.tekion_id, String((u as ExtendedStoreRecord).custom_assignee));
+              } catch {}
             }
           }
         }
+      } catch (assignErr) {
+        console.warn("[StoresBot] Assignee reconciliation warning:", assignErr);
       }
 
-      // 6. Excel 2-Way Synchronization
-      this.updateStatus("syncing_excel", "Synchronizing with Excel workbook...");
+      // Phase 6: Excel 2-Way Synchronization
       try {
-        const { updatedStores, hasChanges } = await pullStatusUpdatesFromGraph(currentRecords);
+        this.updateStatus("syncing_excel", "Synchronizing with Excel workbook...");
+        const completeDataset = [...activeT90Records, ...historicalRecords];
+        const { updatedStores, hasChanges } = await pullStatusUpdatesFromGraph(completeDataset);
         if (hasChanges) {
           const updatedMap = new Map(updatedStores.map((s) => [s.tekion_id, s]));
-          currentRecords = currentRecords.map((r) => {
+          activeT90Records = activeT90Records.map((r) => {
             const u = updatedMap.get(r.tekion_id);
             return u
               ? {
@@ -441,9 +762,10 @@ class StoresBotRunner {
                 }
               : r;
           });
-          await saveStores(currentRecords);
+          const allMerged = [...activeT90Records, ...historicalRecords];
+          await saveStores(allMerged);
           bulkUpdateStatusVault(
-            currentRecords.map((s) => ({
+            allMerged.map((s) => ({
               tekionId: s.tekion_id,
               fixed_ops_status: s.fixed_ops_status,
               variable_ops_status: s.variable_ops_status,
@@ -454,32 +776,36 @@ class StoresBotRunner {
             }))
           );
         }
-        await syncProdDealersToGraph(currentRecords);
-      } catch (err) {
-        console.warn("[StoresBot] Background Excel sync skipped:", err);
+        await syncProdDealersToGraph([...activeT90Records, ...historicalRecords]);
+      } catch (excelErr) {
+        console.warn("[StoresBot] Background Excel sync warning:", excelErr);
       }
 
-      // 7. SLA Evaluation, Slack Dispatches & 4-Hour Scheduled Reports
-      this.updateStatus("evaluating_sla", "Checking 4-hr report cadence & dispatching alerts...");
-      await runSlackAlerts(currentRecords);
-      await maybeSendDailyDigest(currentRecords);
+      // Phase 7: SLA Evaluation & Scheduled Reports (Active T-90 Only)
+      try {
+        this.updateStatus("evaluating_sla", "Checking 4-hr report cadence & dispatching alerts for T-90 scope...");
+        await runSlackAlerts(activeT90Records);
+        await maybeSendDailyDigest(activeT90Records);
 
-      if (shouldSendScheduledReports()) {
-        try {
-          this.updateStatus("evaluating_sla", "Sending scheduled 4-hr reports (Analytics, Fixed, Variable)...");
-          await dispatchAllThreeReports(currentRecords);
-        } catch (reportErr) {
-          console.error("[StoresBot] 4-hour scheduled reports auto-dispatch failed:", reportErr);
+        if (shouldSendScheduledReports()) {
+          this.updateStatus("evaluating_sla", "Generating & dispatching 4-hr audit reports...");
+          await dispatchAllThreeReports(activeT90Records);
         }
+      } catch (slaErr) {
+        console.error("[StoresBot] SLA/Report dispatch warning:", slaErr);
       }
 
-      // Signal completion
-      this.state.lastRunTimestamp = new Date().toISOString();
-      this.updateStatus("idle", `All stores up to date (${currentRecords.length} records)`);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Bot cycle encountered an error";
-      console.error("[StoresBotRunner] Cycle failed:", err);
-      this.updateStatus("idle", "Encountered issue during execution", msg);
+      this.syncChannel?.postMessage({ type: "BOT_CYCLE_COMPLETED", timestamp: Date.now() });
+
+      const now = new Date();
+      this.state.lastRunTimestamp = now.toISOString();
+      this.scheduleNextRun();
+      this.updateStatus("idle", formatNextRunText(this.nextRunTimestampMs));
+    } catch (criticalErr: unknown) {
+      const msg = criticalErr instanceof Error ? criticalErr.message : "Fatal bot cycle error";
+      console.error("[StoresBotRunner] Fatal cycle crash:", criticalErr);
+      this.scheduleNextRun();
+      this.updateStatus("idle", `Error occurred. ${formatNextRunText(this.nextRunTimestampMs)}`, msg);
     } finally {
       this.isExecuting = false;
     }

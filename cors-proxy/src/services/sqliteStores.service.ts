@@ -46,6 +46,24 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_change_log_tekion ON store_change_log(tekion_id);
 `);
 
+export function isDatabaseReady(): boolean {
+  try {
+    return Boolean(db && db.open);
+  } catch {
+    return false;
+  }
+}
+
+export function closeStoresDatabase(): void {
+  try {
+    if (db && db.open) {
+      db.close();
+    }
+  } catch (err) {
+    console.error("[sqliteStores] Error while closing SQLite database:", err);
+  }
+}
+
 const HISTORY_DIR = path.join(BACKUP_DIR, "history");
 const EXCEL_SNAPSHOT_DIR = path.join(BACKUP_DIR, "excel");
 // Large/derived blobs are not worth diffing field-by-field in the change log.

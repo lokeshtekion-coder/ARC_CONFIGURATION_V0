@@ -17,6 +17,9 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
   if (changes[RULES_STORAGE_KEY]) {
     postMessageToPage(PAGE_SYNC_RULES_EVENT, changes[RULES_STORAGE_KEY].newValue);
   }
+  if (changes["arcLatestCaptureState"]) {
+    postMessageToPage(PAGE_SYNC_EVENT, changes["arcLatestCaptureState"].newValue);
+  }
 });
 
 // 2. Listen for push updates or log relays from background service worker
@@ -27,7 +30,6 @@ chrome.runtime.onMessage.addListener((message) => {
   }
 
   if (message?.type === "ARC_LOG_RELAY") {
-    // Bridges background logs directly into your React DevTools console
     console.log("%c[ARC Extension]", "color: #38bdf8; font-weight: bold;", ...message.payload);
   }
 });
@@ -69,5 +71,12 @@ window.addEventListener("message", (event) => {
         }
       }
     );
+  }
+});
+
+// Immediately ping background for initial state on page mount
+chrome.runtime.sendMessage({ type: "ARC_GET_LATEST_CAPTURE" }, (response) => {
+  if (!chrome.runtime.lastError && response?.payload) {
+    postMessageToPage(PAGE_SYNC_EVENT, response.payload);
   }
 });

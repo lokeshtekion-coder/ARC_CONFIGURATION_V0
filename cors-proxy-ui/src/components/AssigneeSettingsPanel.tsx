@@ -11,12 +11,6 @@ import {
   type AssigneeConfig,
   type AssignmentEvent,
 } from "../services/assigneeService";
-import {
-  loadSlackAlertsConfig,
-  saveSlackAlertsConfig,
-  sendAssigneeDigest,
-  type SlackAlertsConfig,
-} from "../services/slackAlertsService";
 import { getStores, saveStores, type StoreRecord } from "../services/storesDb";
 import { patchSingleStoreAssigneeInGraph } from "../services/storesGraphSync";
 
@@ -32,8 +26,6 @@ export const AssigneeSettingsPanel: React.FC = () => {
   const [stores, setStores] = useState<StoreRecord[]>([]);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
-  const [alerts, setAlerts] = useState<SlackAlertsConfig>(() => loadSlackAlertsConfig());
-  const [digestNote, setDigestNote] = useState("");
 
   const refresh = useCallback(async () => {
     await hydrateAssigneeStateFromBackend();
@@ -77,22 +69,27 @@ export const AssigneeSettingsPanel: React.FC = () => {
     setNote("");
     try {
       const current = await getStores();
-      const { updated, events } = runAutoAssign(current, config);
+      const { updated, events } = runAutoAssign(current, { ...config, autoAssignEnabled: true });
+
       if (!updated.length) {
-        setNote("Nothing to assign: no eligible unassigned stores (or no assignees selected).");
+        setNote("No unassigned stores met criteria (POD 1, 2, or 3 with completed Parts & Service and pending Fixed Ops).");
         return;
       }
+
       const byId = new Map(updated.map((u) => [u.tekion_id, u]));
-      await saveStores(current.map((s) => byId.get(s.tekion_id) ?? s));
+      const nextStores = current.map((s) => byId.get(s.tekion_id) ?? s);
+      await saveStores(nextStores);
+
       for (const u of updated) {
         try {
           await patchSingleStoreAssigneeInGraph(u.tekion_id, String((u as any).custom_assignee));
-        } catch {
-          /* Excel catches up on the next sync */
-        }
+        } catch {}
       }
-      setNote(`Assigned ${events.length} store(s). Reload the Stores page to see them.`);
+
+      setNote(`✅ Assigned ${events.length} store(s) and notified #operations channel!`);
       await refresh();
+    } catch (err: unknown) {
+      setNote(`❌ Error: ${err instanceof Error ? err.message : "Assignment failed"}`);
     } finally {
       setBusy(false);
     }
@@ -103,10 +100,9 @@ export const AssigneeSettingsPanel: React.FC = () => {
       <div>
         <h3 style={{ margin: "0 0 6px 0", fontSize: 18 }}>Assignees &amp; Auto-Assignment</h3>
         <p style={{ margin: 0, color: "#94a3b8", fontSize: 13 }}>
-          Pick which assignees the bot may use. When a store&apos;s Parts <em>and</em> Service
-          blueprints are both Completed and it has no assignee, the bot assigns it to the selected
-          person with the fewest stores, so the split stays equal. Existing assignees are never
-          overridden.
+          Auto-assigns stores in <strong>POD 1, 2, and 3</strong> where Parts &amp; Service
+          blueprints are <strong>Completed</strong> and Fixed Ops is pending. Immediately notifies channel{" "}
+          <strong>#C0C5QBWEM8X</strong> for each assigned dealership.
         </p>
       </div>
 
@@ -123,78 +119,64 @@ export const AssigneeSettingsPanel: React.FC = () => {
             {allSelected ? "Clear all" : "Select all"}
           </button>
         </div>
+
         <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
           {ASSIGNEE_OPTIONS.map((name) => (
-            <label key={name} style={{ display: "flex", gap: 6, alignItems: "center", color: "#e2e8f0" }}>
+            <label key={name} style={{ display: "flex", gap: 6, alignItems: "center", color: "#e2e8f0", cursor: "pointer" }}>
               <input
                 type="checkbox"
                 checked={config.selected.includes(name)}
                 onChange={() => toggle(name)}
+                style={{ accentColor: "#38bdf8" }}
               />
               {name}
             </label>
           ))}
         </div>
-        <label style={{ display: "flex", gap: 8, alignItems: "center", color: "#e2e8f0" }}>
+
+        <label style={{ display: "flex", gap: 8, alignItems: "center", color: "#e2e8f0", cursor: "pointer" }}>
           <input
             type="checkbox"
             checked={config.autoAssignEnabled}
             onChange={(e) => update({ ...config, autoAssignEnabled: e.target.checked })}
+            style={{ accentColor: "#38bdf8" }}
           />
-          Auto-assign automatically while the Stores page is open
+          Auto-assign automatically while the Stores dashboard is open
         </label>
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+
+        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 4 }}>
           <button
-            className="btn-primary btn-sm"
+            className="btn-postman btn-sm"
             type="button"
             disabled={busy || config.selected.length === 0 || eligibleUnassigned === 0}
             onClick={() => void assignNow()}
+            style={{ fontWeight: 800 }}
           >
-            {busy ? "Assigning..." : `Assign ${eligibleUnassigned} eligible store(s) now`}
+            {busy ? "Assigning..." : `⚡ Assign ${eligibleUnassigned} eligible store(s) now`}
           </button>
-          {note && <span style={{ color: "#94a3b8", fontSize: 12 }}>{note}</span>}
+          {note && <span style={{ color: "#38bdf8", fontSize: 12, fontWeight: 600 }}>{note}</span>}
         </div>
       </div>
 
-      <div className="compact-card" style={{ display: "grid", gap: 8 }}>
-        <strong style={{ color: "#f8fafc" }}>Slack alerts (sent to the same DM as the SLA report)</strong>
-        {(
-          [
-            ["statusAlerts", "Alert when a store goes WIP → Completed"],
-            ["t7Alerts", "Alert when a store enters the T-7 window"],
-            ["dailyDigest", "Daily assignee digest (first open after 9:00)"],
-          ] as const
-        ).map(([key, text]) => (
-          <label key={key} style={{ display: "flex", gap: 8, alignItems: "center", color: "#e2e8f0" }}>
-            <input
-              type="checkbox"
-              checked={alerts[key]}
-              onChange={(e) => {
-                const next = { ...alerts, [key]: e.target.checked };
-                setAlerts(next);
-                saveSlackAlertsConfig(next);
-              }}
-            />
-            {text}
-          </label>
-        ))}
-        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-          <button
-            className="btn-secondary btn-sm"
-            type="button"
-            onClick={async () => {
-              try {
-                await sendAssigneeDigest(await getStores());
-                setDigestNote("Digest sent.");
-              } catch (e) {
-                setDigestNote(`Failed: ${e instanceof Error ? e.message : "unknown error"}`);
-              }
-            }}
-          >
-            Send digest now
-          </button>
-          {digestNote && <span style={{ color: "#94a3b8", fontSize: 12 }}>{digestNote}</span>}
+      {/* Target Operations Channel Notification Info */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "10px 14px",
+          background: "rgba(56, 189, 248, 0.05)",
+          border: "1px solid rgba(56, 189, 248, 0.2)",
+          borderRadius: 8,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 14 }}>📢</span>
+          <span style={{ fontSize: 12, color: "#94a3b8" }}>
+            Alerts Channel: <strong style={{ color: "#38bdf8" }}>#C0C5QBWEM8X</strong> (Dispatched per assigned store)
+          </span>
         </div>
+        <span style={{ fontSize: 11, color: "#64748b" }}>Live Individual Alerts</span>
       </div>
 
       <div className="compact-card" style={{ display: "grid", gap: 8 }}>
@@ -242,3 +224,5 @@ export const AssigneeSettingsPanel: React.FC = () => {
     </div>
   );
 };
+
+export default AssigneeSettingsPanel;

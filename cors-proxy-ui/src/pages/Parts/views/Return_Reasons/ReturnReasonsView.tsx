@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { loadTekionCapturedProfiles } from "../../../../services/tekionCapturedProfiles";
 import { loadTekionApiSettingsBundle } from "../../../../services/tekionApiSettings";
 import { usePartsBlueprint } from "../../../../Context/Blueprint_Parts_Context";
 import type { KeyValuePair } from "../../../../types/proxy.types";
 
-const BASE_URL =
-  "https://preprodapp.tekioncloud.com/api/parts/proxy/u/settings/return-reason";
+const SELECTED_DEALER_PROFILE_KEY = "arc_selected_dealer_profile_id_v1";
+const PROXY_ENDPOINT = "http://127.0.0.1:4000/api/proxy";
+const DEFAULT_HOST = "https://preprodapp.tekioncloud.com";
 
 const TARGET_RETURN_REASON = {
   reasonCode: "Customer Return w/ Restocking",
@@ -62,6 +64,12 @@ interface ReturnReasonPayload {
   };
 }
 
+interface BlueprintDecision {
+  isYes: boolean | null;
+  isOthers: boolean;
+  comment?: string;
+}
+
 function normalizeText(value: unknown): string {
   return String(value ?? "").trim();
 }
@@ -78,28 +86,46 @@ function parsePositiveInteger(value: string): number | null {
 }
 
 /**
- * Handles boolean or string representations of Yes/No
+ * Parses blueprint responses into structured decision objects.
+ * Accurately extracts comments for freeform/Others options.
  */
-function parseYesNo(val: unknown): boolean | null {
-  if (val === null || val === undefined) return null;
-  // MULTIPLE_CHOICE blueprint fields decode to an array of selected option(s)
-  // (e.g. decodedValue: ["Yes"]), not a plain string. Without this, the
-  // array fell through every check below and returned null - which the UI
-  // then rendered as "No" while the reset action treated it as "not false"
-  // (i.e. proceeded as Yes), showing contradictory answers for the same
-  // question. Unwrap it and parse the first selected option instead.
-  if (Array.isArray(val)) {
-    return val.length > 0 ? parseYesNo(val[0]) : null;
+function parseBlueprintRestockDecision(val: unknown): BlueprintDecision {
+  if (val === null || val === undefined) {
+    return { isYes: null, isOthers: false };
   }
-  if (typeof val === "boolean") return val;
-  if (typeof val === "number") return val > 0;
-  if (typeof val === "string") {
-    const s = val.trim().toLowerCase();
-    if (!s) return null;
-    if (s === "yes" || s === "y" || s === "true" || s === "1") return true;
-    if (s === "no" || s === "n" || s === "false" || s === "0") return false;
+
+  const rawStr = Array.isArray(val) ? String(val[0] ?? "") : String(val);
+  const trimmed = rawStr.trim();
+  const lower = trimmed.toLowerCase();
+
+  if (!trimmed) {
+    return { isYes: null, isOthers: false };
   }
-  return null;
+
+  // Handle "Others:", custom comments, or notes like "not currently..."
+  if (
+    lower.startsWith("others:") ||
+    lower.startsWith("other:") ||
+    lower.includes("not currently") ||
+    lower.includes("special order")
+  ) {
+    const comment = trimmed.replace(/^others?:\s*/i, "").trim();
+    return {
+      isYes: null,
+      isOthers: true,
+      comment: comment || trimmed,
+    };
+  }
+
+  if (["yes", "y", "true", "1"].includes(lower)) {
+    return { isYes: true, isOthers: false };
+  }
+
+  if (["no", "n", "false", "0"].includes(lower)) {
+    return { isYes: false, isOthers: false };
+  }
+
+  return { isYes: null, isOthers: false, comment: trimmed };
 }
 
 /**
@@ -122,60 +148,93 @@ function extractRestockPercentage(raw: unknown): string {
   return "0";
 }
 
-function getEnabledGlobalHeaders(): Record<string, string> {
-  const bundle = loadTekionApiSettingsBundle();
-  return (bundle.globalHeaders ?? [])
-    .filter(
-      (header: KeyValuePair) =>
-        Boolean(header.enabled) &&
-        normalizeText(header.key) &&
-        normalizeText(header.value)
-    )
-    .reduce<Record<string, string>>((acc, header) => {
-      acc[normalizeText(header.key)] = normalizeText(header.value);
-      return acc;
-    }, {});
-}
+/**
+ * Resolves active dealer headers from canonical profile first,
+ * falling back to global settings headers.
+ */
+function resolveActiveHeaders(): { headers: Record<string, string>; baseHost: string } {
+  const storedProfileId = localStorage.getItem(SELECTED_DEALER_PROFILE_KEY);
+  const profiles = loadTekionCapturedProfiles();
 
-async function fetchReturnReasons(headers: Record<string, string>): Promise<ReturnReasonRecord[]> {
-  logger.info("GET return reasons started", { url: BASE_URL });
-  const response = await fetch(BASE_URL, { method: "GET", headers });
-  if (!response.ok) {
-    throw new Error(`GET return-reason failed with status ${response.status}`);
+  const matchedProfile = storedProfileId
+    ? profiles.find(
+        (p) =>
+          p.id === storedProfileId ||
+          p.profileKey === storedProfileId ||
+          p.dealerId === storedProfileId
+      )
+    : profiles[0] ?? null;
+
+  let headers: Record<string, string> = {};
+  let baseHost = DEFAULT_HOST;
+
+  if (matchedProfile?.bootstrapHeaders && Object.keys(matchedProfile.bootstrapHeaders).length > 0) {
+    headers = { ...matchedProfile.bootstrapHeaders };
+
+    if (matchedProfile.sourceUrl) {
+      try {
+        baseHost = new URL(matchedProfile.sourceUrl).origin;
+      } catch {
+        baseHost = DEFAULT_HOST;
+      }
+    }
+  } else {
+    const bundle = loadTekionApiSettingsBundle();
+    headers = (bundle.globalHeaders ?? [])
+      .filter((h: KeyValuePair) => Boolean(h.enabled) && normalizeText(h.key) && normalizeText(h.value))
+      .reduce<Record<string, string>>((acc, h) => {
+        acc[normalizeText(h.key).toLowerCase()] = normalizeText(h.value);
+        return acc;
+      }, {});
   }
-  const json = (await response.json()) as ReturnReasonListResponse;
-  return Array.isArray(json?.data) ? json.data : [];
+
+  headers["content-type"] = "application/json";
+  return { headers, baseHost };
 }
 
-async function createReturnReason(
-  payload: ReturnReasonPayload,
-  headers: Record<string, string>
-): Promise<void> {
-  logger.info("POST create return reason started", { payload });
-  const response = await fetch(BASE_URL, {
+/**
+ * Executes an HTTP request via the local CORS proxy to avoid browser preflight issues.
+ */
+async function executeViaProxy<T>(options: {
+  url: string;
+  method: "GET" | "POST" | "PUT";
+  headers: Record<string, string>;
+  body?: unknown;
+}): Promise<T> {
+  const proxyPayload = {
+    url: options.url,
+    method: options.method,
+    headers: options.headers,
+    body: options.body,
+    timeout: 30000,
+  };
+
+  const res = await fetch(PROXY_ENDPOINT, {
     method: "POST",
-    headers: { ...headers, "content-type": "application/json" },
-    body: JSON.stringify(payload),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(proxyPayload),
   });
-  if (!response.ok) {
-    throw new Error(`POST return-reason failed with status ${response.status}`);
-  }
-}
 
-async function updateReturnReason(
-  id: string,
-  payload: ReturnReasonPayload,
-  headers: Record<string, string>
-): Promise<void> {
-  logger.info("PUT update return reason started", { id, payload });
-  const response = await fetch(`${BASE_URL}/${id}`, {
-    method: "PUT",
-    headers: { ...headers, "content-type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!response.ok) {
-    throw new Error(`PUT return-reason failed with status ${response.status}`);
+  if (!res.ok) {
+    const errorJson = await res.json().catch(() => ({}));
+    throw new Error(
+      errorJson?.error?.message ||
+        errorJson?.message ||
+        `Proxy request failed with HTTP ${res.status}`
+    );
   }
+
+  const result = await res.json();
+
+  if (result.status >= 400) {
+    throw new Error(
+      `Upstream Tekion error (${result.status}): ${
+        typeof result.body === "string" ? result.body : JSON.stringify(result.body)
+      }`
+    );
+  }
+
+  return result.body as T;
 }
 
 export const ReturnReasonsView: React.FC = () => {
@@ -208,49 +267,59 @@ export const ReturnReasonsView: React.FC = () => {
     );
   }, [hasBlueprint, getAnswer]);
 
-  const chargesRestockFee = useMemo(() => {
-    return parseYesNo(rawChargesFeeAnswer);
+  const blueprintDecision = useMemo(() => {
+    return parseBlueprintRestockDecision(rawChargesFeeAnswer);
   }, [rawChargesFeeAnswer]);
 
   const extractedBlueprintAmount = useMemo(() => {
-    if (chargesRestockFee === false) return "0";
+    if (blueprintDecision.isYes === false || blueprintDecision.isOthers) return "0";
     return extractRestockPercentage(rawFeeAmountAnswer);
-  }, [chargesRestockFee, rawFeeAmountAnswer]);
+  }, [blueprintDecision, rawFeeAmountAnswer]);
 
   // 2. Pre-fill input from Blueprint
   useEffect(() => {
-    if (chargesRestockFee === null) return;
+    if (blueprintDecision.isOthers) {
+      setAmountInput("0");
+      setStatusText(
+        `ℹ️ Blueprint has a custom note: "${blueprintDecision.comment}". Defaulted to 0% (review before creating).`
+      );
+      setRunState("warning");
+      return;
+    }
 
-    if (chargesRestockFee === false) {
+    if (blueprintDecision.isYes === false) {
       setAmountInput("0");
       setStatusText('Blueprint specifies "No" to Restocking Fee. Creation is not required.');
       setRunState("warning");
-    } else {
+    } else if (blueprintDecision.isYes === true) {
       setAmountInput(extractedBlueprintAmount);
       setStatusText(`✓ Blueprint specifies "Yes" with ${extractedBlueprintAmount}% Restock Fee.`);
       setRunState("idle");
     }
-  }, [chargesRestockFee, extractedBlueprintAmount]);
+  }, [blueprintDecision, extractedBlueprintAmount]);
 
   const handleResetToBlueprint = () => {
-    // Guard against the null ("couldn't determine yes/no") case falling
-    // through to the Yes-branch by accident - only act on a confirmed answer.
-    if (chargesRestockFee === null) {
-      setStatusText("Blueprint answer for the restocking-fee question could not be determined - leaving input unchanged.");
+    if (blueprintDecision.isOthers) {
+      setAmountInput("0");
+      setStatusText(`Reset to 0% for custom review: "${blueprintDecision.comment}"`);
       setRunState("warning");
       return;
     }
-    if (chargesRestockFee === false) {
+
+    if (blueprintDecision.isYes === null) {
+      setStatusText(
+        "Blueprint answer for the restocking-fee question could not be determined - leaving input unchanged."
+      );
+      setRunState("warning");
+      return;
+    }
+
+    if (blueprintDecision.isYes === false) {
       setAmountInput("0");
     } else {
       setAmountInput(extractedBlueprintAmount);
     }
   };
-
-  useEffect(() => {
-    logger.info("component mounted");
-    return () => logger.info("component unmounted");
-  }, []);
 
   const matchedRecord = useMemo(() => {
     return (
@@ -262,27 +331,39 @@ export const ReturnReasonsView: React.FC = () => {
 
   const parsedAmount = useMemo(() => parsePositiveInteger(amountInput), [amountInput]);
 
-  const refreshData = async (headers: Record<string, string>): Promise<ReturnReasonRecord[]> => {
-    const data = await fetchReturnReasons(headers);
-    setRows(data);
-    return data;
+  const refreshData = async (
+    targetUrl: string,
+    headers: Record<string, string>
+  ): Promise<ReturnReasonRecord[]> => {
+    const res = await executeViaProxy<ReturnReasonListResponse>({
+      url: targetUrl,
+      method: "GET",
+      headers,
+    });
+    const items = Array.isArray(res?.data) ? res.data : [];
+    setRows(items);
+    return items;
   };
 
   const handleFetchAndValidate = async (): Promise<void> => {
     setRunState("loading");
-    setStatusText("Fetching latest return reasons...");
+    setStatusText("Fetching latest return reasons via proxy...");
     setErrorText("");
 
     try {
-      const headers = getEnabledGlobalHeaders();
-      if (Object.keys(headers).length === 0) {
+      const { headers, baseHost } = resolveActiveHeaders();
+      const targetUrl = `${baseHost}/api/parts/proxy/u/settings/return-reason`;
+
+      if (Object.keys(headers).length === 0 || (!headers["tekion-api-token"] && !headers["authorization"])) {
         setRunState("error");
-        setStatusText("Global headers missing");
-        setErrorText("Configure and save active Global Headers in Settings.");
+        setStatusText("Authentication headers missing");
+        setErrorText(
+          "No active dealer token found. Ensure a valid profile is selected in Settings or captured via the extension."
+        );
         return;
       }
 
-      const latestRows = await refreshData(headers);
+      const latestRows = await refreshData(targetUrl, headers);
       const exists = latestRows.some(
         (r) => normalizeLower(r.reasonCode) === normalizeLower(TARGET_RETURN_REASON.reasonCode)
       );
@@ -314,56 +395,58 @@ export const ReturnReasonsView: React.FC = () => {
     setErrorText("");
 
     try {
-      const headers = getEnabledGlobalHeaders();
-      if (Object.keys(headers).length === 0) {
+      const { headers, baseHost } = resolveActiveHeaders();
+      const targetUrl = `${baseHost}/api/parts/proxy/u/settings/return-reason`;
+
+      if (Object.keys(headers).length === 0 || (!headers["tekion-api-token"] && !headers["authorization"])) {
         setRunState("error");
-        setStatusText("Global headers missing");
-        setErrorText("Configure and save active Global Headers in Settings.");
+        setStatusText("Authentication headers missing");
+        setErrorText(
+          "No active dealer token found. Ensure a valid profile is selected in Settings or captured via the extension."
+        );
         return;
       }
 
-      const currentRows = rows.length > 0 ? rows : await refreshData(headers);
+      const currentRows = rows.length > 0 ? rows : await refreshData(targetUrl, headers);
       const existing = currentRows.find(
         (r) => normalizeLower(r.reasonCode) === normalizeLower(TARGET_RETURN_REASON.reasonCode)
       );
 
+      const payload: ReturnReasonPayload = {
+        active: TARGET_RETURN_REASON.active,
+        reasonCode: TARGET_RETURN_REASON.reasonCode,
+        detail: {
+          description: TARGET_RETURN_REASON.description,
+          restocking: TARGET_RETURN_REASON.restocking,
+          restockingFee: TARGET_RETURN_REASON.restockingFee,
+          reviewRequired: TARGET_RETURN_REASON.reviewRequired,
+          amount: parsedAmount,
+          refundFreight: TARGET_RETURN_REASON.refundFreight,
+          languages: null,
+        },
+      };
+
       if (existing) {
         setStatusText(`Updating "${TARGET_RETURN_REASON.reasonCode}"...`);
-        const payload: ReturnReasonPayload = {
-          active: TARGET_RETURN_REASON.active,
-          reasonCode: TARGET_RETURN_REASON.reasonCode,
-          detail: {
-            description: TARGET_RETURN_REASON.description,
-            restocking: TARGET_RETURN_REASON.restocking,
-            restockingFee: TARGET_RETURN_REASON.restockingFee,
-            reviewRequired: TARGET_RETURN_REASON.reviewRequired,
-            amount: parsedAmount,
-            refundFreight: TARGET_RETURN_REASON.refundFreight,
-            languages: null,
-          },
-        };
-        await updateReturnReason(normalizeText(existing.id), payload, headers);
+        await executeViaProxy<void>({
+          url: `${targetUrl}/${normalizeText(existing.id)}`,
+          method: "PUT",
+          headers,
+          body: payload,
+        });
         setStatusText(`✓ Successfully updated "${TARGET_RETURN_REASON.reasonCode}"`);
       } else {
         setStatusText(`Creating "${TARGET_RETURN_REASON.reasonCode}"...`);
-        const payload: ReturnReasonPayload = {
-          active: TARGET_RETURN_REASON.active,
-          reasonCode: TARGET_RETURN_REASON.reasonCode,
-          detail: {
-            description: TARGET_RETURN_REASON.description,
-            restocking: TARGET_RETURN_REASON.restocking,
-            restockingFee: TARGET_RETURN_REASON.restockingFee,
-            reviewRequired: TARGET_RETURN_REASON.reviewRequired,
-            amount: String(parsedAmount),
-            refundFreight: TARGET_RETURN_REASON.refundFreight,
-            languages: null,
-          },
-        };
-        await createReturnReason(payload, headers);
+        await executeViaProxy<void>({
+          url: targetUrl,
+          method: "POST",
+          headers,
+          body: payload,
+        });
         setStatusText(`✓ Successfully created "${TARGET_RETURN_REASON.reasonCode}"`);
       }
 
-      await refreshData(headers);
+      await refreshData(targetUrl, headers);
       setRunState("success");
     } catch (err: unknown) {
       logger.error("Save failed", err);
@@ -482,18 +565,21 @@ export const ReturnReasonsView: React.FC = () => {
             style={{
               padding: "10px 14px",
               borderRadius: 10,
-              background:
-                chargesRestockFee === null
-                  ? "rgba(248, 113, 113, 0.08)"
-                  : chargesRestockFee
-                    ? "rgba(59, 130, 246, 0.08)"
-                    : "rgba(245, 158, 11, 0.08)",
+              background: blueprintDecision.isOthers
+                ? "rgba(168, 85, 247, 0.08)"
+                : blueprintDecision.isYes
+                ? "rgba(59, 130, 246, 0.08)"
+                : blueprintDecision.isYes === false
+                ? "rgba(245, 158, 11, 0.08)"
+                : "rgba(248, 113, 113, 0.08)",
               border: `1px solid ${
-                chargesRestockFee === null
-                  ? "rgba(248, 113, 113, 0.3)"
-                  : chargesRestockFee
-                    ? "rgba(59, 130, 246, 0.25)"
-                    : "rgba(245, 158, 11, 0.25)"
+                blueprintDecision.isOthers
+                  ? "rgba(168, 85, 247, 0.3)"
+                  : blueprintDecision.isYes
+                  ? "rgba(59, 130, 246, 0.25)"
+                  : blueprintDecision.isYes === false
+                  ? "rgba(245, 158, 11, 0.25)"
+                  : "rgba(248, 113, 113, 0.3)"
               }`,
               display: "flex",
               justifyContent: "space-between",
@@ -507,7 +593,13 @@ export const ReturnReasonsView: React.FC = () => {
                 style={{
                   fontSize: 11,
                   fontWeight: 700,
-                  color: chargesRestockFee === null ? "#f87171" : chargesRestockFee ? "#60a5fa" : "#fbbf24",
+                  color: blueprintDecision.isOthers
+                    ? "#c084fc"
+                    : blueprintDecision.isYes
+                    ? "#60a5fa"
+                    : blueprintDecision.isYes === false
+                    ? "#fbbf24"
+                    : "#f87171",
                   textTransform: "uppercase",
                 }}
               >
@@ -515,21 +607,31 @@ export const ReturnReasonsView: React.FC = () => {
               </span>
               <div style={{ color: "#f8fafc", fontSize: 12, marginTop: 2 }}>
                 Charge Restocking Fee:{" "}
-                <b>{chargesRestockFee === null ? "Unknown" : chargesRestockFee ? "Yes" : "No"}</b>
-                {chargesRestockFee === true && (
+                <b>
+                  {blueprintDecision.isOthers
+                    ? "Custom / Others"
+                    : blueprintDecision.isYes
+                    ? "Yes"
+                    : blueprintDecision.isYes === false
+                    ? "No"
+                    : "Unknown"}
+                </b>
+
+                {blueprintDecision.isOthers && (
+                  <span style={{ color: "#e9d5ff" }}>
+                    {" "}— Note: <i>"{blueprintDecision.comment}"</i>. (Review with dealership before enabling).
+                  </span>
+                )}
+
+                {blueprintDecision.isYes === true && (
                   <span>
                     {" "}• Answered Amount: <b>{normalizeText(rawFeeAmountAnswer) || "None (defaulted to 0%)"}</b>
                   </span>
                 )}
-                {chargesRestockFee === false && (
+
+                {blueprintDecision.isYes === false && (
                   <span style={{ color: "#fde68a" }}>
                     {" "}— Dealer does not charge a restock fee. Creation is not needed.
-                  </span>
-                )}
-                {chargesRestockFee === null && (
-                  <span style={{ color: "#f87171" }}>
-                    {" "}— Could not parse a Yes/No answer from the blueprint (raw value:{" "}
-                    {JSON.stringify(rawChargesFeeAnswer)}). Verify manually before resetting.
                   </span>
                 )}
               </div>

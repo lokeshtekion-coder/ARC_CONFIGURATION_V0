@@ -95,7 +95,7 @@
 
       <section class="card">
         <div class="card-title">Captured Data Summary</div>
-        <div class="summary-tiles">
+        <div class="summary-tiles" style="grid-template-columns: repeat(5, 1fr);">
           <div class="tile">
             <div class="tile-value" id="tileGraphStatus">○</div>
             <div class="tile-label">Graph Token</div>
@@ -105,12 +105,16 @@
             <div class="tile-label">Slack Session</div>
           </div>
           <div class="tile">
+            <div class="tile-value" id="tilePreprodMapStatus">○</div>
+            <div class="tile-label">MAP API</div>
+          </div>
+          <div class="tile">
             <div class="tile-value" id="tileProfilesCount">0</div>
-            <div class="tile-label">Tekion Profiles</div>
+            <div class="tile-label">Profiles</div>
           </div>
           <div class="tile">
             <div class="tile-value" id="tileRulesCount">0</div>
-            <div class="tile-label">Watched Rules</div>
+            <div class="tile-label">Rules</div>
           </div>
         </div>
       </section>
@@ -118,7 +122,22 @@
 
     <!-- PANEL: TOKENS -->
     <section class="panel" data-panel="tokens">
-      <h2 class="panel-title">Microsoft Graph & SharePoint</h2>
+      <h2 class="panel-title">Captured API Credentials</h2>
+
+      <section class="card">
+        <div class="rules-header">
+          <div class="rules-title-group">
+            <span class="card-title">Pre-Prod MAP API (4-Step Verification)</span>
+          </div>
+        </div>
+        <div class="token-row">
+          <div class="token-row-head">
+            <span class="label">Bearer / Token Status</span>
+            <span class="value small" id="preprodMapStatus">Not Captured</span>
+          </div>
+          <div class="token-meta" id="preprodMapMeta">—</div>
+        </div>
+      </section>
 
       <section class="card">
         <div class="rules-header">
@@ -139,7 +158,6 @@
 
         <div class="token-row">
           <div class="token-row-head">
-            <!-- cspell:disable-next-line -->
             <span class="label">SPFx Refresh Token</span>
             <span class="value small" id="spfxTokenStatus">Not Captured</span>
           </div>

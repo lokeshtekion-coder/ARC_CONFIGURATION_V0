@@ -1,0 +1,23 @@
+export const STORE_QUERY_FIELDS = {
+  dealer_id: { type: "string" },
+  dba_name: { type: "string" },
+  launch_days: { type: "number" },
+  fixed_ops_status: { type: "string" },
+  variable_ops_status: { type: "string" },
+  testing_status: { type: "string" },
+  parts_blueprint: { type: "string" },
+  service_blueprint: { type: "string" },
+  accounting_blueprint: { type: "string" },
+  analytics_blueprint: { type: "string" },
+  attachments: { type: "number" },
+  custom_assignee: { type: "string" },
+  custom_variable_assignee: { type: "string" },
+  setup_data_error: { type: "string" },
+  not_worked: { type: "string" },
+  is_fixed_unblocked: { type: "boolean" },
+  is_variable_blocked: { type: "boolean" },
+  is_analytics_escalated: { type: "boolean" },
+  is_actionable_by_arc: { type: "boolean" },
+} as const;
+
+export type StoreQueryField = keyof typeof STORE_QUERY_FIELDS;

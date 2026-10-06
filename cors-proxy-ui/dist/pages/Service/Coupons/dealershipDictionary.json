@@ -1,0 +1,76 @@
+{
+    "glAccounts": {
+        "Labor & Parts": {
+            "definition": "Combined services that require BOTH a mechanic's physical time and tangible materials/fluids.",
+            "keywords": [
+                "LOF", "ROB", "OIL CHANGE", "MAINTENANCE", "SERVICE", "SPLIT",
+                "COMP MAINT", "SYN OIL", "SYNTHETIC", "CONVENTIONAL",
+                "ROUTINE MAINTENANCE", "FLEET", "EXCLUSIVE OFFER", "goodwill"
+            ]
+        },
+        "Labor": {
+            "definition": "Abstract services representing human effort, time, diagnostics, software, or financial adjustments. No physical parts.",
+            "keywords": [
+                "SES", "DIAG", "DIAGNOSIS", "ALIGNMENT", "INSPECTION", "REPAIR", "WARRANTY", "GOODWILL",
+                "ROTATE", "TIRE ROTATION", "AC SERVICE", "INSTALLED", "RENTAL CAR", "COURTESY RENTAL",
+                "DEDUCTABLE"
+            ]
+        },
+        "Parts": {
+            "definition": "Tangible, physical components, fluids, or accessories sold over the counter or attached to the vehicle.",
+            "keywords": [
+                "TIRE", "WIPER", "BATTERY", "FILTER", "ACCESSORIES", "MERCHANDISE",
+                "AIR FILTER", "CABIN FILTER", "CABIN AIR FILTER", "WIPER BLADES", "ACCESSORY"
+            ]
+        }
+    },
+    "modifiers": {
+        "Free": [
+            "FREE",
+            "COMPLIMENTARY",
+            "NO CHARGE",
+            "ZERO COST"
+        ],
+        "Percentage": [
+            "PERCENTAGE OF SALE",
+            "PERCENTAGE",
+            "PERCENT",
+            "PCT"
+        ],
+        "Flat": [
+            "FIXED",
+            "TARGET PRICE",
+            "FLAT RATE"
+        ],
+        "Certificate": [
+            "GIFT CERTIFICATE",
+            "REWARDS",
+            "VOUCHER",
+            "DISCOUNT CARD",
+            "RECEIPT"
+        ]
+    },
+    "exclusions": [
+        "DEALER TRACK",
+        "DEALERTRACK",
+        "DO NOT HAVE \"CODES\"",
+        "DO NOT HAVE CODES",
+        "SELECT EACH DISCOUNT",
+        "FROM A MENU",
+        "REVIEW THE LIST",
+        "WORK WITH",
+        "ACCOUNT NUMBERS TOGETHER",
+        "CAN BE PERCENTAGE BASED",
+        "DISCOUNT CODES",
+        "POLICY ACCOUNT",
+        "SPLIT ACCOUNT",
+        "UNAPPLIED LABOR",
+        "COUPON BOOK",
+        "NOT SURE",
+        "NO SURE",
+        "NEED TO REVIEW",
+        "TEKION REP",
+        "REVIEW THIS WITH",
+        "BEN TO COMPLETE"
+    ]
+}

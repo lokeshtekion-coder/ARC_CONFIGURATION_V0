@@ -1,6 +1,6 @@
 import type { ArcLatestCaptureState, ArcCustomWatchRule } from "./types";
 
-const LOCAL_URLS = ["http://localhost:5175/*", "http://127.0.0.1:5175/*"];
+const LOCAL_URLS = ["http://localhost:5175/*", "http://127.0.0.1:5175/*", "http://localhost:3000/*"];
 
 const STORAGE_KEY = "arcLatestCaptureState";
 const CUSTOM_RULES_STORAGE_KEY = "arcCustomWatchedApis";
@@ -13,14 +13,12 @@ function mustGet<T extends HTMLElement = HTMLElement>(id: string): T {
 
 function getElements() {
   return {
-    // sidebar / nav
     versionChip: mustGet("versionChip"),
     openAppBtn: mustGet("openAppBtn"),
     refreshBtn: mustGet("refreshBtn"),
     navButtons: Array.from(document.querySelectorAll<HTMLButtonElement>(".nav-btn")),
     panels: Array.from(document.querySelectorAll<HTMLElement>(".panel")),
 
-    // overview panel
     appStatus: mustGet("appStatus"),
     detectedUrl: mustGet("detectedUrl"),
     lastChecked: mustGet("lastChecked"),
@@ -29,10 +27,10 @@ function getElements() {
     statusDetails: mustGet<HTMLDetailsElement>("statusDetails"),
     tileGraphStatus: mustGet("tileGraphStatus"),
     tileSlackStatus: mustGet("tileSlackStatus"),
+    tilePreprodMapStatus: mustGet("tilePreprodMapStatus"),
     tileProfilesCount: mustGet("tileProfilesCount"),
     tileRulesCount: mustGet("tileRulesCount"),
 
-    // tokens panel
     sheetTabBadge: mustGet("sheetTabBadge"),
     openSheetBtn: mustGet<HTMLButtonElement>("openSheetBtn"),
     graphTokenStatus: mustGet("graphTokenStatus"),
@@ -40,13 +38,13 @@ function getElements() {
     spfxTokenStatus: mustGet("spfxTokenStatus"),
     spfxTokenMeta: mustGet("spfxTokenMeta"),
     tapDuoStatus: mustGet("tapDuoStatus"),
+    preprodMapStatus: mustGet("preprodMapStatus"),
+    preprodMapMeta: mustGet("preprodMapMeta"),
 
-    // slack panel
     slackStatusBadge: mustGet("slackStatusBadge"),
     slackTokenMeta: mustGet("slackTokenMeta"),
     slackCookieMeta: mustGet("slackCookieMeta"),
 
-    // rules panel
     rulesCountBadge: mustGet("rulesCountBadge"),
     quickRulesList: mustGet("quickRulesList"),
   };
@@ -58,8 +56,6 @@ function formatNow(): string {
   return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 }
 
-// Never render a captured secret in full - only a short masked tail, so a
-// screen share or screenshot of the popup can't leak the live token/cookie.
 function maskSecret(value: string | undefined, visibleTail = 4): string {
   if (!value) return "—";
   if (value.length <= visibleTail) return "•".repeat(value.length);
@@ -89,8 +85,6 @@ function getStoredCapture(): Promise<ArcLatestCaptureState> {
   });
 }
 
-// ---------- Sidebar navigation ----------
-
 function initNav(els: Elements) {
   els.navButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -104,8 +98,6 @@ function initNav(els: Elements) {
     });
   });
 }
-
-// ---------- Overview panel ----------
 
 async function refreshStatus(els: Elements) {
   const tabs = await queryTabs(LOCAL_URLS);
@@ -144,10 +136,12 @@ function refreshOverviewTiles(els: Elements, state: ArcLatestCaptureState) {
   els.tileSlackStatus.textContent = hasSlack ? "●" : "○";
   els.tileSlackStatus.className = `tile-value ${hasSlack ? "ok" : "bad"}`;
 
+  const hasPreprodMap = Boolean(state.preprodMapToken);
+  els.tilePreprodMapStatus.textContent = hasPreprodMap ? "●" : "○";
+  els.tilePreprodMapStatus.className = `tile-value ${hasPreprodMap ? "ok" : "bad"}`;
+
   els.tileProfilesCount.textContent = String(state.tekionProfiles?.length ?? 0);
 }
-
-// ---------- Tokens panel ----------
 
 function refreshTokensPanel(els: Elements, state: ArcLatestCaptureState) {
   const hasGraph = Boolean(state.graphApiToken);
@@ -176,9 +170,14 @@ function refreshTokensPanel(els: Elements, state: ArcLatestCaptureState) {
   const hasTapDuo = Boolean(state.tapDuoApiToken);
   els.tapDuoStatus.textContent = hasTapDuo ? "Captured" : "Not Captured";
   els.tapDuoStatus.className = `value small ${hasTapDuo ? "ok" : "bad"}`;
-}
 
-// ---------- Slack panel ----------
+  const hasPreprod = Boolean(state.preprodMapToken);
+  els.preprodMapStatus.textContent = hasPreprod ? "Captured" : "Not Captured";
+  els.preprodMapStatus.className = `value small ${hasPreprod ? "ok" : "bad"}`;
+  els.preprodMapMeta.textContent = hasPreprod
+    ? `${maskSecret(state.preprodMapToken)} (Ready for Tenant validation & Accounts Count)`
+    : "Open preprod-map.tekioncloud.com in your browser to capture credentials.";
+}
 
 function refreshSlackPanel(els: Elements, state: ArcLatestCaptureState) {
   const hasToken = Boolean(state.slackToken);
@@ -200,8 +199,6 @@ function refreshSlackPanel(els: Elements, state: ArcLatestCaptureState) {
     ? maskSecret(state.slackDCookie)
     : "No Slack 'd' cookie detected yet.";
 }
-
-// ---------- Rules panel ----------
 
 async function refreshRulesSummary(els: Elements) {
   chrome.storage.local.get([CUSTOM_RULES_STORAGE_KEY], (res) => {
@@ -240,8 +237,6 @@ async function refreshRulesSummary(els: Elements) {
   });
 }
 
-// ---------- Init ----------
-
 async function refreshAll(els: Elements) {
   const state = await getStoredCapture();
   await refreshStatus(els);
@@ -267,7 +262,7 @@ async function init() {
   });
 
   chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === "local" && (changes[STORAGE_KEY] || changes[CUSTOM_RULES_STORAGE_KEY])) {
+    if (areaName !== "local" && (changes[STORAGE_KEY] || changes[CUSTOM_RULES_STORAGE_KEY])) {
       void refreshAll(els);
     }
   });

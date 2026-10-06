@@ -1,6 +1,12 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { loadGlobalHeaders } from "../../../services/tekionApiSettings";
+import { loadTekionCapturedProfiles } from "../../../services/tekionCapturedProfiles";
+import { loadTekionApiSettingsBundle } from "../../../services/tekionApiSettings";
 import type { KeyValuePair } from "../../../types/proxy.types";
+import "./OpcodeManagementView.css";
+
+const SELECTED_DEALER_PROFILE_KEY = "arc_selected_dealer_profile_id_v1";
+const PROXY_ENDPOINT = "http://localhost:4000/api/proxy";
+const DEFAULT_HOST = "https://preprodapp.tekioncloud.com";
 
 type ViewKey =
   | "home"
@@ -51,47 +57,6 @@ type OpcodeRow = {
   defaultSubPayType?: string;
   defaultPayType?: string;
   includeInCustomerScheduling?: boolean;
-  causes?: unknown[];
-  storyLinesV2?: unknown[];
-  eligibleForCPSpecialLaborPricing?: boolean;
-  customerPartPricingEnabled?: boolean;
-  partsPricingCapEnabled?: boolean;
-  partsSalePricingType?: string | null;
-  eligibleForPartPreparation?: boolean;
-  forcedPartSelectionEnabled?: boolean;
-  canOverrideWarrantyCostCenter?: boolean;
-  warrantyCostCenters?: unknown;
-  canOverrideInternalCostCenter?: boolean;
-  internalCostCenters?: unknown;
-  clockInMandatory?: boolean;
-  laborTimeInSeconds?: number | string;
-  customerLaborTimeInSeconds?: number | string;
-  manufacturerLaborTimeInSeconds?: number | string;
-  regDivGar?: unknown;
-  accountingGroup?: unknown;
-  linkedOpcodesV2?: unknown[];
-  suggestedOpcodes?: unknown[];
-  fees?: unknown[];
-  parts?: unknown[];
-  labels?: unknown[];
-  oemOpcodes?: unknown[];
-  maxPartsSaleAmount?: unknown;
-  customerPayMaxPartsSaleAmount?: unknown;
-  warrantyPayMaxPartsSaleAmount?: unknown;
-  internalPayMaxPartsSaleAmount?: unknown;
-  fixedPartsSaleAmount?: unknown;
-  customerPayFixedPartsSaleAmount?: unknown;
-  warrantyPayFixedPartsSaleAmount?: unknown;
-  internalPayFixedPartsSaleAmount?: unknown;
-  autoDispatch?: boolean;
-  autoComplete?: boolean;
-  subletMarkUpDetails?: unknown[];
-  priority?: number;
-  opcodeSource?: string;
-  eligibility?: { criteria?: unknown[] };
-  systemOpcode?: string;
-  shortDescription?: string;
-  serviceTypes?: unknown;
   [key: string]: unknown;
 };
 
@@ -114,80 +79,6 @@ type ServiceTypeSetupResult = {
   serviceTypeIds?: Record<string, string>;
 };
 
-const API_BASE_URL = "https://preprodapp.tekioncloud.com/api";
-
-const cardStyle: React.CSSProperties = {
-  borderRadius: 16,
-  border: "1px solid rgba(255,255,255,0.08)",
-  background: "rgba(255,255,255,0.02)",
-  padding: 16,
-  minWidth: 0,
-};
-
-const badgeStyle: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 6,
-  padding: "6px 10px",
-  borderRadius: 999,
-  background: "rgba(255,255,255,0.03)",
-  border: "1px solid rgba(255,255,255,0.08)",
-  color: "#cbd5e1",
-  fontSize: 12,
-  whiteSpace: "nowrap",
-};
-
-const monoStyle: React.CSSProperties = {
-  fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-  fontSize: 12,
-  color: "#e2e8f0",
-  whiteSpace: "pre-wrap",
-  overflowWrap: "anywhere",
-};
-
-const tableElementStyle: React.CSSProperties = {
-  width: "100%",
-  minWidth: 980,
-  borderCollapse: "collapse",
-};
-
-const stickyThStyle: React.CSSProperties = {
-  position: "sticky",
-  top: 0,
-  background: "#111827",
-  color: "#94a3b8",
-  textAlign: "left",
-  padding: "10px 12px",
-  fontSize: 12,
-  fontWeight: 800,
-  zIndex: 1,
-  borderBottom: "1px solid rgba(255,255,255,0.08)",
-  whiteSpace: "nowrap",
-};
-
-const tdStyle: React.CSSProperties = {
-  padding: "10px 12px",
-  fontSize: 13,
-  borderBottom: "1px solid rgba(255,255,255,0.05)",
-  verticalAlign: "top",
-};
-
-function zebraRowStyle(index: number): React.CSSProperties {
-  return {
-    background: index % 2 === 1 ? "rgba(255,255,255,0.015)" : "transparent",
-  };
-}
-
-function tableScrollWrapStyle(maxHeight: number): React.CSSProperties {
-  return {
-    maxHeight,
-    overflowY: "auto",
-    overflowX: "auto",
-    borderRadius: 10,
-    border: "1px solid rgba(255,255,255,0.06)",
-  };
-}
-
 function normalize(value: unknown): string {
   return String(value ?? "").trim();
 }
@@ -196,37 +87,48 @@ function normalizeUpper(value: unknown): string {
   return normalize(value).toUpperCase();
 }
 
-function toEnabledHeaderMap(headers: KeyValuePair[]): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const row of headers) {
-    if (!row?.enabled) continue;
-    const key = normalize(row.key);
-    const value = normalize(row.value);
-    if (!key || !value) continue;
-    out[key] = value;
-  }
-  return out;
-}
+function resolveActiveHeaders(): { headers: Record<string, string>; baseHost: string; dealerId: string } {
+  const storedProfileId = localStorage.getItem(SELECTED_DEALER_PROFILE_KEY);
+  const profiles = loadTekionCapturedProfiles();
 
-function findHeaderValueCaseInsensitive(
-  headers: Record<string, string>,
-  candidates: string[]
-): string {
-  const entries = Object.entries(headers);
-  for (const candidate of candidates) {
-    const found = entries.find(([key]) => key.toLowerCase() === candidate.toLowerCase());
-    if (found?.[1]) return normalize(found[1]);
-  }
-  return "";
-}
+  const matchedProfile = storedProfileId
+    ? profiles.find(
+        (p) =>
+          p.id === storedProfileId ||
+          p.profileKey === storedProfileId ||
+          p.dealerId === storedProfileId
+      )
+    : profiles[0] ?? null;
 
-function extractDealerIdFromHeaders(headers: Record<string, string>): string {
-  return findHeaderValueCaseInsensitive(headers, [
-    "dealerid",
-    "dealerId",
-    "dealer-id",
-    "x-dealer-id",
-  ]);
+  let headers: Record<string, string> = {};
+  let baseHost = DEFAULT_HOST;
+  let dealerId = matchedProfile?.dealerId || "";
+
+  if (matchedProfile?.bootstrapHeaders && Object.keys(matchedProfile.bootstrapHeaders).length > 0) {
+    headers = { ...matchedProfile.bootstrapHeaders };
+    if (matchedProfile.sourceUrl) {
+      try {
+        baseHost = new URL(matchedProfile.sourceUrl).origin;
+      } catch {
+        baseHost = DEFAULT_HOST;
+      }
+    }
+  } else {
+    const bundle = loadTekionApiSettingsBundle();
+    const rows = (bundle.globalHeaders ?? []).filter(
+      (h: KeyValuePair) => h.enabled && h.key?.trim() && String(h.value ?? "").trim()
+    );
+    for (const row of rows) {
+      const lower = row.key.trim().toLowerCase();
+      headers[lower] = String(row.value).trim();
+      if (lower === "dealerid" && !dealerId) {
+        dealerId = String(row.value).trim();
+      }
+    }
+  }
+
+  headers["content-type"] = "application/json";
+  return { headers, baseHost, dealerId };
 }
 
 function generateUUID(): string {
@@ -286,41 +188,6 @@ function unwrapFirstOpcodeHit(hit: unknown): OpcodeRow | null {
   }
 
   return item && typeof item === "object" ? (item as OpcodeRow) : null;
-}
-
-function getStatusTone(ok: boolean): React.CSSProperties {
-  return {
-    color: ok ? "#bbf7d0" : "#fecaca",
-    background: ok ? "rgba(34,197,94,0.10)" : "rgba(239,68,68,0.10)",
-    border: ok
-      ? "1px solid rgba(34,197,94,0.22)"
-      : "1px solid rgba(239,68,68,0.22)",
-    borderRadius: 12,
-    padding: "10px 12px",
-    fontSize: 13,
-  };
-}
-
-function getSmallResultPill(ok: boolean, text: string): React.ReactNode {
-  return (
-    <span
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        borderRadius: 999,
-        padding: "4px 10px",
-        fontSize: 12,
-        fontWeight: 700,
-        color: ok ? "#86efac" : "#fca5a5",
-        background: ok ? "rgba(34,197,94,0.10)" : "rgba(239,68,68,0.10)",
-        border: ok
-          ? "1px solid rgba(34,197,94,0.22)"
-          : "1px solid rgba(239,68,68,0.22)",
-      }}
-    >
-      {text}
-    </span>
-  );
 }
 
 function matchLaborRates(laborRates: LaborRateRow[]): Record<string, string> {
@@ -479,8 +346,7 @@ function buildPDIPayload(currentData: OpcodeRow, pdiServiceType: ServiceTypeRow)
   };
 }
 
-const OpcodeManagementView: React.FC = () => {
-  const [headerMap, setHeaderMap] = useState<Record<string, string>>({});
+export const OpcodeManagementView: React.FC = () => {
   const [activeView, setActiveView] = useState<ViewKey>("home");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<UiMessage | null>(null);
@@ -495,20 +361,8 @@ const OpcodeManagementView: React.FC = () => {
   const [customServiceTypeName, setCustomServiceTypeName] = useState("");
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
 
-  const dealerId = useMemo(() => extractDealerIdFromHeaders(headerMap), [headerMap]);
-  const headerCount = useMemo(() => Object.keys(headerMap).length, [headerMap]);
-
-  const refreshHeaders = useCallback(() => {
-    try {
-      setHeaderMap(toEnabledHeaderMap(loadGlobalHeaders()));
-    } catch {
-      setHeaderMap({});
-    }
-  }, []);
-
-  useEffect(() => {
-    refreshHeaders();
-  }, [refreshHeaders]);
+  const { headers: activeHeaders, baseHost, dealerId } = useMemo(() => resolveActiveHeaders(), []);
+  const headerCount = useMemo(() => Object.keys(activeHeaders).length, [activeHeaders]);
 
   const resetTransientStateForView = useCallback((nextView: ViewKey) => {
     setMessage(null);
@@ -535,14 +389,14 @@ const OpcodeManagementView: React.FC = () => {
       method: "GET" | "POST" | "PUT";
       body?: unknown;
     }) => {
-      const res = await fetch("http://localhost:4000/api/proxy", {
+      const res = await fetch(PROXY_ENDPOINT, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           url: payload.url,
           method: payload.method,
           headers: {
-            ...headerMap,
+            ...activeHeaders,
             ...(payload.body ? { "content-type": "application/json" } : {}),
           },
           body: payload.body,
@@ -564,12 +418,12 @@ const OpcodeManagementView: React.FC = () => {
 
       return json?.body ?? json?.data ?? json;
     },
-    [headerMap]
+    [activeHeaders]
   );
 
   const fetchServiceTypes = useCallback(async (): Promise<ServiceTypeRow[]> => {
     const payload = await proxyRequest({
-      url: `${API_BASE_URL}/service-module/u/opcode/serviceTypes`,
+      url: `${baseHost}/api/service-module/u/opcode/serviceTypes`,
       method: "GET",
     });
 
@@ -581,11 +435,11 @@ const OpcodeManagementView: React.FC = () => {
 
     setServiceTypes(rows);
     return rows;
-  }, [proxyRequest]);
+  }, [baseHost, proxyRequest]);
 
   const fetchLaborRates = useCallback(async (): Promise<LaborRateRow[]> => {
     const payload = await proxyRequest({
-      url: `${API_BASE_URL}/service-module/u/labor-pricing/laborRate`,
+      url: `${baseHost}/api/service-module/u/labor-pricing/laborRate`,
       method: "GET",
     });
 
@@ -596,7 +450,7 @@ const OpcodeManagementView: React.FC = () => {
       : [];
 
     return rows;
-  }, [proxyRequest]);
+  }, [baseHost, proxyRequest]);
 
   const createServiceType = useCallback(
     async (typeName: string, rateMap: Record<string, string>) => {
@@ -653,12 +507,12 @@ const OpcodeManagementView: React.FC = () => {
       };
 
       return await proxyRequest({
-        url: `${API_BASE_URL}/service-module/u/opcode/serviceType/create`,
+        url: `${baseHost}/api/service-module/u/opcode/serviceType/create`,
         method: "POST",
         body: payload,
       });
     },
-    [proxyRequest]
+    [baseHost, proxyRequest]
   );
 
   const configureServiceType = useCallback(
@@ -715,12 +569,12 @@ const OpcodeManagementView: React.FC = () => {
       };
 
       return await proxyRequest({
-        url: `${API_BASE_URL}/service-module/u/opcode/serviceType/${id}/update`,
+        url: `${baseHost}/api/service-module/u/opcode/serviceType/${id}/update`,
         method: "PUT",
         body: payload,
       });
     },
-    [proxyRequest]
+    [baseHost, proxyRequest]
   );
 
   const performServiceTypeSetup = useCallback(async (): Promise<ServiceTypeSetupResult> => {
@@ -783,7 +637,7 @@ const OpcodeManagementView: React.FC = () => {
         success: true,
         created,
         configured,
-        skipped: currentServiceTypes.length - needsConfig.length,
+        skipped: Math.max(0, currentServiceTypes.length - needsConfig.length),
         serviceTypeIds,
       };
     } catch (e: unknown) {
@@ -798,7 +652,7 @@ const OpcodeManagementView: React.FC = () => {
     async (setupResult?: ServiceTypeSetupResult | null): Promise<ValidationResult> => {
       try {
         const searchResponse = await proxyRequest({
-          url: `${API_BASE_URL}/service-module/u/opcode/search`,
+          url: `${baseHost}/api/service-module/u/opcode/search`,
           method: "POST",
           body: { searchText: "MPVI" },
         });
@@ -819,7 +673,7 @@ const OpcodeManagementView: React.FC = () => {
         }
 
         const detailsResponse = await proxyRequest({
-          url: `${API_BASE_URL}/service-module/u/opcode/${opcodeIdentifier}/v2`,
+          url: `${baseHost}/api/service-module/u/opcode/${opcodeIdentifier}/v2`,
           method: "GET",
         });
 
@@ -853,7 +707,7 @@ const OpcodeManagementView: React.FC = () => {
             };
 
         await proxyRequest({
-          url: `${API_BASE_URL}/service-module/u/opcode/v2/${opcode.id}`,
+          url: `${baseHost}/api/service-module/u/opcode/v2/${opcode.id}`,
           method: "PUT",
           body: payload,
         });
@@ -870,7 +724,7 @@ const OpcodeManagementView: React.FC = () => {
         };
       }
     },
-    [proxyRequest]
+    [baseHost, proxyRequest]
   );
 
   const performSubletConfiguration = useCallback(async (): Promise<ValidationResult> => {
@@ -890,7 +744,7 @@ const OpcodeManagementView: React.FC = () => {
       }
 
       const detailsResponse = await proxyRequest({
-        url: `${API_BASE_URL}/service-module/u/opcode/SUBLET/v2`,
+        url: `${baseHost}/api/service-module/u/opcode/SUBLET/v2`,
         method: "GET",
       });
 
@@ -920,7 +774,7 @@ const OpcodeManagementView: React.FC = () => {
       }
 
       await proxyRequest({
-        url: `${API_BASE_URL}/service-module/u/opcode/v2/${opcode.id}`,
+        url: `${baseHost}/api/service-module/u/opcode/v2/${opcode.id}`,
         method: "PUT",
         body: buildSubletPayload(opcode, subletServiceType),
       });
@@ -938,7 +792,7 @@ const OpcodeManagementView: React.FC = () => {
         error: e instanceof Error ? e.message : "Sublet configuration failed",
       };
     }
-  }, [fetchServiceTypes, proxyRequest]);
+  }, [baseHost, fetchServiceTypes, proxyRequest]);
 
   const performPDIConfiguration = useCallback(async (): Promise<ValidationResult> => {
     try {
@@ -956,7 +810,7 @@ const OpcodeManagementView: React.FC = () => {
       }
 
       const detailsResponse = await proxyRequest({
-        url: `${API_BASE_URL}/service-module/u/opcode/PDI/v2`,
+        url: `${baseHost}/api/service-module/u/opcode/PDI/v2`,
         method: "GET",
       });
 
@@ -984,7 +838,7 @@ const OpcodeManagementView: React.FC = () => {
       }
 
       await proxyRequest({
-        url: `${API_BASE_URL}/service-module/u/opcode/v2/${opcode.id}`,
+        url: `${baseHost}/api/service-module/u/opcode/v2/${opcode.id}`,
         method: "PUT",
         body: buildPDIPayload(opcode, pdiServiceType),
       });
@@ -1002,13 +856,13 @@ const OpcodeManagementView: React.FC = () => {
         error: e instanceof Error ? e.message : "PDI configuration failed",
       };
     }
-  }, [fetchServiceTypes, proxyRequest]);
+  }, [baseHost, fetchServiceTypes, proxyRequest]);
 
   const createCustConcernOpcode = useCallback(async (): Promise<ValidationResult> => {
     try {
       try {
         await proxyRequest({
-          url: `${API_BASE_URL}/service-module/u/opcode/CUST/v2`,
+          url: `${baseHost}/api/service-module/u/opcode/CUST/v2`,
           method: "GET",
         });
 
@@ -1040,7 +894,7 @@ const OpcodeManagementView: React.FC = () => {
 
       try {
         const mpviResponse = await proxyRequest({
-          url: `${API_BASE_URL}/service-module/u/opcode/MPVI/v2`,
+          url: `${baseHost}/api/service-module/u/opcode/MPVI/v2`,
           method: "GET",
         });
         skillId =
@@ -1054,7 +908,7 @@ const OpcodeManagementView: React.FC = () => {
       if (!skillId) {
         try {
           const pdiResponse = await proxyRequest({
-            url: `${API_BASE_URL}/service-module/u/opcode/PDI/v2`,
+            url: `${baseHost}/api/service-module/u/opcode/PDI/v2`,
             method: "GET",
           });
           skillId =
@@ -1140,7 +994,7 @@ const OpcodeManagementView: React.FC = () => {
       };
 
       const createResponse = await proxyRequest({
-        url: `${API_BASE_URL}/service-module/u/opcode/v2/create`,
+        url: `${baseHost}/api/service-module/u/opcode/v2/create`,
         method: "POST",
         body: payload,
       });
@@ -1158,7 +1012,7 @@ const OpcodeManagementView: React.FC = () => {
         error: e instanceof Error ? e.message : "Failed to create CUST CONCERN",
       };
     }
-  }, [fetchServiceTypes, proxyRequest]);
+  }, [baseHost, fetchServiceTypes, proxyRequest]);
 
   const performCustConfiguration = useCallback(async (): Promise<ValidationResult> => {
     try {
@@ -1172,7 +1026,7 @@ const OpcodeManagementView: React.FC = () => {
       };
 
       const searchResponse = await proxyRequest({
-        url: `${API_BASE_URL}/service-module/u/opcode/search`,
+        url: `${baseHost}/api/service-module/u/opcode/search`,
         method: "POST",
         body: searchPayload,
       });
@@ -1203,7 +1057,7 @@ const OpcodeManagementView: React.FC = () => {
         error: e instanceof Error ? e.message : "CUST configuration failed",
       };
     }
-  }, [createCustConcernOpcode, proxyRequest]);
+  }, [baseHost, createCustConcernOpcode, proxyRequest]);
 
   const runGetAllOpcodes = useCallback(async () => {
     setLoading(true);
@@ -1220,7 +1074,7 @@ const OpcodeManagementView: React.FC = () => {
       };
 
       const payload = await proxyRequest({
-        url: `${API_BASE_URL}/service-module/u/opcode/search`,
+        url: `${baseHost}/api/service-module/u/opcode/search`,
         method: "POST",
         body: searchPayload,
       });
@@ -1244,7 +1098,7 @@ const OpcodeManagementView: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [proxyRequest]);
+  }, [baseHost, proxyRequest]);
 
   const runServiceTypesSetup = useCallback(async () => {
     setLoading(true);
@@ -1439,39 +1293,20 @@ const OpcodeManagementView: React.FC = () => {
   };
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gap: 16,
-        maxHeight: "100%",
-        overflow: "auto",
-      }}
-      className="opcode-management-scroll"
-    >
-      <style>{`
-        .opcode-management-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
-        .opcode-management-scroll::-webkit-scrollbar-track { background: transparent; }
-        .opcode-management-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.14); border-radius: 8px; }
-        .opcode-management-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.24); }
-      `}</style>
-
-      <div>
-
-      </div>
-
+    <div className="opcode-management-scroll">
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <span style={badgeStyle}>
+        <span className="op-badge">
           Dealer ID: <b style={{ color: dealerId ? "#86efac" : "#fca5a5" }}>{dealerId || "Not found"}</b>
         </span>
-        <span style={badgeStyle}>
-          Global Headers: <b style={{ color: "#f8fafc" }}>{headerCount}</b>
+        <span className="op-badge">
+          Active Headers: <b style={{ color: "#f8fafc" }}>{headerCount}</b>
         </span>
-        <span style={badgeStyle}>
+        <span className="op-badge">
           API Base: <b style={{ color: "#f8fafc" }}>/service-module/u/opcode</b>
         </span>
       </div>
 
-      <div style={cardStyle}>
+      <div className="op-card">
         <div
           style={{
             display: "flex",
@@ -1483,23 +1318,24 @@ const OpcodeManagementView: React.FC = () => {
           }}
         >
           <div>
-            <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 800, marginBottom: 4 }}>
-             Click Below Options
+            <div style={{ color: "#f8fafc", fontSize: 18, fontWeight: 800 }}>
+              Opcode Management
             </div>
           </div>
-
-          <button className="btn-secondary btn-sm" onClick={refreshHeaders}>
-            ⟳ Refresh Headers
-          </button>
         </div>
 
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-
           <button
             className={activeView === "post" ? "btn-primary" : "btn-secondary btn-sm"}
             onClick={() => switchView("post")}
           >
             ⚙ Post / Configure
+          </button>
+          <button
+            className={activeView === "get" ? "btn-primary" : "btn-secondary btn-sm"}
+            onClick={() => switchView("get")}
+          >
+            📥 Get Opcodes
           </button>
           <button
             className={activeView === "service-types" ? "btn-primary" : "btn-secondary btn-sm"}
@@ -1540,10 +1376,14 @@ const OpcodeManagementView: React.FC = () => {
         </div>
       </div>
 
-      {message ? <div style={getStatusTone(message.ok)}>{message.text}</div> : null}
+      {message ? (
+        <div className={`op-status-box ${message.ok ? "op-status-success" : "op-status-error"}`}>
+          {message.text}
+        </div>
+      ) : null}
 
       {validationResult ? (
-        <div style={cardStyle}>
+        <div className="op-card">
           <div
             style={{
               display: "flex",
@@ -1557,7 +1397,9 @@ const OpcodeManagementView: React.FC = () => {
             <div style={{ color: "#f8fafc", fontSize: 16, fontWeight: 800 }}>
               Latest Validation Result
             </div>
-            {getSmallResultPill(validationResult.success, validationResult.success ? "SUCCESS" : "FAILED")}
+            <span className={validationResult.success ? "op-pill-success" : "op-pill-error"}>
+              {validationResult.success ? "SUCCESS" : "FAILED"}
+            </span>
           </div>
           <div style={{ color: "#cbd5e1", fontSize: 13, lineHeight: 1.7 }}>
             {validationResult.action || validationResult.error || "—"}
@@ -1567,7 +1409,7 @@ const OpcodeManagementView: React.FC = () => {
 
       {activeView === "home" ? (
         <div style={{ display: "grid", gap: 16 }}>
-          <div style={cardStyle}>
+          <div className="op-card">
             <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
               Quick Actions
             </div>
@@ -1603,7 +1445,7 @@ const OpcodeManagementView: React.FC = () => {
             </div>
           </div>
 
-          <div style={cardStyle}>
+          <div className="op-card">
             <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
               Manual Validation & Fix
             </div>
@@ -1627,7 +1469,7 @@ const OpcodeManagementView: React.FC = () => {
 
       {activeView === "get" ? (
         <div style={{ display: "grid", gap: 16 }}>
-          <div style={cardStyle}>
+          <div className="op-card">
             <div
               style={{
                 display: "flex",
@@ -1667,45 +1509,45 @@ const OpcodeManagementView: React.FC = () => {
             </div>
           </div>
 
-          <div style={cardStyle}>
+          <div className="op-card">
             <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
               Opcodes ({getRows.length})
             </div>
 
-            <div className="opcode-management-scroll" style={tableScrollWrapStyle(520)}>
-              <table className="bx-table" style={tableElementStyle}>
+            <div className="op-table-wrap" style={{ maxHeight: 520 }}>
+              <table className="op-table">
                 <thead>
                   <tr>
-                    <th style={stickyThStyle}>#</th>
-                    <th style={stickyThStyle}>Opcode</th>
-                    <th style={stickyThStyle}>Description</th>
-                    <th style={stickyThStyle}>Opcode Type</th>
-                    <th style={stickyThStyle}>Category</th>
-                    <th style={stickyThStyle}>ID</th>
+                    <th className="op-sticky-th">#</th>
+                    <th className="op-sticky-th">Opcode</th>
+                    <th className="op-sticky-th">Description</th>
+                    <th className="op-sticky-th">Opcode Type</th>
+                    <th className="op-sticky-th">Category</th>
+                    <th className="op-sticky-th">ID</th>
                   </tr>
                 </thead>
                 <tbody>
                   {getRows.length > 0 ? (
                     getRows.map((row, index) => (
-                      <tr key={`${row.id || row.opcode || "opcode"}-${index}`} style={zebraRowStyle(index)}>
-                        <td style={tdStyle}>{index + 1}</td>
-                        <td style={tdStyle}>
+                      <tr key={`${row.id || row.opcode || "opcode"}-${index}`} className={index % 2 === 1 ? "op-row-zebra" : ""}>
+                        <td className="op-td">{index + 1}</td>
+                        <td className="op-td">
                           <div style={{ color: "#f8fafc", fontWeight: 800 }}>
                             {row.opcode || row.code || row.displayValue || "—"}
                           </div>
                         </td>
-                        <td style={tdStyle}>{row.description || row.customerDescription || "—"}</td>
-                        <td style={tdStyle}>{row.opcodeType || "—"}</td>
-                        <td style={tdStyle}>{row.category || "—"}</td>
-                        <td style={tdStyle}>
-                          <code style={monoStyle}>{row.id || "—"}</code>
+                        <td className="op-td">{row.description || row.customerDescription || "—"}</td>
+                        <td className="op-td">{row.opcodeType || "—"}</td>
+                        <td className="op-td">{row.category || "—"}</td>
+                        <td className="op-td">
+                          <code className="op-mono">{row.id || "—"}</code>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td style={tdStyle} colSpan={6}>
-                        <div style={{ color: "#94a3b8" }}>No opcode rows loaded yet.</div>
+                      <td className="op-td" colSpan={6}>
+                        <div style={{ color: "#94a3b8" }}>No opcode rows loaded yet. Click Execute GET.</div>
                       </td>
                     </tr>
                   )}
@@ -1716,8 +1558,8 @@ const OpcodeManagementView: React.FC = () => {
             {showRawGet && rawGetResponse ? (
               <div style={{ marginTop: 14 }}>
                 <pre
+                  className="op-mono"
                   style={{
-                    ...monoStyle,
                     margin: 0,
                     padding: 12,
                     borderRadius: 12,
@@ -1736,7 +1578,7 @@ const OpcodeManagementView: React.FC = () => {
 
       {activeView === "post" ? (
         <div style={{ display: "grid", gap: 16 }}>
-          <div style={cardStyle}>
+          <div className="op-card">
             <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
               Opcode Configuration
             </div>
@@ -1770,7 +1612,7 @@ const OpcodeManagementView: React.FC = () => {
             </div>
           </div>
 
-          <div style={cardStyle}>
+          <div className="op-card">
             <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
               Manual Validation & Fix
             </div>
@@ -1794,7 +1636,7 @@ const OpcodeManagementView: React.FC = () => {
 
       {activeView === "service-types" ? (
         <div style={{ display: "grid", gap: 16 }}>
-          <div style={cardStyle}>
+          <div className="op-card">
             <div
               style={{
                 display: "flex",
@@ -1840,51 +1682,53 @@ const OpcodeManagementView: React.FC = () => {
             </div>
 
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <span style={badgeStyle}>Total: <b style={{ color: "#f8fafc" }}>{serviceTypeStats.total}</b></span>
-              <span style={badgeStyle}>Linked: <b style={{ color: "#86efac" }}>{serviceTypeStats.linked}</b></span>
-              <span style={badgeStyle}>Not linked: <b style={{ color: "#fcd34d" }}>{serviceTypeStats.unlinked}</b></span>
+              <span className="op-badge">Total: <b style={{ color: "#f8fafc" }}>{serviceTypeStats.total}</b></span>
+              <span className="op-badge">Linked: <b style={{ color: "#86efac" }}>{serviceTypeStats.linked}</b></span>
+              <span className="op-badge">Not linked: <b style={{ color: "#fcd34d" }}>{serviceTypeStats.unlinked}</b></span>
             </div>
           </div>
 
           {serviceTypesPreviewVisible ? (
-            <div style={cardStyle}>
+            <div className="op-card">
               <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
                 Existing Service Types
               </div>
 
-              <div className="opcode-management-scroll" style={tableScrollWrapStyle(420)}>
-                <table className="bx-table" style={tableElementStyle}>
+              <div className="op-table-wrap" style={{ maxHeight: 420 }}>
+                <table className="op-table">
                   <thead>
                     <tr>
-                      <th style={stickyThStyle}>Name</th>
-                      <th style={stickyThStyle}>Key</th>
-                      <th style={stickyThStyle}>Status</th>
-                      <th style={stickyThStyle}>Labor Rates</th>
-                      <th style={stickyThStyle}>ID</th>
+                      <th className="op-sticky-th">Name</th>
+                      <th className="op-sticky-th">Key</th>
+                      <th className="op-sticky-th">Status</th>
+                      <th className="op-sticky-th">Labor Rates</th>
+                      <th className="op-sticky-th">ID</th>
                     </tr>
                   </thead>
                   <tbody>
                     {serviceTypes.length > 0 ? (
                       serviceTypes.map((row, index) => (
-                        <tr key={`${row.id || row.name || "st"}-${index}`} style={zebraRowStyle(index)}>
-                          <td style={tdStyle}>
+                        <tr key={`${row.id || row.name || "st"}-${index}`} className={index % 2 === 1 ? "op-row-zebra" : ""}>
+                          <td className="op-td">
                             <div style={{ color: "#f8fafc", fontWeight: 700 }}>{row.name || "—"}</div>
                           </td>
-                          <td style={tdStyle}>{row.key || "—"}</td>
-                          <td style={tdStyle}>{row.status || "—"}</td>
-                          <td style={tdStyle}>
-                            {Array.isArray(row.laborRateConfigs) && row.laborRateConfigs.length > 0
-                              ? getSmallResultPill(true, "Linked")
-                              : getSmallResultPill(false, "Not linked")}
+                          <td className="op-td">{row.key || "—"}</td>
+                          <td className="op-td">{row.status || "—"}</td>
+                          <td className="op-td">
+                            {Array.isArray(row.laborRateConfigs) && row.laborRateConfigs.length > 0 ? (
+                              <span className="op-pill-success">Linked</span>
+                            ) : (
+                              <span className="op-pill-error">Not linked</span>
+                            )}
                           </td>
-                          <td style={tdStyle}>
-                            <code style={monoStyle}>{row.id || "—"}</code>
+                          <td className="op-td">
+                            <code className="op-mono">{row.id || "—"}</code>
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td style={tdStyle} colSpan={5}>
+                        <td className="op-td" colSpan={5}>
                           <div style={{ color: "#94a3b8" }}>No service types loaded.</div>
                         </td>
                       </tr>
@@ -1899,7 +1743,7 @@ const OpcodeManagementView: React.FC = () => {
 
       {activeView === "custom-service-type" ? (
         <div style={{ display: "grid", gap: 16 }}>
-          <div style={cardStyle}>
+          <div className="op-card">
             <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
               Create Custom Service Type
             </div>
@@ -1950,7 +1794,7 @@ const OpcodeManagementView: React.FC = () => {
       ) : null}
 
       {activeView === "mpvi" ? (
-        <div style={cardStyle}>
+        <div className="op-card">
           <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
             MPVI Validation
           </div>
@@ -1963,7 +1807,7 @@ const OpcodeManagementView: React.FC = () => {
       ) : null}
 
       {activeView === "sublet" ? (
-        <div style={cardStyle}>
+        <div className="op-card">
           <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
             SUBLET Validation
           </div>
@@ -1976,7 +1820,7 @@ const OpcodeManagementView: React.FC = () => {
       ) : null}
 
       {activeView === "pdi" ? (
-        <div style={cardStyle}>
+        <div className="op-card">
           <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
             PDI Validation
           </div>
@@ -1989,7 +1833,7 @@ const OpcodeManagementView: React.FC = () => {
       ) : null}
 
       {activeView === "cust" ? (
-        <div style={cardStyle}>
+        <div className="op-card">
           <div style={{ color: "#f8fafc", fontSize: 17, fontWeight: 800, marginBottom: 12 }}>
             CUST CONCERN Validation
           </div>

@@ -1,14 +1,15 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { loadTekionCapturedProfiles } from "../../../services/tekionCapturedProfiles";
 import { loadGlobalHeaders } from "../../../services/tekionApiSettings";
 import { usePartsBlueprint } from "../../../Context/Blueprint_Parts_Context";
-import type { KeyValuePair } from "../../../types/proxy.types";
+
+
+const SELECTED_DEALER_PROFILE_KEY = "arc_selected_dealer_profile_id_v1";
+const PROXY_ENDPOINT = "http://127.0.0.1:4000/api/proxy";
+const DEFAULT_HOST = "https://preprodapp.tekioncloud.com";
 
 const TGPT_TOKEN_KEY = "tgpt_access_token";
 const TGPT_BASE = "https://tapapi.tekioncloud.com/tapapi/tgpt";
-
-// Correct endpoint for creating coupons (both Parts & Service live under service-module)
-const COUPON_CREATE_URL =
-  "https://preprodapp.tekioncloud.com/api/service-module/u/coupon?locale=en_US";
 
 const QUESTION_HAS_COUPONS = "Do you have any parts coupons/discounts?";
 const QUESTION_COUPON_DETAILS =
@@ -70,40 +71,57 @@ interface UiMessage {
 }
 
 function normalize(value: unknown): string {
+  if (Array.isArray(value)) return normalize(value[0]);
   return String(value ?? "").trim();
 }
 
-function toEnabledHeaderMap(headers: KeyValuePair[]): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const row of headers) {
-    if (!row?.enabled) continue;
-    const key = normalize(row.key);
-    const value = normalize(row.value);
-    if (!key || !value) continue;
-    out[key] = value;
-  }
-  return out;
-}
+/**
+ * Resolves active dealer headers from canonical profile first,
+ * falling back to global settings headers.
+ */
+function resolveActiveHeaders(): { headers: Record<string, string>; baseHost: string; dealerId: string } {
+  const storedProfileId = localStorage.getItem(SELECTED_DEALER_PROFILE_KEY);
+  const profiles = loadTekionCapturedProfiles();
 
-function findHeaderValueCaseInsensitive(
-  headers: Record<string, string>,
-  candidates: string[]
-): string {
-  const entries = Object.entries(headers);
-  for (const candidate of candidates) {
-    const found = entries.find(([key]) => key.toLowerCase() === candidate.toLowerCase());
-    if (found?.[1]) return normalize(found[1]);
-  }
-  return "";
-}
+  const matchedProfile = storedProfileId
+    ? profiles.find(
+        (p) =>
+          p.id === storedProfileId ||
+          p.profileKey === storedProfileId ||
+          p.dealerId === storedProfileId
+      )
+    : profiles[0] ?? null;
 
-function extractDealerIdFromHeaders(headers: Record<string, string>): string {
-  return findHeaderValueCaseInsensitive(headers, [
-    "dealerid",
-    "dealerId",
-    "dealer-id",
-    "x-dealer-id",
-  ]);
+  let headers: Record<string, string> = {};
+  let baseHost = DEFAULT_HOST;
+  let dealerId = matchedProfile?.dealerId || "";
+
+  if (matchedProfile?.bootstrapHeaders && Object.keys(matchedProfile.bootstrapHeaders).length > 0) {
+    headers = { ...matchedProfile.bootstrapHeaders };
+
+    if (matchedProfile.sourceUrl) {
+      try {
+        baseHost = new URL(matchedProfile.sourceUrl).origin;
+      } catch {
+        baseHost = DEFAULT_HOST;
+      }
+    }
+  } else {
+    const rawHeaders = loadGlobalHeaders();
+    for (const row of rawHeaders) {
+      if (!row?.enabled) continue;
+      const key = normalize(row.key).toLowerCase();
+      const value = normalize(row.value);
+      if (!key || !value) continue;
+      headers[key] = value;
+      if (key === "dealerid" && !dealerId) {
+        dealerId = value;
+      }
+    }
+  }
+
+  headers["content-type"] = "application/json";
+  return { headers, baseHost, dealerId };
 }
 
 export const CouponsView: React.FC = () => {
@@ -120,28 +138,33 @@ export const CouponsView: React.FC = () => {
   const [isPushing, setIsPushing] = useState(false);
   const [message, setMessage] = useState<UiMessage | null>(null);
   const [showInfo, setShowInfo] = useState(false);
+  const [overrideNoCoupons, setOverrideNoCoupons] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem(TGPT_TOKEN_KEY);
     if (saved) setToken(saved);
   }, []);
 
-  const enabledHeaders = useMemo(() => toEnabledHeaderMap(loadGlobalHeaders()), []);
-  const dealerId = useMemo(() => extractDealerIdFromHeaders(enabledHeaders), [enabledHeaders]);
-  const globalHeaderCount = useMemo(() => Object.keys(enabledHeaders).length, [enabledHeaders]);
+  const { headers: activeHeaders, baseHost, dealerId } = useMemo(() => resolveActiveHeaders(), []);
+  const activeHeaderCount = useMemo(() => Object.keys(activeHeaders).length, [activeHeaders]);
 
+  // Handle both string and array representations from blueprint
   const blueprintCouponStatus = useMemo(() => {
     const ans = getAnswer(QUESTION_HAS_COUPONS);
-    return typeof ans === "string" ? ans.trim() : normalize(ans);
+    return normalize(ans);
   }, [getAnswer]);
 
   const hasCouponsInBlueprint = useMemo(() => {
     return blueprintCouponStatus.toLowerCase() === "yes";
   }, [blueprintCouponStatus]);
 
+  const isExplicitNoInBlueprint = useMemo(() => {
+    return blueprintCouponStatus.toLowerCase() === "no";
+  }, [blueprintCouponStatus]);
+
   const blueprintDetailsText = useMemo(() => {
     const ans = getAnswer(QUESTION_COUPON_DETAILS);
-    return typeof ans === "string" ? ans.trim() : normalize(ans);
+    return normalize(ans);
   }, [getAnswer]);
 
   useEffect(() => {
@@ -336,7 +359,6 @@ export const CouponsView: React.FC = () => {
     return parsedData.map((coupon) => {
       const isPercentage = coupon.pricingMethod === "PERCENTAGE";
       const numericVal = coupon.value || "0";
-      // Raw GL code (e.g. SALESP or 9999). Do NOT prepend dealerId prefix.
       const cleanGl = coupon.glAccount ? coupon.glAccount.trim() : "SALESP";
 
       const basePayload: any = {
@@ -414,10 +436,10 @@ export const CouponsView: React.FC = () => {
       return;
     }
 
-    if (!dealerId || globalHeaderCount === 0) {
+    if (!dealerId || activeHeaderCount === 0) {
       setMessage({
         ok: false,
-        text: "Global Headers or Dealer ID missing. Please apply dealer headers in Settings first.",
+        text: "Active dealer headers or Dealer ID missing. Please select an active dealer profile in Settings.",
       });
       return;
     }
@@ -425,20 +447,22 @@ export const CouponsView: React.FC = () => {
     setIsPushing(true);
     setMessage(null);
 
+    const targetUrl = `${baseHost}/api/service-module/u/coupon?locale=en_US`;
+
     try {
       const payloadArray = buildPartsTekionPayload();
       let successCount = 0;
       const failures: string[] = [];
 
       for (const item of payloadArray) {
-        const res = await fetch("http://localhost:4000/api/proxy", {
+        const res = await fetch(PROXY_ENDPOINT, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            url: COUPON_CREATE_URL,
+            url: targetUrl,
             method: "POST",
             headers: {
-              ...enabledHeaders,
+              ...activeHeaders,
               accept: "application/json, text/plain, */*",
               "content-type": "application/json",
               locale: "en_US",
@@ -457,7 +481,6 @@ export const CouponsView: React.FC = () => {
         const upstreamStatus = proxyResponse?.status ?? 200;
         const tekionBody = proxyResponse?.body ?? proxyResponse;
 
-        // Verify upstream HTTP status and validate against Tekion error response schemas
         const isHttpError = typeof upstreamStatus === "number" && upstreamStatus >= 400;
         const isTekionError =
           tekionBody?.status === "ERROR" ||
@@ -465,7 +488,6 @@ export const CouponsView: React.FC = () => {
           Boolean(tekionBody?.errors?.length) ||
           Boolean(tekionBody?.errorMessage);
 
-        // Guard against false positive where the settings API returns dealer setting payload
         const isSettingDocument = tekionBody?.data?.id?.endsWith("_part_setting");
 
         if (isHttpError || isTekionError || isSettingDocument) {
@@ -487,7 +509,7 @@ export const CouponsView: React.FC = () => {
       if (failures.length === 0) {
         setMessage({
           ok: true,
-          text: `✓ Successfully created ${successCount} of ${payloadArray.length} parts coupon(s) in Tekion Preprod.`,
+          text: `✓ Successfully created ${successCount} of ${payloadArray.length} parts coupon(s) in Tekion.`,
         });
       } else {
         setMessage({
@@ -626,7 +648,10 @@ export const CouponsView: React.FC = () => {
             Dealer ID: <b style={{ color: dealerId ? "#86efac" : "#fca5a5" }}>{dealerId || "Not found"}</b>
           </span>
           <span style={badgeStyle}>
-            Active Global Headers: <b style={{ color: "#f8fafc" }}>{globalHeaderCount}</b>
+            Active Headers: <b style={{ color: "#f8fafc" }}>{activeHeaderCount}</b>
+          </span>
+          <span style={badgeStyle}>
+            Target Host: <b style={{ color: "#60a5fa", fontFamily: "monospace" }}>{baseHost.replace("https://", "")}</b>
           </span>
           <span style={badgeStyle}>
             Department: <b style={{ color: "#38bdf8" }}>PARTS Only</b>
@@ -634,14 +659,63 @@ export const CouponsView: React.FC = () => {
           {blueprintLoading ? (
             <span style={badgeStyle}>Blueprint: <b style={{ color: "#fde047" }}>Loading...</b></span>
           ) : (
-            <span style={badgeStyle}>
+            <span
+              style={{
+                ...badgeStyle,
+                background: hasCouponsInBlueprint
+                  ? "rgba(34, 197, 94, 0.12)"
+                  : isExplicitNoInBlueprint
+                  ? "rgba(245, 158, 11, 0.12)"
+                  : "rgba(255, 255, 255, 0.04)",
+                borderColor: hasCouponsInBlueprint
+                  ? "rgba(34, 197, 94, 0.3)"
+                  : isExplicitNoInBlueprint
+                  ? "rgba(245, 158, 11, 0.3)"
+                  : "rgba(255, 255, 255, 0.08)",
+              }}
+            >
               Blueprint Coupon Answer:{" "}
-              <b style={{ color: hasCouponsInBlueprint ? "#86efac" : "#94a3b8" }}>
-                {blueprintCouponStatus || "None"}
+              <b style={{ color: hasCouponsInBlueprint ? "#86efac" : isExplicitNoInBlueprint ? "#fde68a" : "#94a3b8" }}>
+                {blueprintCouponStatus || "Not Answered"}
               </b>
             </span>
           )}
         </div>
+
+        {/* EXPLICIT NO WARNING BANNER */}
+        {hasBlueprint && isExplicitNoInBlueprint && !overrideNoCoupons && (
+          <div
+            style={{
+              padding: "12px 16px",
+              borderRadius: 12,
+              background: "rgba(245, 158, 11, 0.08)",
+              border: "1px solid rgba(245, 158, 11, 0.25)",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: 12,
+            }}
+          >
+            <div>
+              <div style={{ color: "#fde68a", fontSize: 13, fontWeight: 700 }}>
+                ⚠️ Blueprint Specifies "No" to Parts Coupons
+              </div>
+              <div style={{ color: "#cbd5e1", fontSize: 12, marginTop: 2 }}>
+                The dealership answered <b>"No"</b> to having parts coupons or discounts. No coupons need to be configured for this store.
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="btn-secondary btn-sm"
+              onClick={() => setOverrideNoCoupons(true)}
+              style={{ fontSize: 11, color: "#fde68a", borderColor: "rgba(245, 158, 11, 0.3)" }}
+            >
+              Override & Enter Coupons Anyway
+            </button>
+          </div>
+        )}
 
         {message && (
           <div
@@ -661,76 +735,93 @@ export const CouponsView: React.FC = () => {
       </div>
 
       {/* Raw Note Input */}
-      <div
-        style={{
-          borderRadius: 16,
-          border: "1px solid rgba(255,255,255,0.08)",
-          background: "rgba(255,255,255,0.03)",
-          padding: 18,
-          display: "grid",
-          gap: 12,
-        }}
-      >
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <label style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" }}>
-            Paste Raw Dealer Notes or Spreadsheet Rows
-          </label>
-          {hasCouponsInBlueprint && blueprintDetailsText && (
-            <button
-              type="button"
-              onClick={() => setInputText(blueprintDetailsText)}
-              className="btn-secondary btn-sm"
-              style={{ fontSize: 11, padding: "4px 8px" }}
-            >
-              ⟳ Re-sync from Blueprint Details
-            </button>
-          )}
-        </div>
+      {(!isExplicitNoInBlueprint || overrideNoCoupons) && (
+        <div
+          style={{
+            borderRadius: 16,
+            border: "1px solid rgba(255,255,255,0.08)",
+            background: "rgba(255,255,255,0.03)",
+            padding: 18,
+            display: "grid",
+            gap: 12,
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase" }}>
+              Paste Raw Dealer Notes or Spreadsheet Rows
+            </label>
+            {hasCouponsInBlueprint && blueprintDetailsText && (
+              <button
+                type="button"
+                onClick={() => setInputText(blueprintDetailsText)}
+                className="btn-secondary btn-sm"
+                style={{ fontSize: 11, padding: "4px 8px" }}
+              >
+                ⟳ Re-sync from Blueprint Details
+              </button>
+            )}
+          </div>
 
-        <textarea
-          value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
-          placeholder="Example:
+          <textarea
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder="Example:
 PARTS10: 10% OFF ALL PARTS - MAX 100 CAP
 TIRE25 - $25.00 OFF TIRES PURCHASE
 BATTERY15 - $15.00 FLAT DISCOUNT"
-          disabled={isAiLoading}
-          style={{
-            width: "100%",
-            height: 120,
-            background: "rgba(0,0,0,0.25)",
-            border: "1px solid rgba(255,255,255,0.1)",
-            borderRadius: 8,
-            padding: 12,
-            color: "#86efac",
-            fontFamily: "ui-monospace, monospace",
-            fontSize: 13,
-            outline: "none",
-            resize: "vertical",
-            boxSizing: "border-box",
-          }}
-        />
+            disabled={isAiLoading}
+            style={{
+              width: "100%",
+              height: 120,
+              background: "rgba(0,0,0,0.25)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 8,
+              padding: 12,
+              color: "#86efac",
+              fontFamily: "ui-monospace, monospace",
+              fontSize: 13,
+              outline: "none",
+              resize: "vertical",
+              boxSizing: "border-box",
+            }}
+          />
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button
-            onClick={handleAIParse}
-            disabled={isAiLoading || !inputText.trim()}
-            className="btn-postman"
-            type="button"
-          >
-            {isAiLoading ? `⏳ ${loadingText}` : "✨ Parse with AI (Auto)"}
-          </button>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button
+              onClick={handleAIParse}
+              disabled={isAiLoading || !inputText.trim()}
+              className="btn-postman"
+              type="button"
+            >
+              {isAiLoading ? `⏳ ${loadingText}` : "✨ Parse with AI (Auto)"}
+            </button>
 
-          <button
-            onClick={handleManualParse}
-            disabled={isAiLoading || !inputText.trim()}
-            className="btn-secondary btn-sm"
-            type="button"
-          >
-            Parse Local JSON
-          </button>
+            <button
+              onClick={handleManualParse}
+              disabled={isAiLoading || !inputText.trim()}
+              className="btn-secondary btn-sm"
+              type="button"
+            >
+              Parse Local JSON
+            </button>
+
+            {overrideNoCoupons && (
+              <button
+                onClick={() => {
+                  setOverrideNoCoupons(false);
+                  setParsedData([]);
+                  setInputText("");
+                }}
+                className="btn-secondary btn-sm"
+                type="button"
+                style={{ marginLeft: "auto", color: "#94a3b8" }}
+              >
+                Cancel Override
+              </button>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Unclassified Warnings */}
       {unclassifiedData.length > 0 && (

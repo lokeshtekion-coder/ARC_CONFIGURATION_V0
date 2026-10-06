@@ -1,0 +1,681 @@
+import { loadLatestExtensionCapture } from "./extensionBridge";
+import { fetchStores } from "./tekionStoresApi";
+import { getStores, saveStores, getStoredStatusVault, bulkUpdateStatusVault, } from "./storesDb";
+import { fetchStoreOnboardingStatuses } from "./storeOnboardingStatusApi";
+import { pullStatusUpdatesFromGraph, patchSingleStoreAssigneeInGraph, syncProdDealersToGraph, } from "./storesGraphSync";
+import { fetchSetupDataForStore, isSetupDataComplete } from "./storeSetupDataService";
+import { loadAssigneeConfig, reconcileAssignments, runAutoAssign, } from "./assigneeService";
+import { batchFetchRealTapStatuses } from "./tapTasksApi";
+import { runSlackAlerts, maybeSendDailyDigest, shouldSendScheduledReports, dispatchAllThreeReports, } from "./slackAlertsService";
+import { getSlackSession, sendSlackMessage } from "./storeSlackHelper";
+const BOT_CONFIG_KEY = "arc-stores-bot-config";
+const TAP_SCAN_CACHE_KEY = "arc_tap_scan_cache_v1";
+const TAB_LOCK_KEY = "arc_stores_bot_leader_lock";
+const SYNC_BUS_NAME = "arc_stores_bus";
+const NEXT_RUN_STORAGE_KEY = "arc_stores_bot_next_run_ms";
+const DEFAULT_INTERVAL_MS = 60 * 60 * 1000; // 1 hour cadence
+const SETUP_CONCURRENCY = 3;
+// Internal Tekion TGPT Configuration
+const TGPT_TOKEN_KEY = "tgpt_access_token";
+const TGPT_BASE = "https://tapapi.tekioncloud.com/tapapi/tgpt";
+function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+function isSameLocalDay(isoString) {
+    if (!isoString)
+        return false;
+    const d = new Date(isoString);
+    if (Number.isNaN(d.getTime()))
+        return false;
+    const now = new Date();
+    return (d.getFullYear() === now.getFullYear() &&
+        d.getMonth() === now.getMonth() &&
+        d.getDate() === now.getDate());
+}
+function formatNextRunText(nextRunMs) {
+    if (!nextRunMs)
+        return "Bot active";
+    const diffMs = nextRunMs - Date.now();
+    if (diffMs <= 0)
+        return "Running shortly...";
+    const targetDate = new Date(nextRunMs);
+    const timeStr = targetDate.toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+    });
+    const remainingMinutes = Math.max(1, Math.round(diffMs / 60000));
+    if (remainingMinutes < 60) {
+        return `Next run at ${timeStr} (in${remainingMinutes}m)`;
+    }
+    const hours = Math.floor(remainingMinutes / 60);
+    const mins = remainingMinutes % 60;
+    return `Next run at ${timeStr} (in ${hours}h${mins}m)`;
+}
+function loadAndPruneTapScanCache() {
+    try {
+        const raw = localStorage.getItem(TAP_SCAN_CACHE_KEY);
+        if (!raw)
+            return {};
+        const parsed = JSON.parse(raw);
+        const now = Date.now();
+        const pruned = {};
+        for (const [id, iso] of Object.entries(parsed)) {
+            const timestamp = new Date(iso).getTime();
+            if (!Number.isNaN(timestamp) && now - timestamp < 48 * 3600 * 1000) {
+                pruned[id] = iso;
+            }
+        }
+        return pruned;
+    }
+    catch {
+        return {};
+    }
+}
+function saveTapScanCache(cache) {
+    try {
+        localStorage.setItem(TAP_SCAN_CACHE_KEY, JSON.stringify(cache));
+    }
+    catch { }
+}
+function mergeIncomingStore(existing, incoming) {
+    if (!existing)
+        return incoming;
+    const merged = { ...existing };
+    for (const [key, value] of Object.entries(incoming)) {
+        const blank = value === undefined ||
+            value === null ||
+            (typeof value === "string" && value.trim() === "") ||
+            (Array.isArray(value) && value.length === 0);
+        if (!blank)
+            merged[key] = value;
+    }
+    return merged;
+}
+function checkTokensValid() {
+    const capture = loadLatestExtensionCapture() ?? {};
+    if (!capture.graphApiToken) {
+        return { valid: false, reason: "Missing Graph API Token" };
+    }
+    if (typeof capture.graphExpiresAt === "number" && capture.graphExpiresAt <= Date.now()) {
+        return { valid: false, reason: "Graph API Token Expired" };
+    }
+    const slack = getSlackSession();
+    if (!slack.slackToken || !slack.slackDCookie) {
+        return { valid: false, reason: "Missing Slack session" };
+    }
+    const hasTocApi = Object.values(capture.customCaptures ?? {}).some((c) => {
+        const pat = (c.pattern || "").toLowerCase();
+        const url = (c.matchedUrl || "").toLowerCase();
+        return pat.includes("getuserprofile") || url.includes("getuserprofile");
+    });
+    if (!hasTocApi && !capture.tapDuoApiToken) {
+        return { valid: false, reason: "Missing TOC API / TAP token" };
+    }
+    return { valid: true };
+}
+async function queryStoresAi(prompt, systemPrompt) {
+    const token = localStorage.getItem(TGPT_TOKEN_KEY);
+    if (!token)
+        return "";
+    try {
+        const createRes = await fetch(`${TGPT_BASE}/conversations`, {
+            method: "POST",
+            headers: {
+                accept: "application/json",
+                authorization: `Bearer ${token}`,
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({
+                model: "gpt-5.4",
+                title: "StoresBot Operations Intelligence",
+                is_temporary: true,
+                thinking: false,
+            }),
+        });
+        if (!createRes.ok)
+            return "";
+        const { id: convId } = await createRes.json();
+        const fullContent = systemPrompt ? `${systemPrompt}\n\nDATA TO ANALYZE:\n${prompt}` : prompt;
+        const streamRes = await fetch(`${TGPT_BASE}/conversations/${convId}/messages/stream`, {
+            method: "POST",
+            headers: {
+                accept: "*/*",
+                authorization: `Bearer ${token}`,
+                "content-type": "application/json",
+            },
+            body: JSON.stringify({
+                content: fullContent,
+                attachments: [],
+                thinking: false,
+                web_search_enabled: false,
+                code_execution_enabled: false,
+                artifacts_enabled: false,
+            }),
+        });
+        if (!streamRes.ok || !streamRes.body)
+            return "";
+        const reader = streamRes.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let assistantContent = "";
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done)
+                break;
+            buffer += decoder.decode(value, { stream: true });
+            const parts = buffer.split("\n\n");
+            buffer = parts.pop() || "";
+            for (const part of parts) {
+                if (!part.trim())
+                    continue;
+                const lines = part.split("\n");
+                for (const line of lines) {
+                    if (!line.startsWith("data: "))
+                        continue;
+                    const rawData = line.substring(6).trim();
+                    if (rawData === "[DONE]")
+                        continue;
+                    try {
+                        const data = JSON.parse(rawData);
+                        if (data.type === "content_delta") {
+                            assistantContent += data.delta || "";
+                        }
+                    }
+                    catch { }
+                }
+            }
+        }
+        return assistantContent.trim();
+    }
+    catch (err) {
+        console.warn("[StoresBot AI] TGPT request bypassed:", err);
+        return "";
+    }
+}
+class StoresBotRunner {
+    constructor() {
+        this.heartbeatTimer = null;
+        this.nextRunTimestampMs = null;
+        this.isExecuting = false;
+        this.isLeader = false;
+        this.tabLockAbort = null;
+        this.syncChannel = null;
+        this.listeners = new Set();
+        this.state = {
+            enabled: localStorage.getItem(BOT_CONFIG_KEY) === "true",
+            phase: "idle",
+            statusText: "Bot Idle",
+            lastRunTimestamp: null,
+            nextRunTimestamp: null,
+            error: null,
+            isLeader: false,
+        };
+        const savedNextRun = Number(localStorage.getItem(NEXT_RUN_STORAGE_KEY) || 0);
+        if (savedNextRun && savedNextRun > Date.now()) {
+            this.nextRunTimestampMs = savedNextRun;
+            this.state.nextRunTimestamp = new Date(savedNextRun).toISOString();
+        }
+        this.initBroadcastChannel();
+        this.initVisibilityListener();
+        this.acquireTabLeaderLock();
+    }
+    initBroadcastChannel() {
+        if (typeof BroadcastChannel !== "undefined") {
+            this.syncChannel = new BroadcastChannel(SYNC_BUS_NAME);
+            this.syncChannel.addEventListener("message", (event) => {
+                if (event.data?.type === "BOT_CYCLE_COMPLETED" && !this.isLeader) {
+                    console.info("[StoresBot] 📡 Synced with primary tab completion.");
+                }
+            });
+        }
+    }
+    initVisibilityListener() {
+        if (typeof document !== "undefined") {
+            document.addEventListener("visibilitychange", () => {
+                if (document.visibilityState === "visible" &&
+                    this.isLeader &&
+                    this.state.enabled &&
+                    !this.isExecuting) {
+                    if (this.nextRunTimestampMs && Date.now() >= this.nextRunTimestampMs) {
+                        console.info("[StoresBot] ⏰ Time elapsed while inactive. Triggering cycle now...");
+                        void this.executeCycle(false);
+                    }
+                    else {
+                        this.updateCountdownDisplay();
+                    }
+                }
+            });
+        }
+    }
+    acquireTabLeaderLock() {
+        if (typeof navigator !== "undefined" && "locks" in navigator) {
+            this.tabLockAbort = new AbortController();
+            navigator.locks
+                .request(TAB_LOCK_KEY, { signal: this.tabLockAbort.signal }, async () => {
+                this.isLeader = true;
+                this.state.isLeader = true;
+                console.info("[StoresBot] 👑 Acquired leader lock for this tab.");
+                this.notify();
+                if (this.state.enabled) {
+                    this.start();
+                }
+                return new Promise(() => { });
+            })
+                .catch((err) => {
+                if (err.name !== "AbortError") {
+                    this.isLeader = false;
+                    this.state.isLeader = false;
+                    console.warn("[StoresBot] Secondary tab. Standing by.");
+                    this.updateStatus("standby", "Standby (Another tab is primary runner)");
+                }
+            });
+        }
+        else {
+            this.isLeader = true;
+            this.state.isLeader = true;
+            if (this.state.enabled) {
+                this.start();
+            }
+        }
+    }
+    getState() {
+        return { ...this.state };
+    }
+    subscribe(listener) {
+        this.listeners.add(listener);
+        listener(this.getState());
+        return () => this.listeners.delete(listener);
+    }
+    notify() {
+        const current = this.getState();
+        this.listeners.forEach((l) => l(current));
+    }
+    updateStatus(phase, statusText, error = null) {
+        this.state.phase = phase;
+        this.state.statusText = statusText;
+        this.state.error = error;
+        this.notify();
+    }
+    setEnabled(enabled) {
+        this.state.enabled = enabled;
+        localStorage.setItem(BOT_CONFIG_KEY, String(enabled));
+        if (enabled && this.isLeader) {
+            this.start();
+            void this.executeCycle(true);
+        }
+        else {
+            this.stop();
+        }
+        this.notify();
+    }
+    scheduleNextRun() {
+        this.nextRunTimestampMs = Date.now() + DEFAULT_INTERVAL_MS;
+        localStorage.setItem(NEXT_RUN_STORAGE_KEY, String(this.nextRunTimestampMs));
+        this.state.nextRunTimestamp = new Date(this.nextRunTimestampMs).toISOString();
+    }
+    updateCountdownDisplay() {
+        if (this.state.phase === "idle" && this.state.enabled && this.nextRunTimestampMs) {
+            this.updateStatus("idle", formatNextRunText(this.nextRunTimestampMs));
+        }
+    }
+    start() {
+        if (!this.isLeader) {
+            this.updateStatus("standby", "Standby (Another tab is primary runner)");
+            return;
+        }
+        if (this.heartbeatTimer)
+            clearInterval(this.heartbeatTimer);
+        if (!this.nextRunTimestampMs || this.nextRunTimestampMs <= Date.now()) {
+            this.scheduleNextRun();
+        }
+        this.heartbeatTimer = setInterval(() => {
+            if (!this.state.enabled || !this.isLeader || this.isExecuting)
+                return;
+            const now = Date.now();
+            if (this.nextRunTimestampMs && now >= this.nextRunTimestampMs) {
+                console.info("[StoresBot] 🚀 Heartbeat triggered scheduled cycle.");
+                void this.executeCycle(false);
+            }
+            else {
+                this.updateCountdownDisplay();
+            }
+        }, 5000);
+        this.updateCountdownDisplay();
+    }
+    stop() {
+        if (this.heartbeatTimer) {
+            clearInterval(this.heartbeatTimer);
+            this.heartbeatTimer = null;
+        }
+        this.nextRunTimestampMs = null;
+        localStorage.removeItem(NEXT_RUN_STORAGE_KEY);
+        this.state.nextRunTimestamp = null;
+        this.updateStatus("idle", "Bot paused");
+    }
+    /**
+     * Main Autonomous Pipeline with Distinct Active T-90 vs Historical Scope
+     */
+    async executeCycle(force = false) {
+        if (this.isExecuting) {
+            console.warn("[StoresBot] Cycle already in progress. Skipping.");
+            return;
+        }
+        if (!this.isLeader && !force) {
+            console.warn("[StoresBot] Not leader tab. Skipping.");
+            return;
+        }
+        if (!this.state.enabled && !force)
+            return;
+        this.isExecuting = true;
+        console.info(`[StoresBot] 🎬 Starting execution cycle at ${new Date().toLocaleTimeString()}...`);
+        try {
+            // Phase 0: Token Freshness
+            this.updateStatus("token_check", "Verifying token freshness...");
+            const tokenCheck = checkTokensValid();
+            if (!tokenCheck.valid) {
+                console.warn(`[StoresBot] Token check failed: ${tokenCheck.reason}`);
+                this.scheduleNextRun();
+                this.updateStatus("idle", `Paused: ${tokenCheck.reason}`);
+                return;
+            }
+            // Phase 1: Ingest T-90 Stores and establish active vs. historical partition
+            this.updateStatus("ingesting_stores", "Auto-refreshing store records...");
+            const rawStores = await fetchStores(90);
+            const allStoredRecords = await getStores();
+            const existingMap = new Map(allStoredRecords.map((s) => [s.tekion_id, s]));
+            const vault = getStoredStatusVault();
+            // Active T-90 stores live from the TAP API
+            let activeT90Records = Array.from(new Map(rawStores.map((store) => {
+                const existing = existingMap.get(store.tekion_id);
+                const override = vault[store.tekion_id];
+                const base = mergeIncomingStore(existing, store);
+                return [
+                    store.tekion_id,
+                    {
+                        ...base,
+                        onboarding_project_id: store.onboarding_project_id || existing?.onboarding_project_id,
+                        ds_onboarding_project_id: store.ds_onboarding_project_id || existing?.ds_onboarding_project_id,
+                        fixed_ops_status: override?.fixed_ops_status || existing?.fixed_ops_status || "TO DO",
+                        variable_ops_status: override?.variable_ops_status || existing?.variable_ops_status || "TO DO",
+                        testing_status: override?.testing_status || existing?.testing_status || "TO DO",
+                        not_worked: override?.not_worked || existing?.not_worked || store.not_worked,
+                        custom_assignee: override?.custom_assignee || existing?.custom_assignee || store.custom_assignee,
+                        custom_variable_assignee: override?.custom_variable_assignee ||
+                            existing?.custom_variable_assignee ||
+                            store.custom_variable_assignee,
+                        fetched_blueprint_tasks: existing?.fetched_blueprint_tasks,
+                        attachments_incomplete: existing?.attachments_incomplete,
+                        fixed_ops_attachments: existing?.fixed_ops_attachments,
+                        variable_ops_attachments: existing?.variable_ops_attachments,
+                        tap_tasks_scanned_at: existing?.tap_tasks_scanned_at,
+                        setup_data: existing?.setup_data,
+                        setup_data_fetched_at: existing?.setup_data_fetched_at,
+                        setup_data_error: existing?.setup_data_error,
+                        setup_data_error_at: existing?.setup_data_error_at,
+                    },
+                ];
+            })).values());
+            const fetchedIds = new Set(activeT90Records.map((s) => s.tekion_id));
+            // Stores outside active T-90 (T-180, past launched, etc.) kept for historical persistence
+            const historicalRecords = allStoredRecords.filter((s) => !fetchedIds.has(s.tekion_id));
+            // Save complete dataset back to local DB so historical data is never lost
+            await saveStores([...activeT90Records, ...historicalRecords]);
+            // Phase 2: Blueprint / Sign-Off Onboarding Statuses (Active T-90 Only)
+            try {
+                this.updateStatus("enriching_statuses", `Checking blueprint statuses for ${activeT90Records.length} T-90 stores...`);
+                const needsStatusCheck = activeT90Records.filter((r) => !isSameLocalDay(r.onboarding_status_fetched_at));
+                if (needsStatusCheck.length > 0) {
+                    const ids = needsStatusCheck.map((s) => s.tekion_id);
+                    const statusMap = await fetchStoreOnboardingStatuses(ids, { chunkSize: 25, concurrency: 3 });
+                    const nowIso = new Date().toISOString();
+                    activeT90Records = activeT90Records.map((r) => {
+                        const s = statusMap[r.tekion_id];
+                        return s
+                            ? {
+                                ...r,
+                                blueprint_statuses: s.blueprint_statuses,
+                                signoff_statuses: s.signoff_statuses,
+                                onboarding_status_fetched_at: nowIso,
+                            }
+                            : r;
+                    });
+                    await saveStores([...activeT90Records, ...historicalRecords]);
+                }
+            }
+            catch (bpErr) {
+                console.warn("[StoresBot] Blueprint statuses check warning:", bpErr);
+            }
+            // Phase 3: Scan Real TAP Tasks (Active T-90 Only)
+            const scanCache = loadAndPruneTapScanCache();
+            const storesNeedingTapScan = activeT90Records.filter((r) => {
+                if (r.fixed_ops_status === "Completed" && r.variable_ops_status === "Completed")
+                    return false;
+                if (!r.onboarding_project_id && !r.ds_onboarding_project_id)
+                    return false;
+                const lastScanned = scanCache[r.tekion_id] || r.tap_tasks_scanned_at || r.fetched_blueprint_tasks?.fetchedAt;
+                if (lastScanned && isSameLocalDay(lastScanned) && !r.attachments_incomplete)
+                    return false;
+                return true;
+            });
+            if (storesNeedingTapScan.length > 0) {
+                this.updateStatus("scanning_tap", `Scanning TAP tasks: 0/${storesNeedingTapScan.length} pending T-90 stores...`);
+                try {
+                    const { updatedStores, updatedCount } = await batchFetchRealTapStatuses(storesNeedingTapScan, (processed, total, updated, skippedTasks) => {
+                        if (this.state.enabled) {
+                            this.updateStatus("scanning_tap", `Scanning TAP tasks: Store ${processed}/${total} (Updated: ${updated}, Cached Tasks:${skippedTasks ?? 0})`);
+                        }
+                    });
+                    const nowIso = new Date().toISOString();
+                    const updatedSet = new Set(updatedStores.map((u) => u.tekion_id));
+                    for (const s of storesNeedingTapScan) {
+                        if (updatedSet.has(s.tekion_id) || !s.attachments_incomplete) {
+                            scanCache[s.tekion_id] = nowIso;
+                            s.tap_tasks_scanned_at = nowIso;
+                        }
+                    }
+                    saveTapScanCache(scanCache);
+                    if (updatedCount > 0) {
+                        const updatedMap = new Map(updatedStores.map((u) => [u.tekion_id, u]));
+                        activeT90Records = activeT90Records.map((r) => {
+                            const u = updatedMap.get(r.tekion_id);
+                            return u ? { ...u, tap_tasks_scanned_at: nowIso } : r;
+                        });
+                    }
+                    await saveStores([...activeT90Records, ...historicalRecords]);
+                }
+                catch (tapErr) {
+                    console.warn("[StoresBot] TAP tasks scan warning:", tapErr);
+                }
+            }
+            else {
+                this.updateStatus("scanning_tap", "TAP tasks up to date (0 pending T-90 stores)");
+            }
+            // Phase 4: Setup Data Enrichment (Active T-90 Only)
+            try {
+                this.updateStatus("enriching_setup", "Scanning for missing setup data in T-90 scope...");
+                const missingSetup = activeT90Records.filter((r) => {
+                    if (isSetupDataComplete(r))
+                        return false;
+                    const lastErrorAt = r.setup_data_error_at;
+                    if (lastErrorAt && isSameLocalDay(lastErrorAt)) {
+                        return false;
+                    }
+                    return true;
+                });
+                let setupFetched = 0;
+                const failedSetupDealers = [];
+                for (let i = 0; i < missingSetup.length; i += SETUP_CONCURRENCY) {
+                    if (!this.state.enabled)
+                        break;
+                    const chunk = missingSetup.slice(i, i + SETUP_CONCURRENCY);
+                    this.updateStatus("enriching_setup", `Fetching setup data: (${Math.min(i + chunk.length, missingSetup.length)}/${missingSetup.length})`);
+                    const nowIso = new Date().toISOString();
+                    await Promise.all(chunk.map(async (record) => {
+                        try {
+                            const setup = await fetchSetupDataForStore(record, { force: true });
+                            record.setup_data = setup;
+                            record.setup_data_fetched_at = setup.fetchedAt;
+                            record.setup_data_error = "";
+                            record.setup_data_error_at = undefined;
+                            setupFetched++;
+                        }
+                        catch (err) {
+                            const errorMsg = err instanceof Error ? err.message : "Setup error";
+                            record.setup_data_error = errorMsg;
+                            record.setup_data_error_at = nowIso;
+                            failedSetupDealers.push({
+                                dealerId: record.dealer_id,
+                                dbaName: record.dba_name || "Unknown Dealer",
+                                error: errorMsg,
+                            });
+                        }
+                    }));
+                    const freshDb = await getStores();
+                    const freshMap = new Map(freshDb.map((s) => [s.tekion_id, s]));
+                    activeT90Records = activeT90Records.map((memStore) => {
+                        const fresh = freshMap.get(memStore.tekion_id);
+                        return {
+                            ...memStore,
+                            setup_data: memStore.setup_data ?? fresh?.setup_data,
+                            setup_data_fetched_at: memStore.setup_data_fetched_at ?? fresh?.setup_data_fetched_at,
+                            setup_data_error: memStore.setup_data_error ?? fresh?.setup_data_error,
+                            setup_data_error_at: memStore?.setup_data_error_at ?? fresh?.setup_data_error_at,
+                        };
+                    });
+                    await saveStores([...activeT90Records, ...historicalRecords]);
+                    await delay(250);
+                }
+                // AI Error Root-Cause & Action Recommendation for active setup failures
+                if (failedSetupDealers.length > 0) {
+                    this.updateStatus("ai_reasoning", "TGPT analyzing setup errors & drafting solution...");
+                    const aiPrompt = `Here is a list of Tekion DMS setup fetch errors for preprod stores:\n${JSON.stringify(failedSetupDealers, null, 2)}\n\nGive 2 concise bullet points: 1) The exact root cause for these failures. 2) The exact operational action the ARC engineer should take. Format cleanly for Slack.`;
+                    const aiDiagnosis = await queryStoresAi(aiPrompt, "You are a Tekion DMS Data Architect. Be concise, precise, and practical.");
+                    try {
+                        const slack = getSlackSession();
+                        const targetUserId = slack?.slackUserId ||
+                            localStorage.getItem("slack_user_id") ||
+                            localStorage.getItem("current_user_slack_id") ||
+                            "";
+                        if (slack.slackToken && slack.slackDCookie && targetUserId) {
+                            const lines = failedSetupDealers.map((f) => `*Dealer #${f.dealerId}* (${f.dbaName}): \`${f.error}\``);
+                            const alertSections = [
+                                `⚠️ *Setup Data Fetch Daily Failure Alert*`,
+                                `Encountered errors for *${failedSetupDealers.length}* dealer(s) (will retry tomorrow):`,
+                                "",
+                                ...lines,
+                            ];
+                            if (aiDiagnosis) {
+                                alertSections.push("", `🧠 *TGPT AI Diagnostic & Solution:*`, aiDiagnosis);
+                            }
+                            await sendSlackMessage({
+                                userId: targetUserId,
+                                email: "tlreddy@tekion.com",
+                                fullName: "Admin",
+                                text: alertSections.join("\n"),
+                            });
+                        }
+                    }
+                    catch (slackAlertErr) {
+                        console.warn("[StoresBot] Could not send setup failure alert to Slack:", slackAlertErr);
+                    }
+                }
+            }
+            catch (setupPhaseErr) {
+                console.warn("[StoresBot] Setup enrichment warning:", setupPhaseErr);
+            }
+            // Phase 5: Auto-Reconcile & Auto-Assign (Active T-90 Only)
+            try {
+                this.updateStatus("reconciling_assignees", "Running auto-assign bot rules on T-90 stores...");
+                reconcileAssignments(activeT90Records);
+                const assignConfig = loadAssigneeConfig();
+                if (assignConfig.autoAssignEnabled) {
+                    const { updated } = runAutoAssign(activeT90Records, assignConfig);
+                    if (updated.length > 0) {
+                        const updatedMap = new Map(updated.map((u) => [u.tekion_id, u]));
+                        activeT90Records = activeT90Records.map((r) => {
+                            const u = updatedMap.get(r.tekion_id);
+                            return u && !r.custom_assignee ? { ...r, custom_assignee: u.custom_assignee } : r;
+                        });
+                        await saveStores([...activeT90Records, ...historicalRecords]);
+                        for (const u of updated) {
+                            try {
+                                await patchSingleStoreAssigneeInGraph(u.tekion_id, String(u.custom_assignee));
+                            }
+                            catch { }
+                        }
+                    }
+                }
+            }
+            catch (assignErr) {
+                console.warn("[StoresBot] Assignee reconciliation warning:", assignErr);
+            }
+            // Phase 6: Excel 2-Way Synchronization
+            try {
+                this.updateStatus("syncing_excel", "Synchronizing with Excel workbook...");
+                const completeDataset = [...activeT90Records, ...historicalRecords];
+                const { updatedStores, hasChanges } = await pullStatusUpdatesFromGraph(completeDataset);
+                if (hasChanges) {
+                    const updatedMap = new Map(updatedStores.map((s) => [s.tekion_id, s]));
+                    activeT90Records = activeT90Records.map((r) => {
+                        const u = updatedMap.get(r.tekion_id);
+                        return u
+                            ? {
+                                ...r,
+                                fixed_ops_status: u.fixed_ops_status,
+                                variable_ops_status: u.variable_ops_status,
+                                testing_status: u.testing_status,
+                                not_worked: u.not_worked ?? r.not_worked,
+                                custom_assignee: u.custom_assignee ?? r.custom_assignee,
+                                custom_variable_assignee: u.custom_variable_assignee ?? r.custom_variable_assignee,
+                            }
+                            : r;
+                    });
+                    const allMerged = [...activeT90Records, ...historicalRecords];
+                    await saveStores(allMerged);
+                    bulkUpdateStatusVault(allMerged.map((s) => ({
+                        tekionId: s.tekion_id,
+                        fixed_ops_status: s.fixed_ops_status,
+                        variable_ops_status: s.variable_ops_status,
+                        testing_status: s.testing_status,
+                        not_worked: s.not_worked,
+                        custom_assignee: s.custom_assignee,
+                        custom_variable_assignee: s.custom_variable_assignee,
+                    })));
+                }
+                await syncProdDealersToGraph([...activeT90Records, ...historicalRecords]);
+            }
+            catch (excelErr) {
+                console.warn("[StoresBot] Background Excel sync warning:", excelErr);
+            }
+            // Phase 7: SLA Evaluation & Scheduled Reports (Active T-90 Only)
+            try {
+                this.updateStatus("evaluating_sla", "Checking 4-hr report cadence & dispatching alerts for T-90 scope...");
+                await runSlackAlerts(activeT90Records);
+                await maybeSendDailyDigest(activeT90Records);
+                if (shouldSendScheduledReports()) {
+                    this.updateStatus("evaluating_sla", "Generating & dispatching 4-hr audit reports...");
+                    await dispatchAllThreeReports(activeT90Records);
+                }
+            }
+            catch (slaErr) {
+                console.error("[StoresBot] SLA/Report dispatch warning:", slaErr);
+            }
+            this.syncChannel?.postMessage({ type: "BOT_CYCLE_COMPLETED", timestamp: Date.now() });
+            const now = new Date();
+            this.state.lastRunTimestamp = now.toISOString();
+            this.scheduleNextRun();
+            this.updateStatus("idle", formatNextRunText(this.nextRunTimestampMs));
+        }
+        catch (criticalErr) {
+            const msg = criticalErr instanceof Error ? criticalErr.message : "Fatal bot cycle error";
+            console.error("[StoresBotRunner] Fatal cycle crash:", criticalErr);
+            this.scheduleNextRun();
+            this.updateStatus("idle", `Error occurred. ${formatNextRunText(this.nextRunTimestampMs)}`, msg);
+        }
+        finally {
+            this.isExecuting = false;
+        }
+    }
+}
+export const storesBotRunner = new StoresBotRunner();

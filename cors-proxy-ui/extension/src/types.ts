@@ -74,6 +74,12 @@ export interface ArcLatestCaptureState {
   tekionBootstrapHeaders?: HeaderMap;
   tekionProdTechMotorsHeaders?: HeaderMap;
 
+  // --- Pre-Prod MAP API Capture ---
+  preprodMapToken?: string;
+  preprodMapHeaders?: HeaderMap;
+  lastPreprodMapSourceUrl?: string;
+  lastPreprodMapCaptureAt?: string;
+
   lastGraphSourceUrl?: string;
   lastTekionImplementationSourceUrl?: string;
   lastTekionBootstrapSourceUrl?: string;
