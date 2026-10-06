@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { loadGlobalHeaders } from "../../../services/tekionApiSettings";
 import type { KeyValuePair } from "../../../types/proxy.types";
+import { useServiceBlueprint } from "../../../Context/Blueprint_Service_Context";
 
 interface Props {}
 
@@ -123,6 +124,43 @@ function normalize(value: unknown): string {
 
 function normalizeUpper(value: unknown): string {
   return normalize(value).toUpperCase();
+}
+
+function extractRateFromText(value: unknown): string {
+  if (value === undefined || value === null) return "";
+  if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
+    return String(value);
+  }
+
+  const str = String(value).trim();
+  if (!str) return "";
+
+  const cleanDirect = str.replace(/[$,\s]/g, "");
+  if (!Number.isNaN(Number(cleanDirect)) && Number(cleanDirect) >= 0) {
+    return cleanDirect;
+  }
+
+  const dollarMatch = str.match(/\$\s*(\d+(?:\.\d{1,2})?)/);
+  if (dollarMatch?.[1] && Number(dollarMatch[1]) >= 0) {
+    return dollarMatch[1];
+  }
+
+  const hourlyMatch = str.match(/\b(\d+(?:\.\d{1,2})?)\s*(?:\/|\bper\b)?\s*(?:hr|hour)\b/i);
+  if (hourlyMatch?.[1] && Number(hourlyMatch[1]) >= 0) {
+    return hourlyMatch[1];
+  }
+
+  const allNumbers = str.match(/\b\d+(?:\.\d{1,2})?\b/g);
+  if (allNumbers && allNumbers.length > 0) {
+    const plausible = allNumbers.find((nStr) => {
+      const n = parseFloat(nStr);
+      return n >= 0 && n <= 1500;
+    });
+    if (plausible) return plausible;
+    return allNumbers[0];
+  }
+
+  return "";
 }
 
 function toEnabledHeaderMap(headers: KeyValuePair[]): Record<string, string> {
@@ -373,6 +411,8 @@ function scrollWrapStyle(maxHeight: number): React.CSSProperties {
 }
 
 const ServiceSettingsView: React.FC<Props> = () => {
+  const { getAnswer, hasBlueprint, loading: blueprintLoading } = useServiceBlueprint();
+
   const [headerMap, setHeaderMap] = useState<Record<string, string>>({});
   const [activeView, setActiveView] = useState<ViewKey>("home");
 
@@ -397,6 +437,34 @@ const ServiceSettingsView: React.FC<Props> = () => {
 
   const dealerId = useMemo(() => extractDealerIdFromHeaders(headerMap), [headerMap]);
   const headerCount = useMemo(() => Object.keys(headerMap).length, [headerMap]);
+
+  // Extract Blueprint Rates
+  const blueprintRates = useMemo(() => {
+    if (!hasBlueprint) return { cp: "", ip: "", wp: "" };
+
+    const cpRaw = getAnswer("What is your default Customer labor rate?");
+    const ipRaw = getAnswer("What is your default Internal labor rate?");
+    const wpRaw = getAnswer("What is your default Warranty labor rate?");
+
+    return {
+      cp: extractRateFromText(cpRaw),
+      ip: extractRateFromText(ipRaw),
+      wp: extractRateFromText(wpRaw),
+    };
+  }, [hasBlueprint, getAnswer]);
+
+  const hasAnyBlueprintRate = Boolean(
+    blueprintRates.cp || blueprintRates.ip || blueprintRates.wp
+  );
+
+  // Sync state when Blueprint loads
+  useEffect(() => {
+    if (!hasBlueprint) return;
+
+    if (blueprintRates.wp) setWarrantyLaborRate(blueprintRates.wp);
+    if (blueprintRates.ip) setInternalLaborRate(blueprintRates.ip);
+    if (blueprintRates.cp) setCustomerPayLaborRate(blueprintRates.cp);
+  }, [blueprintRates, hasBlueprint]);
 
   const targetWarrantyLaborRateInCents = useMemo(
     () => centsFromDollarsInput(warrantyLaborRate),
@@ -622,16 +690,45 @@ const ServiceSettingsView: React.FC<Props> = () => {
     }
   }, [appendLog, clearLogs, loadCurrentData]);
 
+  const handleSyncFromBlueprint = useCallback(() => {
+    let syncedCount = 0;
+    if (blueprintRates.wp) {
+      setWarrantyLaborRate(blueprintRates.wp);
+      syncedCount++;
+    }
+    if (blueprintRates.ip) {
+      setInternalLaborRate(blueprintRates.ip);
+      syncedCount++;
+    }
+    if (blueprintRates.cp) {
+      setCustomerPayLaborRate(blueprintRates.cp);
+      syncedCount++;
+    }
+
+    if (syncedCount > 0) {
+      setMessage({
+        ok: true,
+        text: "Labor rates synced from Service Blueprint.",
+      });
+      appendLog("info", "Labor rates synced from Service Blueprint", blueprintRates);
+    } else {
+      setMessage({
+        ok: false,
+        text: "No valid labor rates found in Service Blueprint.",
+      });
+    }
+  }, [appendLog, blueprintRates]);
+
   const handleResetDefaults = useCallback(() => {
-    setWarrantyLaborRate("186.40");
-    setInternalLaborRate("190.00");
-    setCustomerPayLaborRate("190.00");
+    setWarrantyLaborRate(blueprintRates.wp || "186.40");
+    setInternalLaborRate(blueprintRates.ip || "190.00");
+    setCustomerPayLaborRate(blueprintRates.cp || "190.00");
     setEnableNoFlag(true);
     setEnableQuotesFlag(true);
     setCustomerConcernEditable(true);
     setUpdateFlagHoursOn("JOB_COMPLETE");
-    appendLog("info", "Form reset to recommended defaults");
-  }, [appendLog]);
+    appendLog("info", "Form reset to Blueprint / default values");
+  }, [appendLog, blueprintRates]);
 
   const handleConfigure = useCallback(async () => {
     setLoading(true);
@@ -837,7 +934,7 @@ const ServiceSettingsView: React.FC<Props> = () => {
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
         <span style={badgeStyle}>
           Dealer ID:{" "}
           <b style={{ color: dealerId ? "#86efac" : "#fca5a5" }}>
@@ -850,6 +947,38 @@ const ServiceSettingsView: React.FC<Props> = () => {
         <span style={badgeStyle}>
           Module: <b style={{ color: "#f8fafc" }}>service-settings</b>
         </span>
+        <span
+          style={{
+            ...badgeStyle,
+            background: hasAnyBlueprintRate ? "rgba(34,197,94,0.08)" : "rgba(255,255,255,0.03)",
+            border: hasAnyBlueprintRate ? "1px solid rgba(34,197,94,0.25)" : "1px solid rgba(255,255,255,0.08)",
+            color: hasAnyBlueprintRate ? "#86efac" : "#94a3b8",
+          }}
+        >
+          Blueprint Rates:{" "}
+          <b style={{ color: hasAnyBlueprintRate ? "#86efac" : "#f8fafc" }}>
+            {blueprintLoading ? "Loading..." : hasAnyBlueprintRate ? "Detected" : "None Found"}
+          </b>
+        </span>
+
+        {hasAnyBlueprintRate && (
+          <button
+            type="button"
+            onClick={handleSyncFromBlueprint}
+            style={{
+              background: "rgba(34,197,94,0.12)",
+              border: "1px solid rgba(34,197,94,0.3)",
+              color: "#86efac",
+              fontSize: "11px",
+              padding: "4px 8px",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontWeight: 600,
+            }}
+          >
+            ↻ Sync from Blueprint
+          </button>
+        )}
       </div>
 
       <div style={cardStyle}>
@@ -921,7 +1050,7 @@ const ServiceSettingsView: React.FC<Props> = () => {
                   💰 Labor Rates
                 </div>
                 <div style={{ color: "#cbd5e1", fontSize: 13, lineHeight: 1.6 }}>
-                  Warranty, Internal, and Customer Pay labor rates are set in cents.
+                  Warranty, Internal, and Customer Pay labor rates are read directly from the Service Blueprint and set in cents.
                 </div>
               </div>
 
@@ -1078,8 +1207,14 @@ const ServiceSettingsView: React.FC<Props> = () => {
                         background: "rgba(255,255,255,0.03)",
                         color: "#f8fafc",
                         outline: "none",
+                        boxSizing: "border-box",
                       }}
                     />
+                    {blueprintRates.wp ? (
+                      <div style={{ color: "#86efac", fontSize: 11, marginTop: 4 }}>
+                        ✨ Blueprint: ${Number(blueprintRates.wp).toFixed(2)}
+                      </div>
+                    ) : null}
                   </div>
 
                   <div>
@@ -1100,8 +1235,14 @@ const ServiceSettingsView: React.FC<Props> = () => {
                         background: "rgba(255,255,255,0.03)",
                         color: "#f8fafc",
                         outline: "none",
+                        boxSizing: "border-box",
                       }}
                     />
+                    {blueprintRates.ip ? (
+                      <div style={{ color: "#86efac", fontSize: 11, marginTop: 4 }}>
+                        ✨ Blueprint: ${Number(blueprintRates.ip).toFixed(2)}
+                      </div>
+                    ) : null}
                   </div>
 
                   <div>
@@ -1122,8 +1263,14 @@ const ServiceSettingsView: React.FC<Props> = () => {
                         background: "rgba(255,255,255,0.03)",
                         color: "#f8fafc",
                         outline: "none",
+                        boxSizing: "border-box",
                       }}
                     />
+                    {blueprintRates.cp ? (
+                      <div style={{ color: "#86efac", fontSize: 11, marginTop: 4 }}>
+                        ✨ Blueprint: ${Number(blueprintRates.cp).toFixed(2)}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </div>

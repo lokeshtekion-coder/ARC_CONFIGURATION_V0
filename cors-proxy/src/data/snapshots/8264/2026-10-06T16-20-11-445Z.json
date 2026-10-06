@@ -1,0 +1,73 @@
+{
+  "dealerId": "8264",
+  "timestamp": "2026-10-06T16-20-11-445Z",
+  "bootstrap": {
+    "dealerId": "8264",
+    "glAccounts": [],
+    "costCenterSetup": [
+      {
+        "key": "8264_6abb79130df09d17aa2eb6a8",
+        "customFieldKey": "REPAIR_ORDER_CP_IW_SPLIT",
+        "options": []
+      },
+      {
+        "key": "8264_6abb79130df09d17aa2eb6a9",
+        "customFieldKey": "PARTS_SALES_ORDER_INTERNAL",
+        "options": [
+          {
+            "id": "NEW_CAR_INVENTORY",
+            "name": "New Car Inventory"
+          },
+          {
+            "id": "NEW_TRUCK_INVENTORY",
+            "name": "New Truck Inventory"
+          },
+          {
+            "id": "USED_CAR_INVENTORY",
+            "name": "Used Car Inventory"
+          },
+          {
+            "id": "USED_TRUCK_INVENTORY",
+            "name": "Used Truck Inventory"
+          },
+          {
+            "id": "INTERNAL_DUE_BILL",
+            "name": "Internal Due Bill"
+          },
+          {
+            "id": "SHOP_SUPPLIES",
+            "name": "Shop Supplies"
+          },
+          {
+            "id": "SERVICE_POLICY",
+            "name": "Service Policy"
+          },
+          {
+            "id": "INTERNAL_POLICY_PARTS",
+            "name": "Internal Policy Parts"
+          },
+          {
+            "id": "INTERNAL_INTER_FRANCHISE",
+            "name": "Internal Inter Franchise"
+          }
+        ]
+      },
+      {
+        "key": "8264_6abb79130df09d17aa2eb6aa",
+        "customFieldKey": "DEPARTMENT",
+        "options": []
+      },
+      {
+        "key": "8264_6abb79130df09d17aa2eb6a4",
+        "customFieldKey": "REPAIR_ORDER_INTERNAL",
+        "options": []
+      },
+      {
+        "key": "8264_6abb79130df09d17aa2eb6ad",
+        "customFieldKey": "REPAIR_ORDER_WARRANTY",
+        "options": []
+      }
+    ],
+    "journals": []
+  }
+}
