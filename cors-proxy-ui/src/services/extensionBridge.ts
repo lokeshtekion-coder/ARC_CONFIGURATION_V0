@@ -15,7 +15,8 @@ export const PAGE_GET_RULES_EVENT = "ARC_EXTENSION_BRIDGE_GET_RULES";
 export const PAGE_SAVE_RULES_EVENT = "ARC_EXTENSION_BRIDGE_SAVE_RULES";
 export const PAGE_SYNC_RULES_EVENT = "ARC_EXTENSION_SYNC_RULES";
 
-const DEFAULT_CUSTOM_EXPIRY_HOURS = 48;
+// 0 = keep until the user removes the watch rule.
+const DEFAULT_CUSTOM_EXPIRY_HOURS = 0;
 const LOCAL_CAPTURE_STORAGE_KEY = "arc-extension-latest-capture";
 const BROWSER_CAPTURE_STORAGE_KEY = "arc-extension-browser-capture";
 
@@ -246,6 +247,7 @@ function extractTokenFromHeaders(headers?: Record<string, string>): string | und
 }
 
 function isExpiredByCapturedAt(capturedAt: string, expiryHours: number): boolean {
+  if (!(expiryHours > 0)) return false; // 0 = never expires
   const ts = new Date(capturedAt).getTime();
   if (Number.isNaN(ts)) return true;
   return Date.now() - ts > expiryHours * 60 * 60 * 1000;
@@ -353,7 +355,7 @@ function normalizeCustomCaptures(
         ? value.expiryHours
         : Number.parseInt(String(value.expiryHours ?? ""), 10);
     const expiryHours =
-      Number.isFinite(expiryHoursRaw) && expiryHoursRaw > 0
+      Number.isFinite(expiryHoursRaw) && expiryHoursRaw >= 0
         ? expiryHoursRaw
         : DEFAULT_CUSTOM_EXPIRY_HOURS;
     const matchedUrl = sanitizeSourceUrl(typeof value.matchedUrl === "string" ? value.matchedUrl : "") || "";
@@ -646,6 +648,30 @@ export function requestCustomRulesFromExtension(): void {
 
 export function saveCustomRulesToExtension(rules: ArcCustomWatchRule[]): void {
   window.postMessage({ type: PAGE_SAVE_RULES_EVENT, payload: rules }, window.location.origin);
+}
+
+/**
+ * Asks the extension to delete Dealer Profiles older than 48 hours. The selected profile
+ * (keepId) is never removed. Resolves with the number of profiles removed.
+ */
+export function removeStaleDealerProfiles(keepId?: string): Promise<number> {
+  return new Promise((resolve) => {
+    const handler = (event: MessageEvent) => {
+      if (event.source !== window || event.origin !== window.location.origin) return;
+      if (event.data?.type !== "ARC_EXTENSION_REMOVE_STALE_PROFILES_RESULT") return;
+      window.removeEventListener("message", handler);
+      resolve(typeof event.data.payload?.removed === "number" ? event.data.payload.removed : 0);
+    };
+    window.addEventListener("message", handler);
+    window.postMessage(
+      { type: "ARC_EXTENSION_BRIDGE_REMOVE_STALE_PROFILES", payload: { keepId: keepId ?? "" } },
+      window.location.origin
+    );
+    window.setTimeout(() => {
+      window.removeEventListener("message", handler);
+      resolve(0);
+    }, 5000);
+  });
 }
 
 export function subscribeToExtensionRules(

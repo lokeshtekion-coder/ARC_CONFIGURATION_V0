@@ -123,6 +123,8 @@ type BuildResult = {
     payload: Record<string, unknown>;
   }>;
   warnings: string[];
+  /** Sale account id -> reason it could not be mapped because the model is already taken. */
+  duplicateNotes: Record<string, string>;
 };
 
 type MakeAliasEntry = {
@@ -680,6 +682,9 @@ function uniqueCandidateSaleAccounts(bucketRows: SalesChainDecodedRow[]): Candid
     const saleAccountId_Number = normalize(row.saleAccountId_Number);
     const saleAccountId_Name = normalize(row.saleAccountId_Name);
     const costOffsetAccountId = normalize(row.costOffsetAccountId);
+
+    // "TBD" and "Discontinued" in the name already say the account is not a live model.
+    if (/\b(TBD|DISCONTINUED)\b/i.test(saleAccountId_Name)) continue;
     const costOffsetAccountId_Name = normalize(row.costOffsetAccountId_Name);
 
     if (!saleAccountId && !saleAccountId_Number && !saleAccountId_Name) continue;
@@ -708,13 +713,222 @@ function uniqueCandidateSaleAccounts(bucketRows: SalesChainDecodedRow[]): Candid
   return Array.from(map.values());
 }
 
+// ----------------------------------------------------------------------
+// Account name -> model scoring (token based, handles short-form GL names)
+// ----------------------------------------------------------------------
+
+const ACCOUNT_NOISE_TOKENS = new Set([
+  "SALES", "SALE", "SLS", "RETAIL", "RET", "NEW", "USED", "CAR", "CARS", "VEHICLE", "VEHICLES",
+  "TRUCK", "TRUCKS", "SUV", "SUVS", "VAN", "VANS", "GL", "ACCT", "ACCOUNT", "ACCOUNTS",
+  "OFFSET", "COST", "INCOME", "AND", "THE", "OF", "FOR",
+]);
+
+const MODEL_NOISE_TOKENS = new Set(["HYBRID", "PLUGIN", "PLUG", "IN", "EV", "PHEV", "ALL"]);
+
+/** Words of a sale account name. A leading GL number (e.g. "425A - SALES - ...") is dropped. */
+function accountNameTokens(name: string): string[] {
+  const tokens = normalizeLoose(name)
+    .replace(/[^A-Z0-9 ]/g, " ")
+    .split(" ")
+    .filter(Boolean);
+
+  if (tokens.length > 1 && /^\d{3,}[A-Z]?$/.test(tokens[0])) {
+    tokens.shift();
+  }
+
+  return tokens.filter((t) => t.length >= 2 && !ACCOUNT_NOISE_TOKENS.has(t));
+}
+
+/** Deal type from the account name. A model is claimed once per deal type (sale vs lease). */
+function dealTypeOf(name: string): string {
+  const n = normalizeLoose(name);
+  if (/\bONE\s*TIME\s*LEASE\b/.test(n)) return "ONE_TIME_LEASE";
+  if (/\bLEASE\b/.test(n)) return "LEASE";
+  if (/\b(SALE|SALES|RETAIL|RET)\b/.test(n)) return "SALE";
+  return "OTHER";
+}
+
+/** PAYMENT_TYPE_VAR_OPS value for a sale account: lease accounts get LEASE / ONE_TIME_LEASE, everything else ALL. */
+function paymentTypeOf(name: string): "ALL" | "LEASE" | "ONE_TIME_LEASE" {
+  const n = normalizeLoose(name);
+  if (/\bONE\s*TIME\s*LEASE\b/.test(n)) return "ONE_TIME_LEASE";
+  if (/\bLEASE\b/.test(n)) return "LEASE";
+  return "ALL";
+}
+
+function modelTokensOf(model: string): string[] {
+  return normalizeLoose(model)
+    .replace(/[^A-Z0-9 ]/g, " ")
+    .split(" ")
+    .filter((t) => t.length >= 2 && !MODEL_NOISE_TOKENS.has(t) && !GENERIC_MODEL_IGNORE.has(t));
+}
+
+/**
+ * Scores how well a sale account name points at a model.
+ * - exact word match: +3 (number +4)
+ * - short form (name word is the start of the model word, e.g. SILV -> SILVERADO): +2
+ * - model number missing from the name: -1 (still allowed, lower priority)
+ * - number in the name that the model does not carry (e.g. 2500 vs 1500): -2
+ * - whole model text found in name (or compact form, e.g. F150 for F-150): bonus
+ * Returns null when nothing relevant matches.
+ */
+function scoreModelForAccount(
+  nameTokens: string[],
+  nameLoose: string,
+  model: string
+): { score: number; notes: string[] } | null {
+  const mTokens = modelTokensOf(model);
+  if (mTokens.length === 0) return null;
+
+  const primary = mTokens.find((tok) => !/^\d/.test(tok));
+  const covered = new Set<string>();
+  const notes: string[] = [];
+  let score = 0;
+
+  // Whole-word matches first. A word may also match as a short form (name word is the start of
+  // the model word, e.g. SILV -> SILVERADO), but only for words of 3+ letters.
+  for (const mt of mTokens) {
+    const isNumber = /^\d/.test(mt);
+    if (nameTokens.includes(mt)) {
+      score += isNumber ? 4 : 3;
+      covered.add(mt);
+      notes.push(`exact ${mt}`);
+    } else if (!isNumber) {
+      const shortForm = nameTokens.find((nt) => nt.length >= 3 && mt.startsWith(nt));
+      if (shortForm) {
+        score += 2;
+        covered.add(mt);
+        notes.push(`short ${shortForm}→${mt}`);
+      }
+    } else {
+      score -= 1;
+      notes.push(`no ${mt} in name`);
+    }
+  }
+
+  // Compact form (e.g. C-Max -> CMAX, F-150 -> F150) must equal a run of whole name words.
+  const modelCompact = normalizeLoose(model).replace(/[^A-Z0-9]/g, "");
+  if (modelCompact.length >= 3 && !covered.size) {
+    for (let i = 0; i < nameTokens.length; i++) {
+      let joined = "";
+      for (let j = i; j < nameTokens.length; j++) {
+        joined += nameTokens[j];
+        if (joined === modelCompact) {
+          mTokens.forEach((tok) => covered.add(tok));
+          if (primary) covered.add(primary);
+          score += 3;
+          notes.push(`compact ${modelCompact}`);
+          break;
+        }
+        if (joined.length > modelCompact.length) break;
+      }
+      if (covered.size) break;
+    }
+  }
+
+  // Coverage rule: the model's main word must be in the name. Otherwise the model is not a candidate.
+  if (primary && !covered.has(primary)) return null;
+
+  // Other words of the model that the name does not carry lower the score (not excluded).
+  for (const mt of mTokens) {
+    if (!/^\d/.test(mt) && !covered.has(mt)) {
+      score -= 2;
+      notes.push(`missing ${mt}`);
+    }
+  }
+
+  if (containsLoose(nameLoose, model)) {
+    score += 5;
+    notes.push("full phrase");
+  }
+
+  // Numbers in the name that the model does not carry (e.g. 2500 vs 1500) are a conflict.
+  for (const nt of nameTokens) {
+    if (/^\d{3,}/.test(nt) && !mTokens.includes(nt)) {
+      score -= 2;
+      notes.push(`conflict ${nt}`);
+    }
+  }
+
+  if (score <= 0) return null;
+  return { score, notes };
+}
+
+// ----------------------------------------------------------------------
+// Review store (good / bad per account-model pair), saved in local storage
+// ----------------------------------------------------------------------
+
+type ReviewVerdict = "good" | "bad";
+
+type ReviewEntry = {
+  verdict: ReviewVerdict;
+  make: string;
+  model: string;
+  saleAccountId: string;
+  saleAccountNumber: string;
+  saleAccountName: string;
+  at: string;
+};
+
+type ReviewOverride = {
+  make: string;
+  model: string;
+  saleAccountName: string;
+  saleAccountNumber: string;
+  at: string;
+};
+
+type ReviewStore = {
+  version: 1;
+  updatedAt: string;
+  entries: Record<string, ReviewEntry>;
+  /** Manual make/model choice per sale account id (set from box 2). */
+  overrides: Record<string, ReviewOverride>;
+};
+
+const REVIEW_STORAGE_KEY = "glam_new_vehicle_review_v1";
+
+function reviewKey(saleAccountId: string, model: string): string {
+  return `${normalize(saleAccountId)}|${normalizeUpper(model)}`;
+}
+
+function loadReviewStore(): ReviewStore {
+  const empty: ReviewStore = { version: 1, updatedAt: "", entries: {}, overrides: {} };
+  try {
+    const raw = localStorage.getItem(REVIEW_STORAGE_KEY);
+    if (!raw) return empty;
+    const parsed = JSON.parse(raw) as Partial<ReviewStore>;
+    if (!parsed || typeof parsed.entries !== "object" || parsed.entries === null) return empty;
+    return {
+      version: 1,
+      updatedAt: parsed.updatedAt ?? "",
+      entries: { ...parsed.entries },
+      overrides: { ...(parsed.overrides ?? {}) },
+    };
+  } catch {
+    return empty;
+  }
+}
+
+function saveReviewStore(store: ReviewStore): void {
+  store.updatedAt = new Date().toISOString();
+  try {
+    localStorage.setItem(REVIEW_STORAGE_KEY, JSON.stringify(store));
+  } catch {
+    /* storage unavailable: the review is kept only for this view */
+  }
+}
+
 function buildModelMatchesForMake(
   dealerId: string,
   candidates: CandidateSaleAccount[],
-  modelRows: Array<{ make: string; model: string }>
+  modelRows: Array<{ make: string; model: string }>,
+  blockedNotes?: Map<string, string>
 ): ModelMatchRow[] {
+  const makeKeyword = modelRows[0]?.make ?? "";
   const matchedRows: ModelMatchRow[] = [];
-  const claimedModels = new Set<string>();
+  // model key -> name of the account that already took it
+  const claimedModels = new Map<string, string>();
 
   const modelRowsSorted = [...modelRows].sort((a, b) => {
     const aLen = Math.max(...getModelAliases(a.model).map((x) => normalizeModelAlias(x).length), 0);
@@ -722,39 +936,57 @@ function buildModelMatchesForMake(
     return bLen - aLen;
   });
 
+  const review = loadReviewStore();
+
   for (const candidate of candidates) {
     let best: { make: string; model: string } | null = null;
-    let bestMatchLen = -1;
+    let bestScore = -Infinity;
+    let blockedScore = 0;
+    let blockedBy = "";
     let bestModelLen = Infinity;
     let bestReason = "";
 
-    const saleName = normalizeLoose(candidate.saleAccountId_Name);
+    const nameLoose = normalizeLoose(candidate.saleAccountId_Name);
+    const nameTokens = accountNameTokens(candidate.saleAccountId_Name);
 
     for (const { make, model } of modelRowsSorted) {
-      const key = `${normalizeUpper(make)}__${normalizeUpper(model)}`;
-      if (claimedModels.has(key)) continue;
-
-      for (const alias of getModelAliases(model)) {
-        const normalizedAlias = normalizeModelAlias(alias);
-
-        if (containsLoose(saleName, normalizedAlias)) {
-          const matchLen = normalizedAlias.length;
-
-          if (
-            matchLen > bestMatchLen ||
-            (matchLen === bestMatchLen && model.length < bestModelLen)
-          ) {
-            best = { make, model };
-            bestMatchLen = matchLen;
-            bestModelLen = model.length;
-            bestReason = `account→model:${alias}`;
-          }
+      const dealType = dealTypeOf(candidate.saleAccountId_Name);
+      const key = `${normalizeUpper(make)}__${normalizeUpper(model)}__${dealType}`;
+      if (claimedModels.has(key)) {
+        const blocked = scoreModelForAccount(nameTokens, nameLoose, model);
+        if (blocked && blocked.score > blockedScore) {
+          blockedScore = blocked.score;
+          blockedBy = `${make} ${model} is already mapped to "${claimedModels.get(key)}"`;
         }
+        continue;
+      }
+
+      const verdict = review.entries[reviewKey(candidate.saleAccountId, model)]?.verdict;
+      if (verdict === "bad") continue;
+
+      const scored = scoreModelForAccount(nameTokens, nameLoose, model);
+      if (!scored) continue;
+
+      const total = scored.score + (verdict === "good" ? 100 : 0);
+      if (total > bestScore || (total === bestScore && model.length < bestModelLen)) {
+        best = { make, model };
+        bestScore = total;
+        bestModelLen = model.length;
+        bestReason =
+          `account→model score ${total}: ${scored.notes.join(", ")}` +
+          (verdict === "good" ? " (reviewed good)" : "");
       }
     }
 
+    if (!best && blockedBy && blockedNotes) {
+      blockedNotes.set(candidate.saleAccountId, `Duplicate mapping: ${blockedBy}`);
+    }
+
     if (best) {
-      claimedModels.add(`${normalizeUpper(best.make)}__${normalizeUpper(best.model)}`);
+      claimedModels.set(
+        `${normalizeUpper(best.make)}__${normalizeUpper(best.model)}__${dealTypeOf(candidate.saleAccountId_Name)}`,
+        candidate.saleAccountId_Name
+      );
 
       const baseMappedAssetId = buildMappedAssetId(
         dealerId,
@@ -814,8 +1046,14 @@ function buildModelMatchesForMake(
         containsLoose(n, "SALES NEW");
       return isGenericNew && !claimedIds.has(c.saleAccountId);
     }) ??
-    candidates.find((c) => !claimedIds.has(c.saleAccountId)) ??
-    candidates[0];
+    // No evidence, no fallback: an account is only used as the catch-all when its name
+    // carries the make keyword (or is a generic new-vehicle account above).
+    candidates.find(
+      (c) =>
+        !claimedIds.has(c.saleAccountId) &&
+        (normalizeUpper(c.detectedMake) === normalizeUpper(makeKeyword) ||
+          containsLoose(c.saleAccountId_Name, makeKeyword))
+    ) ?? null;
 
   if (fallbackAccount) {
     const fallbackMappedAssetId = buildMappedAssetId(
@@ -872,23 +1110,36 @@ function buildPayload(
   ruleName: string,
   modelMatches: ModelMatchRow[]
 ): Record<string, unknown> {
-  const hasBodyClass = modelMatches.some((row) => row.bodyClasses.length > 0);
+  // Any lease / one-time-lease account adds the PAYMENT_TYPE_VAR_OPS column to the whole payload.
+  // Sales and retail accounts map to ALL. Body class is not sent in this mode.
+  const hasLease = modelMatches.some((row) => paymentTypeOf(row.saleAccountId_Name) !== "ALL");
+
+  // Lease row -> emitted as LEASE and ONE_TIME_LEASE (one row each). Sales/retail/other -> ALL.
+  // Non-ALL options are listed first, ALL last.
+  const expanded = modelMatches.flatMap((row) => {
+    if (!hasLease) return [{ row, paymentType: null as string | null }];
+    const type = paymentTypeOf(row.saleAccountId_Name);
+    const types = type === "ALL" ? ["ALL"] : [type, "ONE_TIME_LEASE"].filter((t, i, a) => a.indexOf(t) === i);
+    return types.map((paymentType) => ({ row, paymentType }));
+  });
+  const ordered = hasLease
+    ? [...expanded.filter((e) => e.paymentType !== "ALL"), ...expanded.filter((e) => e.paymentType === "ALL")]
+    : expanded;
 
   return {
     module: "NEW_VEHICLE",
     name: ruleName,
     criteriaList: [],
-    mappingColumns: hasBodyClass ? ["MODEL", "BODY_CLASS"] : ["MODEL"],
-    mappingList: modelMatches.map((row) => ({
-      attributes:
-        row.bodyClasses.length > 0
-          ? {
-              MODEL: row.model,
-              BODY_CLASS: row.bodyClasses[0],
-            }
-          : {
-              MODEL: row.model,
-            },
+    mappingColumns: hasLease ? ["MODEL", "PAYMENT_TYPE_VAR_OPS"] : ["MODEL"],
+    mappingList: ordered.map(({ row, paymentType }) => ({
+      attributes: paymentType
+        ? {
+            MODEL: row.model,
+            PAYMENT_TYPE_VAR_OPS: paymentType,
+          }
+        : {
+            MODEL: row.model,
+          },
       targetFieldToValueMapping: {},
       mappedAssetId: row.mappedAssetId,
       mappedDealerId: dealerId,
@@ -1013,6 +1264,105 @@ const NewVehiclesView: React.FC = () => {
     payloads: false,
   });
 
+  const [reviewStore, setReviewStore] = useState<ReviewStore>(() => loadReviewStore());
+  const [pickerAccountId, setPickerAccountId] = useState<string | null>(null);
+  const [pickerQuery, setPickerQuery] = useState("");
+
+  const saveOverride = useCallback(
+    (accountId: string, account: CandidateSaleAccount, make: string, model: string) => {
+      const store = loadReviewStore();
+      store.overrides[accountId] = {
+        make,
+        model,
+        saleAccountName: account.saleAccountId_Name,
+        saleAccountNumber: account.saleAccountId_Number,
+        at: new Date().toISOString(),
+      };
+      saveReviewStore(store);
+      setReviewStore(store);
+    },
+    []
+  );
+
+  const clearOverride = useCallback((accountId: string) => {
+    const store = loadReviewStore();
+    delete store.overrides[accountId];
+    saveReviewStore(store);
+    setReviewStore(store);
+  }, []);
+
+  const allModelOptions = useMemo(() => getAllModelsWithMakes(), []);
+  const pickerOptions = useMemo(() => {
+    const words = normalizeLoose(pickerQuery).split(" ").filter(Boolean);
+    const pool =
+      words.length === 0
+        ? allModelOptions
+        : allModelOptions.filter((o) => {
+            const hay = normalizeLoose(`${o.make} ${o.model}`);
+            return words.every((w) => hay.includes(w));
+          });
+    return pool.slice(0, 60);
+  }, [allModelOptions, pickerQuery]);
+
+  const setRowVerdict = useCallback((row: ModelMatchRow, make: string, verdict: ReviewVerdict) => {
+    const store = loadReviewStore();
+    const key = reviewKey(row.saleAccountId, row.model);
+    if (store.entries[key]?.verdict === verdict) {
+      delete store.entries[key];
+    } else {
+      store.entries[key] = {
+        verdict,
+        make,
+        model: row.model,
+        saleAccountId: row.saleAccountId,
+        saleAccountNumber: row.saleAccountId_Number,
+        saleAccountName: row.saleAccountId_Name,
+        at: new Date().toISOString(),
+      };
+    }
+    saveReviewStore(store);
+    setReviewStore(store);
+  }, []);
+
+  const exportReviewJson = useCallback(() => {
+    const store = loadReviewStore();
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      dealerId: buildResult?.dealerId ?? "",
+      reviewEntries: Object.values(store.entries),
+      analysisRows: buildResult
+        ? buildResult.makePlans.flatMap((plan) =>
+            plan.modelMatches.map((row) => ({
+              make: plan.make,
+              model: row.model,
+              bodyClass: row.bodyClasses[0] ?? "",
+              saleAccountNumber: row.saleAccountId_Number,
+              saleAccountName: row.saleAccountId_Name,
+              mappedAssetId: row.mappedAssetId,
+              matched: row.matched,
+              matchReason: row.matchReason,
+              verdict: store.entries[reviewKey(row.saleAccountId, row.model)]?.verdict ?? null,
+            }))
+          )
+        : [],
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `new-vehicles-review-${new Date().toISOString().slice(0, 10)}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [buildResult]);
+
+  const reviewCounts = useMemo(() => {
+    const values = Object.values(reviewStore.entries);
+    return {
+      good: values.filter((e) => e.verdict === "good").length,
+      bad: values.filter((e) => e.verdict === "bad").length,
+    };
+  }, [reviewStore]);
+
   const toggleSection = useCallback((key: CollapsibleSectionKey) => {
     setCollapsedSections((prev) => ({ ...prev, [key]: !prev[key] }));
   }, []);
@@ -1124,8 +1474,8 @@ const NewVehiclesView: React.FC = () => {
       );
     }
 
-    warnings.push(`Metadata makes detected: ${metadataMakes.join(", ")}`);
-    warnings.push(`Resolved makes from MAKE_MODELS_DATA.json: ${resolvedMakes.join(", ")}`);
+
+
 
     const costOffsetBuckets = buildMatchedCostOffsetBuckets(salesChainsDecoded);
 
@@ -1135,11 +1485,7 @@ const NewVehiclesView: React.FC = () => {
       );
     }
 
-    warnings.push(
-      `Detected ${costOffsetBuckets.length} cost offset bucket(s): ${costOffsetBuckets
-        .map((bucket) => `${bucket.costOffsetAccountName} (${bucket.costOffsetAccountId})`)
-        .join(" | ")}`
-    );
+
 
     const bucketRows = costOffsetBuckets.flatMap((bucket) => bucket.bucketRows);
     const allCandidateSaleAccounts = uniqueCandidateSaleAccounts(bucketRows);
@@ -1148,34 +1494,94 @@ const NewVehiclesView: React.FC = () => {
       throw new Error("No sale accounts found linked to the detected cost offset accounts.");
     }
 
+    // Accounts with no make in their name: assign each to the make whose model scores best.
+    const blankAccountMake = new Map<string, string>();
+    for (const candidate of allCandidateSaleAccounts) {
+      if (candidate.detectedMake) continue;
+      const nameTokens = accountNameTokens(candidate.saleAccountId_Name);
+      const nameLoose = normalizeLoose(candidate.saleAccountId_Name);
+      let bestMake = "";
+      let bestScore = 0;
+      for (const make of resolvedMakes) {
+        for (const { model } of findMakeModels(make)) {
+          const scored = scoreModelForAccount(nameTokens, nameLoose, model);
+          if (scored && scored.score > bestScore) {
+            bestScore = scored.score;
+            bestMake = make;
+          }
+        }
+      }
+      if (bestMake) blankAccountMake.set(candidate.saleAccountId, bestMake);
+    }
+    if (blankAccountMake.size > 0) {
+
+    }
+
+    // Manual choices from box 2 win over automatic matching.
+    const reviewForOverrides = loadReviewStore();
+    const overrideRowsByMake = new Map<string, ModelMatchRow[]>();
+    const claimedAccountIds = new Set<string>();
+    for (const acc of allCandidateSaleAccounts) {
+      const ov = reviewForOverrides.overrides[acc.saleAccountId];
+      if (!ov) continue;
+      claimedAccountIds.add(acc.saleAccountId);
+      const rows = overrideRowsByMake.get(ov.make) ?? [];
+      rows.push({
+        make: ov.make,
+        model: ov.model,
+        mappedAssetId: buildMappedAssetId(dealerId, acc.saleAccountId, acc.saleAccountId_Number),
+        saleAccountId: acc.saleAccountId,
+        saleAccountId_Number: acc.saleAccountId_Number,
+        saleAccountId_Name: acc.saleAccountId_Name,
+        costOffsetAccountId: acc.costOffsetAccountId,
+        costOffsetAccountId_Name: acc.costOffsetAccountId_Name,
+        matched: true,
+        matchReason: "manual selection",
+        sortBucket: 0,
+        bodyClasses: acc.detectedBodyClasses.slice(0, 1),
+      });
+      overrideRowsByMake.set(ov.make, rows);
+    }
+    const makesToProcess = Array.from(new Set([...resolvedMakes, ...overrideRowsByMake.keys()]));
+    const duplicateNotes = new Map<string, string>();
     const makePlans: MakePayloadPlan[] = [];
     const allModelMatches: ModelMatchRow[] = [];
     const payloads: Array<{ make: string; ruleName: string; payload: Record<string, unknown> }> = [];
 
-    for (const make of resolvedMakes) {
+    for (const make of makesToProcess) {
       const makeModels = findMakeModels(make);
 
       if (makeModels.length === 0) {
-        warnings.push(`No models found for make "${make}" in MAKE_MODELS_DATA.json.`);
+
         continue;
       }
 
       const makeCandidates = allCandidateSaleAccounts.filter((candidate) => {
+        // An account already mapped under an earlier make is not mapped again.
+        if (claimedAccountIds.has(candidate.saleAccountId)) return false;
         if (normalizeUpper(candidate.detectedMake) === normalizeUpper(make)) return true;
         if (containsLoose(candidate.saleAccountId_Name, make)) return true;
+        // Accounts that name no make (e.g. "SILVERADO 1500") go to the make whose models fit best.
+        if (!candidate.detectedMake && blankAccountMake.get(candidate.saleAccountId) === make) return true;
         return false;
       });
 
-      const resolvedCandidates =
-        makeCandidates.length > 0 ? makeCandidates : allCandidateSaleAccounts;
+      // Only accounts that belong to this make (named in the account, or assigned by model match).
+      // No fallback to other makes' accounts.
+      const resolvedCandidates = makeCandidates;
 
-      if (makeCandidates.length === 0) {
-        warnings.push(
-          `No make-specific sale accounts found for "${make}". Falling back to all linked sale accounts.`
-        );
+      if (makeCandidates.length === 0 && !overrideRowsByMake.has(make)) {
+
+        continue;
       }
 
-      const modelMatches = buildModelMatchesForMake(dealerId, resolvedCandidates, makeModels);
+      const modelMatches = [
+        ...(overrideRowsByMake.get(make) ?? []),
+        ...buildModelMatchesForMake(dealerId, resolvedCandidates, makeModels, duplicateNotes),
+      ];
+      for (const row of modelMatches) {
+        if (row.matched) claimedAccountIds.add(row.saleAccountId);
+      }
       const ruleName = `New Vehicles - ${make}`;
       const payload = buildPayload(dealerId, ruleName, modelMatches);
 
@@ -1192,11 +1598,7 @@ const NewVehiclesView: React.FC = () => {
 
       const fallbackRows = modelMatches.filter((row) => !row.matched);
       if (fallbackRows.length > 0) {
-        warnings.push(
-          `Fallback row added for make "${make}": MODEL="All" (${fallbackRows.length} row${
-            fallbackRows.length === 1 ? "" : "s"
-          })`
-        );
+
       }
     }
 
@@ -1255,6 +1657,7 @@ const NewVehiclesView: React.FC = () => {
       modelMatches: allModelMatches,
       payloads,
       warnings,
+      duplicateNotes: Object.fromEntries(duplicateNotes),
     };
   }, []);
 
@@ -1293,16 +1696,10 @@ const NewVehiclesView: React.FC = () => {
 
     try {
       refreshHeaders();
-      const result = buildResult ?? (await buildConfig());
+      const result = await buildConfig();
       setBuildResult(result);
 
-      if (result.existingRule) {
-        setMessage({
-          ok: false,
-          text: `Create skipped. Existing NEW_VEHICLE rule already exists with id ${result.existingRule.id}.`,
-        });
-        return;
-      }
+      // An existing NEW_VEHICLE rule is only detected, never changed. Payloads are posted as new rules.
 
       const enabledHeaders = toEnabledHeaderMap(loadGlobalHeaders());
 
@@ -1396,535 +1793,290 @@ const NewVehiclesView: React.FC = () => {
     };
   }, [allCandidateSaleAccounts.length, buildResult, detectedDealerId, fallbackCount, matchedCount]);
 
+  // Box 1 and Box 2 data (UI only)
+  const detectedSaleAccounts = useMemo(
+    () => (buildResult ? uniqueCandidateSaleAccounts(buildResult.bucketRows) : []),
+    [buildResult]
+  );
+
+  const accountMappingRows = useMemo(() => {
+    if (!buildResult) return [] as Array<{
+      account: CandidateSaleAccount;
+      make: string;
+      model: string;
+      bodyClass: string;
+      status: "Matched" | "Fallback" | "Not mapped" | "Manual" | "Duplicate";
+      row: ModelMatchRow | null;
+      verdict: ReviewVerdict | undefined;
+    }>;
+
+    const rows: Array<{
+      account: CandidateSaleAccount;
+      make: string;
+      model: string;
+      bodyClass: string;
+      status: "Matched" | "Fallback" | "Not mapped" | "Manual" | "Duplicate";
+      row: ModelMatchRow | null;
+      verdict: ReviewVerdict | undefined;
+    }> = [];
+    const mappedIds = new Set<string>();
+
+    for (const plan of buildResult.makePlans) {
+      for (const row of plan.modelMatches) {
+        if (reviewStore.overrides[row.saleAccountId]) continue; // shown as Manual below
+        const verdict = reviewStore.entries[reviewKey(row.saleAccountId, row.model)]?.verdict;
+        mappedIds.add(row.saleAccountId);
+        rows.push({
+          account: {
+            saleAccountId: row.saleAccountId,
+            saleAccountId_Number: row.saleAccountId_Number,
+            saleAccountId_Name: row.saleAccountId_Name,
+            costOffsetAccountId: row.costOffsetAccountId,
+            costOffsetAccountId_Name: row.costOffsetAccountId_Name,
+            detectedBodyClasses: [],
+            detectedMake: plan.make,
+            detectedMakeReason: "",
+            detectedModelHints: [],
+          },
+          make: plan.make,
+          model: row.matched ? row.model : "All other models",
+          bodyClass: row.bodyClasses[0] ?? "",
+          status: row.matched ? "Matched" : "Fallback",
+          row,
+          verdict,
+        });
+      }
+    }
+
+    for (const acc of uniqueCandidateSaleAccounts(buildResult.bucketRows)) {
+      const ov = reviewStore.overrides[acc.saleAccountId];
+      if (!ov) continue;
+      mappedIds.add(acc.saleAccountId);
+      rows.push({
+        account: acc,
+        make: ov.make,
+        model: ov.model,
+        bodyClass: acc.detectedBodyClasses.join(", "),
+        status: "Manual",
+        row: null,
+        verdict: undefined,
+      });
+    }
+
+    for (const acc of uniqueCandidateSaleAccounts(buildResult.bucketRows)) {
+      if (mappedIds.has(acc.saleAccountId)) continue;
+      rows.push({
+        account: acc,
+        make: "",
+        model: "—",
+        bodyClass: acc.detectedBodyClasses.join(", "),
+        status: buildResult.duplicateNotes[acc.saleAccountId] ? "Duplicate" : "Not mapped",
+        row: null,
+        verdict: undefined,
+      });
+    }
+
+    return rows;
+  }, [buildResult, reviewStore]);
+
+  const mappedAccountCount = useMemo(
+    () => new Set(accountMappingRows.filter((r) => r.status === "Matched").map((r) => r.account.saleAccountId)).size,
+    [accountMappingRows]
+  );
+  const fallbackAccountCount = useMemo(
+    () => new Set(accountMappingRows.filter((r) => r.status === "Fallback").map((r) => r.account.saleAccountId)).size,
+    [accountMappingRows]
+  );
+  const unmappedAccountCount = useMemo(
+    () => accountMappingRows.filter((r) => r.status === "Not mapped").length,
+    [accountMappingRows]
+  );
+
+  const manualCount = accountMappingRows.filter((r) => r.status === "Manual").length;
+
+  const statusStyle = (status: string): { label: string; color: string } => {
+    switch (status) {
+      case "Matched":
+        return { label: "Matched", color: "#30d158" };
+      case "Manual":
+        return { label: "Manual", color: "#64d2ff" };
+      case "Fallback":
+        return { label: "Fallback", color: "#ff9f0a" };
+      case "Duplicate":
+        return { label: "Duplicate mapping", color: "#ff453a" };
+      default:
+        return { label: "Not mapped", color: "#94a3b8" };
+    }
+  };
+
   return (
     <div className="nv-page-scroll nv-page">
       <GlamSectionHeader
         title="New Vehicles"
-        description="GLAM content for new vehicle accounting flows"
+        description="Sale accounts mapped to vehicle models"
         breadcrumb="Accounting / Variable Operations / New Vehicles"
       />
 
-      <div className="nv-card">
-        <div style={{ display: "grid", gap: 14 }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              justifyContent: "space-between",
-              gap: 12,
-              flexWrap: "wrap",
-            }}
-          >
-            <div style={{ minWidth: 0, flex: "1 1 420px" }}>
-              <div
-                style={{
-                  color: "#f8fafc",
-                  fontSize: 18,
-                  fontWeight: 800,
-                  marginBottom: 6,
-                }}
-              >
-
-              </div>
-              <div
-                style={{
-                  color: "#94a3b8",
-                  fontSize: 13,
-                  lineHeight: 1.6,
-                }}
-              >
-
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className="nv-info-button"
-              onClick={() => setInfoOpen((v) => !v)}
-              aria-expanded={infoOpen}
-              aria-label="Toggle new vehicles information"
-              title="Show information"
-            >
-              <InfoIcon open={infoOpen} />
-            </button>
+      <div className="nv-card" style={{ display: "grid", gap: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <div style={{ color: "#94a3b8", fontSize: 13 }}>
+            Dealer <b style={{ color: detectedDealerId ? "#86efac" : "#fca5a5" }}>{detectedDealerId || "not found"}</b>
           </div>
-
-          {infoOpen ? (
-            <div className="nv-info-panel">
-              <div style={{ color: "#dbeafe", fontSize: 14, fontWeight: 800 }}>
-                New Vehicles Information
-              </div>
-
-              <div className="nv-info-grid">
-                <div className="nv-info-item">
-                  <div style={{ color: "#93c5fd", fontSize: 11, fontWeight: 700, marginBottom: 6 }}>
-                    FLOW
-                  </div>
-                  <div style={{ color: "#e2e8f0", fontSize: 13, lineHeight: 1.7 }}>
-                    1. Keep existing functionality.<br />
-                    2. Fetch makes from mapping metadata API.<br />
-                    3. Match metadata makes with MAKE_MODELS_DATA.json.<br />
-                    4. Create separate payloads like <code className="nv-mono">New Vehicles - Kia</code> for each make.<br />
-                    5. Detect abbreviated make names through JSON <code className="nv-mono">IncludeAny</code> aliases.<br />
-                    6. Detect model phrases dynamically from JSON models, using string-length tiebreakers to resolve generic vs specific variants.
-                  </div>
-                </div>
-
-                <div className="nv-info-item">
-                  <div style={{ color: "#93c5fd", fontSize: 11, fontWeight: 700, marginBottom: 6 }}>
-                    CONFIG
-                  </div>
-                  <div style={{ color: "#e2e8f0", fontSize: 13, lineHeight: 1.7 }}>
-                    <div><b>Module:</b> NEW_VEHICLE</div>
-                    <div><b>Rule Asset:</b> GLACCOUNT</div>
-                    <div><b>Metadata API:</b> mapping/metadata</div>
-                    <div><b>Primary Mapping:</b> MODEL</div>
-                    <div><b>Optional Mapping:</b> BODY_CLASS when account keywords imply body type</div>
-                  </div>
-                </div>
-
-                <div className="nv-info-item">
-                  <div style={{ color: "#93c5fd", fontSize: 11, fontWeight: 700, marginBottom: 6 }}>
-                    CONTEXT
-                  </div>
-                  <div style={{ color: "#e2e8f0", fontSize: 13, lineHeight: 1.7 }}>
-                    <div><b>Dealer:</b> {infoMetrics.dealerId}</div>
-                    <div><b>Metadata Makes:</b> {infoMetrics.metadataMakesCount} — makes returned by metadata API.</div>
-                    <div><b>Resolved Makes:</b> {infoMetrics.resolvedMakesCount} — makes matched by Makes/IncludeAny aliases.</div>
-                    <div><b>Cost Offset Buckets:</b> {infoMetrics.costOffsetBucketsCount} — distinct new-vehicle offset groups detected from sales chains.</div>
-                    <div><b>Linked Sale Accounts:</b> {infoMetrics.linkedSaleAccountsCount} — unique sale accounts tied to detected cost offsets.</div>
-                  </div>
-                </div>
-
-                <div className="nv-info-item">
-                  <div style={{ color: "#93c5fd", fontSize: 11, fontWeight: 700, marginBottom: 6 }}>
-                    OUTPUT
-                  </div>
-                  <div style={{ color: "#e2e8f0", fontSize: 13, lineHeight: 1.7 }}>
-                    <div><b>Matched Rows:</b> {infoMetrics.matchedCount} — model-account rows matched by strict JSON-driven alias logic.</div>
-                    <div><b>Fallback Rows:</b> {infoMetrics.fallbackCount} — fallback MODEL = All rows for unlinked or weak matches.</div>
-                    <div><b>Payloads:</b> {infoMetrics.payloadCount} — separate create payloads generated by make.</div>
-                    <div><b>Existing Rule:</b> {infoMetrics.existingRuleLabel}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : null}
-
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <span className="nv-badge">
-              Dealer ID:{" "}
-              <b style={{ color: detectedDealerId ? "#86efac" : "#fca5a5" }}>
-                {detectedDealerId || "Not found"}
-              </b>
-            </span>
-            <span className="nv-badge">
-              Module: <b style={{ color: "#f8fafc" }}>NEW_VEHICLE</b>
-            </span>
-            <span className="nv-badge">
-              Status:{" "}
-              <b style={{ color: buildResult?.existingRule ? "#fbbf24" : "#86efac" }}>
-                {buildResult?.existingRule ? "Existing rule found" : "Ready to analyze"}
-              </b>
-            </span>
-          </div>
-
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <button
-              className="btn-secondary btn-sm"
-              onClick={refreshHeaders}
-              disabled={loading || running}
-            >
-              ⟳ Refresh Headers
-            </button>
-
             <button
               className="btn-secondary btn-sm"
               onClick={() => void handleAnalyze()}
               disabled={loading || running || !detectedDealerId}
             >
-              {loading ? "Analyzing..." : "🧪 Analyze Configuration"}
+              {loading ? "Analyzing..." : "Analyze"}
             </button>
-
             <button
               className="btn-primary"
               onClick={() => void handleCreate()}
               disabled={loading || running || !detectedDealerId}
             >
-              {running ? "Creating..." : "⚙ Auto Configure New Vehicles"}
+              {running ? "Creating..." : "Auto Configure"}
             </button>
-
-            {buildResult?.payloads?.length ? (
-              <button
-                className="btn-secondary btn-sm"
-                onClick={() => setPreviewOpen((v) => !v)}
-              >
-                {previewOpen ? "Hide Payloads" : "Show Payloads"}
+            {buildResult ? (
+              <button className="btn-secondary btn-sm" onClick={exportReviewJson} type="button">
+                Export review
               </button>
             ) : null}
           </div>
-
-          {message ? (
-            <div className={`nv-msg-panel ${message.ok ? "nv-msg-success" : "nv-msg-error"}`}>
-              {message.text}
-            </div>
-          ) : null}
-
-          {buildResult ? (
-            <div style={{ display: "grid", gap: 14, minWidth: 0 }}>
-              <div className="nv-stat-grid">
-                <div className="nv-card">
-                  <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>
-                    Metadata Makes
-                  </div>
-                  <div style={{ color: "#f8fafc", fontSize: 16, fontWeight: 800 }}>
-                    {buildResult.metadataMakes.length}
-                  </div>
-                  <div style={{ color: "#64748b", fontSize: 11, marginTop: 6 }}>
-                    Returned by metadata API
-                  </div>
-                </div>
-
-                <div className="nv-card">
-                  <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>
-                    Resolved Makes
-                  </div>
-                  <div style={{ color: "#f8fafc", fontSize: 16, fontWeight: 800 }}>
-                    {buildResult.makePlans.length}
-                  </div>
-                  <div style={{ color: "#64748b", fontSize: 11, marginTop: 6 }}>
-                    Matched in make-model reference
-                  </div>
-                </div>
-
-                <div className="nv-card">
-                  <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>
-                    Cost Offset Buckets
-                  </div>
-                  <div style={{ color: "#f8fafc", fontSize: 16, fontWeight: 800 }}>
-                    {buildResult.costOffsetBuckets.length}
-                  </div>
-                  <div style={{ color: "#64748b", fontSize: 11, marginTop: 6 }}>
-                    Distinct new vehicle offset groups
-                  </div>
-                </div>
-
-                <div className="nv-card">
-                  <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>
-                    Linked Sale Accounts
-                  </div>
-                  <div style={{ color: "#f8fafc", fontSize: 16, fontWeight: 800 }}>
-                    {allCandidateSaleAccounts.length}
-                  </div>
-                  <div style={{ color: "#64748b", fontSize: 11, marginTop: 6 }}>
-                    Unique sale accounts connected to offsets
-                  </div>
-                </div>
-
-                <div className="nv-card">
-                  <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>
-                    Matched Rows
-                  </div>
-                  <div style={{ color: "#30d158", fontSize: 16, fontWeight: 800 }}>
-                    {matchedCount}
-                  </div>
-                  <div style={{ color: "#64748b", fontSize: 11, marginTop: 6 }}>
-                    Model-to-account matches
-                  </div>
-                </div>
-
-                <div className="nv-card">
-                  <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>
-                    Fallback Rows
-                  </div>
-                  <div style={{ color: "#ff9f0a", fontSize: 16, fontWeight: 800 }}>
-                    {fallbackCount}
-                  </div>
-                  <div style={{ color: "#64748b", fontSize: 11, marginTop: 6 }}>
-                    MODEL = All fallback rows
-                  </div>
-                </div>
-
-                <div className="nv-card">
-                  <div style={{ color: "#94a3b8", fontSize: 12, marginBottom: 6 }}>
-                    Payloads
-                  </div>
-                  <div style={{ color: "#f8fafc", fontSize: 16, fontWeight: 800 }}>
-                    {buildResult.payloads.length}
-                  </div>
-                  <div style={{ color: "#64748b", fontSize: 11, marginTop: 6 }}>
-                    One payload per resolved make
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, flexWrap: "wrap" }}>
-                <button className="btn-secondary btn-sm" onClick={expandAllSections} type="button">
-                  Expand All
-                </button>
-                <button className="btn-secondary btn-sm" onClick={collapseAllSections} type="button">
-                  Collapse All
-                </button>
-              </div>
-
-              <div className="nv-card">
-                <SectionHeader
-                  title="Match Summary"
-                  open={!collapsedSections.matchSummary}
-                  onToggle={() => toggleSection("matchSummary")}
-                />
-                {!collapsedSections.matchSummary ? (
-                  <div style={{ display: "grid", gap: 8, fontSize: 13, color: "#cbd5e1" }}>
-                    <div>
-                      <b style={{ color: "#94a3b8" }}>Rule Name:</b> {buildResult.ruleName}
-                    </div>
-                    <div>
-                      <b style={{ color: "#94a3b8" }}>Metadata Makes:</b>{" "}
-                      {buildResult.metadataMakes.join(", ") || "—"}
-                    </div>
-                    <div>
-                      <b style={{ color: "#94a3b8" }}>Resolved Makes:</b>{" "}
-                      {buildResult.resolvedMakes.join(", ") || "—"}
-                    </div>
-                    <div>
-                      <b style={{ color: "#94a3b8" }}>Detected Cost Offset Accounts:</b>
-                      <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>
-                        {buildResult.costOffsetBuckets.map((bucket) => (
-                          <li key={bucket.costOffsetAccountId}>
-                            {bucket.costOffsetAccountName}{" "}
-                            (<code className="nv-mono">{bucket.costOffsetAccountId}</code>) ·{" "}
-                            {bucket.bucketRows.length} chain row
-                            {bucket.bucketRows.length === 1 ? "" : "s"}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div>
-                      <b style={{ color: "#94a3b8" }}>Make Payloads:</b>
-                      <ul style={{ margin: "4px 0 0", paddingLeft: 18 }}>
-                        {buildResult.makePlans.map((plan) => (
-                          <li key={plan.make}>
-                            {plan.ruleName} · {plan.modelMatches.length} mapping row
-                            {plan.modelMatches.length === 1 ? "" : "s"}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    {buildResult.existingRule ? (
-                      <div>
-                        <b style={{ color: "#94a3b8" }}>Existing Rule:</b>{" "}
-                        {buildResult.existingRule.name} ({buildResult.existingRule.id})
-                      </div>
-                    ) : null}
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="nv-card">
-                <SectionHeader
-                  title="Linked Sale Accounts For Detected Cost Offsets"
-                  open={!collapsedSections.linkedSaleAccounts}
-                  onToggle={() => toggleSection("linkedSaleAccounts")}
-                  badge={
-                    <span className="nv-row-count-badge">
-                      {allCandidateSaleAccounts.length} row
-                      {allCandidateSaleAccounts.length === 1 ? "" : "s"}
-                    </span>
-                  }
-                />
-                {!collapsedSections.linkedSaleAccounts ? (
-                  <div className="nv-scroll nv-table-scroll-wrap" style={{ maxHeight: 320 }}>
-                    <table className="bx-table nv-table-element">
-                      <thead>
-                        <tr>
-                          <th className="nv-sticky-th">Sale Account #</th>
-                          <th className="nv-sticky-th">Sale Account Name</th>
-                          <th className="nv-sticky-th">Mapped Asset ID</th>
-                          <th className="nv-sticky-th">Detected Make</th>
-                          <th className="nv-sticky-th">Make Reason</th>
-                          <th className="nv-sticky-th">Model Hints</th>
-                          <th className="nv-sticky-th">Cost Offset #</th>
-                          <th className="nv-sticky-th">Cost Offset Name</th>
-                          <th className="nv-sticky-th">Detected Body Classes</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {allCandidateSaleAccounts.map((row, index) => (
-                          <tr key={`${row.saleAccountId}-${index}`} className="nv-zebra-row">
-                            <td className="nv-td">
-                              <code className="nv-mono">{row.saleAccountId_Number || "—"}</code>
-                            </td>
-                            <td className="nv-td">{row.saleAccountId_Name || "—"}</td>
-                            <td className="nv-td">
-                              <code className="nv-mono">{row.saleAccountId || "—"}</code>
-                            </td>
-                            <td className="nv-td">{row.detectedMake || "—"}</td>
-                            <td className="nv-td">{row.detectedMakeReason || "—"}</td>
-                            <td className="nv-td">
-                              {row.detectedModelHints.length > 0
-                                ? row.detectedModelHints.join(", ")
-                                : "—"}
-                            </td>
-                            <td className="nv-td">
-                              <code className="nv-mono">{row.costOffsetAccountId || "—"}</code>
-                            </td>
-                            <td className="nv-td">{row.costOffsetAccountId_Name || "—"}</td>
-                            <td className="nv-td">
-                              {row.detectedBodyClasses.length > 0
-                                ? row.detectedBodyClasses.join(", ")
-                                : "—"}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : null}
-              </div>
-
-              {buildResult.warnings.length > 0 ? (
-                <div className="nv-card">
-                  <SectionHeader
-                    title="Warnings"
-                    open={!collapsedSections.warnings}
-                    onToggle={() => toggleSection("warnings")}
-                    badge={
-                      <span className="nv-row-count-badge">
-                        {buildResult.warnings.length} warning
-                        {buildResult.warnings.length === 1 ? "" : "s"}
-                      </span>
-                    }
-                  />
-                  {!collapsedSections.warnings ? (
-                    <div style={{ maxHeight: 240, overflow: "auto", paddingRight: 4 }}>
-                      <ul style={{ margin: 0, paddingLeft: 18, color: "#fbbf24", fontSize: 13 }}>
-                        {buildResult.warnings.map((warning, index) => (
-                          <li key={index} style={{ marginBottom: 8 }}>
-                            {warning}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ) : null}
-                </div>
-              ) : null}
-
-              <div className="nv-card">
-                <SectionHeader
-                  title="Model to Sale Account Mapping"
-                  open={!collapsedSections.modelMapping}
-                  onToggle={() => toggleSection("modelMapping")}
-                  badge={
-                    <span className="nv-row-count-badge">
-                      {buildResult.modelMatches.length} row
-                      {buildResult.modelMatches.length === 1 ? "" : "s"} · {matchedCount} matched ·{" "}
-                      {fallbackCount} fallback
-                    </span>
-                  }
-                />
-                {!collapsedSections.modelMapping ? (
-                  <div className="nv-scroll nv-table-scroll-wrap" style={{ maxHeight: 520 }}>
-                    <table className="bx-table nv-table-element">
-                      <thead>
-                        <tr>
-                          <th className="nv-sticky-th">Make</th>
-                          <th className="nv-sticky-th">Model</th>
-                          <th className="nv-sticky-th">Body Class</th>
-                          <th className="nv-sticky-th">Sale Account #</th>
-                          <th className="nv-sticky-th">Sale Account Name</th>
-                          <th className="nv-sticky-th">Mapped Asset ID</th>
-                          <th className="nv-sticky-th">Cost Offset Name</th>
-                          <th className="nv-sticky-th">Matched</th>
-                          <th className="nv-sticky-th">Reason</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {buildResult.makePlans.flatMap((plan) =>
-                          plan.modelMatches.map((row, idx) => (
-                            <tr key={`${plan.make}-${row.model}-${idx}`} className="nv-zebra-row">
-                              <td className="nv-td">{plan.make || row.make || "—"}</td>
-                              <td className="nv-td">{row.model || "—"}</td>
-                              <td className="nv-td">
-                                {row.bodyClasses.length > 0 ? row.bodyClasses[0] : "—"}
-                              </td>
-                              <td className="nv-td">
-                                <code className="nv-mono">{row.saleAccountId_Number || "—"}</code>
-                              </td>
-                              <td className="nv-td">{row.saleAccountId_Name || "—"}</td>
-                              <td className="nv-td">
-                                <code className="nv-mono">{row.mappedAssetId || "—"}</code>
-                              </td>
-                              <td className="nv-td">{row.costOffsetAccountId_Name || "—"}</td>
-                              <td className="nv-td">
-                                <span
-                                  className="nv-badge"
-                                  style={{ color: row.matched ? "#30d158" : "#ff9f0a" }}
-                                >
-                                  {row.matched ? "YES" : "ALL"}
-                                </span>
-                              </td>
-                              <td className="nv-td">{row.matchReason || "—"}</td>
-                            </tr>
-                          ))
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="nv-card">
-                <SectionHeader
-                  title="Payloads By Make"
-                  open={!collapsedSections.payloads}
-                  onToggle={() => toggleSection("payloads")}
-                  badge={
-                    <span className="nv-row-count-badge">
-                      {buildResult.payloads.length} payload
-                      {buildResult.payloads.length === 1 ? "" : "s"}
-                    </span>
-                  }
-                />
-                {!collapsedSections.payloads ? (
-                  <div style={{ display: "grid", gap: 12 }}>
-                    {buildResult.payloads.map((entry) => (
-                      <div
-                        key={entry.make}
-                        style={{
-                          borderRadius: 12,
-                          border: "1px solid rgba(255,255,255,0.06)",
-                          background: "rgba(255,255,255,0.015)",
-                          padding: 12,
-                        }}
-                      >
-                        <div className="nv-card-title">
-                          <span>{entry.ruleName}</span>
-                        </div>
-                        <div className="nv-scroll nv-table-scroll-wrap" style={{ maxHeight: 280 }}>
-                          <pre className="nv-mono" style={{ margin: 0, padding: 10 }}>
-                            {JSON.stringify(entry.payload, null, 2)}
-                          </pre>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
-
-              {previewOpen && buildResult.payloads.length > 0 ? (
-                <div className="nv-card">
-                  <div className="nv-card-title">Create Payload Preview</div>
-                  <div className="nv-scroll nv-table-scroll-wrap" style={{ maxHeight: 360 }}>
-                    <pre className="nv-mono" style={{ margin: 0, padding: 10 }}>
-                      {JSON.stringify(buildResult.payloads, null, 2)}
-                    </pre>
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          ) : null}
         </div>
+        {message ? (
+          <div className={`nv-msg-panel ${message.ok ? "nv-msg-success" : "nv-msg-error"}`}>{message.text}</div>
+        ) : null}
       </div>
+
+      {buildResult ? (
+        <div className="nv-card" style={{ display: "grid", gap: 10 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <div style={{ color: "#f8fafc", fontWeight: 800 }}>{detectedSaleAccounts.length} sale accounts</div>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", fontSize: 12 }}>
+              <span style={{ color: "#30d158" }}>{mappedAccountCount} matched</span>
+              <span style={{ color: "#64d2ff" }}>{manualCount} manual</span>
+              <span style={{ color: "#ff9f0a" }}>{fallbackAccountCount} fallback</span>
+              <span style={{ color: "#94a3b8" }}>{unmappedAccountCount} not mapped</span>
+            </div>
+          </div>
+
+          <div className="nv-scroll nv-table-scroll-wrap" style={{ height: "min(1100px, 80vh)", minHeight: 520 }}>
+            <table className="bx-table nv-table-element">
+              <thead>
+                <tr>
+                  <th className="nv-sticky-th">GL #</th>
+                  <th className="nv-sticky-th">Sale account</th>
+                  <th className="nv-sticky-th">Make</th>
+                  <th className="nv-sticky-th">Model</th>
+                  <th className="nv-sticky-th">Status</th>
+                  <th className="nv-sticky-th">Review</th>
+                </tr>
+              </thead>
+              <tbody>
+                {accountMappingRows.map((item, i) => {
+                  const accId = item.account.saleAccountId;
+                  const isPicking = pickerAccountId === accId;
+                  const hasOverride = Boolean(reviewStore.overrides[accId]);
+                  const st = statusStyle(item.status === "Not mapped" && buildResult.duplicateNotes[accId] ? "Duplicate" : item.status);
+                  return (
+                    <React.Fragment key={`${accId}-${item.model}-${i}`}>
+                      <tr className="nv-zebra-row">
+                        <td className="nv-td"><code className="nv-mono">{item.account.saleAccountId_Number || "—"}</code></td>
+                        <td className="nv-td">{item.account.saleAccountId_Name || "—"}</td>
+                        <td className="nv-td" style={{ textTransform: "capitalize" }}>{item.make || "—"}</td>
+                        <td className="nv-td">
+                          <span style={{ fontWeight: 600 }}>{item.model}</span>
+                          <button
+                            type="button"
+                            className="btn-secondary btn-sm"
+                            style={{ marginLeft: 8 }}
+                            onClick={() => {
+                              setPickerQuery("");
+                              setPickerAccountId(isPicking ? null : accId);
+                            }}
+                          >
+                            {isPicking ? "Close" : "Change"}
+                          </button>
+                        </td>
+                        <td className="nv-td" style={{ color: st.color, fontWeight: 600, whiteSpace: "nowrap" }}>{st.label}</td>
+                        <td className="nv-td">
+                          {item.row ? (
+                            <span style={{ display: "inline-flex", gap: 4 }}>
+                              <button type="button" className="btn-secondary btn-sm" title="Correct"
+                                onClick={() => {
+                                  setRowVerdict(item.row!, item.make, "good");
+                                  void handleAnalyze();
+                                }}
+                                style={{ color: item.verdict === "good" ? "#30d158" : undefined }}>✓</button>
+                              <button type="button" className="btn-secondary btn-sm" title="Wrong"
+                                onClick={() => {
+                                  setRowVerdict(item.row!, item.make, "bad");
+                                  void handleAnalyze();
+                                }}
+                                style={{ color: item.verdict === "bad" ? "#ff453a" : undefined }}>✗</button>
+                            </span>
+                          ) : null}
+                        </td>
+                      </tr>
+                      {isPicking ? (
+                        <tr>
+                          <td className="nv-td" colSpan={6}>
+                            <div style={{ display: "grid", gap: 8 }}>
+                              <input
+                                autoFocus
+                                value={pickerQuery}
+                                onChange={(e) => setPickerQuery(e.target.value)}
+                                placeholder="Search make or model"
+                                style={{
+                                  padding: "6px 8px",
+                                  background: "#0b1120",
+                                  color: "#f8fafc",
+                                  border: "1px solid rgba(255,255,255,0.12)",
+                                  borderRadius: 6,
+                                }}
+                              />
+                              <div style={{ maxHeight: 220, overflow: "auto", display: "grid", gap: 4 }}>
+                                {pickerOptions.map((opt) => (
+                                  <button
+                                    key={`${opt.make}-${opt.model}`}
+                                    type="button"
+                                    className="btn-secondary btn-sm"
+                                    style={{ textAlign: "left", textTransform: "capitalize" }}
+                                    onClick={() => {
+                                      saveOverride(accId, item.account, opt.make, opt.model);
+                                      setPickerAccountId(null);
+                                    }}
+                                  >
+                                    {opt.make} · {opt.model}
+                                  </button>
+                                ))}
+                              </div>
+                              {hasOverride ? (
+                                <button
+                                  type="button"
+                                  className="btn-secondary btn-sm"
+                                  style={{ justifySelf: "start" }}
+                                  onClick={() => {
+                                    clearOverride(accId);
+                                    setPickerAccountId(null);
+                                  }}
+                                >
+                                  Use automatic match
+                                </button>
+                              ) : null}
+                            </div>
+                          </td>
+                        </tr>
+                      ) : null}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 };

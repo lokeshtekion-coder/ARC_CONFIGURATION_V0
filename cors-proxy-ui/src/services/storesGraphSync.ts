@@ -37,6 +37,21 @@ const STATUS_HEADERS = [
 const STATUS_START_COLUMN_INDEX = STORE_EXPORT_HEADERS.indexOf("Blueprint Parts");
 const STATUS_END_COLUMN_INDEX = STORE_EXPORT_HEADERS.indexOf("Blueprint Analytics");
 
+// Columns that must remain hidden from view in Excel
+const COLUMNS_TO_HIDE: string[] = [
+  "OEM Dealer Codes",
+  "Journals Accessible Count",
+  "Sales Chains Accessible Count",
+  "COA Accessible Count",
+  "Blueprint Parts Last Released Time",
+  "Blueprint Service Last Released Time",
+  "Blueprint Accounting Last Released Time",
+  "Blueprint CRM Last Released Time",
+  "Blueprint Analytics Last Released Time",
+  "Fixed Ops Tracking",
+  "Variable Ops Tracking",
+];
+
 let isSyncingProdDealers = false;
 
 interface GraphSessionInfo {
@@ -149,7 +164,7 @@ function validateGraphTokenScope(token: string): void {
     return;
   }
 
-  if (typeof payload.exp === "number" && Date.now() >= payload.exp * 1000) {
+  if (typeof payload.exp === "number" && Date.now() >= (payload.exp - 60) * 1000) {
     throw new Error(
       "Current Microsoft Graph Token has expired. Please refresh your SharePoint T-90 browser tab to capture a fresh token."
     );
@@ -314,21 +329,24 @@ async function ensureWorksheet(
   knownSheets.add(sheetName);
 }
 
-async function getUsedRangeRowCount(
+async function getUsedRangeDimensions(
   token: string,
   sheetName: string,
   sessionId?: string | null
-): Promise<number> {
+): Promise<{ rowCount: number; columnCount: number }> {
   try {
-    const data = await graphRequest<{ rowCount?: number }>(
+    const data = await graphRequest<{ rowCount?: number; columnCount?: number }>(
       `/worksheets/${encodeURIComponent(sheetName)}/usedRange`,
       token,
       { method: "GET" },
       sessionId
     );
-    return typeof data?.rowCount === "number" ? data.rowCount : 0;
+    return {
+      rowCount: typeof data?.rowCount === "number" ? data.rowCount : 0,
+      columnCount: typeof data?.columnCount === "number" ? data.columnCount : 0,
+    };
   } catch {
-    return 0;
+    return { rowCount: 0, columnCount: 0 };
   }
 }
 
@@ -552,6 +570,52 @@ function buildStatusFormatOps(rows: StoreExcelRow[]): RangeFormatOp[] {
   return ops;
 }
 
+/**
+ * Custom keyword coloring:
+ * - Products: "ARC" (Teal), "CRM" (Yellow)
+ * - Pre-Prod: "decommissioned" (Red)
+ */
+function buildCustomHighlightFormatOps(rows: StoreExcelRow[]): RangeFormatOp[] {
+  const ops: RangeFormatOp[] = [];
+
+  const productsColIdx = STORE_EXPORT_HEADERS.indexOf("Products");
+  const preProdColIdx = STORE_EXPORT_HEADERS.indexOf("Pre-Prod");
+
+  rows.forEach((row, idx) => {
+    const rowNum = idx + 2;
+
+    if (productsColIdx !== -1) {
+      const prodText = (row["Products"] || "").toUpperCase();
+      if (prodText.includes("ARC")) {
+        ops.push({
+          address: buildSingleColumnAddress(productsColIdx, rowNum, rowNum),
+          fillColor: "#CCFBF1", // Teal 100
+          fontColor: "#0F766E", // Teal 700
+        });
+      } else if (prodText.includes("CRM")) {
+        ops.push({
+          address: buildSingleColumnAddress(productsColIdx, rowNum, rowNum),
+          fillColor: "#FEF9C3", // Yellow 100
+          fontColor: "#854D0E", // Yellow 800
+        });
+      }
+    }
+
+    if (preProdColIdx !== -1) {
+      const preProdText = (row["Pre-Prod"] || "").trim().toUpperCase();
+      if (preProdText.includes("DECOMMISSIONED")) {
+        ops.push({
+          address: buildSingleColumnAddress(preProdColIdx, rowNum, rowNum),
+          fillColor: "#FEE2E2", // Red 100
+          fontColor: "#991B1B", // Red 800
+        });
+      }
+    }
+  });
+
+  return ops;
+}
+
 async function runWithConcurrency<T>(
   items: T[],
   limit: number,
@@ -583,9 +647,11 @@ async function applyStatusFormatting(
   }
 
   await resetStatusFormattingArea(token, sheetName, totalRowsCleared, sessionId);
-  const ops = buildStatusFormatOps(rows);
+  const statusOps = buildStatusFormatOps(rows);
+  const customOps = buildCustomHighlightFormatOps(rows);
+  const allOps = [...statusOps, ...customOps];
 
-  await runWithConcurrency(ops, FORMAT_CONCURRENCY, async (op) => {
+  await runWithConcurrency(allOps, FORMAT_CONCURRENCY, async (op) => {
     await patchRangeFillAndFont(
       token,
       sheetName,
@@ -598,9 +664,41 @@ async function applyStatusFormatting(
   });
 
   return {
-    rangeCount: ops.length,
-    cellCount: rows.length * STATUS_HEADERS.length,
+    rangeCount: allOps.length,
+    cellCount: rows.length * STATUS_HEADERS.length + customOps.length,
   };
+}
+
+/**
+ * Hides all specified columns in Excel using Microsoft Graph range PATCH with columnHidden: true.
+ * In Graph API REST, columnHidden is patched directly on the range(address='Col:Col').
+ */
+async function applyHiddenColumns(
+  token: string,
+  sheetName: string,
+  sessionId?: string | null
+): Promise<void> {
+  for (const headerName of COLUMNS_TO_HIDE) {
+    const colIdx = STORE_EXPORT_HEADERS.indexOf(headerName as any);
+    if (colIdx === -1) continue;
+
+    const colLetter = toExcelColumnName(colIdx);
+    const address = `${colLetter}:${colLetter}`;
+
+    try {
+      await graphRequest(
+        `/worksheets/${encodeURIComponent(sheetName)}/range(address='${address}')`,
+        token,
+        {
+          method: "PATCH",
+          body: JSON.stringify({ columnHidden: true }),
+        },
+        sessionId
+      );
+    } catch (err) {
+      console.warn(`[storesGraphSync] ⚠ Could not hide column "${headerName}" (${address}):`, err);
+    }
+  }
 }
 
 function normalizeExcelStatus(val?: string): CustomPhaseStatus | null {
@@ -746,9 +844,6 @@ function mergeLocalAndRemoteStores(
   });
 }
 
-/**
- * Patches a specific column by possible header candidates
- */
 async function patchColumnValueInSheet(
   tekionId: string,
   candidateHeaders: string[],
@@ -803,9 +898,6 @@ async function patchColumnValueInSheet(
   }
 }
 
-/**
- * Patches Fixed Ops Assignee in Graph
- */
 export async function patchSingleStoreAssigneeInGraph(
   tekionId: string,
   assignee: string
@@ -817,9 +909,6 @@ export async function patchSingleStoreAssigneeInGraph(
   );
 }
 
-/**
- * Patches Variable Ops Assignee in Graph
- */
 export async function patchSingleStoreVariableAssigneeInGraph(
   tekionId: string,
   assignee: string
@@ -831,9 +920,6 @@ export async function patchSingleStoreVariableAssigneeInGraph(
   );
 }
 
-/**
- * Patches "Not Worked?" in Graph
- */
 export async function patchSingleStoreNotWorkedInGraph(
   tekionId: string,
   notWorkedValue: NotWorkedOption | string
@@ -845,9 +931,6 @@ export async function patchSingleStoreNotWorkedInGraph(
   );
 }
 
-/**
- * Instantly patches a single status cell and its corresponding tracking formula/time
- */
 export async function patchSingleStoreStatusInGraph(
   tekionId: string,
   field: "fixed_ops_status" | "variable_ops_status" | "testing_status",
@@ -944,10 +1027,6 @@ export async function patchSingleStoreStatusInGraph(
   }
 }
 
-/**
- * Lightweight Background Reader:
- * Pulls current Excel state, evaluates formulas, syncs timestamps, assignees, and Not Worked flags
- */
 export async function pullStatusUpdatesFromGraph(
   currentRecords: StoreRecord[]
 ): Promise<{ updatedStores: StoreRecord[]; hasChanges: boolean }> {
@@ -1043,9 +1122,6 @@ export async function pullStatusUpdatesFromGraph(
   }
 }
 
-/**
- * Authoritative Two-Way Sync with Formula & Assignee Injection
- */
 const EXCEL_SNAPSHOT_URL = "http://localhost:4000/api/stores/excel-snapshot";
 
 async function readSheetGrid(
@@ -1093,7 +1169,6 @@ export async function syncStoresToGraphWorkbook(
   }
 
   const token = getEffectiveGraphToken();
-
   if (!token) {
     throw new Error(
       "Microsoft Graph API token missing. Open SharePoint in your browser to auto-capture, or paste a token in Settings."
@@ -1141,7 +1216,6 @@ export async function syncStoresToGraphWorkbook(
       await ensureWorksheet(token, group.sheetName, existingSheetSet, sessionId);
 
       const rawRows = rowsToMatrix(group.rows);
-
       const existingGrid = await readSheetGrid(token, group.sheetName, sessionId);
       await snapshotSheetBeforeSync(group.sheetName, existingGrid);
 
@@ -1149,12 +1223,14 @@ export async function syncStoresToGraphWorkbook(
       const newHeader = STORE_EXPORT_HEADERS.map((h) => h.toLowerCase());
       const oldIdCol = oldHeader.indexOf("tekion id");
       const oldRowsById = new Map<string, string[]>();
+
       if (oldIdCol !== -1) {
         for (const r of existingGrid.slice(1)) {
           const id = String(r[oldIdCol] ?? "").trim();
           if (id) oldRowsById.set(id, r);
         }
       }
+
       const colMap = newHeader.map((h) => {
         let i = oldHeader.indexOf(h);
         if (i === -1 && (h === "fixed ops assignee" || h === "assignee")) {
@@ -1192,16 +1268,14 @@ export async function syncStoresToGraphWorkbook(
       }
 
       const newTotalRows = rawRows.length + 1;
-      const existingRowCount = await getUsedRangeRowCount(token, group.sheetName, sessionId);
-      const clearRows = Math.max(existingRowCount, newTotalRows, 1);
+      const { rowCount: existingRowCount, columnCount: existingColCount } =
+        await getUsedRangeDimensions(token, group.sheetName, sessionId);
 
-      await clearWorksheetRect(
-        token,
-        group.sheetName,
-        clearRows,
-        STORE_EXPORT_HEADERS.length,
-        sessionId
-      );
+      const clearRows = Math.max(existingRowCount, newTotalRows, 1);
+      // Clears existing columns including all stale duplicate ghost columns
+      const clearCols = Math.max(existingColCount, STORE_EXPORT_HEADERS.length);
+
+      await clearWorksheetRect(token, group.sheetName, clearRows, clearCols, sessionId);
 
       await patchRangeValues(
         token,
@@ -1265,6 +1339,9 @@ export async function syncStoresToGraphWorkbook(
         STORE_EXPORT_HEADERS.length,
         sessionId
       );
+
+      // Hide setup details, timestamp releases, and tracking columns
+      await applyHiddenColumns(token, group.sheetName, sessionId);
 
       const formatting = await applyStatusFormatting(
         token,
@@ -1340,10 +1417,13 @@ export async function syncProdDealersToGraph(records: StoreRecord[]): Promise<vo
       if (prodRows.length === 0) return;
 
       const rawRows = rowsToMatrix(prodRows);
-      const existingRowCount = await getUsedRangeRowCount(token, PROD_DEALER_SHEET_NAME, sessionId);
-      const clearRows = Math.max(existingRowCount, rawRows.length + 1, 1);
+      const { rowCount: existingRowCount, columnCount: existingColCount } =
+        await getUsedRangeDimensions(token, PROD_DEALER_SHEET_NAME, sessionId);
 
-      await clearWorksheetRect(token, PROD_DEALER_SHEET_NAME, clearRows, STORE_EXPORT_HEADERS.length, sessionId);
+      const clearRows = Math.max(existingRowCount, rawRows.length + 1, 1);
+      const clearCols = Math.max(existingColCount, STORE_EXPORT_HEADERS.length);
+
+      await clearWorksheetRect(token, PROD_DEALER_SHEET_NAME, clearRows, clearCols, sessionId);
       await patchRangeValues(token, PROD_DEALER_SHEET_NAME, 1, [Array.from(STORE_EXPORT_HEADERS)], sessionId);
 
       const fixedOpsIdx = STORE_EXPORT_HEADERS.indexOf("Fixed Ops");
@@ -1415,6 +1495,7 @@ export async function syncProdDealersToGraph(records: StoreRecord[]): Promise<vo
       }
 
       await applyHeaderFormatting(token, PROD_DEALER_SHEET_NAME, STORE_EXPORT_HEADERS.length, sessionId);
+      await applyHiddenColumns(token, PROD_DEALER_SHEET_NAME, sessionId);
       await applyStatusFormatting(token, PROD_DEALER_SHEET_NAME, prodRows, clearRows, sessionId);
     } finally {
       await closeSession(token, sessionId);

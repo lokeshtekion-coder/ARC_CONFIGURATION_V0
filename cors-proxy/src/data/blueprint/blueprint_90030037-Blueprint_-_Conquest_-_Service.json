@@ -10,6 +10,39 @@
   "decodedResponse": {
     "decodedSections": [
       {
+        "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
+        "sectionName": "Dispatching Workflows",
+        "sectionOrder": 8,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
+            "sectionName": "Dispatching Workflows",
+            "sectionOrder": 8,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "2440391a-3470-48ae-a17b-2f39882a8955",
+            "fieldName": null,
+            "title": "Additional Notes",
+            "type": "LONG_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 8,
+            "rawValue": "",
+            "decodedValue": "",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
         "sectionId": "da3bdf07-541a-484f-896e-165aad8719a3",
         "sectionName": "Labor Pricing",
         "sectionOrder": 7,
@@ -425,39 +458,6 @@
             "logic": null,
             "fieldOrder": 21,
             "hasUserValue": false,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
-        "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
-        "sectionName": "Dispatching Workflows",
-        "sectionOrder": 8,
-        "sectionType": "MAIN",
-        "logic": {
-          "displayActionType": "SHOW",
-          "ruleMatchCondition": "ALL",
-          "rules": []
-        },
-        "fields": [
-          {
-            "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
-            "sectionName": "Dispatching Workflows",
-            "sectionOrder": 8,
-            "sectionType": "MAIN",
-            "rowIndex": 4,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "2440391a-3470-48ae-a17b-2f39882a8955",
-            "fieldName": null,
-            "title": "Additional Notes",
-            "type": "LONG_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 8,
-            "rawValue": "",
-            "decodedValue": "",
-            "hasUserValue": true,
             "subsectionName": null
           }
         ]
@@ -1682,6 +1682,51 @@
         ]
       },
       {
+        "sectionId": "00e7a7c3-d503-4b14-b7a2-db6ceaadcbfb",
+        "sectionName": null,
+        "sectionOrder": 999,
+        "sectionType": "SUBMISSION",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "00e7a7c3-d503-4b14-b7a2-db6ceaadcbfb",
+            "sectionName": null,
+            "sectionOrder": 999,
+            "sectionType": "SUBMISSION",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "2dd688a8-05ae-4911-b891-0f32fc067381",
+            "fieldName": null,
+            "title": null,
+            "type": "LOGO",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "00e7a7c3-d503-4b14-b7a2-db6ceaadcbfb",
+            "sectionName": null,
+            "sectionOrder": 999,
+            "sectionType": "SUBMISSION",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "b0eab3a2-bcd1-42ad-bc1e-251ef51531ca",
+            "fieldName": null,
+            "title": null,
+            "type": "PARAGRAPH",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
         "sectionId": "8f854ccd-fa71-4270-9e1a-5ae04b9d4eb4",
         "sectionName": "Submitter Information",
         "sectionOrder": 10,
@@ -1785,54 +1830,21 @@
             "subsectionName": null
           }
         ]
-      },
-      {
-        "sectionId": "00e7a7c3-d503-4b14-b7a2-db6ceaadcbfb",
-        "sectionName": null,
-        "sectionOrder": 999,
-        "sectionType": "SUBMISSION",
-        "logic": null,
-        "fields": [
-          {
-            "sectionId": "00e7a7c3-d503-4b14-b7a2-db6ceaadcbfb",
-            "sectionName": null,
-            "sectionOrder": 999,
-            "sectionType": "SUBMISSION",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "2dd688a8-05ae-4911-b891-0f32fc067381",
-            "fieldName": null,
-            "title": null,
-            "type": "LOGO",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 1,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "00e7a7c3-d503-4b14-b7a2-db6ceaadcbfb",
-            "sectionName": null,
-            "sectionOrder": 999,
-            "sectionType": "SUBMISSION",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "b0eab3a2-bcd1-42ad-bc1e-251ef51531ca",
-            "fieldName": null,
-            "title": null,
-            "type": "PARAGRAPH",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 2,
-            "hasUserValue": false,
-            "subsectionName": null
-          }
-        ]
       }
     ],
     "allFields": [
+      {
+        "sectionName": "Dispatching Workflows",
+        "subsectionName": null,
+        "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
+        "fieldId": "2440391a-3470-48ae-a17b-2f39882a8955",
+        "title": "Additional Notes",
+        "type": "LONG_TEXT",
+        "required": false,
+        "rawValue": "",
+        "decodedValue": "",
+        "hasUserValue": true
+      },
       {
         "sectionName": "Labor Pricing",
         "subsectionName": null,
@@ -2030,18 +2042,6 @@
         "type": "LONG_TEXT",
         "required": false,
         "hasUserValue": false
-      },
-      {
-        "sectionName": "Dispatching Workflows",
-        "subsectionName": null,
-        "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
-        "fieldId": "2440391a-3470-48ae-a17b-2f39882a8955",
-        "title": "Additional Notes",
-        "type": "LONG_TEXT",
-        "required": false,
-        "rawValue": "",
-        "decodedValue": "",
-        "hasUserValue": true
       },
       {
         "sectionName": "General Service Information",
@@ -2628,6 +2628,26 @@
         "hasUserValue": true
       },
       {
+        "sectionName": null,
+        "subsectionName": null,
+        "sectionId": "00e7a7c3-d503-4b14-b7a2-db6ceaadcbfb",
+        "fieldId": "2dd688a8-05ae-4911-b891-0f32fc067381",
+        "title": null,
+        "type": "LOGO",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": null,
+        "subsectionName": null,
+        "sectionId": "00e7a7c3-d503-4b14-b7a2-db6ceaadcbfb",
+        "fieldId": "b0eab3a2-bcd1-42ad-bc1e-251ef51531ca",
+        "title": null,
+        "type": "PARAGRAPH",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
         "sectionName": "Submitter Information",
         "subsectionName": null,
         "sectionId": "8f854ccd-fa71-4270-9e1a-5ae04b9d4eb4",
@@ -2668,29 +2688,140 @@
         "type": "PARAGRAPH",
         "required": false,
         "hasUserValue": false
-      },
-      {
-        "sectionName": null,
-        "subsectionName": null,
-        "sectionId": "00e7a7c3-d503-4b14-b7a2-db6ceaadcbfb",
-        "fieldId": "2dd688a8-05ae-4911-b891-0f32fc067381",
-        "title": null,
-        "type": "LOGO",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": null,
-        "subsectionName": null,
-        "sectionId": "00e7a7c3-d503-4b14-b7a2-db6ceaadcbfb",
-        "fieldId": "b0eab3a2-bcd1-42ad-bc1e-251ef51531ca",
-        "title": null,
-        "type": "PARAGRAPH",
-        "required": false,
-        "hasUserValue": false
       }
     ],
     "populatedSections": [
+      {
+        "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
+        "sectionName": "Dispatching Workflows",
+        "sectionOrder": 8,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
+            "sectionName": "Dispatching Workflows",
+            "sectionOrder": 8,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "111494939",
+            "fieldName": null,
+            "title": "Allow Techs to Log on to Multiple Jobs?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 1,
+            "rawValue": [
+              "Yes"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
+            "sectionName": "Dispatching Workflows",
+            "sectionOrder": 8,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "111494950",
+            "fieldName": null,
+            "title": "For which job types can the techs log on to multiple jobs?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "111494939",
+                  "operator": "IS",
+                  "value": "Yes"
+                }
+              ]
+            },
+            "fieldOrder": 2,
+            "rawValue": [
+              "Customer Pay",
+              "Internal",
+              "Warranty"
+            ],
+            "decodedValue": [
+              "Customer Pay",
+              "Internal",
+              "Warranty"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
+            "sectionName": "Dispatching Workflows",
+            "sectionOrder": 8,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "111494959",
+            "fieldName": null,
+            "title": "What criteria do you use to pay technicians?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 3,
+            "rawValue": [
+              "By job, when each job is completed"
+            ],
+            "decodedValue": [
+              "By job, when each job is completed"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
+            "sectionName": "Dispatching Workflows",
+            "sectionOrder": 8,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "111494979",
+            "fieldName": null,
+            "title": "How are RO's dispatched to technicians?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 4,
+            "rawValue": [
+              "Advisors dispatch the work"
+            ],
+            "decodedValue": [
+              "Advisors dispatch the work"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
       {
         "sectionId": "da3bdf07-541a-484f-896e-165aad8719a3",
         "sectionName": "Labor Pricing",
@@ -2970,137 +3101,6 @@
             ],
             "decodedValue": [
               "No"
-            ],
-            "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
-        "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
-        "sectionName": "Dispatching Workflows",
-        "sectionOrder": 8,
-        "sectionType": "MAIN",
-        "logic": {
-          "displayActionType": "SHOW",
-          "ruleMatchCondition": "ALL",
-          "rules": []
-        },
-        "fields": [
-          {
-            "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
-            "sectionName": "Dispatching Workflows",
-            "sectionOrder": 8,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "111494939",
-            "fieldName": null,
-            "title": "Allow Techs to Log on to Multiple Jobs?",
-            "type": "MULTIPLE_CHOICE",
-            "required": true,
-            "logic": {
-              "displayActionType": "SHOW",
-              "ruleMatchCondition": "ALL",
-              "rules": []
-            },
-            "fieldOrder": 1,
-            "rawValue": [
-              "Yes"
-            ],
-            "decodedValue": [
-              "Yes"
-            ],
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
-            "sectionName": "Dispatching Workflows",
-            "sectionOrder": 8,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "111494950",
-            "fieldName": null,
-            "title": "For which job types can the techs log on to multiple jobs?",
-            "type": "MULTIPLE_CHOICE",
-            "required": true,
-            "logic": {
-              "displayActionType": "SHOW",
-              "ruleMatchCondition": "ALL",
-              "rules": [
-                {
-                  "fieldId": "111494939",
-                  "operator": "IS",
-                  "value": "Yes"
-                }
-              ]
-            },
-            "fieldOrder": 2,
-            "rawValue": [
-              "Customer Pay",
-              "Internal",
-              "Warranty"
-            ],
-            "decodedValue": [
-              "Customer Pay",
-              "Internal",
-              "Warranty"
-            ],
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
-            "sectionName": "Dispatching Workflows",
-            "sectionOrder": 8,
-            "sectionType": "MAIN",
-            "rowIndex": 2,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "111494959",
-            "fieldName": null,
-            "title": "What criteria do you use to pay technicians?",
-            "type": "MULTIPLE_CHOICE",
-            "required": true,
-            "logic": {
-              "displayActionType": "SHOW",
-              "ruleMatchCondition": "ALL",
-              "rules": []
-            },
-            "fieldOrder": 3,
-            "rawValue": [
-              "By job, when each job is completed"
-            ],
-            "decodedValue": [
-              "By job, when each job is completed"
-            ],
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "19045c0b-5371-44c4-b409-2aae928c2ecf",
-            "sectionName": "Dispatching Workflows",
-            "sectionOrder": 8,
-            "sectionType": "MAIN",
-            "rowIndex": 3,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "111494979",
-            "fieldName": null,
-            "title": "How are RO's dispatched to technicians?",
-            "type": "MULTIPLE_CHOICE",
-            "required": true,
-            "logic": null,
-            "fieldOrder": 4,
-            "rawValue": [
-              "Advisors dispatch the work"
-            ],
-            "decodedValue": [
-              "Advisors dispatch the work"
             ],
             "hasUserValue": true,
             "subsectionName": null
@@ -5708,5 +5708,5 @@
     ],
     "humanReadable": "[Labor Pricing > —] What is your default Customer labor rate?: 195\n[Labor Pricing > —] What is your default Warranty labor rate?: 170.77\n[Labor Pricing > —] Do you want to automatically close RO when warranty claim is submitted?: Yes\n[Labor Pricing > —] What is you default Warranty G/L Account?: Warranty Claim\n[Labor Pricing > —] What is your warranty parts markup percentage?: 59.7\n[Labor Pricing > —] What is your default Internal labor rate?: 195\n[Labor Pricing > —] Do you have an internal pay limit? (If so, please put the limit below): no\n[Labor Pricing > —] In which scenarios do you utilize a different labor rate than the default?: Service contract / Extended warranty, Diesel, Others: Rv and commercial\n[Labor Pricing > —] Please describe service contract specific labor rates: cost guard 71.09\nportfolio $120\n[Labor Pricing > —] Please describe Diesel specific labor rates: 250\n[Labor Pricing > —] Do you utilize a labor matrix?: No\n[General Service Information > —] Do you have a bodyshop or collision center?: No\n[General Service Information > —] Additional Notes: currently use pro demand for service pricing\n[Department Hours and Appointments > —] Department Hour Notes (if needed): M-F 7am-5:30\nSaturday and Sunday Closed\n[Department Hours and Appointments > —] Monday (Operating Hours):: 7-5:30\n[Department Hours and Appointments > —] Monday (Appointment Hours - can be same as operating hours):: 7-4:30\n[Department Hours and Appointments > —] Tuesday (Operating Hours):: 7-4:30\n[Department Hours and Appointments > —] Tuesday (Appointment Hours - can be same as operating hours):: 7-4:30\n[Department Hours and Appointments > —] Wednesday (Operating Hours):: 7-4:30\n[Department Hours and Appointments > —] Wednesday (Appointment Hours - can be same as operating hours):: 7-4:30\n[Department Hours and Appointments > —] Thursday (Operating Hours):: 7-4:30\n[Department Hours and Appointments > —] Thursday (Appointment Hours - can be same as operating hours):: 7-4:30\n[Department Hours and Appointments > —] Friday (Operating Hours):: 7-4:30\n[Department Hours and Appointments > —] Friday (Appointment Hours - can be same as operating hours):: 7-4:30\n[Department Hours and Appointments > —] Saturday (Operating Hours):: closed\n[Department Hours and Appointments > —] Saturday (Appointment Hours - can be same as operating hours):: closed\n[Department Hours and Appointments > —] Sunday (Operating Hours):: closed\n[Department Hours and Appointments > —] Sunday (Appointment Hours - can be same as operating hours):: closed\n[Department Hours and Appointments > —] In what frequency do you currently schedule service appointments?: Every 30 minutes\n[Department Hours and Appointments > —] What modes of transportation do you provide for customers? (select all that apply): Waiter, Drop-Off, Rental, Shuttle, Others: pick up and delivery\n[Department Hours and Appointments > —] Additional Information: will call\n[Fees > —] Do you charge for Shop Supplies?: Yes\n[Fees > —] On what basis are Shop Supplies calculated? (check all that apply): Labor\n[Fees > —] Description (Fee Name): Shop Supplies\n[Fees > —] Shop Supply Amount- % or Flat : 11.5%\n[Fees > —] Shop Supply G/L Account : 77750\n[Fees > —] Shop Supply Min. / Max. amounts: 6.50 / 150\n[Fees > —] What pay types do you charge Shop Supplies on?: Internal, Customer Pay\n[Fees > —] Are Shop Supplies taxable?: Yes\n[Fees > —] Do you charge a Fuel Fee?: Yes\n[Fees > —] Description (Fee Name): Fuel\n[Fees > —] Fuel Fee Amount- % or Flat: adjustable\n[Fees > —] Fuel Fee G/L Account : 77750\n[Fees > —] Fuel Fee Min. / Max. amounts: adjustable\n[Fees > —] Is your Fuel Fee taxable?: no\n[Fees > —] Please list any additional fees you may use: This is something we are not currently charging but need to be able to when we put fuel in a customers car\n[Discounts/Coupons > —] Please list all discounts (put \"None\" if you don't use discounts): AAA-10% upto $50, EDIS- employee labor discount 25% off labor only,\n[Submitter Information > —] Is there anything else we need to know about your service department?: no i don't belive so"
   },
-  "savedAt": "2026-10-06T16:20:13.433Z"
+  "savedAt": "2026-10-14T13:50:58.482Z"
 }

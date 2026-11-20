@@ -1,5 +1,6 @@
 import type { StoreRecord } from "./storesDb";
 import { getSlackSession, sendSlackChannelMessage } from "./storeSlackHelper";
+import { isNotWorkedByArc } from "./storeAssessment";
 
 export const ASSIGNEE_OPTIONS = [
   "Amaresh M",
@@ -202,6 +203,10 @@ export function isEligibleForAutoAssign(store: StoreRecord): boolean {
   if (store.not_worked && store.not_worked.trim() !== "") {
     return false;
   }
+  // Decommissioned in Pre-Prod or Enterprise tenant: ARC does not work these, even if Not Worked is blank
+  if (isNotWorkedByArc(store)) {
+    return false;
+  }
 
   // 3. Fixed Ops Status Gate: Must NOT be completed
   if (isFixedOpsComplete(store.fixed_ops_status)) {
@@ -219,37 +224,44 @@ export function isEligibleForAutoAssign(store: StoreRecord): boolean {
 /**
  * Sends an alert directly to Slack channel C0C5QBWEM8X for an auto-assigned dealership
  */
-async function notifySlackAssignment(store: StoreRecord, assignedTo: string): Promise<void> {
+/**
+ * One grouped Slack message for every store assigned in this run.
+ * Groups by team member so each person can see their new stores at a glance.
+ */
+export async function sendNewAssignmentsNotice(stores: StoreRecord[]): Promise<void> {
+  if (!stores.length) return;
   const session = getSlackSession();
   if (!session.slackToken || !session.slackDCookie) {
-    console.warn("[assigneeService] Slack session inactive. Cannot dispatch assignment alert.");
+    console.warn("[assigneeService] Slack session inactive. Cannot dispatch assignment notice.");
     return;
   }
 
-  const dealerName = store.dba_name || "Unknown Dealer";
-  const dealerId = store.dealer_id || "—";
-  const tekionId = store.tekion_id || "—";
-  const pod = store.superpod_id || "—";
-  const fixedOpsStatus = store.fixed_ops_status || "TO DO";
-  const goLive = store.launch_date || "—";
+  const byPerson = new Map<string, StoreRecord[]>();
+  for (const s of stores) {
+    const who = String((s as any).custom_assignee ?? "").trim() || "Unassigned";
+    byPerson.set(who, [...(byPerson.get(who) ?? []), s]);
+  }
+  const stamp = new Date().toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" });
+  const lines: string[] = [
+    `🆕 *${stores.length} new Fixed Ops assignment${stores.length === 1 ? "" : "s"}* · ${stamp}`,
+    `_Why you're getting this: these stores have Parts and Service blueprints complete and Fixed Ops is still pending, so the bot assigned them using the assignment rules._`,
+  ];
 
-  const messageText =
-`🎯 *Store Auto-Assigned (Fixed Ops Track)*
-• *Dealership:* ${dealerName}
-• *Dealer ID:* \`${dealerId}\` | *Tekion ID:* \`${tekionId}\`
-• *POD:* *POD ${pod}*
-• *Assigned To:* *${assignedTo}*
-• *Blueprint Status:* Parts: \`COMPLETED\` | Service: \`COMPLETED\`
-• *Fixed Ops Status:* \`${fixedOpsStatus}\` (Pending Configuration)
-• *Go-Live:* ${goLive}`;
+  for (const [person, list] of Array.from(byPerson.entries()).sort((a, b) => a[0].localeCompare(b[0]))) {
+    lines.push("", "────────────────────────────", `👤 *${person}* — ${list.length} store${list.length === 1 ? "" : "s"}`);
+    list.forEach((s, i) => {
+      const pod = s.superpod_id ? `POD ${s.superpod_id}` : "POD —";
+      lines.push(
+        `${i + 1}. *${s.dba_name || "Dealership"}* · #${s.dealer_id || "—"} · ${pod}`,
+        `      Go-live ${s.launch_date || "—"} · Fixed Ops: ${s.fixed_ops_status || "TO DO"}`
+      );
+    });
+  }
 
   try {
-    await sendSlackChannelMessage({
-      channelId: OPERATIONS_CHANNEL_ID,
-      text: messageText,
-    });
+    await sendSlackChannelMessage({ channelId: OPERATIONS_CHANNEL_ID, text: lines.join("\n") });
   } catch (err) {
-    console.error("[assigneeService] Failed to send assignment Slack alert:", err);
+    console.error("[assigneeService] Failed to send assignment notice:", err);
   }
 }
 
@@ -294,8 +306,6 @@ export function runAutoAssign(
     state[store.tekion_id] = { assignee: pick, source: "bot" };
     events.push(makeEvent(store, pick, "", "bot"));
 
-    // Immediate notification per store (no digest)
-    void notifySlackAssignment(updatedStore, pick);
   }
 
   if (events.length) {

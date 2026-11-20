@@ -18,7 +18,7 @@ const DEFAULT_ALLOWED_HOST_PATTERNS = [
   // Microsoft Graph & Azure Auth
   /^graph\.microsoft\.com$/i,
   /^login\.microsoftonline\.com$/i,
-  // AWS S3 Assets (if applicable)
+  // AWS S3 Assets
   /^com-tekioncloud-[a-z0-9-]+\.s3\.us-west-1\.amazonaws\.com$/i,
 ];
 
@@ -99,6 +99,71 @@ router.get("/health", (_req: Request, res: Response) => {
   });
 });
 
+/**
+ * DIRECT MULTIPART STREAMING UPLOAD ROUTE
+ * Handles multipart file uploads directly without body-parser buffering or stream locking.
+ */
+router.post("/upload", async (req: Request, res: Response) => {
+  const targetUrl = typeof req.query.url === "string" ? req.query.url : "";
+
+  if (!targetUrl) {
+    return res.status(400).json({
+      ok: false,
+      error: { code: "INVALID_URL", message: "Missing target URL in query (?url=...)" },
+    });
+  }
+
+  const validation = validateTargetUrl(targetUrl);
+  if (!validation.valid) {
+    console.warn(`[proxy] 🛡️ Blocked SSRF attempt on upload: ${validation.error} (URL: ${targetUrl})`);
+    return res.status(403).json({
+      ok: false,
+      error: { code: "FORBIDDEN_DESTINATION", message: validation.error },
+    });
+  }
+
+  try {
+    // Collect forwarded headers, stripping host and hop-by-hop headers
+    const forwardHeaders: Record<string, string> = {};
+    for (const [key, value] of Object.entries(req.headers)) {
+      const lower = key.toLowerCase();
+      if (
+        lower !== "host" &&
+        lower !== "connection" &&
+        lower !== "content-length" &&
+        typeof value === "string" &&
+        value.trim()
+      ) {
+        forwardHeaders[key] = value;
+      }
+    }
+
+    // Pipe the unconsumed raw incoming request stream directly to Tekion
+    const upstreamResponse = await fetch(targetUrl, {
+      method: "POST",
+      headers: forwardHeaders,
+      body: req as any,
+      // @ts-ignore Node 18+ duplex requirement for streaming request bodies
+      duplex: "half",
+    });
+
+    const responseText = await upstreamResponse.text();
+    return res.status(upstreamResponse.status).send(responseText);
+  } catch (err: any) {
+    console.error("[proxy/upload] Upstream streaming error:", err?.message || err);
+    return res.status(502).json({
+      ok: false,
+      error: {
+        code: "UPSTREAM_UPLOAD_GATEWAY_ERROR",
+        message: err?.message || "Failed to forward upload stream",
+      },
+    });
+  }
+});
+
+/**
+ * STANDARD JSON / PROXY ROUTE
+ */
 router.post("/", async (req: Request, res: Response) => {
   try {
     const {
@@ -193,7 +258,6 @@ router.post("/", async (req: Request, res: Response) => {
       delete forwardedHeaders["Content-Type"];
     }
 
-    // Enforce safe timeouts and content ceilings (25MB max to prevent memory crashes)
     const MAX_RESPONSE_BYTES = 25 * 1024 * 1024; // 25 MB
     const safeTimeout = Math.min(Math.max(Number(timeout) || 45000, 1000), 90000); // 1s - 90s bound
 
@@ -204,7 +268,7 @@ router.post("/", async (req: Request, res: Response) => {
       data: outgoingData,
       timeout: safeTimeout,
       validateStatus: () => true, // Don't throw on 4xx/5xx; pass upstream status cleanly
-      maxRedirects: 3, // Constrained redirect depth
+      maxRedirects: 3,
       maxBodyLength: MAX_RESPONSE_BYTES,
       maxContentLength: MAX_RESPONSE_BYTES,
     });

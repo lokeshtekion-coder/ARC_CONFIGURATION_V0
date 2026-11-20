@@ -186,11 +186,16 @@ app.use(
   express.urlencoded({ extended: true, limit: "50mb" })
 );
 
-app.use(
-  "/api/proxy",
-  express.json({ limit: "10mb" }),
-  express.urlencoded({ extended: true, limit: "10mb" })
-);
+// Apply JSON parser to /api/proxy EXCEPT for /api/proxy/upload (which is a raw multipart stream)
+app.use("/api/proxy", (req: Request, res: Response, next: NextFunction) => {
+  if (req.path === "/upload" || req.url.startsWith("/upload")) {
+    return next(); // Keep stream open and unbuffered for /upload
+  }
+  express.json({ limit: "100mb" })(req, res, (err) => {
+    if (err) return next(err);
+    express.urlencoded({ extended: true, limit: "100mb" })(req, res, next);
+  });
+});
 
 app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true, limit: "2mb" }));

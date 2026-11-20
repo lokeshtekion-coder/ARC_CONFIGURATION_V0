@@ -1081,85 +1081,6 @@
         ]
       },
       {
-        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
-        "sectionName": "Finance Company #11",
-        "sectionOrder": 30,
-        "sectionType": "MAIN",
-        "logic": {
-          "displayActionType": "SHOW",
-          "ruleMatchCondition": "ANY",
-          "rules": [
-            {
-              "fieldId": "103601013",
-              "operator": "IS",
-              "value": "11"
-            },
-            {
-              "fieldId": "103601013",
-              "operator": "IS",
-              "value": "12"
-            },
-            {
-              "fieldId": "103601013",
-              "operator": "IS",
-              "value": "13"
-            },
-            {
-              "fieldId": "103601013",
-              "operator": "IS",
-              "value": "14"
-            },
-            {
-              "fieldId": "103601013",
-              "operator": "IS",
-              "value": "15"
-            }
-          ]
-        },
-        "fields": [
-          {
-            "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
-            "sectionName": "Finance Company #11",
-            "sectionOrder": 30,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601045",
-            "fieldName": null,
-            "title": "Finance Company Name",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 1,
-            "rawValue": "Chrysler Capital",
-            "decodedValue": "Chrysler Capital",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
-            "sectionName": "Finance Company #11",
-            "sectionOrder": 30,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601046",
-            "fieldName": null,
-            "title": "Finance Company GL Account Number",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 2,
-            "rawValue": "457F-N, 481F-U",
-            "decodedValue": "457F-N, 481F-U",
-            "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
         "sectionId": "afd2cf6c-73fa-4a22-902a-ce770c99362c",
         "sectionName": "Parts Counter Sales",
         "sectionOrder": 79,
@@ -1332,6 +1253,85 @@
             },
             "fieldOrder": 7,
             "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
+        "sectionName": "Finance Company #11",
+        "sectionOrder": 30,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ANY",
+          "rules": [
+            {
+              "fieldId": "103601013",
+              "operator": "IS",
+              "value": "11"
+            },
+            {
+              "fieldId": "103601013",
+              "operator": "IS",
+              "value": "12"
+            },
+            {
+              "fieldId": "103601013",
+              "operator": "IS",
+              "value": "13"
+            },
+            {
+              "fieldId": "103601013",
+              "operator": "IS",
+              "value": "14"
+            },
+            {
+              "fieldId": "103601013",
+              "operator": "IS",
+              "value": "15"
+            }
+          ]
+        },
+        "fields": [
+          {
+            "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
+            "sectionName": "Finance Company #11",
+            "sectionOrder": 30,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601045",
+            "fieldName": null,
+            "title": "Finance Company Name",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "Chrysler Capital",
+            "decodedValue": "Chrysler Capital",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
+            "sectionName": "Finance Company #11",
+            "sectionOrder": 30,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601046",
+            "fieldName": null,
+            "title": "Finance Company GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "457F-N, 481F-U",
+            "decodedValue": "457F-N, 481F-U",
+            "hasUserValue": true,
             "subsectionName": null
           }
         ]
@@ -10747,6 +10747,137 @@
         ]
       },
       {
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "sectionName": "Parts Accounting Settings",
+        "sectionOrder": 78,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+            "sectionName": "Parts Accounting Settings",
+            "sectionOrder": 78,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "8854a738-188d-4196-a737-5d78c74b9986",
+            "fieldName": null,
+            "title": null,
+            "type": "PARAGRAPH",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+            "sectionName": "Parts Accounting Settings",
+            "sectionOrder": 78,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "bef4d154-9be3-48b6-ae88-10c7e46c4f6a",
+            "fieldName": null,
+            "title": "Please select all that are taxable: ",
+            "type": "MULTIPLE_CHOICE",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "OTHERS_OPTION"
+            ],
+            "decodedValue": [
+              "Others: NH is sales tax free"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+            "sectionName": "Parts Accounting Settings",
+            "sectionOrder": 78,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "22c63e6b-0044-4074-a961-8f8b9420a9b0",
+            "fieldName": null,
+            "title": "What is the parts tax rate? ",
+            "type": "SINGLE_CHOICE",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "OTHERS_OPTION",
+            "decodedValue": "Others: no tax",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+            "sectionName": "Parts Accounting Settings",
+            "sectionOrder": 78,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "d1a6539b-4a6a-435c-9b81-866244192f13",
+            "fieldName": null,
+            "title": "What is your current parts invoice #? ",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "152783",
+            "decodedValue": "152783",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+            "sectionName": "Parts Accounting Settings",
+            "sectionOrder": 78,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "09167fae-dd4a-4c07-82c1-6e18c44a11ee",
+            "fieldName": null,
+            "title": "What would you like your starting Purchase Order number to be?",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "1",
+            "decodedValue": "1",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+            "sectionName": "Parts Accounting Settings",
+            "sectionOrder": 78,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "da81dd84-f276-49ad-bbb0-d798f3599804",
+            "fieldName": null,
+            "title": "What do you want to start your parts invoice numbers in Tekion?",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "160000",
+            "decodedValue": "160000",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
         "sectionId": "090d9438-b03d-4576-a421-f494ccdb8f6a",
         "sectionName": "Service Accounting Settings",
         "sectionOrder": 70,
@@ -10948,137 +11079,6 @@
             "decodedValue": [
               "Others: BASYS but we are going to Tekion Pay"
             ],
-            "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "sectionName": "Parts Accounting Settings",
-        "sectionOrder": 78,
-        "sectionType": "MAIN",
-        "logic": null,
-        "fields": [
-          {
-            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-            "sectionName": "Parts Accounting Settings",
-            "sectionOrder": 78,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "8854a738-188d-4196-a737-5d78c74b9986",
-            "fieldName": null,
-            "title": null,
-            "type": "PARAGRAPH",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-            "sectionName": "Parts Accounting Settings",
-            "sectionOrder": 78,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "bef4d154-9be3-48b6-ae88-10c7e46c4f6a",
-            "fieldName": null,
-            "title": "Please select all that are taxable: ",
-            "type": "MULTIPLE_CHOICE",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "rawValue": [
-              "OTHERS_OPTION"
-            ],
-            "decodedValue": [
-              "Others: NH is sales tax free"
-            ],
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-            "sectionName": "Parts Accounting Settings",
-            "sectionOrder": 78,
-            "sectionType": "MAIN",
-            "rowIndex": 2,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "22c63e6b-0044-4074-a961-8f8b9420a9b0",
-            "fieldName": null,
-            "title": "What is the parts tax rate? ",
-            "type": "SINGLE_CHOICE",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "rawValue": "OTHERS_OPTION",
-            "decodedValue": "Others: no tax",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-            "sectionName": "Parts Accounting Settings",
-            "sectionOrder": 78,
-            "sectionType": "MAIN",
-            "rowIndex": 3,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "d1a6539b-4a6a-435c-9b81-866244192f13",
-            "fieldName": null,
-            "title": "What is your current parts invoice #? ",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "rawValue": "152783",
-            "decodedValue": "152783",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-            "sectionName": "Parts Accounting Settings",
-            "sectionOrder": 78,
-            "sectionType": "MAIN",
-            "rowIndex": 4,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "09167fae-dd4a-4c07-82c1-6e18c44a11ee",
-            "fieldName": null,
-            "title": "What would you like your starting Purchase Order number to be?",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "rawValue": "1",
-            "decodedValue": "1",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-            "sectionName": "Parts Accounting Settings",
-            "sectionOrder": 78,
-            "sectionType": "MAIN",
-            "rowIndex": 5,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "da81dd84-f276-49ad-bbb0-d798f3599804",
-            "fieldName": null,
-            "title": "What do you want to start your parts invoice numbers in Tekion?",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "rawValue": "160000",
-            "decodedValue": "160000",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -14991,30 +14991,6 @@
         "hasUserValue": false
       },
       {
-        "sectionName": "Finance Company #11",
-        "subsectionName": null,
-        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
-        "fieldId": "103601045",
-        "title": "Finance Company Name",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "Chrysler Capital",
-        "decodedValue": "Chrysler Capital",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Finance Company #11",
-        "subsectionName": null,
-        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
-        "fieldId": "103601046",
-        "title": "Finance Company GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "457F-N, 481F-U",
-        "decodedValue": "457F-N, 481F-U",
-        "hasUserValue": true
-      },
-      {
         "sectionName": "Parts Counter Sales",
         "subsectionName": null,
         "sectionId": "afd2cf6c-73fa-4a22-902a-ce770c99362c",
@@ -15095,6 +15071,30 @@
         "type": "SHORT_TEXT",
         "required": false,
         "hasUserValue": false
+      },
+      {
+        "sectionName": "Finance Company #11",
+        "subsectionName": null,
+        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
+        "fieldId": "103601045",
+        "title": "Finance Company Name",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "Chrysler Capital",
+        "decodedValue": "Chrysler Capital",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Finance Company #11",
+        "subsectionName": null,
+        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
+        "fieldId": "103601046",
+        "title": "Finance Company GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "457F-N, 481F-U",
+        "decodedValue": "457F-N, 481F-U",
+        "hasUserValue": true
       },
       {
         "sectionName": "Check - Vehicle Sales",
@@ -19215,6 +19215,80 @@
         "hasUserValue": true
       },
       {
+        "sectionName": "Parts Accounting Settings",
+        "subsectionName": null,
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "8854a738-188d-4196-a737-5d78c74b9986",
+        "title": null,
+        "type": "PARAGRAPH",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Parts Accounting Settings",
+        "subsectionName": null,
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "bef4d154-9be3-48b6-ae88-10c7e46c4f6a",
+        "title": "Please select all that are taxable: ",
+        "type": "MULTIPLE_CHOICE",
+        "required": false,
+        "rawValue": [
+          "OTHERS_OPTION"
+        ],
+        "decodedValue": [
+          "Others: NH is sales tax free"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Parts Accounting Settings",
+        "subsectionName": null,
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "22c63e6b-0044-4074-a961-8f8b9420a9b0",
+        "title": "What is the parts tax rate? ",
+        "type": "SINGLE_CHOICE",
+        "required": false,
+        "rawValue": "OTHERS_OPTION",
+        "decodedValue": "Others: no tax",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Parts Accounting Settings",
+        "subsectionName": null,
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "d1a6539b-4a6a-435c-9b81-866244192f13",
+        "title": "What is your current parts invoice #? ",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "152783",
+        "decodedValue": "152783",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Parts Accounting Settings",
+        "subsectionName": null,
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "09167fae-dd4a-4c07-82c1-6e18c44a11ee",
+        "title": "What would you like your starting Purchase Order number to be?",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "1",
+        "decodedValue": "1",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Parts Accounting Settings",
+        "subsectionName": null,
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "da81dd84-f276-49ad-bbb0-d798f3599804",
+        "title": "What do you want to start your parts invoice numbers in Tekion?",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "160000",
+        "decodedValue": "160000",
+        "hasUserValue": true
+      },
+      {
         "sectionName": "Service Accounting Settings",
         "subsectionName": null,
         "sectionId": "090d9438-b03d-4576-a421-f494ccdb8f6a",
@@ -19328,80 +19402,6 @@
         "decodedValue": [
           "Others: BASYS but we are going to Tekion Pay"
         ],
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "subsectionName": null,
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "8854a738-188d-4196-a737-5d78c74b9986",
-        "title": null,
-        "type": "PARAGRAPH",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "subsectionName": null,
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "bef4d154-9be3-48b6-ae88-10c7e46c4f6a",
-        "title": "Please select all that are taxable: ",
-        "type": "MULTIPLE_CHOICE",
-        "required": false,
-        "rawValue": [
-          "OTHERS_OPTION"
-        ],
-        "decodedValue": [
-          "Others: NH is sales tax free"
-        ],
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "subsectionName": null,
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "22c63e6b-0044-4074-a961-8f8b9420a9b0",
-        "title": "What is the parts tax rate? ",
-        "type": "SINGLE_CHOICE",
-        "required": false,
-        "rawValue": "OTHERS_OPTION",
-        "decodedValue": "Others: no tax",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "subsectionName": null,
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "d1a6539b-4a6a-435c-9b81-866244192f13",
-        "title": "What is your current parts invoice #? ",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "152783",
-        "decodedValue": "152783",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "subsectionName": null,
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "09167fae-dd4a-4c07-82c1-6e18c44a11ee",
-        "title": "What would you like your starting Purchase Order number to be?",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "1",
-        "decodedValue": "1",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "subsectionName": null,
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "da81dd84-f276-49ad-bbb0-d798f3599804",
-        "title": "What do you want to start your parts invoice numbers in Tekion?",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "160000",
-        "decodedValue": "160000",
         "hasUserValue": true
       },
       {
@@ -21546,85 +21546,6 @@
         ]
       },
       {
-        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
-        "sectionName": "Finance Company #11",
-        "sectionOrder": 30,
-        "sectionType": "MAIN",
-        "logic": {
-          "displayActionType": "SHOW",
-          "ruleMatchCondition": "ANY",
-          "rules": [
-            {
-              "fieldId": "103601013",
-              "operator": "IS",
-              "value": "11"
-            },
-            {
-              "fieldId": "103601013",
-              "operator": "IS",
-              "value": "12"
-            },
-            {
-              "fieldId": "103601013",
-              "operator": "IS",
-              "value": "13"
-            },
-            {
-              "fieldId": "103601013",
-              "operator": "IS",
-              "value": "14"
-            },
-            {
-              "fieldId": "103601013",
-              "operator": "IS",
-              "value": "15"
-            }
-          ]
-        },
-        "fields": [
-          {
-            "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
-            "sectionName": "Finance Company #11",
-            "sectionOrder": 30,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601045",
-            "fieldName": null,
-            "title": "Finance Company Name",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 1,
-            "rawValue": "Chrysler Capital",
-            "decodedValue": "Chrysler Capital",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
-            "sectionName": "Finance Company #11",
-            "sectionOrder": 30,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601046",
-            "fieldName": null,
-            "title": "Finance Company GL Account Number",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 2,
-            "rawValue": "457F-N, 481F-U",
-            "decodedValue": "457F-N, 481F-U",
-            "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
         "sectionId": "afd2cf6c-73fa-4a22-902a-ce770c99362c",
         "sectionName": "Parts Counter Sales",
         "sectionOrder": 79,
@@ -21712,6 +21633,85 @@
             "fieldOrder": 6,
             "rawValue": "574A",
             "decodedValue": "574A",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
+        "sectionName": "Finance Company #11",
+        "sectionOrder": 30,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ANY",
+          "rules": [
+            {
+              "fieldId": "103601013",
+              "operator": "IS",
+              "value": "11"
+            },
+            {
+              "fieldId": "103601013",
+              "operator": "IS",
+              "value": "12"
+            },
+            {
+              "fieldId": "103601013",
+              "operator": "IS",
+              "value": "13"
+            },
+            {
+              "fieldId": "103601013",
+              "operator": "IS",
+              "value": "14"
+            },
+            {
+              "fieldId": "103601013",
+              "operator": "IS",
+              "value": "15"
+            }
+          ]
+        },
+        "fields": [
+          {
+            "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
+            "sectionName": "Finance Company #11",
+            "sectionOrder": 30,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601045",
+            "fieldName": null,
+            "title": "Finance Company Name",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "Chrysler Capital",
+            "decodedValue": "Chrysler Capital",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
+            "sectionName": "Finance Company #11",
+            "sectionOrder": 30,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601046",
+            "fieldName": null,
+            "title": "Finance Company GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "457F-N, 481F-U",
+            "decodedValue": "457F-N, 481F-U",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -29064,6 +29064,119 @@
         ]
       },
       {
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "sectionName": "Parts Accounting Settings",
+        "sectionOrder": 78,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+            "sectionName": "Parts Accounting Settings",
+            "sectionOrder": 78,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "bef4d154-9be3-48b6-ae88-10c7e46c4f6a",
+            "fieldName": null,
+            "title": "Please select all that are taxable: ",
+            "type": "MULTIPLE_CHOICE",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "OTHERS_OPTION"
+            ],
+            "decodedValue": [
+              "Others: NH is sales tax free"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+            "sectionName": "Parts Accounting Settings",
+            "sectionOrder": 78,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "22c63e6b-0044-4074-a961-8f8b9420a9b0",
+            "fieldName": null,
+            "title": "What is the parts tax rate? ",
+            "type": "SINGLE_CHOICE",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "OTHERS_OPTION",
+            "decodedValue": "Others: no tax",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+            "sectionName": "Parts Accounting Settings",
+            "sectionOrder": 78,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "d1a6539b-4a6a-435c-9b81-866244192f13",
+            "fieldName": null,
+            "title": "What is your current parts invoice #? ",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "152783",
+            "decodedValue": "152783",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+            "sectionName": "Parts Accounting Settings",
+            "sectionOrder": 78,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "09167fae-dd4a-4c07-82c1-6e18c44a11ee",
+            "fieldName": null,
+            "title": "What would you like your starting Purchase Order number to be?",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "1",
+            "decodedValue": "1",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+            "sectionName": "Parts Accounting Settings",
+            "sectionOrder": 78,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "da81dd84-f276-49ad-bbb0-d798f3599804",
+            "fieldName": null,
+            "title": "What do you want to start your parts invoice numbers in Tekion?",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "160000",
+            "decodedValue": "160000",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
         "sectionId": "090d9438-b03d-4576-a421-f494ccdb8f6a",
         "sectionName": "Service Accounting Settings",
         "sectionOrder": 70,
@@ -29219,119 +29332,6 @@
             "decodedValue": [
               "Others: BASYS but we are going to Tekion Pay"
             ],
-            "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "sectionName": "Parts Accounting Settings",
-        "sectionOrder": 78,
-        "sectionType": "MAIN",
-        "logic": null,
-        "fields": [
-          {
-            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-            "sectionName": "Parts Accounting Settings",
-            "sectionOrder": 78,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "bef4d154-9be3-48b6-ae88-10c7e46c4f6a",
-            "fieldName": null,
-            "title": "Please select all that are taxable: ",
-            "type": "MULTIPLE_CHOICE",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "rawValue": [
-              "OTHERS_OPTION"
-            ],
-            "decodedValue": [
-              "Others: NH is sales tax free"
-            ],
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-            "sectionName": "Parts Accounting Settings",
-            "sectionOrder": 78,
-            "sectionType": "MAIN",
-            "rowIndex": 2,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "22c63e6b-0044-4074-a961-8f8b9420a9b0",
-            "fieldName": null,
-            "title": "What is the parts tax rate? ",
-            "type": "SINGLE_CHOICE",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "rawValue": "OTHERS_OPTION",
-            "decodedValue": "Others: no tax",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-            "sectionName": "Parts Accounting Settings",
-            "sectionOrder": 78,
-            "sectionType": "MAIN",
-            "rowIndex": 3,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "d1a6539b-4a6a-435c-9b81-866244192f13",
-            "fieldName": null,
-            "title": "What is your current parts invoice #? ",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "rawValue": "152783",
-            "decodedValue": "152783",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-            "sectionName": "Parts Accounting Settings",
-            "sectionOrder": 78,
-            "sectionType": "MAIN",
-            "rowIndex": 4,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "09167fae-dd4a-4c07-82c1-6e18c44a11ee",
-            "fieldName": null,
-            "title": "What would you like your starting Purchase Order number to be?",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "rawValue": "1",
-            "decodedValue": "1",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-            "sectionName": "Parts Accounting Settings",
-            "sectionOrder": 78,
-            "sectionType": "MAIN",
-            "rowIndex": 5,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "da81dd84-f276-49ad-bbb0-d798f3599804",
-            "fieldName": null,
-            "title": "What do you want to start your parts invoice numbers in Tekion?",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "rawValue": "160000",
-            "decodedValue": "160000",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -30025,30 +30025,6 @@
         "hasUserValue": true
       },
       {
-        "sectionName": "Finance Company #11",
-        "subsectionName": null,
-        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
-        "fieldId": "103601045",
-        "title": "Finance Company Name",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "Chrysler Capital",
-        "decodedValue": "Chrysler Capital",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Finance Company #11",
-        "subsectionName": null,
-        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
-        "fieldId": "103601046",
-        "title": "Finance Company GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "457F-N, 481F-U",
-        "decodedValue": "457F-N, 481F-U",
-        "hasUserValue": true
-      },
-      {
         "sectionName": "Parts Counter Sales",
         "subsectionName": null,
         "sectionId": "afd2cf6c-73fa-4a22-902a-ce770c99362c",
@@ -30098,6 +30074,30 @@
         "required": false,
         "rawValue": "574A",
         "decodedValue": "574A",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Finance Company #11",
+        "subsectionName": null,
+        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
+        "fieldId": "103601045",
+        "title": "Finance Company Name",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "Chrysler Capital",
+        "decodedValue": "Chrysler Capital",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Finance Company #11",
+        "subsectionName": null,
+        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
+        "fieldId": "103601046",
+        "title": "Finance Company GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "457F-N, 481F-U",
+        "decodedValue": "457F-N, 481F-U",
         "hasUserValue": true
       },
       {
@@ -32999,6 +32999,70 @@
         "hasUserValue": true
       },
       {
+        "sectionName": "Parts Accounting Settings",
+        "subsectionName": null,
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "bef4d154-9be3-48b6-ae88-10c7e46c4f6a",
+        "title": "Please select all that are taxable: ",
+        "type": "MULTIPLE_CHOICE",
+        "required": false,
+        "rawValue": [
+          "OTHERS_OPTION"
+        ],
+        "decodedValue": [
+          "Others: NH is sales tax free"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Parts Accounting Settings",
+        "subsectionName": null,
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "22c63e6b-0044-4074-a961-8f8b9420a9b0",
+        "title": "What is the parts tax rate? ",
+        "type": "SINGLE_CHOICE",
+        "required": false,
+        "rawValue": "OTHERS_OPTION",
+        "decodedValue": "Others: no tax",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Parts Accounting Settings",
+        "subsectionName": null,
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "d1a6539b-4a6a-435c-9b81-866244192f13",
+        "title": "What is your current parts invoice #? ",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "152783",
+        "decodedValue": "152783",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Parts Accounting Settings",
+        "subsectionName": null,
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "09167fae-dd4a-4c07-82c1-6e18c44a11ee",
+        "title": "What would you like your starting Purchase Order number to be?",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "1",
+        "decodedValue": "1",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Parts Accounting Settings",
+        "subsectionName": null,
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "da81dd84-f276-49ad-bbb0-d798f3599804",
+        "title": "What do you want to start your parts invoice numbers in Tekion?",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "160000",
+        "decodedValue": "160000",
+        "hasUserValue": true
+      },
+      {
         "sectionName": "Service Accounting Settings",
         "subsectionName": null,
         "sectionId": "090d9438-b03d-4576-a421-f494ccdb8f6a",
@@ -33092,70 +33156,6 @@
         "decodedValue": [
           "Others: BASYS but we are going to Tekion Pay"
         ],
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "subsectionName": null,
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "bef4d154-9be3-48b6-ae88-10c7e46c4f6a",
-        "title": "Please select all that are taxable: ",
-        "type": "MULTIPLE_CHOICE",
-        "required": false,
-        "rawValue": [
-          "OTHERS_OPTION"
-        ],
-        "decodedValue": [
-          "Others: NH is sales tax free"
-        ],
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "subsectionName": null,
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "22c63e6b-0044-4074-a961-8f8b9420a9b0",
-        "title": "What is the parts tax rate? ",
-        "type": "SINGLE_CHOICE",
-        "required": false,
-        "rawValue": "OTHERS_OPTION",
-        "decodedValue": "Others: no tax",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "subsectionName": null,
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "d1a6539b-4a6a-435c-9b81-866244192f13",
-        "title": "What is your current parts invoice #? ",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "152783",
-        "decodedValue": "152783",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "subsectionName": null,
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "09167fae-dd4a-4c07-82c1-6e18c44a11ee",
-        "title": "What would you like your starting Purchase Order number to be?",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "1",
-        "decodedValue": "1",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "subsectionName": null,
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "da81dd84-f276-49ad-bbb0-d798f3599804",
-        "title": "What do you want to start your parts invoice numbers in Tekion?",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "160000",
-        "decodedValue": "160000",
         "hasUserValue": true
       },
       {
@@ -33563,24 +33563,6 @@
         "decodedValue": "15"
       },
       {
-        "sectionName": "Finance Company #11",
-        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
-        "fieldId": "103601045",
-        "title": "Finance Company Name",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "Chrysler Capital"
-      },
-      {
-        "sectionName": "Finance Company #11",
-        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
-        "fieldId": "103601046",
-        "title": "Finance Company GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "457F-N, 481F-U"
-      },
-      {
         "sectionName": "Parts Counter Sales",
         "sectionId": "afd2cf6c-73fa-4a22-902a-ce770c99362c",
         "fieldId": "103601164",
@@ -33615,6 +33597,24 @@
         "type": "SHORT_TEXT",
         "required": "false",
         "decodedValue": "574A"
+      },
+      {
+        "sectionName": "Finance Company #11",
+        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
+        "fieldId": "103601045",
+        "title": "Finance Company Name",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "Chrysler Capital"
+      },
+      {
+        "sectionName": "Finance Company #11",
+        "sectionId": "f43f6841-2ebf-4253-b7b7-b67b4cfd3a93",
+        "fieldId": "103601046",
+        "title": "Finance Company GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "457F-N, 481F-U"
       },
       {
         "sectionName": "Check - Vehicle Sales",
@@ -35588,6 +35588,51 @@
         "decodedValue": "No sales tax in NH"
       },
       {
+        "sectionName": "Parts Accounting Settings",
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "bef4d154-9be3-48b6-ae88-10c7e46c4f6a",
+        "title": "Please select all that are taxable: ",
+        "type": "MULTIPLE_CHOICE",
+        "required": "false",
+        "decodedValue": "[\"Others: NH is sales tax free\"]"
+      },
+      {
+        "sectionName": "Parts Accounting Settings",
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "22c63e6b-0044-4074-a961-8f8b9420a9b0",
+        "title": "What is the parts tax rate? ",
+        "type": "SINGLE_CHOICE",
+        "required": "false",
+        "decodedValue": "Others: no tax"
+      },
+      {
+        "sectionName": "Parts Accounting Settings",
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "d1a6539b-4a6a-435c-9b81-866244192f13",
+        "title": "What is your current parts invoice #? ",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "152783"
+      },
+      {
+        "sectionName": "Parts Accounting Settings",
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "09167fae-dd4a-4c07-82c1-6e18c44a11ee",
+        "title": "What would you like your starting Purchase Order number to be?",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "1"
+      },
+      {
+        "sectionName": "Parts Accounting Settings",
+        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
+        "fieldId": "da81dd84-f276-49ad-bbb0-d798f3599804",
+        "title": "What do you want to start your parts invoice numbers in Tekion?",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "160000"
+      },
+      {
         "sectionName": "Service Accounting Settings",
         "sectionId": "090d9438-b03d-4576-a421-f494ccdb8f6a",
         "fieldId": "69c40ff1-7bf4-4028-80c8-3bf3729f37b5",
@@ -35649,51 +35694,6 @@
         "type": "MULTIPLE_CHOICE",
         "required": "false",
         "decodedValue": "[\"Others: BASYS but we are going to Tekion Pay\"]"
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "bef4d154-9be3-48b6-ae88-10c7e46c4f6a",
-        "title": "Please select all that are taxable: ",
-        "type": "MULTIPLE_CHOICE",
-        "required": "false",
-        "decodedValue": "[\"Others: NH is sales tax free\"]"
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "22c63e6b-0044-4074-a961-8f8b9420a9b0",
-        "title": "What is the parts tax rate? ",
-        "type": "SINGLE_CHOICE",
-        "required": "false",
-        "decodedValue": "Others: no tax"
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "d1a6539b-4a6a-435c-9b81-866244192f13",
-        "title": "What is your current parts invoice #? ",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "152783"
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "09167fae-dd4a-4c07-82c1-6e18c44a11ee",
-        "title": "What would you like your starting Purchase Order number to be?",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "1"
-      },
-      {
-        "sectionName": "Parts Accounting Settings",
-        "sectionId": "b932d943-9baf-4027-8902-0db66dc50e30",
-        "fieldId": "da81dd84-f276-49ad-bbb0-d798f3599804",
-        "title": "What do you want to start your parts invoice numbers in Tekion?",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "160000"
       },
       {
         "sectionName": "Vehicle Inventory Pack Notes",
@@ -35795,7 +35795,7 @@
         "decodedValue": "Cost of sale for the Debit, We Owe Account for credit"
       }
     ],
-    "humanReadable": "[Finance Company #10 > —] Finance Company Name: SFS Leasing LTD\n[Finance Company #10 > —] Finance Company GL Account Number: 457F\n[Vehicle Sale Commission GL Accounts > —] Vehicle Sales Salary, Wages & Commission GL Account: NEW Salesperson 301: Sales Manager 302 ; USED Salesperson 321 : Sales Manager 322\n[Vehicle Sale Commission GL Accounts > —] Paid Spiffs GL Account Number: NEW Salesperson 301: Sales Manager 302 ; USED Salesperson 321 : Sales Manager 322\n[Vehicle Sale Commission GL Accounts > —] NEW - Commission Expense Offset GL Account Number: Salesperson 306 : Sales Manager 307\n[Vehicle Sale Commission GL Accounts > —] NEW - Spiff Expense Offset GL Account Number: Salesperson 306 : Sales Manager 307\n[Vehicle Sale Commission GL Accounts > —] USED - Commission Offset GL Account Number: Salesperson 326 : Sales Manager 327\n[Vehicle Sale Commission GL Accounts > —] USED - Spiff Expense Offset GL Account: Salesperson 326 : Sales Manager 327\n[Vehicle Sale Commission GL Accounts > —] Additional Vehicle Commission Details Not Addressed Above : It appears we are not asked about F&I Commission or salaries.  F&I Salary is 317 New, 337 Used.  F&I Commission is 316 New, 336 Used. These are also not calculated or done within the deal.\n*interested in doing salespeople and finance people on deal level\n[Cash - Vehicle Sales > —] Personal Purchase GL Account : 117\n[Cash - Vehicle Sales > —] Only F&I - After Sale GL Account: 117\n[Cash - Vehicle Sales > —] Business/Commercial GL Account : 117\n[Cash - Vehicle Sales > —] DealerTrade GL Account: 117\n[Cash - Vehicle Sales > —] Wholesale GL Account: 117\n[Parts - Credit/Debit Card Payment Method > —] Counter Sales/Retail GL Account: 117A\n[Parts - Credit/Debit Card Payment Method > —] Wholesale GL Account: 117A\n[Used Vehicle Inventory > —] Journal Name and Journal Number: USED VEHICLE PURCHASES 71\n[Used Vehicle Inventory > —] Inventory GL Account (Car): 127 (source auction or trade in) ; 129C - Used car purchased on Floorplan\n[Used Vehicle Inventory > —] Inventory GL Account (Truck): 128-(source auction or trade in); 129D- Used truck purchased on Floorplan\n[Used Vehicle Inventory > —] Inventory GL Account (Other): n/a\n[Service Customer Pay Sales GL Mapping > —] Customer Pay GL Account Number: 550A\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Service Contracts: 551A  (want to start using in Tekion)\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Sublet GL Acct: 556A??\n[Internal Parts Payment Method > —] We Owe GL Account: 217E\n[Internal Parts Payment Method > —] New Car Inventory GL Account: 120\n[Internal Parts Payment Method > —] Used Car Inventory GL Account: 127 Used Car, 129C Floor Planned Used Car\n[Internal Parts Payment Method > —] New Truck Inventory GL Account: 123\n[Internal Parts Payment Method > —] Used Truck Inventory GL Account: 128 Used Truck, 129D Floor Planned Used Truck\n[Internal Parts Payment Method > —] Parts Policy GL Account: 356\n[Finance Reserve GL Mapping > —] How many finance companies with reserves?: 15\n[Finance Company #11 > —] Finance Company Name: Chrysler Capital\n[Finance Company #11 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Parts Counter Sales > —] Do you have taxable and Non-Taxable Accounts?: No\n[Parts Counter Sales > —] Retail Counter Sales GL Acct: 573A\n[Parts Counter Sales > —] Internal Counter Sales GL Acct: 573A\n[Parts Counter Sales > —] Wholesale Counter GL Acct: 574A\n[Check - Vehicle Sales > —] Individual Purchase GL Account : 117\n[Check - Vehicle Sales > —] Only F&I - After Sale GL Account: 117\n[Check - Vehicle Sales > —] Business/Commercial GL Account : 117\n[Check - Vehicle Sales > —] DealerTrade GL Account: 117\n[Check - Vehicle Sales > —] Wholesale GL Account: 117\n[Parts - Cash Payment Method > —] Counter Sales/Retail GL Account: 117\n[Parts - Cash Payment Method > —] Wholesale GL Account: 117\n[Used Vehicle F&I Only - After Sale > —] Used Car Sale Account: Same as used vehicle\n[Used Vehicle F&I Only - After Sale > —] Used Truck Sale Account: Same as used vehicle\n[Used Vehicle F&I Only - After Sale > —] Used Car Sale Account - Certified: Same as used vehicle\n[Used Vehicle F&I Only - After Sale > —] Used Car Sale Account - Non-Certified: Same as used vehicle\n[Used Vehicle F&I Only - After Sale > —] Used Truck Sale Account - Certified: Same as used vehicle\n[Used Vehicle F&I Only - After Sale > —] Used Truck Sale Account - Non-Certified: Same as used vehicle\n[Finance Company #4 > —] Finance Company Name: Bellwether Community Credit Union\n[Finance Company #4 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[New Vehicle Inventory > —] Journal Name and Journal Number: NEW VEHICLE PURCHASES 70\n[New Vehicle Inventory > —] Inventory GL Account (Car): 120\n[New Vehicle Inventory > —] Inventory GL Account (Truck): 123\n[New Vehicle Inventory > —] Inventory GL Account (Rental): n/a\n[New Vehicle Inventory > —] Inventory GL Account (Demo): n/a\n[New Vehicle Inventory > —] Inventory GL Account (Loaner): n/a\n[New Vehicle Inventory > —] Inventory GL Account (Company): n/a\n[Fixed Ops Service GL Mapping > —] Departments : Service Department, PDI\n[Service - Payment Method - Internal > —] Which internal payment methods do you use?: PDI, New Car Policy, Used Car Policy, Service Dept Policy, Parts Dept Policy, New Car Inventory, New Truck Inventory, Used Car Inventory, Used Truck Inventory, We Owe / Due Bill, Vehicle Expense, Advertising - New Car, Advertising - Used Car, Labor Policy\n[Service - Payment Method - Internal > —] PDI GL Account Number: 303\n[Service - Payment Method - Internal > —] New Car Policy  GL Account Number: 304\n[Service - Payment Method - Internal > —] Used Car Policy GL Account Number: 324\n[Service - Payment Method - Internal > —] Service Dept Policy GL Account Number: 346A\n[Service - Payment Method - Internal > —] Parts Dept Policy GL Account Number: 356\n[Service - Payment Method - Internal > —] Labor Policy GL Account Number: 346A\n[Service - Payment Method - Internal > —] New Car Inventory GL Account Number: 120\n[Service - Payment Method - Internal > —] New Truck Inventory GL Account Number: 123\n[Service - Payment Method - Internal > —] Used Car Inventory GL Account Number: 127 Used Car and 129C is Floor Planned Used Car\n[Service - Payment Method - Internal > —] Used Truck Inventory GL Account Number: 128 Used Trucks and  129D is Floor Planed used Trucks\n[Service - Payment Method - Internal > —] We Owe GL Account Number: 217E\n[Service - Payment Method - Internal > —] Advertising - New Car GL Account Number: 309\n[Service - Payment Method - Internal > —] Advertising - Used Car GL Account Number: 329\n[Service - Payment Method - Internal > —] Vehicle Expense GL Account Number: 312- New 332- Used\n[Parts - AR Charge Payment Method > —] Counter Sales/Retail GL Account: 110\n[Parts - AR Charge Payment Method > —] Wholesale GL Account: 110\n[Finance Company #2 > —] Finance Company Name: Capital One Auto Finance\n[Finance Company #2 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Service Internal Sales GL Mapping > —] Internal Pay GL Account Number: 554A\n[Service Internal Sales GL Mapping > —] Internal Pay Sublet GL Account Number: 557A\n[Accounts Receivable Settings > —] What date do you typically run your A/R statements?: 1st\n[Accounts Receivable Settings > —] Do you use A/R open item?: Others: 110 is the AR account- we currently can't do open item in vue\n[Accounts Receivable Settings > —] Which AR GL accounts do you use in the AR open-item feature?: see prior answer\n[Accounts Receivable Settings > —] AR Account Number for Service ROs: 110\n[Accounts Receivable Settings > —] AR Account Number for Parts Tickets: 110\n[Accounts Receivable Settings > —] AR Account Number for Vehicle Sales: 111\n[Accounts Receivable Settings > —] Cash Clearing GL Account Number for AR: 117\n[Accounts Receivable Settings > —] Cash In Bank GL Account Number for AR: 101\n[Accounts Receivable Settings > —] Employee A/R GL Account Number: 110\n[Accounts Receivable Settings > —] Do all active employees have an employee A/R account?: Only some do\n[Accounts Receivable Settings > —] What e-mail address do you want A/R statements to come from?: accounting@hillsborocdjr.com- we don't have this now, but would like to set it up\n[Accounts Receivable Settings > —] AR Discount GL Account: 346A\n[Accounts Receivable Settings > —] List any other GL accounts you use in AR and how they are used: Schedule Account-110V- Account Receivable Vehicle from HFI. When Ford needs to pay us for a vehicle they bought. It then gets pulled into our intercompany and brought back down to the appropriate A/R, A/P for that month\n[Accounts Receivable Settings > —] AR Journal Name and Journal Number: Cash Receipts 50\n[Accounts Receivable Settings > —] Do you charge finance charges on AR invoices?: No\n[Accounts Receivable Settings > —] Do you offer customer discounts if they pay early?: No\n[Accounts Receivable Settings > —] AR invoices are delinquent after how many days?: 30 days\n[Accounts Receivable Settings > —] In what order would you like the detail to be on A/R statements?: Others: they are alphabetical in VUE\n[Accounts Receivable Settings > —] Additional AR Details Not Addressed Above : VUE does not have a feature to clear off a/r through each vendor. We have to make a manual entry and put in the description lines what invoices it is paying for so we can go back and reference. I'm hoping Tekion will have something more efficient as I have seen it in other DMS's.\n[Finance Company #14 > —] Finance Company Name: Digital Federal Credit Union\n[Finance Company #14 > —] Finance Company GL Account Number: 457F0N, 481F-U\n[Used Vehicle GL Sale Account Mapping > —] Cash Receipt Cash Clearing GL Account Number: 117\n[Used Vehicle GL Sale Account Mapping > —] Select your Used Vehicle Sale Types: Individual / Personal, Business / Commercial, Wholesale, Only F&I - After Sale\n[Used Vehicle Business / Commercial > —] Used Car Sale Account: same accounts as personal purchase\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Certified: same as personal purchase\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Non-Certified: same as personal purchase\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account: same as personal purchase\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account - Certified: same as personal purchase\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account - Non-Certified: same as personal purchase\n[Service - Payment Methods - Customer Pay > —] Cash GL Account: 117\n[Service - Payment Methods - Customer Pay > —] Check GL Account: 117\n[Service - Payment Methods - Customer Pay > —] Credit/Debit Card GL Account: 117A\n[Service - Payment Methods - Customer Pay > —] AR Charge GL Account: 110\n[Service - Payment Methods - Customer Pay > —] Service Contract GL Account: 207A\n[Service - Payment Methods - Customer Pay > —] GM - OEM Reward GL Account: n/a\n[Service - Payment Methods - Warranty > —] Warranty Claim GL Account: 116A\n[Deal Posting Pack Notes > —] Additional Deal Posting Packs Details Not Addressed Above : TRADE IN PACKS:\n-Every preowned vehicle gets a Pack of $400 which goes to 136. That only goes on vehicles maximum of 6yrs, and/or under 100K miles. The assumption is that an older vehicle or high mileage vehicle, will be likely wholesaled. \n-We also  have a $150 Gas/Upbook pack  that breaks down to $75 to 312 and $75 to 332.\n[Factory Receivables > —] Holdback GL Account Number: 116B\n[Factory Receivables > —] Rebate GL Account Number: 116F\n[Factory Receivables > —] Incentives GL Account Number: 116F\n[General Department Information (Part 1) > —] Please select your country: USA\n[General Department Information (Part 1) > —] What are you retained earnings accounts and how are they used?: Acct 280\n[General Department Information (Part 1) > —] What payroll provider do you currently use?: ADP\n[General Department Information (Part 1) > —] What payroll provider will you use at the time of the Tekion ARC go live date?: ADP\n[General Department Information (Part 1) > —] Please list all manufacturer dealer codes (and BAC codes for GM dealers): 60563\n[General Department Information (Part 1) > —] Please describe the accounting G/L or Journal restrictions: Only the Accounting Department has access to G/L or Journals\n[General Department Information (Part 1) > —] Federal Tax ID / EIN:: 02-0524895\n[General Department Information (Part 1) > —] State Tax ID:: n/a\n[General Department Information (Part 1) > —] State Dealer Code:: 16\n[General Department Information (Part 1) > —] DMV #:: 16\n[General Department Information (Part 1) > —] Are there any state/province specific identification numbers that print on every document such as Repair Orders?: n/a\n[General Department Information (Part 1) > —] Please describe your accounting prefixes:: Store 1 is Ford and Store 2 is CDJR\n[Parts and Labor Tax Rates > —] Is your tax rate for parts and labor the same?: Others: no tax\n[Parts and Labor Tax Rates > —] Do you charge tax on shop supplies?: No\n[Finance Company #9 > —] Finance Company Name: Stellantis FInancial Services\n[Finance Company #9 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Vehicle Sales Payables > —] Lien Payoff GL Account: 206\n[Vehicle Sales Payables > —] Title Fee GL Account Number: 215C\n[Vehicle Sales Payables > —] Registration GL Account Number: 215C\n[Vehicle Sales Payables > —] Emissions GL Account Number: n/a\n[Vehicle Sales Payables > —] Documentation Fee GL Account Number: 466D for New, 488F for Used\n[Vehicle Sales Payables > —] Bank or Acquisition Fee GL Account Number : Cost of Sale, based on the vehicle sold\n[Vehicle Sales Payables > —] Lemon Law Fee GL Account Number: n/a\n[Vehicle Sales Payables > —] Lien Fee GL Account Number: Cost of Sale, based on the vehicle sold\n[Vehicle Sales Payables > —] Environment Protect Fee GL Account Number: n/a\n[Vehicle Sales Payables > —] State Fee GL Account Number: 215C\n[Vehicle Sales Payables > —] Waste Tire Fee GL Account Number: 344A\n[Vehicle Sales Payables > —] Tire Fee GL Account Number: 344A\n[Service Warranty Sales GL Mapping > —] Warranty GL Account Number: 552A\n[Service Warranty Sales GL Mapping > —] Warranty Sublet GL Account Number: 557A\n[Source Specific RO Parts Sales GL Account > —] Do you have Source Specific RO Parts Sales GL Accounts?: No\n[Source Specific RO Parts Sales GL Account > —] Do you have non-taxable GL accounts for source specific RO Sale Accounts?: No\n[Parts - Check Payment Method > —] Counter Sales/Retail GL Account: 117\n[Parts - Check Payment Method > —] Wholesale GL Account: 117\n[Finance Company #1 > —] Finance Company Name: TD Auto Finance\n[Finance Company #1 > —] Finance Company GL Account Number: 457F-N 481F-U\n[Finance Company #5 > —] Finance Company Name: St Mary's Bank\n[Finance Company #5 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Parts Repair Order Sales Accounts > —] Parts RO Sales Optional Service Departments: Others: only a service dept\n[Parts Repair Order Sales Accounts > —] Do you have taxable and Non-taxable accounts?: Others: no tax\n[Parts Repair Order Sales Accounts > —] RO Customer Pay Parts Sales GL Account: 570A\n[Parts Repair Order Sales Accounts > —] RO Service Contract Parts Sales GL Account: n/a\n[Parts Repair Order Sales Accounts > —] RO Warranty Parts Sales GL Account: 572A\n[Parts Repair Order Sales Accounts > —] RO Internal Parts Sales GL Account: 575A\n[Used Vehicle Wholesale > —] Used Car Sale Account: 473A\n[Used Vehicle Wholesale > —] Used Truck Sale Account: 474A\n[Used Vehicle Wholesale > —] Used Car Sale Account - Certified: 473A\n[Used Vehicle Wholesale > —] Used Car Sale Account - Non-Certified: 473A\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Certified: 474A\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Non-Certified: 474A\n[Used Vehicle Personal Purchase > —] Used Car Sale Account: 470A\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Certified: 475A\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Non-Certified: 470A\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account: 471A\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account - Certified: 476A\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account - Non-Certified: 471A\n[Cash Receipts > —] Journal Name and Journal Number for Cash Receipts: Cash Receipts 50\n[Cash Receipts > —] How do you post your day collection from service and parts?: Others: We can use a deposit function \" Receipt Book\"  for Service & Parts, but have to do a manual entry for Sales money COD and down payments.\n[Cash Receipts > —] How do you post customer down payments?: Others: VUE does not have an actual receipt function. We give the customer a receipt from a 2 copy receipt book and make a manual entry into the DMS, One lump sum\n[Credit/Debit Card - Vehicle Sales > —] Individual Purchase GL Account : 117A\n[Credit/Debit Card - Vehicle Sales > —] Only F&I - After Sale GL Account: 117A\n[Credit/Debit Card - Vehicle Sales > —] Business/Commercial GL Account : 117A\n[Credit/Debit Card - Vehicle Sales > —] DealerTrade GL Account: 117A\n[Credit/Debit Card - Vehicle Sales > —] Wholesale GL Account: 117A\n[Tekion Blueprint Submission > —] Please upload a sample payroll upload file (if applicable): HCDJR Payroll File 2026.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90032423/3f888aaf-0f2b-4419-b777-8a4f97564ac3/cce27acf-db26-4141-9181-50f60fb55799/HCDJR%20Payroll%20File%202026.xlsx)\n[Tekion Blueprint Submission > —] Are there any state/province, federal or OEM specific reporting which is used daily, weekly, monthly, quarterly or yearly?: none\n[Tekion Blueprint Submission > —] Name of Submitter: Dennis Roberts Jr\n[Finance Company #7 > —] Finance Company Name: Service Federal Credit Union\n[Finance Company #7 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Finance Company #8 > —] Finance Company Name: Ally Bank\n[Finance Company #8 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[OEM Reward > —] Counter Sales/Retail GL Account: same as service and parts\n[OEM Reward > —] Wholesale GL Account: same as service and parts\n[OEM Reward > —] Internal GL Account: same as service and parts\n[OEM Reward > —] Repair GL Account: same as service and parts\n[AR Charge - Vehicle Sales > —] Individual Purchase GL Account : 111\n[AR Charge - Vehicle Sales > —] Only F&I - After Sale GL Account: 111\n[AR Charge - Vehicle Sales > —] Business/Commercial GL Account : 111\n[AR Charge - Vehicle Sales > —] DealerTrade GL Account: 111\n[AR Charge - Vehicle Sales > —] Wholesale GL Account: 111\n[Parts and Service Fees > —] Shop Supplies GL Account: 344A Service, 354 Parts\n[Parts and Service Fees > —] Tire Fee GL Account: 344A\n[Parts and Service Fees > —] Environmental Fee GL Account: 344A\n[General Department Information (Part 2) > —] What would you like your first check # in Tekion to be?: 1\n[General Department Information (Part 2) > —] What would you like your PO # in Tekion to be?: 1\n[General Department Information (Part 2) > —] Please provide a sample positive pay file. If you don't currently use positive pay, you will need to request a sample file from your bank.: POSPAY_02_Common Exclude Voids_20260716_0342.csv (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90032423/3f888aaf-0f2b-4419-b777-8a4f97564ac3/88d8757b-5387-484f-9468-4b255566618a/POSPAY_02_Common%20Exclude%20Voids_20260716_0342.csv)\n[General Department Information (Part 2) > —] What banks do / will you send the Positive Pay file to?: Bank of New Hampshire\n[General Department Information (Part 2) > —] Do you conduct Bank Reconciliation in your DMS?: Yes\n[General Department Information (Part 2) > —] What are the banks that you reconcile and what are the G/L accounts?: Bank of New Hampshire Operating Account\n[Finance Company #15 > —] Finance Company Name: Triangle Credit Union\n[Finance Company #15 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Finance Company #6 > —] Finance Company Name: Santander Consumer USA\n[Finance Company #6 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Accounts Payable Settings > —] On what date do you typically run your AP batch?: 7th\n[Accounts Payable Settings > —] What is your Invoice cutoff date?: 30th\n[Accounts Payable Settings > —] Which AP GL accounts do you use in the AP open-item feature? : 201A is the only AP account- I don't believe Vue has open item\n[Accounts Payable Settings > —] In what order would you like your Invoices in Batch Payments to display?: Vendor Name\n[Accounts Payable Settings > —] What type of schedule is your A/P account?: Others: Unpaid Detail Forward\n[Accounts Payable Settings > —] In which month is your invoice cutoff date?: Date in current month\n[Accounts Payable Settings > —] AP GL Account Number: 201A\n[Accounts Payable Settings > —] AP Discount Account Number: 609\n[Accounts Payable Settings > —] AP Cash payment Journal Name and Journal Number: Disbursements 60\n[Accounts Payable Settings > —] Purchase Journal: Journal Name and Journal Number: General Purchases 75\n[Accounts Payable Settings > —] AP Bank Name: Bank of New Hampshire - Operating\n[Accounts Payable Settings > —] AP Bank Account GL Account Number: 101\n[Accounts Payable Settings > —] Additional AP Details Not Addressed Above : We do weekly check runs on Thursdays, so the first questions answer is not correct.   \n\"Payroll Bank account is 102A and it is called Bank of New Hampshire - Payroll\"- not cutting checks, but need on bank recon\n[Finance Company #13 > —] Finance Company Name: CAB East LLC\n[Finance Company #13 > —] Finance Company GL Account Number: 457F\n[CIT - Receivable - Vehicle Sales > —] Individual Purchase GL Account : 106\n[Parts Source Specific GL Accounting > —] Do you have source specific inventory GL accounts?: No\n[Parts Source Specific GL Accounting > —] Do you have non-taxable source specific sale GL accounts?: Others: no tax\n[Fixed Ops Other Accounts > —] Sales Tax - Labor GL Account: n/a\n[Fixed Ops Other Accounts > —] Sales Tax - Parts GL Account: n/a\n[Fixed Ops Other Accounts > —] Freight - Taxable - GL Account: n/a\n[Fixed Ops Other Accounts > —] Freight - Non-Taxable - GL Account: 355\n[Fixed Ops Other Accounts > —] Other Supplies - GL Account: 344A Service, 354 Parts\n[Fixed Ops Other Accounts > —] Other Supplies - Non-Taxable - GL Account: 344A Service, 354 Parts\n[Fixed Ops Other Accounts > —] Restocking Fee - GL Account: 355\n[Finance Company #3 > —] Finance Company Name: New Hampshire Federal Credit Union\n[Finance Company #3 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Finance Company #12 > —] Finance Company Name: CAB East LLC ( MA)\n[Finance Company #12 > —] Finance Company GL Account Number: 457F\n[Cost Adjustments #1 > —] Name of Cost Adjustment: Upfit/Accessory\n[Cost Adjustments #1 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #1 > —] Cost Adjustment Account #: Cost of sale for the Debit, We Owe Account for credit\n[Commissions > —] Does your current DMS calculate sales commissions?: Yes\n[Commissions > —] Please select the staff for which commissions are calculated in the deal:: Salesperson, F&I Manager\n[Commissions > —] Are BDC employees ever added in the commissions screen?: No\n[Commissions > —] Do you remove any packs from the commissionable gross? (please list out all): no\n[Commissions > —] Please upload documentation containing sales commission details here:: COMMSHEETEXAMPLE.pdf (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90032423/3f888aaf-0f2b-4419-b777-8a4f97564ac3/41549f61-8ddb-4fe5-af63-3e789dd13d56/COMMSHEETEXAMPLE.pdf), COMMSTRUCTURE.png (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90032423/3f888aaf-0f2b-4419-b777-8a4f97564ac3/864f5554-b71e-4867-9d0d-962ca03ab748/COMMSTRUCTURE.png), payplan1.payouts.png (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90032423/3f888aaf-0f2b-4419-b777-8a4f97564ac3/9cd53782-dc9f-4319-8856-4430c7fe3fe6/payplan1.payouts.png), payplan2.payout.png (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90032423/3f888aaf-0f2b-4419-b777-8a4f97564ac3/1aa6cf78-24d8-49e0-a0fb-26c4e8f44eed/payplan2.payout.png)\n[Commissions > —] Additional Notes about Commissions: We pay commissions on a tiered bases for salespeople, not percentage wise, as seen in \" Comm Structure\" above. For F&I Managers we do pay on percentages. 4% on front end gross, 12% on Reserve profit and 15% on all product gross.\n[Service - Taxes > —] Are coupon discounts taken before or after tax is applied?: Others: NH has no tax\n[Service - Taxes > —] Is your tax rate the same for Parts, Labor, Sublets and Deductibles?: Others: n/a\n[Service - Taxes > —] Are there any special tax conditions? Examples below: None\n[Service - Taxes > —] Taxes - Additional Information / Notes: No sales tax in NH\n[Service Accounting Settings > —] Do you use Quicklane or Express account sections on your financial statement?: No\n[Service Accounting Settings > —] What is your desired Tekion starting RO #?: 700000\n[Service Accounting Settings > —] How do you track lane/express separately for Accounting?: no we do not have quick lane\n[Service Accounting Settings > —] Do you use a dedicated department in the service application to drive the QL/Express accounting, or specific labor op codes?: Others: no quick lane\n[Service Accounting Settings > —] What is your current RO #?: 209114\n[Service Accounting Settings > —] Do you use a manufacturer reward/gift/loyalty rewards payment option?: N/A\n[Service Accounting Settings > —] Who is your credit card processing company?: Others: BASYS but we are going to Tekion Pay\n[Parts Accounting Settings > —] Please select all that are taxable: : Others: NH is sales tax free\n[Parts Accounting Settings > —] What is the parts tax rate? : Others: no tax\n[Parts Accounting Settings > —] What is your current parts invoice #? : 152783\n[Parts Accounting Settings > —] What would you like your starting Purchase Order number to be?: 1\n[Parts Accounting Settings > —] What do you want to start your parts invoice numbers in Tekion?: 160000\n[Vehicle Inventory Pack Notes > —] Additional Vehicle Inventory Posting Packs Details Not Addressed Above : -Every preowned vehicle gets a Pack of $400 which goes to 136. That only goes on vehicles maximum of 6yrs, and/or under 100K miles. The assumption is that an older vehicle or high mileage vehicle, will be likely wholesaled. \n-We also have a $150 Gas/Upbook pack  that breaks down to $75 to 312 and $75 to 332. This $150 goes on all auction purchases.  \n*No New Vehicle Packs\n[Cost Adjustments #2 > —] Name of Cost Adjustment: Other\n[Cost Adjustments #2 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #2 > —] Cost Adjustment Account #: Cost of sale for the Debit, We Owe Account for credit\n[Cost Adjustments > —] How many Cost Adjustments do you have?: 5\n[Cost Adjustments #4 > —] Name of Cost Adjustment: Bird Dog/Referral\n[Cost Adjustments #4 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #4 > —] Cost Adjustment Account #: Cost of sale for the Debit, We Owe Account for credit\n[Cost Adjustments #3 > —] Name of Cost Adjustment: Other Driver/Mail/CC Fee\n[Cost Adjustments #3 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #3 > —] Cost Adjustment Account #: Cost of sale for the Debit, We Owe Account for credit"
+    "humanReadable": "[Finance Company #10 > —] Finance Company Name: SFS Leasing LTD\n[Finance Company #10 > —] Finance Company GL Account Number: 457F\n[Vehicle Sale Commission GL Accounts > —] Vehicle Sales Salary, Wages & Commission GL Account: NEW Salesperson 301: Sales Manager 302 ; USED Salesperson 321 : Sales Manager 322\n[Vehicle Sale Commission GL Accounts > —] Paid Spiffs GL Account Number: NEW Salesperson 301: Sales Manager 302 ; USED Salesperson 321 : Sales Manager 322\n[Vehicle Sale Commission GL Accounts > —] NEW - Commission Expense Offset GL Account Number: Salesperson 306 : Sales Manager 307\n[Vehicle Sale Commission GL Accounts > —] NEW - Spiff Expense Offset GL Account Number: Salesperson 306 : Sales Manager 307\n[Vehicle Sale Commission GL Accounts > —] USED - Commission Offset GL Account Number: Salesperson 326 : Sales Manager 327\n[Vehicle Sale Commission GL Accounts > —] USED - Spiff Expense Offset GL Account: Salesperson 326 : Sales Manager 327\n[Vehicle Sale Commission GL Accounts > —] Additional Vehicle Commission Details Not Addressed Above : It appears we are not asked about F&I Commission or salaries.  F&I Salary is 317 New, 337 Used.  F&I Commission is 316 New, 336 Used. These are also not calculated or done within the deal.\n*interested in doing salespeople and finance people on deal level\n[Cash - Vehicle Sales > —] Personal Purchase GL Account : 117\n[Cash - Vehicle Sales > —] Only F&I - After Sale GL Account: 117\n[Cash - Vehicle Sales > —] Business/Commercial GL Account : 117\n[Cash - Vehicle Sales > —] DealerTrade GL Account: 117\n[Cash - Vehicle Sales > —] Wholesale GL Account: 117\n[Parts - Credit/Debit Card Payment Method > —] Counter Sales/Retail GL Account: 117A\n[Parts - Credit/Debit Card Payment Method > —] Wholesale GL Account: 117A\n[Used Vehicle Inventory > —] Journal Name and Journal Number: USED VEHICLE PURCHASES 71\n[Used Vehicle Inventory > —] Inventory GL Account (Car): 127 (source auction or trade in) ; 129C - Used car purchased on Floorplan\n[Used Vehicle Inventory > —] Inventory GL Account (Truck): 128-(source auction or trade in); 129D- Used truck purchased on Floorplan\n[Used Vehicle Inventory > —] Inventory GL Account (Other): n/a\n[Service Customer Pay Sales GL Mapping > —] Customer Pay GL Account Number: 550A\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Service Contracts: 551A  (want to start using in Tekion)\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Sublet GL Acct: 556A??\n[Internal Parts Payment Method > —] We Owe GL Account: 217E\n[Internal Parts Payment Method > —] New Car Inventory GL Account: 120\n[Internal Parts Payment Method > —] Used Car Inventory GL Account: 127 Used Car, 129C Floor Planned Used Car\n[Internal Parts Payment Method > —] New Truck Inventory GL Account: 123\n[Internal Parts Payment Method > —] Used Truck Inventory GL Account: 128 Used Truck, 129D Floor Planned Used Truck\n[Internal Parts Payment Method > —] Parts Policy GL Account: 356\n[Finance Reserve GL Mapping > —] How many finance companies with reserves?: 15\n[Parts Counter Sales > —] Do you have taxable and Non-Taxable Accounts?: No\n[Parts Counter Sales > —] Retail Counter Sales GL Acct: 573A\n[Parts Counter Sales > —] Internal Counter Sales GL Acct: 573A\n[Parts Counter Sales > —] Wholesale Counter GL Acct: 574A\n[Finance Company #11 > —] Finance Company Name: Chrysler Capital\n[Finance Company #11 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Check - Vehicle Sales > —] Individual Purchase GL Account : 117\n[Check - Vehicle Sales > —] Only F&I - After Sale GL Account: 117\n[Check - Vehicle Sales > —] Business/Commercial GL Account : 117\n[Check - Vehicle Sales > —] DealerTrade GL Account: 117\n[Check - Vehicle Sales > —] Wholesale GL Account: 117\n[Parts - Cash Payment Method > —] Counter Sales/Retail GL Account: 117\n[Parts - Cash Payment Method > —] Wholesale GL Account: 117\n[Used Vehicle F&I Only - After Sale > —] Used Car Sale Account: Same as used vehicle\n[Used Vehicle F&I Only - After Sale > —] Used Truck Sale Account: Same as used vehicle\n[Used Vehicle F&I Only - After Sale > —] Used Car Sale Account - Certified: Same as used vehicle\n[Used Vehicle F&I Only - After Sale > —] Used Car Sale Account - Non-Certified: Same as used vehicle\n[Used Vehicle F&I Only - After Sale > —] Used Truck Sale Account - Certified: Same as used vehicle\n[Used Vehicle F&I Only - After Sale > —] Used Truck Sale Account - Non-Certified: Same as used vehicle\n[Finance Company #4 > —] Finance Company Name: Bellwether Community Credit Union\n[Finance Company #4 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[New Vehicle Inventory > —] Journal Name and Journal Number: NEW VEHICLE PURCHASES 70\n[New Vehicle Inventory > —] Inventory GL Account (Car): 120\n[New Vehicle Inventory > —] Inventory GL Account (Truck): 123\n[New Vehicle Inventory > —] Inventory GL Account (Rental): n/a\n[New Vehicle Inventory > —] Inventory GL Account (Demo): n/a\n[New Vehicle Inventory > —] Inventory GL Account (Loaner): n/a\n[New Vehicle Inventory > —] Inventory GL Account (Company): n/a\n[Fixed Ops Service GL Mapping > —] Departments : Service Department, PDI\n[Service - Payment Method - Internal > —] Which internal payment methods do you use?: PDI, New Car Policy, Used Car Policy, Service Dept Policy, Parts Dept Policy, New Car Inventory, New Truck Inventory, Used Car Inventory, Used Truck Inventory, We Owe / Due Bill, Vehicle Expense, Advertising - New Car, Advertising - Used Car, Labor Policy\n[Service - Payment Method - Internal > —] PDI GL Account Number: 303\n[Service - Payment Method - Internal > —] New Car Policy  GL Account Number: 304\n[Service - Payment Method - Internal > —] Used Car Policy GL Account Number: 324\n[Service - Payment Method - Internal > —] Service Dept Policy GL Account Number: 346A\n[Service - Payment Method - Internal > —] Parts Dept Policy GL Account Number: 356\n[Service - Payment Method - Internal > —] Labor Policy GL Account Number: 346A\n[Service - Payment Method - Internal > —] New Car Inventory GL Account Number: 120\n[Service - Payment Method - Internal > —] New Truck Inventory GL Account Number: 123\n[Service - Payment Method - Internal > —] Used Car Inventory GL Account Number: 127 Used Car and 129C is Floor Planned Used Car\n[Service - Payment Method - Internal > —] Used Truck Inventory GL Account Number: 128 Used Trucks and  129D is Floor Planed used Trucks\n[Service - Payment Method - Internal > —] We Owe GL Account Number: 217E\n[Service - Payment Method - Internal > —] Advertising - New Car GL Account Number: 309\n[Service - Payment Method - Internal > —] Advertising - Used Car GL Account Number: 329\n[Service - Payment Method - Internal > —] Vehicle Expense GL Account Number: 312- New 332- Used\n[Parts - AR Charge Payment Method > —] Counter Sales/Retail GL Account: 110\n[Parts - AR Charge Payment Method > —] Wholesale GL Account: 110\n[Finance Company #2 > —] Finance Company Name: Capital One Auto Finance\n[Finance Company #2 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Service Internal Sales GL Mapping > —] Internal Pay GL Account Number: 554A\n[Service Internal Sales GL Mapping > —] Internal Pay Sublet GL Account Number: 557A\n[Accounts Receivable Settings > —] What date do you typically run your A/R statements?: 1st\n[Accounts Receivable Settings > —] Do you use A/R open item?: Others: 110 is the AR account- we currently can't do open item in vue\n[Accounts Receivable Settings > —] Which AR GL accounts do you use in the AR open-item feature?: see prior answer\n[Accounts Receivable Settings > —] AR Account Number for Service ROs: 110\n[Accounts Receivable Settings > —] AR Account Number for Parts Tickets: 110\n[Accounts Receivable Settings > —] AR Account Number for Vehicle Sales: 111\n[Accounts Receivable Settings > —] Cash Clearing GL Account Number for AR: 117\n[Accounts Receivable Settings > —] Cash In Bank GL Account Number for AR: 101\n[Accounts Receivable Settings > —] Employee A/R GL Account Number: 110\n[Accounts Receivable Settings > —] Do all active employees have an employee A/R account?: Only some do\n[Accounts Receivable Settings > —] What e-mail address do you want A/R statements to come from?: accounting@hillsborocdjr.com- we don't have this now, but would like to set it up\n[Accounts Receivable Settings > —] AR Discount GL Account: 346A\n[Accounts Receivable Settings > —] List any other GL accounts you use in AR and how they are used: Schedule Account-110V- Account Receivable Vehicle from HFI. When Ford needs to pay us for a vehicle they bought. It then gets pulled into our intercompany and brought back down to the appropriate A/R, A/P for that month\n[Accounts Receivable Settings > —] AR Journal Name and Journal Number: Cash Receipts 50\n[Accounts Receivable Settings > —] Do you charge finance charges on AR invoices?: No\n[Accounts Receivable Settings > —] Do you offer customer discounts if they pay early?: No\n[Accounts Receivable Settings > —] AR invoices are delinquent after how many days?: 30 days\n[Accounts Receivable Settings > —] In what order would you like the detail to be on A/R statements?: Others: they are alphabetical in VUE\n[Accounts Receivable Settings > —] Additional AR Details Not Addressed Above : VUE does not have a feature to clear off a/r through each vendor. We have to make a manual entry and put in the description lines what invoices it is paying for so we can go back and reference. I'm hoping Tekion will have something more efficient as I have seen it in other DMS's.\n[Finance Company #14 > —] Finance Company Name: Digital Federal Credit Union\n[Finance Company #14 > —] Finance Company GL Account Number: 457F0N, 481F-U\n[Used Vehicle GL Sale Account Mapping > —] Cash Receipt Cash Clearing GL Account Number: 117\n[Used Vehicle GL Sale Account Mapping > —] Select your Used Vehicle Sale Types: Individual / Personal, Business / Commercial, Wholesale, Only F&I - After Sale\n[Used Vehicle Business / Commercial > —] Used Car Sale Account: same accounts as personal purchase\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Certified: same as personal purchase\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Non-Certified: same as personal purchase\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account: same as personal purchase\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account - Certified: same as personal purchase\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account - Non-Certified: same as personal purchase\n[Service - Payment Methods - Customer Pay > —] Cash GL Account: 117\n[Service - Payment Methods - Customer Pay > —] Check GL Account: 117\n[Service - Payment Methods - Customer Pay > —] Credit/Debit Card GL Account: 117A\n[Service - Payment Methods - Customer Pay > —] AR Charge GL Account: 110\n[Service - Payment Methods - Customer Pay > —] Service Contract GL Account: 207A\n[Service - Payment Methods - Customer Pay > —] GM - OEM Reward GL Account: n/a\n[Service - Payment Methods - Warranty > —] Warranty Claim GL Account: 116A\n[Deal Posting Pack Notes > —] Additional Deal Posting Packs Details Not Addressed Above : TRADE IN PACKS:\n-Every preowned vehicle gets a Pack of $400 which goes to 136. That only goes on vehicles maximum of 6yrs, and/or under 100K miles. The assumption is that an older vehicle or high mileage vehicle, will be likely wholesaled. \n-We also  have a $150 Gas/Upbook pack  that breaks down to $75 to 312 and $75 to 332.\n[Factory Receivables > —] Holdback GL Account Number: 116B\n[Factory Receivables > —] Rebate GL Account Number: 116F\n[Factory Receivables > —] Incentives GL Account Number: 116F\n[General Department Information (Part 1) > —] Please select your country: USA\n[General Department Information (Part 1) > —] What are you retained earnings accounts and how are they used?: Acct 280\n[General Department Information (Part 1) > —] What payroll provider do you currently use?: ADP\n[General Department Information (Part 1) > —] What payroll provider will you use at the time of the Tekion ARC go live date?: ADP\n[General Department Information (Part 1) > —] Please list all manufacturer dealer codes (and BAC codes for GM dealers): 60563\n[General Department Information (Part 1) > —] Please describe the accounting G/L or Journal restrictions: Only the Accounting Department has access to G/L or Journals\n[General Department Information (Part 1) > —] Federal Tax ID / EIN:: 02-0524895\n[General Department Information (Part 1) > —] State Tax ID:: n/a\n[General Department Information (Part 1) > —] State Dealer Code:: 16\n[General Department Information (Part 1) > —] DMV #:: 16\n[General Department Information (Part 1) > —] Are there any state/province specific identification numbers that print on every document such as Repair Orders?: n/a\n[General Department Information (Part 1) > —] Please describe your accounting prefixes:: Store 1 is Ford and Store 2 is CDJR\n[Parts and Labor Tax Rates > —] Is your tax rate for parts and labor the same?: Others: no tax\n[Parts and Labor Tax Rates > —] Do you charge tax on shop supplies?: No\n[Finance Company #9 > —] Finance Company Name: Stellantis FInancial Services\n[Finance Company #9 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Vehicle Sales Payables > —] Lien Payoff GL Account: 206\n[Vehicle Sales Payables > —] Title Fee GL Account Number: 215C\n[Vehicle Sales Payables > —] Registration GL Account Number: 215C\n[Vehicle Sales Payables > —] Emissions GL Account Number: n/a\n[Vehicle Sales Payables > —] Documentation Fee GL Account Number: 466D for New, 488F for Used\n[Vehicle Sales Payables > —] Bank or Acquisition Fee GL Account Number : Cost of Sale, based on the vehicle sold\n[Vehicle Sales Payables > —] Lemon Law Fee GL Account Number: n/a\n[Vehicle Sales Payables > —] Lien Fee GL Account Number: Cost of Sale, based on the vehicle sold\n[Vehicle Sales Payables > —] Environment Protect Fee GL Account Number: n/a\n[Vehicle Sales Payables > —] State Fee GL Account Number: 215C\n[Vehicle Sales Payables > —] Waste Tire Fee GL Account Number: 344A\n[Vehicle Sales Payables > —] Tire Fee GL Account Number: 344A\n[Service Warranty Sales GL Mapping > —] Warranty GL Account Number: 552A\n[Service Warranty Sales GL Mapping > —] Warranty Sublet GL Account Number: 557A\n[Source Specific RO Parts Sales GL Account > —] Do you have Source Specific RO Parts Sales GL Accounts?: No\n[Source Specific RO Parts Sales GL Account > —] Do you have non-taxable GL accounts for source specific RO Sale Accounts?: No\n[Parts - Check Payment Method > —] Counter Sales/Retail GL Account: 117\n[Parts - Check Payment Method > —] Wholesale GL Account: 117\n[Finance Company #1 > —] Finance Company Name: TD Auto Finance\n[Finance Company #1 > —] Finance Company GL Account Number: 457F-N 481F-U\n[Finance Company #5 > —] Finance Company Name: St Mary's Bank\n[Finance Company #5 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Parts Repair Order Sales Accounts > —] Parts RO Sales Optional Service Departments: Others: only a service dept\n[Parts Repair Order Sales Accounts > —] Do you have taxable and Non-taxable accounts?: Others: no tax\n[Parts Repair Order Sales Accounts > —] RO Customer Pay Parts Sales GL Account: 570A\n[Parts Repair Order Sales Accounts > —] RO Service Contract Parts Sales GL Account: n/a\n[Parts Repair Order Sales Accounts > —] RO Warranty Parts Sales GL Account: 572A\n[Parts Repair Order Sales Accounts > —] RO Internal Parts Sales GL Account: 575A\n[Used Vehicle Wholesale > —] Used Car Sale Account: 473A\n[Used Vehicle Wholesale > —] Used Truck Sale Account: 474A\n[Used Vehicle Wholesale > —] Used Car Sale Account - Certified: 473A\n[Used Vehicle Wholesale > —] Used Car Sale Account - Non-Certified: 473A\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Certified: 474A\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Non-Certified: 474A\n[Used Vehicle Personal Purchase > —] Used Car Sale Account: 470A\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Certified: 475A\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Non-Certified: 470A\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account: 471A\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account - Certified: 476A\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account - Non-Certified: 471A\n[Cash Receipts > —] Journal Name and Journal Number for Cash Receipts: Cash Receipts 50\n[Cash Receipts > —] How do you post your day collection from service and parts?: Others: We can use a deposit function \" Receipt Book\"  for Service & Parts, but have to do a manual entry for Sales money COD and down payments.\n[Cash Receipts > —] How do you post customer down payments?: Others: VUE does not have an actual receipt function. We give the customer a receipt from a 2 copy receipt book and make a manual entry into the DMS, One lump sum\n[Credit/Debit Card - Vehicle Sales > —] Individual Purchase GL Account : 117A\n[Credit/Debit Card - Vehicle Sales > —] Only F&I - After Sale GL Account: 117A\n[Credit/Debit Card - Vehicle Sales > —] Business/Commercial GL Account : 117A\n[Credit/Debit Card - Vehicle Sales > —] DealerTrade GL Account: 117A\n[Credit/Debit Card - Vehicle Sales > —] Wholesale GL Account: 117A\n[Tekion Blueprint Submission > —] Please upload a sample payroll upload file (if applicable): HCDJR Payroll File 2026.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90032423/3f888aaf-0f2b-4419-b777-8a4f97564ac3/cce27acf-db26-4141-9181-50f60fb55799/HCDJR%20Payroll%20File%202026.xlsx)\n[Tekion Blueprint Submission > —] Are there any state/province, federal or OEM specific reporting which is used daily, weekly, monthly, quarterly or yearly?: none\n[Tekion Blueprint Submission > —] Name of Submitter: Dennis Roberts Jr\n[Finance Company #7 > —] Finance Company Name: Service Federal Credit Union\n[Finance Company #7 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Finance Company #8 > —] Finance Company Name: Ally Bank\n[Finance Company #8 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[OEM Reward > —] Counter Sales/Retail GL Account: same as service and parts\n[OEM Reward > —] Wholesale GL Account: same as service and parts\n[OEM Reward > —] Internal GL Account: same as service and parts\n[OEM Reward > —] Repair GL Account: same as service and parts\n[AR Charge - Vehicle Sales > —] Individual Purchase GL Account : 111\n[AR Charge - Vehicle Sales > —] Only F&I - After Sale GL Account: 111\n[AR Charge - Vehicle Sales > —] Business/Commercial GL Account : 111\n[AR Charge - Vehicle Sales > —] DealerTrade GL Account: 111\n[AR Charge - Vehicle Sales > —] Wholesale GL Account: 111\n[Parts and Service Fees > —] Shop Supplies GL Account: 344A Service, 354 Parts\n[Parts and Service Fees > —] Tire Fee GL Account: 344A\n[Parts and Service Fees > —] Environmental Fee GL Account: 344A\n[General Department Information (Part 2) > —] What would you like your first check # in Tekion to be?: 1\n[General Department Information (Part 2) > —] What would you like your PO # in Tekion to be?: 1\n[General Department Information (Part 2) > —] Please provide a sample positive pay file. If you don't currently use positive pay, you will need to request a sample file from your bank.: POSPAY_02_Common Exclude Voids_20260716_0342.csv (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90032423/3f888aaf-0f2b-4419-b777-8a4f97564ac3/88d8757b-5387-484f-9468-4b255566618a/POSPAY_02_Common%20Exclude%20Voids_20260716_0342.csv)\n[General Department Information (Part 2) > —] What banks do / will you send the Positive Pay file to?: Bank of New Hampshire\n[General Department Information (Part 2) > —] Do you conduct Bank Reconciliation in your DMS?: Yes\n[General Department Information (Part 2) > —] What are the banks that you reconcile and what are the G/L accounts?: Bank of New Hampshire Operating Account\n[Finance Company #15 > —] Finance Company Name: Triangle Credit Union\n[Finance Company #15 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Finance Company #6 > —] Finance Company Name: Santander Consumer USA\n[Finance Company #6 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Accounts Payable Settings > —] On what date do you typically run your AP batch?: 7th\n[Accounts Payable Settings > —] What is your Invoice cutoff date?: 30th\n[Accounts Payable Settings > —] Which AP GL accounts do you use in the AP open-item feature? : 201A is the only AP account- I don't believe Vue has open item\n[Accounts Payable Settings > —] In what order would you like your Invoices in Batch Payments to display?: Vendor Name\n[Accounts Payable Settings > —] What type of schedule is your A/P account?: Others: Unpaid Detail Forward\n[Accounts Payable Settings > —] In which month is your invoice cutoff date?: Date in current month\n[Accounts Payable Settings > —] AP GL Account Number: 201A\n[Accounts Payable Settings > —] AP Discount Account Number: 609\n[Accounts Payable Settings > —] AP Cash payment Journal Name and Journal Number: Disbursements 60\n[Accounts Payable Settings > —] Purchase Journal: Journal Name and Journal Number: General Purchases 75\n[Accounts Payable Settings > —] AP Bank Name: Bank of New Hampshire - Operating\n[Accounts Payable Settings > —] AP Bank Account GL Account Number: 101\n[Accounts Payable Settings > —] Additional AP Details Not Addressed Above : We do weekly check runs on Thursdays, so the first questions answer is not correct.   \n\"Payroll Bank account is 102A and it is called Bank of New Hampshire - Payroll\"- not cutting checks, but need on bank recon\n[Finance Company #13 > —] Finance Company Name: CAB East LLC\n[Finance Company #13 > —] Finance Company GL Account Number: 457F\n[CIT - Receivable - Vehicle Sales > —] Individual Purchase GL Account : 106\n[Parts Source Specific GL Accounting > —] Do you have source specific inventory GL accounts?: No\n[Parts Source Specific GL Accounting > —] Do you have non-taxable source specific sale GL accounts?: Others: no tax\n[Fixed Ops Other Accounts > —] Sales Tax - Labor GL Account: n/a\n[Fixed Ops Other Accounts > —] Sales Tax - Parts GL Account: n/a\n[Fixed Ops Other Accounts > —] Freight - Taxable - GL Account: n/a\n[Fixed Ops Other Accounts > —] Freight - Non-Taxable - GL Account: 355\n[Fixed Ops Other Accounts > —] Other Supplies - GL Account: 344A Service, 354 Parts\n[Fixed Ops Other Accounts > —] Other Supplies - Non-Taxable - GL Account: 344A Service, 354 Parts\n[Fixed Ops Other Accounts > —] Restocking Fee - GL Account: 355\n[Finance Company #3 > —] Finance Company Name: New Hampshire Federal Credit Union\n[Finance Company #3 > —] Finance Company GL Account Number: 457F-N, 481F-U\n[Finance Company #12 > —] Finance Company Name: CAB East LLC ( MA)\n[Finance Company #12 > —] Finance Company GL Account Number: 457F\n[Cost Adjustments #1 > —] Name of Cost Adjustment: Upfit/Accessory\n[Cost Adjustments #1 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #1 > —] Cost Adjustment Account #: Cost of sale for the Debit, We Owe Account for credit\n[Commissions > —] Does your current DMS calculate sales commissions?: Yes\n[Commissions > —] Please select the staff for which commissions are calculated in the deal:: Salesperson, F&I Manager\n[Commissions > —] Are BDC employees ever added in the commissions screen?: No\n[Commissions > —] Do you remove any packs from the commissionable gross? (please list out all): no\n[Commissions > —] Please upload documentation containing sales commission details here:: COMMSHEETEXAMPLE.pdf (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90032423/3f888aaf-0f2b-4419-b777-8a4f97564ac3/41549f61-8ddb-4fe5-af63-3e789dd13d56/COMMSHEETEXAMPLE.pdf), COMMSTRUCTURE.png (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90032423/3f888aaf-0f2b-4419-b777-8a4f97564ac3/864f5554-b71e-4867-9d0d-962ca03ab748/COMMSTRUCTURE.png), payplan1.payouts.png (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90032423/3f888aaf-0f2b-4419-b777-8a4f97564ac3/9cd53782-dc9f-4319-8856-4430c7fe3fe6/payplan1.payouts.png), payplan2.payout.png (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90032423/3f888aaf-0f2b-4419-b777-8a4f97564ac3/1aa6cf78-24d8-49e0-a0fb-26c4e8f44eed/payplan2.payout.png)\n[Commissions > —] Additional Notes about Commissions: We pay commissions on a tiered bases for salespeople, not percentage wise, as seen in \" Comm Structure\" above. For F&I Managers we do pay on percentages. 4% on front end gross, 12% on Reserve profit and 15% on all product gross.\n[Service - Taxes > —] Are coupon discounts taken before or after tax is applied?: Others: NH has no tax\n[Service - Taxes > —] Is your tax rate the same for Parts, Labor, Sublets and Deductibles?: Others: n/a\n[Service - Taxes > —] Are there any special tax conditions? Examples below: None\n[Service - Taxes > —] Taxes - Additional Information / Notes: No sales tax in NH\n[Parts Accounting Settings > —] Please select all that are taxable: : Others: NH is sales tax free\n[Parts Accounting Settings > —] What is the parts tax rate? : Others: no tax\n[Parts Accounting Settings > —] What is your current parts invoice #? : 152783\n[Parts Accounting Settings > —] What would you like your starting Purchase Order number to be?: 1\n[Parts Accounting Settings > —] What do you want to start your parts invoice numbers in Tekion?: 160000\n[Service Accounting Settings > —] Do you use Quicklane or Express account sections on your financial statement?: No\n[Service Accounting Settings > —] What is your desired Tekion starting RO #?: 700000\n[Service Accounting Settings > —] How do you track lane/express separately for Accounting?: no we do not have quick lane\n[Service Accounting Settings > —] Do you use a dedicated department in the service application to drive the QL/Express accounting, or specific labor op codes?: Others: no quick lane\n[Service Accounting Settings > —] What is your current RO #?: 209114\n[Service Accounting Settings > —] Do you use a manufacturer reward/gift/loyalty rewards payment option?: N/A\n[Service Accounting Settings > —] Who is your credit card processing company?: Others: BASYS but we are going to Tekion Pay\n[Vehicle Inventory Pack Notes > —] Additional Vehicle Inventory Posting Packs Details Not Addressed Above : -Every preowned vehicle gets a Pack of $400 which goes to 136. That only goes on vehicles maximum of 6yrs, and/or under 100K miles. The assumption is that an older vehicle or high mileage vehicle, will be likely wholesaled. \n-We also have a $150 Gas/Upbook pack  that breaks down to $75 to 312 and $75 to 332. This $150 goes on all auction purchases.  \n*No New Vehicle Packs\n[Cost Adjustments #2 > —] Name of Cost Adjustment: Other\n[Cost Adjustments #2 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #2 > —] Cost Adjustment Account #: Cost of sale for the Debit, We Owe Account for credit\n[Cost Adjustments > —] How many Cost Adjustments do you have?: 5\n[Cost Adjustments #4 > —] Name of Cost Adjustment: Bird Dog/Referral\n[Cost Adjustments #4 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #4 > —] Cost Adjustment Account #: Cost of sale for the Debit, We Owe Account for credit\n[Cost Adjustments #3 > —] Name of Cost Adjustment: Other Driver/Mail/CC Fee\n[Cost Adjustments #3 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #3 > —] Cost Adjustment Account #: Cost of sale for the Debit, We Owe Account for credit"
   },
-  "savedAt": "2026-09-25T12:03:59.586Z"
+  "savedAt": "2026-10-13T15:00:11.158Z"
 }

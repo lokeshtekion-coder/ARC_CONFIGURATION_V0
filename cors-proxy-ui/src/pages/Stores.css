@@ -44,19 +44,37 @@
 }
 
 /* --- Alerts & Toasts --- */
+/* Compact toast: small card top-right, wraps long text instead of stretching */
 .stores-toast {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 10000;
+  top: 16px;
+  right: 16px;
+  z-index: 100000;
+  display: inline-flex;
+  align-items: center;
+  max-width: 300px;
+  padding: 8px 12px;
   background: #1e293b;
   color: #f8fafc;
-  padding: 10px 16px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-  font-size: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.5);
+  font-size: 12px;
   font-weight: 600;
+  line-height: 1.35;
+  pointer-events: none;
+  animation: toastSlideIn 0.2s ease-out;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .stores-token-expired-alert {
@@ -1154,21 +1172,6 @@
 }
 
 /* --- Alerts & Toasts --- */
-.stores-toast {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  z-index: 10000;
-  background: #1e293b;
-  color: #f8fafc;
-  padding: 10px 16px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-  font-size: 13px;
-  font-weight: 600;
-}
-
 .stores-token-expired-alert {
   margin-bottom: 12px;
   display: flex;
@@ -2110,4 +2113,49 @@
   padding: 8px 8px;
   vertical-align: middle;
   border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+/* Compact toast: small card top-right, wraps long text instead of stretching */
+.stores-toast {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 100000;
+  display: inline-flex;
+  align-items: center;
+  max-width: 300px;
+  padding: 8px 12px;
+  background: #1e293b;
+  color: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.5);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+  pointer-events: none;
+  animation: toastSlideIn 0.2s ease-out;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Red row: a store that needs action now (see storeAssessment.ts) */
+.stores-table tbody tr.stores-row-red td {
+  background: rgba(244, 63, 94, 0.16) !important;
+  border-bottom-color: rgba(244, 63, 94, 0.35) !important;
+}
+.stores-table tbody tr.stores-row-red td:first-child {
+  box-shadow: inset 4px 0 0 #f43f5e;
+}
+.stores-table tbody tr.stores-row-red:hover td {
+  background: rgba(244, 63, 94, 0.24) !important;
 }

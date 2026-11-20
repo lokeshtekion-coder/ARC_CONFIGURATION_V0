@@ -2,6 +2,18 @@ import React, { useEffect, useMemo, useState, useCallback } from "react";
 import { loadTekionApiSettingsBundle } from "../../../../services/tekionApiSettings";
 import type { KeyValuePair } from "../../../../types/proxy.types";
 import "./UserResetView.css";
+import { loadLatestExtensionCapture } from "../../../../services/extensionBridge";
+import {
+  ENTERPRISE_FALLBACK_PASSWORD,
+  ENTERPRISE_PRIMARY_PASSWORD,
+  enterpriseRecordsToCsv,
+  enterpriseUserName,
+  resolveEnterpriseHeaders,
+  fetchAllEnterpriseUsers,
+  resetEnterpriseUser,
+  type EnterpriseResetRecord,
+  type EnterpriseUser,
+} from "./enterpriseReset";
 
 
 const MODULE_NAME = "User Reset";
@@ -10,10 +22,11 @@ const USERS_AND_ROLES_URL =
 const UPDATE_PASSWORD_URL =
   "https://preprodapp.tekioncloud.com/api/userservice/u/v2/updatePassword?locale=en_US";
 
-type ViewMode = "home" | "reset-all" | "reset-by-role";
+type ViewMode = "home" | "reset-all" | "reset-by-role" | "enterprise";
 type RunState = "idle" | "loading" | "success" | "error" | "warning";
 
-const DEFAULT_PASSWORD = "Happyday1";
+// Must meet the preprod password policy (needs a special character). "Happyday1" is rejected; "Happyday1@" succeeded.
+const DEFAULT_PASSWORD = "Happyday1@";
 
 const logger = {
   debug: (...args: unknown[]) => console.debug("[Parts][UserReset]", ...args),
@@ -249,7 +262,6 @@ export const UserResetView: React.FC = () => {
   const [statusText, setStatusText] = useState("Ready");
   const [errorText, setErrorText] = useState("");
   const [lastRunAt, setLastRunAt] = useState("");
-  const [isExpanded, setIsExpanded] = useState(false);
 
   const [allUsers, setAllUsers] = useState<UserRecord[]>([]);
   const [roleOptions, setRoleOptions] = useState<RoleOption[]>([]);
@@ -262,6 +274,124 @@ export const UserResetView: React.FC = () => {
   const [resetResults, setResetResults] = useState<PasswordResetResult | null>(null);
   const [progressText, setProgressText] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Option 3 (Enterprise)
+  const [enterpriseUsers, setEnterpriseUsers] = useState<EnterpriseUser[]>([]);
+  const [enterpriseTotal, setEnterpriseTotal] = useState(0);
+  const [enterpriseRecords, setEnterpriseRecords] = useState<EnterpriseResetRecord[]>([]);
+  const [enterpriseBusy, setEnterpriseBusy] = useState(false);
+  const [enterpriseProgress, setEnterpriseProgress] = useState("");
+  const [enterpriseError, setEnterpriseError] = useState("");
+
+  const resolveEnterprise = () =>
+    resolveEnterpriseHeaders(loadLatestExtensionCapture()?.customCaptures, getEnabledGlobalHeaders());
+
+  const handleLoadEnterpriseUsers = async (): Promise<void> => {
+    const headers = resolveEnterprise().headers;
+    if (Object.keys(headers).length === 0) {
+      setEnterpriseError("No active global headers found. Go to Settings, select a dealer profile, and save/apply Global Headers.");
+      return;
+    }
+    setEnterpriseBusy(true);
+    setEnterpriseError("");
+    try {
+      const users = await fetchAllEnterpriseUsers(headers, (loaded, total) =>
+        setEnterpriseProgress(`Loading enterprise users... ${loaded}/${total}`)
+      );
+      setEnterpriseUsers(users);
+      setEnterpriseTotal(users.length);
+      setEnterpriseProgress("");
+      logger.info("enterprise users loaded", { count: users.length });
+    } catch (error: unknown) {
+      setEnterpriseError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setEnterpriseBusy(false);
+    }
+  };
+
+  // Users grouped by home dealer, for the dealer picker.
+  const enterpriseDealerGroups = useMemo(() => {
+    const map = new Map<string, { dealerId: string; dealerName: string; users: EnterpriseUser[] }>();
+    enterpriseUsers.forEach((u) => {
+      const dealerId = String(u.homeDealerId ?? "").trim() || "(no home dealer)";
+      if (!map.has(dealerId)) {
+        map.set(dealerId, { dealerId, dealerName: "", users: [] });
+      }
+      const group = map.get(dealerId)!;
+      if (!group.dealerName) group.dealerName = u.dealer?.[0]?.label ?? "";
+      group.users.push(u);
+    });
+    return Array.from(map.values()).sort((a, b) => b.users.length - a.users.length);
+  }, [enterpriseUsers]);
+
+  const [enterpriseDialogOpen, setEnterpriseDialogOpen] = useState(false);
+  const [enterpriseSelectedDealers, setEnterpriseSelectedDealers] = useState<string[]>([]);
+  const [enterpriseDealerSearch, setEnterpriseDealerSearch] = useState("");
+  const [enterpriseTestResults, setEnterpriseTestResults] = useState<Record<string, string>>({});
+
+  const selectedEnterpriseUserCount = enterpriseDealerGroups
+    .filter((g) => enterpriseSelectedDealers.includes(g.dealerId))
+    .reduce((acc, g) => acc + g.users.length, 0);
+
+  const handleTestOneDealer = async (dealerId: string): Promise<void> => {
+    const base = resolveEnterprise().headers;
+    const group = enterpriseDealerGroups.find((g) => g.dealerId === dealerId);
+    const user = group?.users[0];
+    if (!user) return;
+    if (!window.confirm(`Test reset on ONE user from dealer ${dealerId}: ${enterpriseUserName(user)}?\n\nThis changes that user's password.`)) return;
+
+    setEnterpriseTestResults((prev) => ({ ...prev, [dealerId]: "Testing..." }));
+    const record = await resetEnterpriseUser(user, base);
+    setEnterpriseRecords((prev) => [...prev, record]);
+    setEnterpriseTestResults((prev) => ({
+      ...prev,
+      [dealerId]: record.status === "success"
+        ? `✅ ${enterpriseUserName(user)} reset (${record.passwordUsed})`
+        : `❌ ${record.finalError}`,
+    }));
+    logger.info("enterprise dealer test", { dealerId, userId: user.id, status: record.status });
+  };
+
+  const handleRunSelectedEnterpriseDealers = async (): Promise<void> => {
+    const base = resolveEnterprise().headers;
+    const users = enterpriseDealerGroups
+      .filter((g) => enterpriseSelectedDealers.includes(g.dealerId))
+      .flatMap((g) => g.users);
+    if (users.length === 0) return;
+    if (!window.confirm(`Reset passwords for ${users.length} users across ${enterpriseSelectedDealers.length} dealer(s)?\n\nDefault "${ENTERPRISE_PRIMARY_PASSWORD}", special-character retry "${ENTERPRISE_FALLBACK_PASSWORD}".`)) return;
+
+    setEnterpriseDialogOpen(false);
+    setEnterpriseBusy(true);
+    setEnterpriseError("");
+    setEnterpriseRecords([]);
+    const records: EnterpriseResetRecord[] = [];
+    for (let i = 0; i < users.length; i++) {
+      const user = users[i];
+      const dealerId = String(user.homeDealerId ?? "");
+      setEnterpriseProgress(`Resetting ${i + 1}/${users.length} (dealer ${dealerId}): ${enterpriseUserName(user)}`);
+      const record = await resetEnterpriseUser(user, base);
+      records.push(record);
+      setEnterpriseRecords([...records]);
+      // Log only ids, names and results. Passwords are not written to the console.
+      logger.info("enterprise reset", { userId: user.id, dealerId, status: record.status });
+    }
+    setEnterpriseProgress("");
+    setEnterpriseBusy(false);
+    setLastRunAt(new Date().toLocaleString());
+  };
+
+  const downloadEnterpriseCsv = (): void => {
+    const blob = new Blob(["﻿" + enterpriseRecordsToCsv(enterpriseRecords)], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `enterprise-password-reset-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
+  const enterpriseSuccess = enterpriseRecords.filter((r) => r.status === "success").length;
+  const enterpriseFailed = enterpriseRecords.filter((r) => r.status === "failed").length;
 
   useEffect(() => {
     logger.info("component mounted");
@@ -570,8 +700,6 @@ export const UserResetView: React.FC = () => {
     await runPasswordReset(selectedUsersByRole, passwordByRole.trim(), "reset-by-role");
   };
 
-  const panelWidth = isExpanded ? "min(96vw, 1600px)" : "100%";
-
   return (
     <div style={{ display: "grid", gap: 20, minWidth: 0, fontFamily: "system-ui, sans-serif" }}>
       <div
@@ -648,6 +776,14 @@ export const UserResetView: React.FC = () => {
               Option 2
             </button>
 
+            <button
+              className={viewMode === "enterprise" ? "btn-postman ui-btn-active" : "btn-secondary btn-sm ui-btn"}
+              type="button"
+              onClick={() => setViewMode("enterprise")}
+            >
+              Option 3 (Enterprise)
+            </button>
+
             <div
               style={{
                 width: 1,
@@ -656,18 +792,6 @@ export const UserResetView: React.FC = () => {
                 margin: "0 4px",
               }}
             />
-
-            <button
-              className="btn-secondary btn-sm ui-btn"
-              type="button"
-              onClick={() => {
-                logger.info("expand/collapse toggle clicked", { isExpanded: !isExpanded });
-                setIsExpanded((prev) => !prev);
-              }}
-              title={isExpanded ? "Collapse wide workspace" : "Expand wide workspace"}
-            >
-              {isExpanded ? "🗕 Collapse" : "🗖 Expand"}
-            </button>
           </div>
         </div>
 
@@ -680,6 +804,8 @@ export const UserResetView: React.FC = () => {
                 ? "By Role"
                 : viewMode === "reset-all"
                 ? "All Users"
+                : viewMode === "enterprise"
+                ? "Enterprise"
                 : "Home"
             }
           />
@@ -738,7 +864,7 @@ export const UserResetView: React.FC = () => {
 
       <div
         style={{
-          width: panelWidth,
+          width: "100%",
           maxWidth: "100%",
           justifySelf: "center",
           display: "grid",
@@ -901,7 +1027,7 @@ export const UserResetView: React.FC = () => {
                     <div
                       className="custom-scrollbar"
                       style={{
-                        maxHeight: isExpanded ? 520 : 360,
+                        maxHeight: 420,
                         overflowY: "auto",
                         display: "grid",
                         gap: 10,
@@ -1056,7 +1182,7 @@ export const UserResetView: React.FC = () => {
                   className="custom-scrollbar"
                   style={{
                     overflowX: "auto",
-                    maxHeight: isExpanded ? 520 : 360,
+                    maxHeight: 420,
                     overflowY: "auto",
                     borderRadius: 16,
                     border: "1px solid rgba(255,255,255,0.1)",
@@ -1136,6 +1262,232 @@ export const UserResetView: React.FC = () => {
                 </div>
               )}
             </SectionCard>
+          </>
+        ) : null}
+
+        {viewMode === "enterprise" ? (
+          <>
+            <SectionCard title="Option 3: Enterprise Password Reset">
+              <div style={infoBlockStyle}>
+                Resets active enterprise users (all types except type 1). Every user first gets
+                <b> {ENTERPRISE_PRIMARY_PASSWORD}</b>. If the policy asks for a special character, that user is
+                retried once with <b>{ENTERPRISE_FALLBACK_PASSWORD}</b>. Each user's result is recorded below and
+                can be downloaded as CSV.
+              </div>
+
+              <div style={{ marginTop: 8, fontSize: 13, color: "#cbd5e1" }}>
+                Headers used: <b>{resolveEnterprise().source}</b>. The same headers are sent for every dealer.
+              </div>
+
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 8 }}>
+                <button
+                  className="btn-secondary ui-btn"
+                  type="button"
+                  onClick={() => void handleLoadEnterpriseUsers()}
+                  disabled={enterpriseBusy}
+                >
+                  {enterpriseBusy && enterpriseProgress ? enterpriseProgress : "↻ Load Enterprise Users"}
+                </button>
+
+                <button
+                  className="btn-postman ui-btn-primary"
+                  type="button"
+                  onClick={() => setEnterpriseDialogOpen(true)}
+                  disabled={enterpriseBusy || enterpriseUsers.length === 0}
+                >
+                  {enterpriseBusy ? "Resetting..." : `🔐 Choose Dealers to Reset (${enterpriseUsers.length} users)`}
+                </button>
+
+                <button
+                  className="btn-secondary ui-btn"
+                  type="button"
+                  onClick={downloadEnterpriseCsv}
+                  disabled={enterpriseRecords.length === 0}
+                >
+                  ⬇ Download CSV
+                </button>
+              </div>
+
+              {enterpriseError ? (
+                <div style={{ marginTop: 12, color: "#fca5a5" }}>{enterpriseError}</div>
+              ) : null}
+            </SectionCard>
+
+            {enterpriseDialogOpen ? (
+              <div
+                role="dialog"
+                aria-modal="true"
+                style={{
+                  position: "fixed",
+                  inset: 0,
+                  background: "rgba(2,6,23,0.7)",
+                  zIndex: 9999,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 16,
+                }}
+                onClick={() => setEnterpriseDialogOpen(false)}
+              >
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    width: "min(900px, 100%)",
+                    maxHeight: "88vh",
+                    display: "flex",
+                    flexDirection: "column",
+                    background: "#0f172a",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    borderRadius: 16,
+                    padding: 20,
+                    color: "#e2e8f0",
+                  }}
+                >
+                  <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Choose home dealers</div>
+                  <div style={{ fontSize: 13, color: "#94a3b8", marginBottom: 12 }}>
+                    Each dealer's users are reset with that dealer's headers. Test one dealer first if you want to check it.
+                  </div>
+
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+                    <input
+                      value={enterpriseDealerSearch}
+                      onChange={(e) => setEnterpriseDealerSearch(e.target.value)}
+                      placeholder="Search dealer id or name"
+                      style={{ flex: "1 1 240px", padding: "8px 10px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)", background: "#020617", color: "#e2e8f0" }}
+                    />
+                    <button
+                      type="button"
+                      className="btn-secondary btn-sm ui-btn"
+                      onClick={() =>
+                        setEnterpriseSelectedDealers(
+                          enterpriseDealerGroups
+                            .filter((g) => g.dealerId.includes(enterpriseDealerSearch.trim()) || g.dealerName.toLowerCase().includes(enterpriseDealerSearch.trim().toLowerCase()))
+                            .map((g) => g.dealerId)
+                        )
+                      }
+                    >
+                      Select shown
+                    </button>
+                    <button type="button" className="btn-secondary btn-sm ui-btn" onClick={() => setEnterpriseSelectedDealers([])}>
+                      Clear
+                    </button>
+                  </div>
+
+                  <div style={{ overflowY: "auto", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10 }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                      <thead>
+                        <tr>
+                          <th style={thStyle}></th>
+                          <th style={thStyle}>Home Dealer</th>
+                          <th style={thStyle}>Dealer Name</th>
+                          <th style={thStyle}>Users</th>
+                          <th style={thStyle}>Test</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {enterpriseDealerGroups
+                          .filter((g) => {
+                            const q = enterpriseDealerSearch.trim().toLowerCase();
+                            return !q || g.dealerId.toLowerCase().includes(q) || g.dealerName.toLowerCase().includes(q);
+                          })
+                          .map((g) => (
+                            <tr key={g.dealerId}>
+                              <td style={{ ...tdStyle, width: 36 }}>
+                                <input
+                                  type="checkbox"
+                                  checked={enterpriseSelectedDealers.includes(g.dealerId)}
+                                  onChange={(e) =>
+                                    setEnterpriseSelectedDealers((prev) =>
+                                      e.target.checked ? [...prev, g.dealerId] : prev.filter((id) => id !== g.dealerId)
+                                    )
+                                  }
+                                />
+                              </td>
+                              <td style={{ ...tdStyle, fontFamily: "monospace" }}>{g.dealerId}</td>
+                              <td style={tdStyle}>{g.dealerName || "—"}</td>
+                              <td style={tdStyle}>{g.users.length}</td>
+                              <td style={tdStyle}>
+                                <button
+                                  type="button"
+                                  className="btn-secondary btn-sm ui-btn"
+                                  disabled={enterpriseBusy}
+                                  onClick={() => void handleTestOneDealer(g.dealerId)}
+                                >
+                                  Test one user
+                                </button>
+                                {enterpriseTestResults[g.dealerId] ? (
+                                  <div style={{ fontSize: 11, marginTop: 4, color: "#cbd5e1" }}>{enterpriseTestResults[g.dealerId]}</div>
+                                ) : null}
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <div style={{ fontWeight: 700 }}>
+                      {enterpriseSelectedDealers.length} dealer(s) · {selectedEnterpriseUserCount} user(s) will be reset
+                    </div>
+                    <div style={{ display: "flex", gap: 10 }}>
+                      <button type="button" className="btn-secondary ui-btn" onClick={() => setEnterpriseDialogOpen(false)}>
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-postman ui-btn-primary"
+                        disabled={selectedEnterpriseUserCount === 0 || enterpriseBusy}
+                        onClick={() => void handleRunSelectedEnterpriseDealers()}
+                      >
+                        🔐 Reset {selectedEnterpriseUserCount} users
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            <SectionCard title="Enterprise Snapshot">
+              <RowLine left="Enterprise users loaded" right={String(enterpriseTotal)} />
+              <RowLine left="Processed" right={String(enterpriseRecords.length)} />
+              <RowLine left="Succeeded" right={String(enterpriseSuccess)} rightColor="#86efac" />
+              <RowLine left="Failed" right={String(enterpriseFailed)} rightColor={enterpriseFailed ? "#fca5a5" : "#86efac"} />
+            </SectionCard>
+
+            {enterpriseRecords.length > 0 ? (
+              <SectionCard title="Per-user Audit">
+                <div className="custom-scrollbar" style={{ maxHeight: 420, overflowY: "auto", overflowX: "auto" }}>
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+                    <thead>
+                      <tr>
+                        <th style={thStyle}>User ID</th>
+                        <th style={thStyle}>Name</th>
+                        <th style={thStyle}>Dealer</th>
+                        <th style={thStyle}>Password Used</th>
+                        <th style={thStyle}>Result</th>
+                        <th style={thStyle}>Error / Note</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {enterpriseRecords.map((r) => (
+                        <tr key={r.userId}>
+                          <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: 12 }}>{r.userId}</td>
+                          <td style={tdStyle}>{r.name}</td>
+                          <td style={tdStyle}>{r.homeDealerId}</td>
+                          <td style={{ ...tdStyle, fontFamily: "monospace" }}>{r.passwordUsed}</td>
+                          <td style={{ ...tdStyle, color: r.status === "success" ? "#86efac" : "#fca5a5", fontWeight: 700 }}>
+                            {r.status === "success" ? "Success" : "Failed"}
+                          </td>
+                          <td style={{ ...tdStyle, color: "#fca5a5" }}>
+                            {r.status === "failed" ? r.finalError : r.attempts.length > 1 ? "Needed special-character password" : ""}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </SectionCard>
+            ) : null}
           </>
         ) : null}
 

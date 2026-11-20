@@ -6,7 +6,7 @@
   "formName": "Blueprint - Conquest - Service",
   "formId": "0efe7ff5-1920-4fd5-87e4-b354185d195e",
   "releaseId": "06f04174-fd53-4c4a-b998-e799faeb1212",
-  "status": "IN_PROGRESS",
+  "status": "COMPLETED",
   "decodedResponse": {
     "decodedSections": [
       {
@@ -35,7 +35,9 @@
             "required": false,
             "logic": null,
             "fieldOrder": 8,
-            "hasUserValue": false,
+            "rawValue": "SERVICE MANAGER AND SHOP FOREMAN DISPATCH WORK.  MAJORITY IS DISPATCHED BY SERVICE MANAGER",
+            "decodedValue": "SERVICE MANAGER AND SHOP FOREMAN DISPATCH WORK.  MAJORITY IS DISPATCHED BY SERVICE MANAGER",
+            "hasUserValue": true,
             "subsectionName": null
           }
         ]
@@ -312,8 +314,8 @@
               ]
             },
             "fieldOrder": 6,
-            "rawValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
-            "decodedValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+            "rawValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  THE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+            "decodedValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  THE LABOR RATE WILL NEED TO BE ADJUSTABLE",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -393,10 +395,10 @@
             },
             "fieldOrder": 7,
             "rawValue": [
-              "No"
+              "Yes"
             ],
             "decodedValue": [
-              "No"
+              "Yes"
             ],
             "hasUserValue": true,
             "subsectionName": null
@@ -449,8 +451,8 @@
             "required": false,
             "logic": null,
             "fieldOrder": 21,
-            "rawValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
-            "decodedValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
+            "rawValue": "",
+            "decodedValue": "",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -869,15 +871,13 @@
               "47c91292-5e8f-4221-a072-c2315de2da0a",
               "a56b35c4-0273-46e5-b4fa-c2f673f56272",
               "27fe1e18-90b7-4177-b351-c8acf9fe138d",
-              "c79092f4-dc3b-4736-8787-e589568ba6ce",
-              "5d83c601-ca2e-4d0f-927f-006ee24bcd20"
+              "c79092f4-dc3b-4736-8787-e589568ba6ce"
             ],
             "decodedValue": [
               "Waiter",
               "Drop-Off",
               "Loaner",
-              "Shuttle",
-              "Valet"
+              "Shuttle"
             ],
             "hasUserValue": true,
             "subsectionName": null
@@ -1658,8 +1658,8 @@
             "required": true,
             "logic": null,
             "fieldOrder": 2,
-            "rawValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
-            "decodedValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+            "rawValue": "DFL OIL CHANGE\nDFL POINTS\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+            "decodedValue": "DFL OIL CHANGE\nDFL POINTS\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -1823,7 +1823,9 @@
         "title": "Additional Notes",
         "type": "LONG_TEXT",
         "required": false,
-        "hasUserValue": false
+        "rawValue": "SERVICE MANAGER AND SHOP FOREMAN DISPATCH WORK.  MAJORITY IS DISPATCHED BY SERVICE MANAGER",
+        "decodedValue": "SERVICE MANAGER AND SHOP FOREMAN DISPATCH WORK.  MAJORITY IS DISPATCHED BY SERVICE MANAGER",
+        "hasUserValue": true
       },
       {
         "sectionName": "Labor Pricing",
@@ -1957,8 +1959,8 @@
         "title": "Please describe service contract specific labor rates",
         "type": "LONG_TEXT",
         "required": true,
-        "rawValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
-        "decodedValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+        "rawValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  THE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+        "decodedValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  THE LABOR RATE WILL NEED TO BE ADJUSTABLE",
         "hasUserValue": true
       },
       {
@@ -1990,10 +1992,10 @@
         "type": "MULTIPLE_CHOICE",
         "required": true,
         "rawValue": [
-          "No"
+          "Yes"
         ],
         "decodedValue": [
-          "No"
+          "Yes"
         ],
         "hasUserValue": true
       },
@@ -2015,8 +2017,8 @@
         "title": "Additional Information",
         "type": "LONG_TEXT",
         "required": false,
-        "rawValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
-        "decodedValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
+        "rawValue": "",
+        "decodedValue": "",
         "hasUserValue": true
       },
       {
@@ -2253,15 +2255,13 @@
           "47c91292-5e8f-4221-a072-c2315de2da0a",
           "a56b35c4-0273-46e5-b4fa-c2f673f56272",
           "27fe1e18-90b7-4177-b351-c8acf9fe138d",
-          "c79092f4-dc3b-4736-8787-e589568ba6ce",
-          "5d83c601-ca2e-4d0f-927f-006ee24bcd20"
+          "c79092f4-dc3b-4736-8787-e589568ba6ce"
         ],
         "decodedValue": [
           "Waiter",
           "Drop-Off",
           "Loaner",
-          "Shuttle",
-          "Valet"
+          "Shuttle"
         ],
         "hasUserValue": true
       },
@@ -2589,8 +2589,8 @@
         "title": "Please list all discounts (put \"None\" if you don't use discounts)",
         "type": "LONG_TEXT",
         "required": true,
-        "rawValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
-        "decodedValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+        "rawValue": "DFL OIL CHANGE\nDFL POINTS\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+        "decodedValue": "DFL OIL CHANGE\nDFL POINTS\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
         "hasUserValue": true
       },
       {
@@ -2721,13 +2721,11 @@
             "fieldOrder": 2,
             "rawValue": [
               "Customer Pay",
-              "Internal",
-              "Warranty"
+              "Internal"
             ],
             "decodedValue": [
               "Customer Pay",
-              "Internal",
-              "Warranty"
+              "Internal"
             ],
             "hasUserValue": true,
             "subsectionName": null
@@ -2752,10 +2750,12 @@
             },
             "fieldOrder": 3,
             "rawValue": [
-              "By job, when each job is completed"
+              "By job, when each job is completed",
+              "Anytime regardless of RO or job status, so long as the technician is flagged"
             ],
             "decodedValue": [
-              "By job, when each job is completed"
+              "By job, when each job is completed",
+              "Anytime regardless of RO or job status, so long as the technician is flagged"
             ],
             "hasUserValue": true,
             "subsectionName": null
@@ -2776,11 +2776,31 @@
             "logic": null,
             "fieldOrder": 4,
             "rawValue": [
-              "A shop foreman dispatches the work"
+              "A dispatcher dispatches the work"
             ],
             "decodedValue": [
-              "A shop foreman dispatches the work"
+              "A dispatcher dispatches the work"
             ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "f19e443a-f070-4371-885c-e4be10731d4e",
+            "sectionName": "Dispatching Workflows",
+            "sectionOrder": 8,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "2440391a-3470-48ae-a17b-2f39882a8955",
+            "fieldName": null,
+            "title": "Additional Notes",
+            "type": "LONG_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 8,
+            "rawValue": "SERVICE MANAGER AND SHOP FOREMAN DISPATCH WORK.  MAJORITY IS DISPATCHED BY SERVICE MANAGER",
+            "decodedValue": "SERVICE MANAGER AND SHOP FOREMAN DISPATCH WORK.  MAJORITY IS DISPATCHED BY SERVICE MANAGER",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -3002,8 +3022,8 @@
               ]
             },
             "fieldOrder": 6,
-            "rawValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
-            "decodedValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+            "rawValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  THE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+            "decodedValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  THE LABOR RATE WILL NEED TO BE ADJUSTABLE",
             "hasUserValue": true,
             "subsectionName": null
           },
@@ -3027,10 +3047,10 @@
             },
             "fieldOrder": 7,
             "rawValue": [
-              "No"
+              "Yes"
             ],
             "decodedValue": [
-              "No"
+              "Yes"
             ],
             "hasUserValue": true,
             "subsectionName": null
@@ -3040,18 +3060,81 @@
             "sectionName": "Labor Pricing",
             "sectionOrder": 7,
             "sectionType": "MAIN",
-            "rowIndex": 16,
+            "rowIndex": 15,
             "columnIndex": 0,
             "fieldIndex": 0,
-            "fieldId": "6b496322-6cae-4c99-b6dc-c709f990ab04",
+            "fieldId": "67b6a727-6348-4d08-a568-ab019cd24d19",
             "fieldName": null,
-            "title": "Additional Information",
-            "type": "LONG_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 21,
-            "rawValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
-            "decodedValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
+            "title": "If yes, please upload your matrix here",
+            "type": "FILE_UPLOAD",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ANY",
+              "rules": [
+                {
+                  "fieldId": "103600148",
+                  "operator": "IS",
+                  "value": "Yes"
+                },
+                {
+                  "fieldId": "103600148",
+                  "operator": "IS",
+                  "value": "Not currently, but we would like to"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": [
+              {
+                "mediaId": "70a14353-ffdd-462b-ba45-08f4030007ca",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1789654480459,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/70a14353-ffdd-462b-ba45-08f4030007ca/Davenport Honda_Grid option 4.0 Peak_Rev2026-01-08.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "Davenport Honda_Grid option 4.0 Peak_Rev2026-01-08.pdf",
+                  "mediaSize": 134860
+                }
+              },
+              {
+                "mediaId": "2ee0c173-3626-4ba4-a5bb-0b5ef0924867",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1789654563185,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/2ee0c173-3626-4ba4-a5bb-0b5ef0924867/Davenport GMC_Grid Option_Rev2025-07-28.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "Davenport GMC_Grid Option_Rev2025-07-28.pdf",
+                  "mediaSize": 135045
+                }
+              }
+            ],
+            "decodedValue": [
+              {
+                "mediaId": "70a14353-ffdd-462b-ba45-08f4030007ca",
+                "uploadStatus": "COMPLETED",
+                "filename": "Davenport Honda_Grid option 4.0 Peak_Rev2026-01-08.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/70a14353-ffdd-462b-ba45-08f4030007ca/Davenport Honda_Grid option 4.0 Peak_Rev2026-01-08.pdf",
+                "mediaSize": 134860,
+                "createdTime": 1789654480459
+              },
+              {
+                "mediaId": "2ee0c173-3626-4ba4-a5bb-0b5ef0924867",
+                "uploadStatus": "COMPLETED",
+                "filename": "Davenport GMC_Grid Option_Rev2025-07-28.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/2ee0c173-3626-4ba4-a5bb-0b5ef0924867/Davenport GMC_Grid Option_Rev2025-07-28.pdf",
+                "mediaSize": 135045,
+                "createdTime": 1789654563185
+              }
+            ],
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -3592,15 +3675,13 @@
               "47c91292-5e8f-4221-a072-c2315de2da0a",
               "a56b35c4-0273-46e5-b4fa-c2f673f56272",
               "27fe1e18-90b7-4177-b351-c8acf9fe138d",
-              "c79092f4-dc3b-4736-8787-e589568ba6ce",
-              "5d83c601-ca2e-4d0f-927f-006ee24bcd20"
+              "c79092f4-dc3b-4736-8787-e589568ba6ce"
             ],
             "decodedValue": [
               "Waiter",
               "Drop-Off",
               "Loaner",
-              "Shuttle",
-              "Valet"
+              "Shuttle"
             ],
             "hasUserValue": true,
             "subsectionName": null
@@ -3646,6 +3727,749 @@
             "fieldOrder": 23,
             "rawValue": "SCHEDULING IN TEKION BUT NEED TO KNOW EXACTLY WHAT YOU WANT FOR THE SCHEDULING SETTINGS",
             "decodedValue": "SCHEDULING IN TEKION BUT NEED TO KNOW EXACTLY WHAT YOU WANT FOR THE SCHEDULING SETTINGS",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "cafdb95d-d4c1-4567-8b8d-0da22a0c5d34",
+        "sectionName": "Document Upload",
+        "sectionOrder": 9,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "cafdb95d-d4c1-4567-8b8d-0da22a0c5d34",
+            "sectionName": "Document Upload",
+            "sectionOrder": 9,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600219",
+            "fieldName": null,
+            "title": "Please upload 10 RO examples with audit copies including Customer Copy, Internal Copy, Warranty Copy.",
+            "type": "FILE_UPLOAD",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 3,
+            "rawValue": [
+              {
+                "mediaId": "c5ee5c76-ee4d-4f40-be80-10dd3c5346ce",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790167757975,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/c5ee5c76-ee4d-4f40-be80-10dd3c5346ce/622412.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "622412.pdf",
+                  "mediaSize": 1934488
+                }
+              },
+              {
+                "mediaId": "1f4f4858-dfc0-42ab-8c2f-4a6395f03d68",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790167762567,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/1f4f4858-dfc0-42ab-8c2f-4a6395f03d68/622468.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "622468.pdf",
+                  "mediaSize": 1011864
+                }
+              },
+              {
+                "mediaId": "4736f295-cd20-4e9b-80d6-8f1daedff6bb",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790167766527,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/4736f295-cd20-4e9b-80d6-8f1daedff6bb/622850.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "622850.pdf",
+                  "mediaSize": 1202941
+                }
+              },
+              {
+                "mediaId": "3f0bd123-e28d-4c89-b72b-92983499eb26",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790167770067,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/3f0bd123-e28d-4c89-b72b-92983499eb26/623156.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "623156.pdf",
+                  "mediaSize": 1064046
+                }
+              },
+              {
+                "mediaId": "f188d0d8-83e3-4731-b9ae-be370bf37553",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790167775940,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/f188d0d8-83e3-4731-b9ae-be370bf37553/623162.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "623162.pdf",
+                  "mediaSize": 1274306
+                }
+              },
+              {
+                "mediaId": "17d293ca-3985-4451-9a4d-2de547f53900",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790170788127,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/17d293ca-3985-4451-9a4d-2de547f53900/1990572.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "1990572.pdf",
+                  "mediaSize": 2429269
+                }
+              },
+              {
+                "mediaId": "1bcfafaf-38eb-4699-82e4-1268009ecea7",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790170791486,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/1bcfafaf-38eb-4699-82e4-1268009ecea7/1993117.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "1993117.pdf",
+                  "mediaSize": 1850891
+                }
+              },
+              {
+                "mediaId": "f5381a9d-f1f6-4440-a35e-b5ea896e0e74",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790170796336,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/f5381a9d-f1f6-4440-a35e-b5ea896e0e74/1989877.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "1989877.pdf",
+                  "mediaSize": 3931386
+                }
+              },
+              {
+                "mediaId": "53680945-cfdb-463e-8bf0-6abc1d19627b",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790170799104,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/53680945-cfdb-463e-8bf0-6abc1d19627b/1991613.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "1991613.pdf",
+                  "mediaSize": 1725038
+                }
+              },
+              {
+                "mediaId": "77603a4f-d61e-4d72-84de-2383fe0a64db",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790170802723,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/77603a4f-d61e-4d72-84de-2383fe0a64db/1991307.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "1991307.pdf",
+                  "mediaSize": 1733713
+                }
+              }
+            ],
+            "decodedValue": [
+              {
+                "mediaId": "c5ee5c76-ee4d-4f40-be80-10dd3c5346ce",
+                "uploadStatus": "COMPLETED",
+                "filename": "622412.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/c5ee5c76-ee4d-4f40-be80-10dd3c5346ce/622412.pdf",
+                "mediaSize": 1934488,
+                "createdTime": 1790167757975
+              },
+              {
+                "mediaId": "1f4f4858-dfc0-42ab-8c2f-4a6395f03d68",
+                "uploadStatus": "COMPLETED",
+                "filename": "622468.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/1f4f4858-dfc0-42ab-8c2f-4a6395f03d68/622468.pdf",
+                "mediaSize": 1011864,
+                "createdTime": 1790167762567
+              },
+              {
+                "mediaId": "4736f295-cd20-4e9b-80d6-8f1daedff6bb",
+                "uploadStatus": "COMPLETED",
+                "filename": "622850.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/4736f295-cd20-4e9b-80d6-8f1daedff6bb/622850.pdf",
+                "mediaSize": 1202941,
+                "createdTime": 1790167766527
+              },
+              {
+                "mediaId": "3f0bd123-e28d-4c89-b72b-92983499eb26",
+                "uploadStatus": "COMPLETED",
+                "filename": "623156.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/3f0bd123-e28d-4c89-b72b-92983499eb26/623156.pdf",
+                "mediaSize": 1064046,
+                "createdTime": 1790167770067
+              },
+              {
+                "mediaId": "f188d0d8-83e3-4731-b9ae-be370bf37553",
+                "uploadStatus": "COMPLETED",
+                "filename": "623162.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/f188d0d8-83e3-4731-b9ae-be370bf37553/623162.pdf",
+                "mediaSize": 1274306,
+                "createdTime": 1790167775940
+              },
+              {
+                "mediaId": "17d293ca-3985-4451-9a4d-2de547f53900",
+                "uploadStatus": "COMPLETED",
+                "filename": "1990572.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/17d293ca-3985-4451-9a4d-2de547f53900/1990572.pdf",
+                "mediaSize": 2429269,
+                "createdTime": 1790170788127
+              },
+              {
+                "mediaId": "1bcfafaf-38eb-4699-82e4-1268009ecea7",
+                "uploadStatus": "COMPLETED",
+                "filename": "1993117.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/1bcfafaf-38eb-4699-82e4-1268009ecea7/1993117.pdf",
+                "mediaSize": 1850891,
+                "createdTime": 1790170791486
+              },
+              {
+                "mediaId": "f5381a9d-f1f6-4440-a35e-b5ea896e0e74",
+                "uploadStatus": "COMPLETED",
+                "filename": "1989877.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/f5381a9d-f1f6-4440-a35e-b5ea896e0e74/1989877.pdf",
+                "mediaSize": 3931386,
+                "createdTime": 1790170796336
+              },
+              {
+                "mediaId": "53680945-cfdb-463e-8bf0-6abc1d19627b",
+                "uploadStatus": "COMPLETED",
+                "filename": "1991613.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/53680945-cfdb-463e-8bf0-6abc1d19627b/1991613.pdf",
+                "mediaSize": 1725038,
+                "createdTime": 1790170799104
+              },
+              {
+                "mediaId": "77603a4f-d61e-4d72-84de-2383fe0a64db",
+                "uploadStatus": "COMPLETED",
+                "filename": "1991307.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/77603a4f-d61e-4d72-84de-2383fe0a64db/1991307.pdf",
+                "mediaSize": 1733713,
+                "createdTime": 1790170802723
+              }
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "cafdb95d-d4c1-4567-8b8d-0da22a0c5d34",
+            "sectionName": "Document Upload",
+            "sectionOrder": 9,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600220",
+            "fieldName": null,
+            "title": "Please upload your Technican/Advisor Copy of RO",
+            "type": "FILE_UPLOAD",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 4,
+            "rawValue": [
+              {
+                "mediaId": "ad416e64-8f5f-4eac-81e2-8c59dad33704",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790096893257,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/ad416e64-8f5f-4eac-81e2-8c59dad33704/Honda Repair Order.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "Honda Repair Order.pdf",
+                  "mediaSize": 647135
+                }
+              },
+              {
+                "mediaId": "66ef6a20-87a0-44f9-926a-720e386189ed",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790096897871,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/66ef6a20-87a0-44f9-926a-720e386189ed/GM Repair Order.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "GM Repair Order.pdf",
+                  "mediaSize": 649175
+                }
+              }
+            ],
+            "decodedValue": [
+              {
+                "mediaId": "ad416e64-8f5f-4eac-81e2-8c59dad33704",
+                "uploadStatus": "COMPLETED",
+                "filename": "Honda Repair Order.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/ad416e64-8f5f-4eac-81e2-8c59dad33704/Honda Repair Order.pdf",
+                "mediaSize": 647135,
+                "createdTime": 1790096893257
+              },
+              {
+                "mediaId": "66ef6a20-87a0-44f9-926a-720e386189ed",
+                "uploadStatus": "COMPLETED",
+                "filename": "GM Repair Order.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/66ef6a20-87a0-44f9-926a-720e386189ed/GM Repair Order.pdf",
+                "mediaSize": 649175,
+                "createdTime": 1790096897871
+              }
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "cafdb95d-d4c1-4567-8b8d-0da22a0c5d34",
+            "sectionName": "Document Upload",
+            "sectionOrder": 9,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600218",
+            "fieldName": null,
+            "title": "Please upload a copy of any Multi-point Inspection (MPI), PDI/UVI forms if applicable",
+            "type": "FILE_UPLOAD",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": [
+              {
+                "mediaId": "3522e184-fc89-49ad-976e-7c1e979651c9",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790094634212,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/3522e184-fc89-49ad-976e-7c1e979651c9/Honda MPI.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "Honda MPI.pdf",
+                  "mediaSize": 1097762
+                }
+              },
+              {
+                "mediaId": "7daad9fc-6174-4076-b371-3e22e84330b3",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790094637829,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/7daad9fc-6174-4076-b371-3e22e84330b3/GM MPI.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "GM MPI.pdf",
+                  "mediaSize": 1703537
+                }
+              }
+            ],
+            "decodedValue": [
+              {
+                "mediaId": "3522e184-fc89-49ad-976e-7c1e979651c9",
+                "uploadStatus": "COMPLETED",
+                "filename": "Honda MPI.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/3522e184-fc89-49ad-976e-7c1e979651c9/Honda MPI.pdf",
+                "mediaSize": 1097762,
+                "createdTime": 1790094634212
+              },
+              {
+                "mediaId": "7daad9fc-6174-4076-b371-3e22e84330b3",
+                "uploadStatus": "COMPLETED",
+                "filename": "GM MPI.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/7daad9fc-6174-4076-b371-3e22e84330b3/GM MPI.pdf",
+                "mediaSize": 1703537,
+                "createdTime": 1790094637829
+              }
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "cafdb95d-d4c1-4567-8b8d-0da22a0c5d34",
+            "sectionName": "Document Upload",
+            "sectionOrder": 9,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600222",
+            "fieldName": null,
+            "title": "Please upload 10 Service Invoice examples with Customer copy & audit copies.",
+            "type": "FILE_UPLOAD",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 5,
+            "rawValue": [
+              {
+                "mediaId": "06c5e0af-0f04-452e-80d1-eb8d627ac430",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790175420947,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/06c5e0af-0f04-452e-80d1-eb8d627ac430/623219.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "623219.pdf",
+                  "mediaSize": 781834
+                }
+              },
+              {
+                "mediaId": "d514d8c0-3a9f-427e-b365-4bbefb57e0b1",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790175431090,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/d514d8c0-3a9f-427e-b365-4bbefb57e0b1/623205.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "623205.pdf",
+                  "mediaSize": 776075
+                }
+              },
+              {
+                "mediaId": "100088ba-176a-47d6-bb0b-3050deea71c5",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790175574322,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/100088ba-176a-47d6-bb0b-3050deea71c5/623175.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "623175.pdf",
+                  "mediaSize": 736864
+                }
+              },
+              {
+                "mediaId": "a2c26c7d-9a5e-4fa5-9b8c-7e2b0c6f50d1",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790175583030,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/a2c26c7d-9a5e-4fa5-9b8c-7e2b0c6f50d1/623172.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "623172.pdf",
+                  "mediaSize": 808874
+                }
+              },
+              {
+                "mediaId": "cada1537-f395-4dd7-94bb-a9e619d8fc4b",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790175587337,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/cada1537-f395-4dd7-94bb-a9e619d8fc4b/623220.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "623220.pdf",
+                  "mediaSize": 1136847
+                }
+              },
+              {
+                "mediaId": "f5831092-95d9-415c-8226-06d6138372f3",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790175590569,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/f5831092-95d9-415c-8226-06d6138372f3/1995939.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "1995939.pdf",
+                  "mediaSize": 811938
+                }
+              },
+              {
+                "mediaId": "84537b3c-e4c4-47df-a212-9b12deff85b8",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790175594389,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/84537b3c-e4c4-47df-a212-9b12deff85b8/1995943.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "1995943.pdf",
+                  "mediaSize": 759980
+                }
+              },
+              {
+                "mediaId": "12d86067-94ab-49f4-8bb8-304a70326dbf",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790175598206,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/12d86067-94ab-49f4-8bb8-304a70326dbf/1995961.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "1995961.pdf",
+                  "mediaSize": 671357
+                }
+              },
+              {
+                "mediaId": "6057d4f5-3769-4020-a414-2a4ddbd1c4d6",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790175602406,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/6057d4f5-3769-4020-a414-2a4ddbd1c4d6/1995962.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "1995962.pdf",
+                  "mediaSize": 1324262
+                }
+              },
+              {
+                "mediaId": "da1abbcf-33ee-4fb0-9086-8f36f9963383",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790175605792,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/da1abbcf-33ee-4fb0-9086-8f36f9963383/1995963.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "1995963.pdf",
+                  "mediaSize": 827137
+                }
+              }
+            ],
+            "decodedValue": [
+              {
+                "mediaId": "06c5e0af-0f04-452e-80d1-eb8d627ac430",
+                "uploadStatus": "COMPLETED",
+                "filename": "623219.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/06c5e0af-0f04-452e-80d1-eb8d627ac430/623219.pdf",
+                "mediaSize": 781834,
+                "createdTime": 1790175420947
+              },
+              {
+                "mediaId": "d514d8c0-3a9f-427e-b365-4bbefb57e0b1",
+                "uploadStatus": "COMPLETED",
+                "filename": "623205.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/d514d8c0-3a9f-427e-b365-4bbefb57e0b1/623205.pdf",
+                "mediaSize": 776075,
+                "createdTime": 1790175431090
+              },
+              {
+                "mediaId": "100088ba-176a-47d6-bb0b-3050deea71c5",
+                "uploadStatus": "COMPLETED",
+                "filename": "623175.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/100088ba-176a-47d6-bb0b-3050deea71c5/623175.pdf",
+                "mediaSize": 736864,
+                "createdTime": 1790175574322
+              },
+              {
+                "mediaId": "a2c26c7d-9a5e-4fa5-9b8c-7e2b0c6f50d1",
+                "uploadStatus": "COMPLETED",
+                "filename": "623172.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/a2c26c7d-9a5e-4fa5-9b8c-7e2b0c6f50d1/623172.pdf",
+                "mediaSize": 808874,
+                "createdTime": 1790175583030
+              },
+              {
+                "mediaId": "cada1537-f395-4dd7-94bb-a9e619d8fc4b",
+                "uploadStatus": "COMPLETED",
+                "filename": "623220.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/cada1537-f395-4dd7-94bb-a9e619d8fc4b/623220.pdf",
+                "mediaSize": 1136847,
+                "createdTime": 1790175587337
+              },
+              {
+                "mediaId": "f5831092-95d9-415c-8226-06d6138372f3",
+                "uploadStatus": "COMPLETED",
+                "filename": "1995939.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/f5831092-95d9-415c-8226-06d6138372f3/1995939.pdf",
+                "mediaSize": 811938,
+                "createdTime": 1790175590569
+              },
+              {
+                "mediaId": "84537b3c-e4c4-47df-a212-9b12deff85b8",
+                "uploadStatus": "COMPLETED",
+                "filename": "1995943.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/84537b3c-e4c4-47df-a212-9b12deff85b8/1995943.pdf",
+                "mediaSize": 759980,
+                "createdTime": 1790175594389
+              },
+              {
+                "mediaId": "12d86067-94ab-49f4-8bb8-304a70326dbf",
+                "uploadStatus": "COMPLETED",
+                "filename": "1995961.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/12d86067-94ab-49f4-8bb8-304a70326dbf/1995961.pdf",
+                "mediaSize": 671357,
+                "createdTime": 1790175598206
+              },
+              {
+                "mediaId": "6057d4f5-3769-4020-a414-2a4ddbd1c4d6",
+                "uploadStatus": "COMPLETED",
+                "filename": "1995962.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/6057d4f5-3769-4020-a414-2a4ddbd1c4d6/1995962.pdf",
+                "mediaSize": 1324262,
+                "createdTime": 1790175602406
+              },
+              {
+                "mediaId": "da1abbcf-33ee-4fb0-9086-8f36f9963383",
+                "uploadStatus": "COMPLETED",
+                "filename": "1995963.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/da1abbcf-33ee-4fb0-9086-8f36f9963383/1995963.pdf",
+                "mediaSize": 827137,
+                "createdTime": 1790175605792
+              }
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "cafdb95d-d4c1-4567-8b8d-0da22a0c5d34",
+            "sectionName": "Document Upload",
+            "sectionOrder": 9,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "4fc2d0f1-14f7-489d-aab0-a6df585c8835",
+            "fieldName": null,
+            "title": "Please upload your top 50 opcodes by downloading a copy of the template shared below and then upload when ready",
+            "type": "FILE_UPLOAD",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              {
+                "mediaId": "f0e08419-f193-4686-a3f0-cf463a1a83e3",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790104994671,
+                  "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  "mediaCategory": "OTHER",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/f0e08419-f193-4686-a3f0-cf463a1a83e3/HONDA OPCODES.xlsx",
+                  "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  "filename": "HONDA OPCODES.xlsx",
+                  "mediaSize": 23144
+                }
+              }
+            ],
+            "decodedValue": [
+              {
+                "mediaId": "f0e08419-f193-4686-a3f0-cf463a1a83e3",
+                "uploadStatus": "COMPLETED",
+                "filename": "HONDA OPCODES.xlsx",
+                "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "mediaCategory": "OTHER",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/f0e08419-f193-4686-a3f0-cf463a1a83e3/HONDA OPCODES.xlsx",
+                "mediaSize": 23144,
+                "createdTime": 1790104994671
+              }
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "cafdb95d-d4c1-4567-8b8d-0da22a0c5d34",
+            "sectionName": "Document Upload",
+            "sectionOrder": 9,
+            "sectionType": "MAIN",
+            "rowIndex": 7,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600223",
+            "fieldName": null,
+            "title": "Please upload the updated Op codes list here",
+            "type": "FILE_UPLOAD",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 6,
+            "rawValue": [
+              {
+                "mediaId": "dfcd698b-cb14-47ee-bb15-0b0c2ac0bdde",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1790110048395,
+                  "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  "mediaCategory": "OTHER",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/dfcd698b-cb14-47ee-bb15-0b0c2ac0bdde/GM OPCODES.xlsx",
+                  "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                  "filename": "GM OPCODES.xlsx",
+                  "mediaSize": 22929
+                }
+              }
+            ],
+            "decodedValue": [
+              {
+                "mediaId": "dfcd698b-cb14-47ee-bb15-0b0c2ac0bdde",
+                "uploadStatus": "COMPLETED",
+                "filename": "GM OPCODES.xlsx",
+                "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "mediaCategory": "OTHER",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90011773/06f04174-fd53-4c4a-b998-e799faeb1212/dfcd698b-cb14-47ee-bb15-0b0c2ac0bdde/GM OPCODES.xlsx",
+                "mediaSize": 22929,
+                "createdTime": 1790110048395
+              }
+            ],
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -3984,8 +4808,61 @@
             "required": true,
             "logic": null,
             "fieldOrder": 2,
-            "rawValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
-            "decodedValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+            "rawValue": "DFL OIL CHANGE\nDFL POINTS\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+            "decodedValue": "DFL OIL CHANGE\nDFL POINTS\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "e2eacde6-bdbf-4aea-854e-0e57991b504d",
+        "sectionName": "Submitter Information",
+        "sectionOrder": 10,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "e2eacde6-bdbf-4aea-854e-0e57991b504d",
+            "sectionName": "Submitter Information",
+            "sectionOrder": 10,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "c053d2ee-355a-4b1e-8743-c5bc9555f7dc",
+            "fieldName": null,
+            "title": "Name of Submitter",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "Christopher Brandt",
+            "decodedValue": "Christopher Brandt",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "e2eacde6-bdbf-4aea-854e-0e57991b504d",
+            "sectionName": "Submitter Information",
+            "sectionOrder": 10,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "55f455cc-0c91-4b1c-8a6b-306260ce5457",
+            "fieldName": null,
+            "title": "By signing below, the Service Champion confirms completion and accuracy of information for Setup configuration.",
+            "type": "SIGNATURE",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "data:image/png;base64,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ARM1zdsntkgBBRRQQAEF2i5g+xVQQAEFFFBAgU0KmKjZJJwvU0ABBRRQYBkCblMBBRRQQAEFFFCg2wImarq9f+2dAgooMK2AyymggAIKKKCAAgoooEADBEzUNGAn2AQFui1g7xRQQAEFFFBAAQUUUEABBaYVMFEzrZTLNU/AFimggAIKKKCAAgoooIACCijQMYM4ZiMAAAG6SURBVAETNWN2qJMUUEABBRRQQAEFFFBAAQUUUKD7Ak3soYmaJu4V26SAAgoooIACCiiggAIKKNBmAduuwKYFTNRsms4XKqCAAgoooIACCiiggAKLFnB7CijQdQETNV3fw/ZPAQUUUEABBRRQQIFpBFxGAQUUUKARAiZqGrEbbIQCCiiggAIKKNBdAXumgAIKKKCAAtMLmKiZ3solFVBAAQUUUKBZArZGAQUUUEABBRTonICJms7tUjukgAIKKLB1AdeggAIKKKCAAgoooMByBEzULMfdrSqgQF8F7LcCCiiggAIKKKCAAgooMEHARM0EHGcp0CYB26qAAgoooIACCiiggAIKKNB+ARM17d+HdffA9SuggAIKKKCAAgoooIACCiigwIIElpioWVAP3YwCCiiggAIKKKCAAgoooIACCixRwE3PImCiZhYtl1VAAQUUUEABBRRQQAEFFGiOgC1RoIMCJmo6uFPtkgIKKKCAAgoooIACCmxNwFcroIACyxIwUbMsebergAIKKKCAAgoo0EcB+6yAAgoooMBEARM1E3mcqYACCiiggAIKtEXAdiqggAIKKKBAFwR+CAAA//85S1CDAAAABklEQVQDACX61UFkSYI4AAAAAElFTkSuQmCC",
+            "decodedValue": "data:image/png;base64,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ARM1zdsntkgBBRRQQAEF2i5g+xVQQAEFFFBAgU0KmKjZJJwvU0ABBRRQYBkCblMBBRRQQAEFFFCg2wImarq9f+2dAgooMK2AyymggAIKKKCAAgoooEADBEzUNGAn2AQFui1g7xRQQAEFFFBAAQUUUEABBaYVMFEzrZTLNU/AFimggAIKKKCAAgoooIACCijQMYM4ZiMAAAG6SURBVAETNWN2qJMUUEABBRRQQAEFFFBAAQUUUKD7Ak3soYmaJu4V26SAAgoooIACCiiggAIKKNBmAduuwKYFTNRsms4XKqCAAgoooIACCiiggAKLFnB7CijQdQETNV3fw/ZPAQUUUEABBRRQQIFpBFxGAQUUUKARAiZqGrEbbIQCCiiggAIKKNBdAXumgAIKKKCAAtMLmKiZ3solFVBAAQUUUKBZArZGAQUUUEABBRTonICJms7tUjukgAIKKLB1AdeggAIKKKCAAgoooMByBEzULMfdrSqgQF8F7LcCCiiggAIKKKCAAgooMEHARM0EHGcp0CYB26qAAgoooIACCiiggAIKKNB+ARM17d+HdffA9SuggAIKKKCAAgoooIACCiigwIIElpioWVAP3YwCCiiggAIKKKCAAgoooIACCixRwE3PImCiZhYtl1VAAQUUUEABBRRQQAEFFGiOgC1RoIMCJmo6uFPtkgIKKKCAAgoooIACCmxNwFcroIACyxIwUbMsebergAIKKKCAAgoo0EcB+6yAAgoooMBEARM1E3mcqYACCiiggAIKtEXAdiqggAIKKKBAFwR+CAAA//85S1CDAAAABklEQVQDACX61UFkSYI4AAAAAElFTkSuQmCC",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -4022,6 +4899,18 @@
       }
     ],
     "populatedFlatRows": [
+      {
+        "sectionName": "Dispatching Workflows",
+        "subsectionName": null,
+        "sectionId": "f19e443a-f070-4371-885c-e4be10731d4e",
+        "fieldId": "2440391a-3470-48ae-a17b-2f39882a8955",
+        "title": "Additional Notes",
+        "type": "LONG_TEXT",
+        "required": false,
+        "rawValue": "SERVICE MANAGER AND SHOP FOREMAN DISPATCH WORK.  MAJORITY IS DISPATCHED BY SERVICE MANAGER",
+        "decodedValue": "SERVICE MANAGER AND SHOP FOREMAN DISPATCH WORK.  MAJORITY IS DISPATCHED BY SERVICE MANAGER",
+        "hasUserValue": true
+      },
       {
         "sectionName": "Labor Pricing",
         "subsectionName": null,
@@ -4134,8 +5023,8 @@
         "title": "Please describe service contract specific labor rates",
         "type": "LONG_TEXT",
         "required": true,
-        "rawValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
-        "decodedValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+        "rawValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  THE LABOR RATE WILL NEED TO BE ADJUSTABLE",
+        "decodedValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  THE LABOR RATE WILL NEED TO BE ADJUSTABLE",
         "hasUserValue": true
       },
       {
@@ -4147,23 +5036,11 @@
         "type": "MULTIPLE_CHOICE",
         "required": true,
         "rawValue": [
-          "No"
+          "Yes"
         ],
         "decodedValue": [
-          "No"
+          "Yes"
         ],
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Labor Pricing",
-        "subsectionName": null,
-        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
-        "fieldId": "6b496322-6cae-4c99-b6dc-c709f990ab04",
-        "title": "Additional Information",
-        "type": "LONG_TEXT",
-        "required": false,
-        "rawValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
-        "decodedValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE",
         "hasUserValue": true
       },
       {
@@ -4390,15 +5267,13 @@
           "47c91292-5e8f-4221-a072-c2315de2da0a",
           "a56b35c4-0273-46e5-b4fa-c2f673f56272",
           "27fe1e18-90b7-4177-b351-c8acf9fe138d",
-          "c79092f4-dc3b-4736-8787-e589568ba6ce",
-          "5d83c601-ca2e-4d0f-927f-006ee24bcd20"
+          "c79092f4-dc3b-4736-8787-e589568ba6ce"
         ],
         "decodedValue": [
           "Waiter",
           "Drop-Off",
           "Loaner",
-          "Shuttle",
-          "Valet"
+          "Shuttle"
         ],
         "hasUserValue": true
       },
@@ -4566,12 +5441,21 @@
         "title": "Please list all discounts (put \"None\" if you don't use discounts)",
         "type": "LONG_TEXT",
         "required": true,
-        "rawValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
-        "decodedValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+        "rawValue": "DFL OIL CHANGE\nDFL POINTS\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
+        "decodedValue": "DFL OIL CHANGE\nDFL POINTS\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES",
         "hasUserValue": true
       }
     ],
     "csvReadyRows": [
+      {
+        "sectionName": "Dispatching Workflows",
+        "sectionId": "f19e443a-f070-4371-885c-e4be10731d4e",
+        "fieldId": "2440391a-3470-48ae-a17b-2f39882a8955",
+        "title": "Additional Notes",
+        "type": "LONG_TEXT",
+        "required": "false",
+        "decodedValue": "SERVICE MANAGER AND SHOP FOREMAN DISPATCH WORK.  MAJORITY IS DISPATCHED BY SERVICE MANAGER"
+      },
       {
         "sectionName": "Labor Pricing",
         "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
@@ -4651,7 +5535,7 @@
         "title": "Please describe service contract specific labor rates",
         "type": "LONG_TEXT",
         "required": "true",
-        "decodedValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE"
+        "decodedValue": "FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  THE LABOR RATE WILL NEED TO BE ADJUSTABLE"
       },
       {
         "sectionName": "Labor Pricing",
@@ -4660,16 +5544,7 @@
         "title": "Do you utilize a labor matrix?",
         "type": "MULTIPLE_CHOICE",
         "required": "true",
-        "decodedValue": "[\"No\"]"
-      },
-      {
-        "sectionName": "Labor Pricing",
-        "sectionId": "99c8c20e-4ed1-4a47-b3ca-49b4fb59fe40",
-        "fieldId": "6b496322-6cae-4c99-b6dc-c709f990ab04",
-        "title": "Additional Information",
-        "type": "LONG_TEXT",
-        "required": "false",
-        "decodedValue": "I WILL UPLOAD LABOR MATRIX AT LATER DATE"
+        "decodedValue": "[\"Yes\"]"
       },
       {
         "sectionName": "General Service Information",
@@ -4831,7 +5706,7 @@
         "title": "What modes of transportation do you provide for customers? (select all that apply)",
         "type": "MULTIPLE_CHOICE",
         "required": "true",
-        "decodedValue": "[\"Waiter\",\"Drop-Off\",\"Loaner\",\"Shuttle\",\"Valet\"]"
+        "decodedValue": "[\"Waiter\",\"Drop-Off\",\"Loaner\",\"Shuttle\"]"
       },
       {
         "sectionName": "Department Hours and Appointments",
@@ -4939,10 +5814,10 @@
         "title": "Please list all discounts (put \"None\" if you don't use discounts)",
         "type": "LONG_TEXT",
         "required": "true",
-        "decodedValue": "DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES"
+        "decodedValue": "DFL OIL CHANGE\nDFL POINTS\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES"
       }
     ],
-    "humanReadable": "[Labor Pricing > —] What is your default Customer labor rate?: 195 GM AND 175 HONDA\n[Labor Pricing > —] What is your default Warranty labor rate?: $173.17 HONDA AND $176.06 GM\n[Labor Pricing > —] Do you want to automatically close RO when warranty claim is submitted?: Yes\n[Labor Pricing > —] What is you default Warranty G/L Account?: Warranty Claim\n[Labor Pricing > —] What is your warranty parts markup percentage?: 87.5% GM AND 78% HONDA\n[Labor Pricing > —] What is your default Internal labor rate?: 195 GM AND 175 HONDA\n[Labor Pricing > —] Do you have an internal pay limit? (If so, please put the limit below): NO\n[Labor Pricing > —] In which scenarios do you utilize a different labor rate than the default?: Service contract / Extended warranty\n[Labor Pricing > —] Please describe service contract specific labor rates: FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  tHE LABOR RATE WILL NEED TO BE ADJUSTABLE\n[Labor Pricing > —] Do you utilize a labor matrix?: No\n[Labor Pricing > —] Additional Information: I WILL UPLOAD LABOR MATRIX AT LATER DATE\n[General Service Information > —] Do you have a bodyshop or collision center?: No\n[Department Hours and Appointments > —] Department Hour Notes (if needed): 7:30AM-6:00PM IS OPERATING HOURS\n7:30AM-4:00PM ARE OPEN FOR APPOINTMENTS WITH A BREAK AT 12:00PM FOR LUNCH\n[Department Hours and Appointments > —] Monday (Operating Hours):: 7:30AM-6:00PM\n[Department Hours and Appointments > —] Monday (Appointment Hours - can be same as operating hours):: 7:30AM-4:00PM\n[Department Hours and Appointments > —] Tuesday (Operating Hours):: 7:30AM-6:00PM\n[Department Hours and Appointments > —] Tuesday (Appointment Hours - can be same as operating hours):: 7:30AM-4:00PM\n[Department Hours and Appointments > —] Wednesday (Operating Hours):: 7:30AM-6:00PM\n[Department Hours and Appointments > —] Wednesday (Appointment Hours - can be same as operating hours):: 7:30AM-4:00PM\n[Department Hours and Appointments > —] Thursday (Operating Hours):: 7:30AM-6:00PM\n[Department Hours and Appointments > —] Thursday (Appointment Hours - can be same as operating hours):: 7:30AM-4:00PM\n[Department Hours and Appointments > —] Friday (Operating Hours):: 7:30AM-6:00PM\n[Department Hours and Appointments > —] Friday (Appointment Hours - can be same as operating hours):: 7:30AM-4:00PM\n[Department Hours and Appointments > —] Saturday (Operating Hours):: 8:00AM-1:00PM\n[Department Hours and Appointments > —] Saturday (Appointment Hours - can be same as operating hours):: 8:00 AM-12:00PM\n[Department Hours and Appointments > —] Sunday (Operating Hours):: CLOSED\n[Department Hours and Appointments > —] Sunday (Appointment Hours - can be same as operating hours):: CLOSED\n[Department Hours and Appointments > —] In what frequency do you currently schedule service appointments?: Every 30 minutes\n[Department Hours and Appointments > —] What modes of transportation do you provide for customers? (select all that apply): Waiter, Drop-Off, Loaner, Shuttle, Valet\n[Department Hours and Appointments > —] Additional Information: SCHEDULING IN TEKION BUT NEED TO KNOW EXACTLY WHAT YOU WANT FOR THE SCHEDULING SETTINGS\n[Fees > —] Do you charge for Shop Supplies?: Yes\n[Fees > —] On what basis are Shop Supplies calculated? (check all that apply): Parts, Labor\n[Fees > —] Description (Fee Name): SHOP CHARGE\n[Fees > —] Shop Supply Amount- % or Flat : % UP TO MAX $60\n[Fees > —] Shop Supply G/L Account : 61D FOR GM AND 61DH FOR HONDA\n[Fees > —] Shop Supply Min. / Max. amounts: $0/$60\n[Fees > —] What pay types do you charge Shop Supplies on?: Customer Pay, Internal\n[Fees > —] Are Shop Supplies taxable?: Yes\n[Fees > —] Do you charge a Fuel Fee?: No\n[Fees > —] Please list any additional fees you may use: DISPOSAL FEE FOR TIRES\n[Discounts/Coupons > —] Please list all discounts (put \"None\" if you don't use discounts): DFL\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES"
+    "humanReadable": "[Dispatching Workflows > —] Additional Notes: SERVICE MANAGER AND SHOP FOREMAN DISPATCH WORK.  MAJORITY IS DISPATCHED BY SERVICE MANAGER\n[Labor Pricing > —] What is your default Customer labor rate?: 195 GM AND 175 HONDA\n[Labor Pricing > —] What is your default Warranty labor rate?: $173.17 HONDA AND $176.06 GM\n[Labor Pricing > —] Do you want to automatically close RO when warranty claim is submitted?: Yes\n[Labor Pricing > —] What is you default Warranty G/L Account?: Warranty Claim\n[Labor Pricing > —] What is your warranty parts markup percentage?: 87.5% GM AND 78% HONDA\n[Labor Pricing > —] What is your default Internal labor rate?: 195 GM AND 175 HONDA\n[Labor Pricing > —] Do you have an internal pay limit? (If so, please put the limit below): NO\n[Labor Pricing > —] In which scenarios do you utilize a different labor rate than the default?: Service contract / Extended warranty\n[Labor Pricing > —] Please describe service contract specific labor rates: FOR ASSURANT THEY PAY $140 AND OTHERS ARE ALL DIFFERENT AMOUNTS.  THE LABOR RATE WILL NEED TO BE ADJUSTABLE\n[Labor Pricing > —] Do you utilize a labor matrix?: Yes\n[General Service Information > —] Do you have a bodyshop or collision center?: No\n[Department Hours and Appointments > —] Department Hour Notes (if needed): 7:30AM-6:00PM IS OPERATING HOURS\n7:30AM-4:00PM ARE OPEN FOR APPOINTMENTS WITH A BREAK AT 12:00PM FOR LUNCH\n[Department Hours and Appointments > —] Monday (Operating Hours):: 7:30AM-6:00PM\n[Department Hours and Appointments > —] Monday (Appointment Hours - can be same as operating hours):: 7:30AM-4:00PM\n[Department Hours and Appointments > —] Tuesday (Operating Hours):: 7:30AM-6:00PM\n[Department Hours and Appointments > —] Tuesday (Appointment Hours - can be same as operating hours):: 7:30AM-4:00PM\n[Department Hours and Appointments > —] Wednesday (Operating Hours):: 7:30AM-6:00PM\n[Department Hours and Appointments > —] Wednesday (Appointment Hours - can be same as operating hours):: 7:30AM-4:00PM\n[Department Hours and Appointments > —] Thursday (Operating Hours):: 7:30AM-6:00PM\n[Department Hours and Appointments > —] Thursday (Appointment Hours - can be same as operating hours):: 7:30AM-4:00PM\n[Department Hours and Appointments > —] Friday (Operating Hours):: 7:30AM-6:00PM\n[Department Hours and Appointments > —] Friday (Appointment Hours - can be same as operating hours):: 7:30AM-4:00PM\n[Department Hours and Appointments > —] Saturday (Operating Hours):: 8:00AM-1:00PM\n[Department Hours and Appointments > —] Saturday (Appointment Hours - can be same as operating hours):: 8:00 AM-12:00PM\n[Department Hours and Appointments > —] Sunday (Operating Hours):: CLOSED\n[Department Hours and Appointments > —] Sunday (Appointment Hours - can be same as operating hours):: CLOSED\n[Department Hours and Appointments > —] In what frequency do you currently schedule service appointments?: Every 30 minutes\n[Department Hours and Appointments > —] What modes of transportation do you provide for customers? (select all that apply): Waiter, Drop-Off, Loaner, Shuttle\n[Department Hours and Appointments > —] Additional Information: SCHEDULING IN TEKION BUT NEED TO KNOW EXACTLY WHAT YOU WANT FOR THE SCHEDULING SETTINGS\n[Fees > —] Do you charge for Shop Supplies?: Yes\n[Fees > —] On what basis are Shop Supplies calculated? (check all that apply): Parts, Labor\n[Fees > —] Description (Fee Name): SHOP CHARGE\n[Fees > —] Shop Supply Amount- % or Flat : % UP TO MAX $60\n[Fees > —] Shop Supply G/L Account : 61D FOR GM AND 61DH FOR HONDA\n[Fees > —] Shop Supply Min. / Max. amounts: $0/$60\n[Fees > —] What pay types do you charge Shop Supplies on?: Customer Pay, Internal\n[Fees > —] Are Shop Supplies taxable?: Yes\n[Fees > —] Do you charge a Fuel Fee?: No\n[Fees > —] Please list any additional fees you may use: DISPOSAL FEE FOR TIRES\n[Discounts/Coupons > —] Please list all discounts (put \"None\" if you don't use discounts): DFL OIL CHANGE\nDFL POINTS\nGM COUPON (GM SIDE)\nHONDA COUPON (HONDA SIDE)\nFREE TIRE ROTATION FOR PURCHASED TIRES"
   },
-  "savedAt": "2026-09-17T09:38:51.909Z"
+  "savedAt": "2026-11-12T00:31:32.588Z"
 }

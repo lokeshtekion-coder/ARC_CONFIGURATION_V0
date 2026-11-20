@@ -1,3 +1,47 @@
+import {
+  acctsCount,
+  acctsReady,
+  assessStore,
+  attachmentsOf,
+  coaCount,
+  isNotWorkedByArc,
+  type StoreAssessment,
+} from "./storeAssessment";
+
+/** Variable Ops scope: go-live from today through this many days. */
+export const VARIABLE_OPS_SCOPE_DAYS = 90;
+
+export type VariableOpsAction = "CONFIGURE_NOW" | "IN_PROGRESS" | "FETCH_AGAIN" | "BLOCKED_FIXED_OPS" | "HANDLED_ELSEWHERE";
+
+export const ACTION_LABEL: Record<VariableOpsAction, string> = {
+  CONFIGURE_NOW: "Configure now (ACCTS ok, Variable Ops not started)",
+  IN_PROGRESS: "In progress (inform)",
+  FETCH_AGAIN: "Fetch setup and MAP again (ACCTS 50 or below)",
+  BLOCKED_FIXED_OPS: "Blocked by Fixed Ops",
+  HANDLED_ELSEWHERE: "Handled by POD/OFS (not ARC)",
+};
+
+/**
+ * What the user should do next for a Variable Ops store:
+ * - Fixed Ops prerequisite not done: blocked, nothing to do yet.
+ * - ACCTS 50 or below: fetch setup and MAP again.
+ * - ACCTS above 50 and Variable Ops in progress: in progress (inform).
+ * - ACCTS above 50 and Variable Ops not started: configure now.
+ */
+export function variableOpsActionFor(
+  store: StoreRecord,
+  fixedOpsPrerequisite: boolean,
+  variableOpsStatus: string,
+  excludedByPodOfs = false
+): VariableOpsAction {
+  if (excludedByPodOfs) return "HANDLED_ELSEWHERE";
+  if (!fixedOpsPrerequisite) return "BLOCKED_FIXED_OPS";
+  if (!acctsReady(store)) return "FETCH_AGAIN";
+  const status = variableOpsStatus.trim().toLowerCase();
+  if (status === "wip" || status.includes("progress")) return "IN_PROGRESS";
+  return "CONFIGURE_NOW";
+}
+import { renderSlaReportHtml } from "./slaReportHtml";
 import * as XLSX from "xlsx";
 import type { StoreRecord } from "./storesDb";
 import type { TapAttachmentItem } from "./tapTasksApi";
@@ -101,6 +145,8 @@ export interface FixedOpsReportData {
 }
 
 export interface VariableOpsReportRecord {
+  /** Readiness + conflict assessment (see storeAssessment.ts). */
+  assessment: StoreAssessment;
   tekionId: string;
   dealerId: string;
   dbaName: string;
@@ -119,6 +165,16 @@ export interface VariableOpsReportRecord {
   notWorked: string;
   blueprint: BlueprintSummary;
   accountingComplete: boolean;
+  /** Raw Accounting blueprint status text (shown as-is in the report). */
+  accountingStatusText: string;
+  /** What the user should do next for this store (see variableOpsActionFor). */
+  action: VariableOpsAction;
+  /** Attachments on the Accounting blueprint tasks. */
+  accountingAttachmentCount: number;
+  /** COA count (optional data; never decides readiness). */
+  coaCount: number;
+  /** ACCTS count from MAP (decides readiness: above 50 = done). */
+  acctsCount: number;
   tasks: SlaTaskDetailItem[];
 }
 
@@ -127,6 +183,15 @@ export interface VariableOpsReportData {
   title: string;
   windowLabel: string;
   items: VariableOpsReportRecord[];
+  /** Same as configureNowCount (kept for the existing callers). */
+  needsActionCount: number;
+  /** ARC-worked pending stores (excludes POD/OFS-handled). */
+  pendingCount: number;
+  configureNowCount: number;
+  inProgressCount: number;
+  fetchAgainCount: number;
+  /** Open stores (not blocked) with no attachments on the Accounting blueprint tasks. */
+  noAttachmentCount: number;
   totalEvaluated: number;
   breachedCount: number;
   criticalBreachedCount: number;
@@ -328,6 +393,7 @@ export function evaluateFixedOpsReport(
   let serviceIncomplete = 0;
 
   for (const store of records) {
+    if (isNotWorkedByArc(store)) continue; // ARC does not work decommissioned or Enterprise dealers
     const launchDateObj = parseFlexibleDate(store.launch_date);
     if (!launchDateObj) continue;
 
@@ -410,13 +476,16 @@ export function evaluateVariableOpsReport(
   let blockedByFixedOps = 0;
   let excludedCount = 0;
   let accountingIncomplete = 0;
+  let readyExcludedCount = 0;
 
   for (const store of records) {
+    if (isNotWorkedByArc(store)) continue; // ARC does not work decommissioned or Enterprise dealers
     const launchDateObj = parseFlexibleDate(store.launch_date);
     if (!launchDateObj) continue;
 
     const daysUntilLaunch = calculateDaysUntilLaunch(launchDateObj);
-    if (daysUntilLaunch < 0 || daysUntilLaunch > standardThreshold) continue;
+    // Scope: today through 90 days
+    if (daysUntilLaunch < 0 || daysUntilLaunch > VARIABLE_OPS_SCOPE_DAYS) continue;
 
     const variableOpsStatus = (store.variable_ops_status || "TO DO").trim();
     const isVariableOpsCompleted = variableOpsStatus.toLowerCase() === "completed";
@@ -425,6 +494,7 @@ export function evaluateVariableOpsReport(
     if (!includeCompleted && isVariableOpsCompleted) {
       continue;
     }
+
 
     const notWorked = String(store.not_worked || "").trim();
     const isExcluded = isVariableOpsExcludedByNotWorked(notWorked);
@@ -467,28 +537,56 @@ export function evaluateVariableOpsReport(
       notWorked,
       blueprint: bp,
       accountingComplete: bp.accountingCompleted,
+      accountingStatusText: String(bp.accountingStatus ?? "").trim() || "—",
+      action: variableOpsActionFor(store, isFixedOpsCompleted, variableOpsStatus, isExcluded),
+      accountingAttachmentCount: attachmentsOf(store).variable,
+      coaCount: coaCount(store),
+      acctsCount: acctsCount(store),
+      assessment: assessStore(store),
       tasks: extractTasksFromStore(store, "Accounting"),
     });
   }
 
+  const actionRank: Record<VariableOpsAction, number> = {
+    CONFIGURE_NOW: 0,
+    FETCH_AGAIN: 1,
+    IN_PROGRESS: 2,
+    BLOCKED_FIXED_OPS: 3,
+    HANDLED_ELSEWHERE: 4,
+  };
   items.sort((a, b) => {
+    if (actionRank[a.action] !== actionRank[b.action]) return actionRank[a.action] - actionRank[b.action];
     if (a.isCriticalBreached !== b.isCriticalBreached) return a.isCriticalBreached ? -1 : 1;
     if (a.isBreached !== b.isBreached) return a.isBreached ? -1 : 1;
     return a.daysUntilLaunch - b.daysUntilLaunch;
   });
+  const configureNowCount = items.filter((i) => i.action === "CONFIGURE_NOW").length;
+  const inProgressCount = items.filter((i) => i.action === "IN_PROGRESS").length;
+  const fetchAgainCount = items.filter((i) => i.action === "FETCH_AGAIN").length;
+  const noAttachmentCount = items.filter(
+    (i) => i.accountingAttachmentCount === 0 && i.action !== "BLOCKED_FIXED_OPS" && i.action !== "HANDLED_ELSEWHERE"
+  ).length;
+  // "All pending" counts ARC-worked stores only; POD/OFS-handled stores have their own tab.
+  const pendingCount = items.filter((i) => !i.isExcluded).length;
 
   return {
     type: "variable_ops",
     title: "📈 Pending Variable Ops Audit & SLA Report",
     windowLabel: `Window: T-65 Days (SLA Breach <= ${standardThreshold}d, Critical Breach <= ${criticalThreshold}d)`,
     items,
-    totalEvaluated: items.length,
+    totalEvaluated: pendingCount,
     breachedCount,
     criticalBreachedCount,
     blockedByFixedOpsCount: blockedByFixedOps,
     excludedCount,
     variableOpsThresholdDays: standardThreshold,
     criticalThresholdDays: criticalThreshold,
+    needsActionCount: configureNowCount,
+    pendingCount,
+    configureNowCount,
+    inProgressCount,
+    fetchAgainCount,
+    noAttachmentCount,
     accountingBlueprintIncompleteCount: accountingIncomplete,
   };
 }
@@ -569,11 +667,15 @@ export function generateExcelAuditWorkbook(
       "Fixed Ops Prerequisite": item.isFixedOpsCompleted ? "Completed (Ready)" : "BLOCKED (Fixed Ops Incomplete)",
       "Variable Ops Status": item.variableOpsStatus,
       "SLA Status": slaText,
-      "Accounting Blueprint": item.blueprint.accountingCompleted ? "Completed" : "Pending",
+      "Accounting Blueprint": item.accountingStatusText,
+      "COA Count": item.coaCount,
+      "ACCTS Count (needs >50)": item.acctsCount,
+      "Accounting Attachments": item.accountingAttachmentCount === 0 ? "MISSING" : item.accountingAttachmentCount,
+      "Next Action": ACTION_LABEL[item.action],
     };
   });
   const wsVariableOps = XLSX.utils.json_to_sheet(variableOpsRows);
-  XLSX.utils.book_append_sheet(wb, wsVariableOps, "Pending Variable Ops (T-65)");
+  XLSX.utils.book_append_sheet(wb, wsVariableOps, "Pending Variable Ops (T-90)");
 
   const base64 = XLSX.write(wb, { bookType: "xlsx", type: "base64" });
   const rawArray = XLSX.write(wb, { bookType: "xlsx", type: "array" });
@@ -584,816 +686,10 @@ export function generateExcelAuditWorkbook(
 // ==========================================
 // 5. HTML REPORT GENERATOR
 // ==========================================
+
+/** Standalone, all-rows HTML report (see slaReportHtml.ts). */
 export function generateHtmlReport(
   reportData: AnalyticsReportData | FixedOpsReportData | VariableOpsReportData
 ): string {
-  const generatedAt = new Date().toLocaleString("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
-
-  const serializedData = JSON.stringify(reportData);
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${reportData.title}</title>
-  <style>
-    :root {
-      --bg: #0b0f17;
-      --card-bg: #121824;
-      --card-border: rgba(255, 255, 255, 0.08);
-      --text: #f8fafc;
-      --text-muted: #94a3b8;
-      --accent: #38bdf8;
-      --danger: #fb7185;
-      --danger-bg: rgba(244, 63, 94, 0.12);
-      --danger-border: rgba(244, 63, 94, 0.28);
-      --success: #4ade80;
-      --success-bg: rgba(74, 222, 128, 0.12);
-      --warning: #fbbf24;
-      --warning-bg: rgba(251, 191, 36, 0.12);
-      --purple: #c084fc;
-      --purple-bg: rgba(168, 85, 247, 0.12);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      padding: 24px;
-      line-height: 1.4;
-    }
-    .header-panel {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 20px;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-    .header-title { font-size: 22px; font-weight: 800; color: #fff; }
-    .header-subtitle { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
-    .header-actions { display: flex; gap: 8px; align-items: center; }
-    .btn {
-      padding: 8px 14px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      border: 1px solid var(--card-border);
-      background: var(--card-bg);
-      color: var(--text);
-      transition: all 0.15s ease;
-    }
-    .btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
-    .btn-copy { background: #0284c7; border-color: #38bdf8; color: #fff; }
-    .btn-copy:hover { background: #0369a1; }
-    .btn-copy.copied { background: #16a34a !important; border-color: #4ade80 !important; color: #fff !important; }
-
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    .kpi-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      padding: 14px 16px;
-    }
-    .kpi-label { font-size: 11px; text-transform: uppercase; font-weight: 700; color: var(--text-muted); }
-    .kpi-value { font-size: 24px; font-weight: 800; margin-top: 6px; }
-    .kpi-desc { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-
-    .toolbar-strip {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 14px;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .filter-pills { display: inline-flex; background: var(--card-bg); padding: 3px; border-radius: 8px; border: 1px solid var(--card-border); }
-    .filter-pill {
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 700;
-      border: none;
-      background: transparent;
-      color: var(--text-muted);
-      cursor: pointer;
-    }
-    .filter-pill.active { background: #1e293b; color: var(--accent); }
-    .records-count { font-size: 12px; color: var(--text-muted); }
-    .records-count strong { color: #fff; }
-
-    .table-container {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 12px;
-      overflow-x: auto;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    }
-    table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12px; text-align: left; }
-
-    .th-title-row th {
-      background: #141b27;
-      color: #94a3b8;
-      padding: 12px 10px 6px 10px;
-      font-size: 11px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      border-bottom: none;
-      white-space: nowrap;
-    }
-    .th-filter-row th {
-      background: #101622;
-      padding: 4px 10px 12px 10px;
-      border-bottom: 2px solid rgba(255, 255, 255, 0.12);
-      vertical-align: middle;
-    }
-    .col-filter-input, .col-filter-select {
-      width: 100%;
-      padding: 5px 8px;
-      background: #090d14;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 6px;
-      color: #f8fafc;
-      font-size: 11px;
-      outline: none;
-    }
-    .col-filter-input:focus, .col-filter-select:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.15);
-    }
-
-    td {
-      padding: 10px 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      color: #e2e8f0;
-      vertical-align: middle;
-    }
-    tr:hover td { background: rgba(255, 255, 255, 0.02); }
-    tr.priority-row td { background: rgba(244, 63, 94, 0.04); }
-    tr.priority-row:hover td { background: rgba(244, 63, 94, 0.08); }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 10.5px;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-    .badge-ok { background: var(--success-bg); color: var(--success); border: 1px solid rgba(74, 222, 128, 0.28); }
-    .badge-wip { background: var(--warning-bg); color: var(--warning); border: 1px solid rgba(251, 191, 36, 0.28); }
-    .badge-breach { background: var(--danger-bg); color: var(--danger); border: 1px solid var(--danger-border); }
-    .badge-t7 { background: rgba(244, 63, 94, 0.2); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4); font-weight: 800; }
-    .badge-neutral { background: rgba(148, 163, 184, 0.12); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.25); }
-    .badge-critical { background: #e11d48; color: #fff; font-weight: 800; }
-    .badge-excluded { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.35); }
-  </style>
-</head>
-<body>
-  <div class="header-panel">
-    <div>
-      <div class="header-title">${reportData.title}</div>
-      <div class="header-subtitle">${reportData.windowLabel} • Generated: ${generatedAt}</div>
-    </div>
-    <div class="header-actions">
-      <button class="btn" onclick="resetFilters()">↺ Reset Filters</button>
-      <button id="copyBtn" class="btn btn-copy" onclick="copyTableForExcel()">📋 Copy for Excel</button>
-    </div>
-  </div>
-
-  <div id="kpis" class="kpi-grid"></div>
-
-  <div class="toolbar-strip">
-    <div id="pills" class="filter-pills"></div>
-    <div class="records-count">
-      Showing <strong id="visible-count">0</strong> of ${reportData.totalEvaluated} pending dealerships
-    </div>
-  </div>
-
-  <div class="table-container">
-    <table id="mainTable">
-      <thead id="tableHead"></thead>
-      <tbody id="tableBody"></tbody>
-    </table>
-  </div>
-
-  <script>
-    const DATA = ${serializedData};
-    let currentPreset = 'all';
-    const columnFilters = {};
-    let renderedRowsData = [];
-
-    function renderKpis() {
-      const container = document.getElementById('kpis');
-      const pillsContainer = document.getElementById('pills');
-
-      if (DATA.type === 'analytics') {
-        container.innerHTML = \`
-          <div class="kpi-card" style="border-color: rgba(244, 63, 94, 0.4);">
-            <div class="kpi-label" style="color: #fb7185;">🚨 High Priority (&le; T-7 Days)</div>
-            <div class="kpi-value" style="color: #fb7185;">\${DATA.priorityT7Count}</div>
-            <div class="kpi-desc">Launches within 7 days</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Pending In Progress</div>
-            <div class="kpi-value" style="color: var(--warning);">\${DATA.analyticsInProgressCount}</div>
-            <div class="kpi-desc">Active configuration</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Pending Not Started</div>
-            <div class="kpi-value" style="color: var(--text-muted);">\${DATA.analyticsNotStartedCount}</div>
-            <div class="kpi-desc">Pending action</div>
-          </div>
-        \`;
-
-        pillsContainer.innerHTML = \`
-          <button id="pill-all" class="filter-pill active" onclick="setPreset('all')">All Pending (\${DATA.totalEvaluated})</button>
-          <button id="pill-priority" class="filter-pill" onclick="setPreset('priority')">🚨 Priority T-7 Only (\${DATA.priorityT7Count})</button>
-          <button id="pill-inprogress" class="filter-pill" onclick="setPreset('inprogress')">In Progress (\${DATA.analyticsInProgressCount})</button>
-        \`;
-      } else if (DATA.type === 'fixed_ops') {
-        container.innerHTML = \`
-          <div class="kpi-card">
-            <div class="kpi-label">Total Pending (T-90)</div>
-            <div class="kpi-value">\${DATA.totalEvaluated}</div>
-            <div class="kpi-desc">Stores requiring completion</div>
-          </div>
-          <div class="kpi-card" style="border-color: rgba(244, 63, 94, 0.4);">
-            <div class="kpi-label" style="color: var(--danger);">🚨 SLA Breached (&le;85d)</div>
-            <div class="kpi-value" style="color: var(--danger);">\${DATA.breachedCount}</div>
-            <div class="kpi-desc">Pending within 85 days</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Excluded (POD / OFS)</div>
-            <div class="kpi-value" style="color: var(--purple);">\${DATA.excludedCount}</div>
-            <div class="kpi-desc">Not handled by our team</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Parts / Service BP Pending</div>
-            <div class="kpi-value" style="color: var(--warning);">\${DATA.partsBlueprintIncompleteCount + DATA.serviceBlueprintIncompleteCount}</div>
-            <div class="kpi-desc">Blueprint config incomplete</div>
-          </div>
-        \`;
-
-        pillsContainer.innerHTML = \`
-          <button id="pill-all" class="filter-pill active" onclick="setPreset('all')">All Pending (\${DATA.totalEvaluated})</button>
-          <button id="pill-breached" class="filter-pill" onclick="setPreset('breached')">🚨 Breaches Only (\${DATA.breachedCount})</button>
-          <button id="pill-excluded" class="filter-pill" onclick="setPreset('excluded')">POD / OFS Excluded (\${DATA.excludedCount})</button>
-        \`;
-      } else if (DATA.type === 'variable_ops') {
-        container.innerHTML = \`
-          <div class="kpi-card">
-            <div class="kpi-label">Total Pending (T-65)</div>
-            <div class="kpi-value">\${DATA.totalEvaluated}</div>
-            <div class="kpi-desc">Stores requiring completion</div>
-          </div>
-          <div class="kpi-card" style="border-color: rgba(251, 191, 36, 0.4);">
-            <div class="kpi-label" style="color: var(--warning);">SLA Breached (&le;65d)</div>
-            <div class="kpi-value" style="color: var(--warning);">\${DATA.breachedCount}</div>
-            <div class="kpi-desc">Variable Ops not done</div>
-          </div>
-          <div class="kpi-card" style="border-color: rgba(244, 63, 94, 0.4);">
-            <div class="kpi-label" style="color: var(--danger);">🚨 Critical Breaches (&le;55d)</div>
-            <div class="kpi-value" style="color: var(--danger);">\${DATA.criticalBreachedCount}</div>
-            <div class="kpi-desc">Critical escalation threshold</div>
-          </div>
-          <div class="kpi-card">
-            <div class="kpi-label">Blocked by Fixed Ops</div>
-            <div class="kpi-value" style="color: #f87171;">\${DATA.blockedByFixedOpsCount}</div>
-            <div class="kpi-desc">Prerequisite not done</div>
-          </div>
-        \`;
-
-        pillsContainer.innerHTML = \`
-          <button id="pill-all" class="filter-pill active" onclick="setPreset('all')">All Pending (\${DATA.totalEvaluated})</button>
-          <button id="pill-breached" class="filter-pill" onclick="setPreset('breached')">🚨 Breaches (&le;65d) (\${DATA.breachedCount})</button>
-          <button id="pill-critical" class="filter-pill" onclick="setPreset('critical')">🔥 Critical (&le;55d) (\${DATA.criticalBreachedCount})</button>
-          <button id="pill-blocked" class="filter-pill" onclick="setPreset('blocked')">⛔ Blocked by Fixed Ops (\${DATA.blockedByFixedOpsCount})</button>
-        \`;
-      }
-    }
-
-    function populateDropdownOptions() {
-      const timelineSet = new Set();
-      const podSet = new Set();
-      const bpSet = new Set();
-      const notWorkedSet = new Set();
-
-      DATA.items.forEach(item => {
-        if (item.tLabel) timelineSet.add(item.tLabel);
-        if (item.superpodId) podSet.add(item.superpodId);
-        if (item.notWorked) notWorkedSet.add(item.notWorked);
-        if (DATA.type === 'analytics') {
-          bpSet.add(item.analyticsStatusLabel);
-        }
-      });
-
-      const timelineSelect = document.getElementById('filter-timeline');
-      const podSelect = document.getElementById('filter-pod');
-      const bpSelect = document.getElementById('filter-bp');
-      const notWorkedSelect = document.getElementById('filter-notworked');
-
-      if (timelineSelect) {
-        Array.from(timelineSet).sort().forEach(val => {
-          const opt = document.createElement('option');
-          opt.value = val;
-          opt.textContent = val;
-          timelineSelect.appendChild(opt);
-        });
-      }
-
-      if (podSelect) {
-        Array.from(podSet).sort().forEach(val => {
-          const opt = document.createElement('option');
-          opt.value = val;
-          opt.textContent = val;
-          podSelect.appendChild(opt);
-        });
-      }
-
-      if (bpSelect) {
-        Array.from(bpSet).sort().forEach(val => {
-          const opt = document.createElement('option');
-          opt.value = val;
-          opt.textContent = val;
-          bpSelect.appendChild(opt);
-        });
-      }
-
-      if (notWorkedSelect) {
-        Array.from(notWorkedSet).sort().forEach(val => {
-          const opt = document.createElement('option');
-          opt.value = val;
-          opt.textContent = val;
-          notWorkedSelect.appendChild(opt);
-        });
-      }
-    }
-
-    function renderTable() {
-      const thead = document.getElementById('tableHead');
-      const tbody = document.getElementById('tableBody');
-      tbody.innerHTML = '';
-      renderedRowsData = [];
-      let visible = 0;
-
-      if (DATA.type === 'analytics') {
-        thead.innerHTML = \`
-          <tr class="th-title-row">
-            <th>Tekion ID</th>
-            <th>Dealer ID</th>
-            <th>Dealership Name</th>
-            <th>Go-Live Date</th>
-            <th>Timeline</th>
-            <th>POD</th>
-            <th>Not Worked?</th>
-            <th>Analytics Blueprint Status</th>
-          </tr>
-          <tr class="th-filter-row">
-            <th><input type="text" class="col-filter-input" placeholder="Filter..." oninput="onFilterChange(0, this.value)" /></th>
-            <th><input type="text" class="col-filter-input" placeholder="Filter..." oninput="onFilterChange(1, this.value)" /></th>
-            <th><input type="text" class="col-filter-input" placeholder="Filter..." oninput="onFilterChange(2, this.value)" /></th>
-            <th><input type="text" class="col-filter-input" placeholder="Filter..." oninput="onFilterChange(3, this.value)" /></th>
-            <th>
-              <select id="filter-timeline" class="col-filter-select" onchange="onFilterChange(4, this.value)">
-                <option value="">All Timelines</option>
-              </select>
-            </th>
-            <th>
-              <select id="filter-pod" class="col-filter-select" onchange="onFilterChange(5, this.value)">
-                <option value="">All PODs</option>
-              </select>
-            </th>
-            <th>
-              <select id="filter-notworked" class="col-filter-select" onchange="onFilterChange(6, this.value)">
-                <option value="">All Ownership</option>
-              </select>
-            </th>
-            <th>
-              <select id="filter-bp" class="col-filter-select" onchange="onFilterChange(7, this.value)">
-                <option value="">All Statuses</option>
-              </select>
-            </th>
-          </tr>
-        \`;
-
-        DATA.items.forEach(item => {
-          if (currentPreset === 'priority' && !item.isPriorityT7) return;
-          if (currentPreset === 'inprogress' && item.blueprint.analyticsNormalized !== 'IN_PROGRESS') return;
-
-          const rowValues = [
-            item.tekionId,
-            item.dealerId,
-            item.dbaName,
-            item.launchDate,
-            item.tLabel,
-            item.superpodId,
-            item.notWorked || "Handled by ARC",
-            item.analyticsStatusLabel
-          ];
-
-          let matches = true;
-          for (const [colIdx, filterVal] of Object.entries(columnFilters)) {
-            if (!filterVal) continue;
-            const val = String(rowValues[colIdx] || '').toLowerCase();
-            if (!val.includes(filterVal.toLowerCase())) {
-              matches = false;
-              break;
-            }
-          }
-          if (!matches) return;
-          visible++;
-
-          renderedRowsData.push(rowValues);
-
-          let bpBadge = '<span class="badge badge-neutral">Not Started / None</span>';
-          if (item.blueprint.analyticsNormalized === 'COMPLETED') {
-            bpBadge = '<span class="badge badge-ok">✓ Completed</span>';
-          } else if (item.blueprint.analyticsNormalized === 'IN_PROGRESS') {
-            bpBadge = '<span class="badge badge-wip">⏳ In Progress</span>';
-          }
-
-          const timelineBadge = item.isPriorityT7
-            ? '<span class="badge badge-t7">🔥 ' + item.tLabel + '</span>'
-            : '<span class="badge badge-neutral">' + item.tLabel + '</span>';
-
-          const notWorkedBadge = item.notWorked
-            ? '<span class="badge badge-excluded">' + item.notWorked + '</span>'
-            : '<span style="color:#64748b; font-size:11px;">Handled by ARC</span>';
-
-          const tr = document.createElement('tr');
-          if (item.isPriorityT7) tr.className = 'priority-row';
-          tr.innerHTML = \`
-            <td><strong>\${item.tekionId}</strong></td>
-            <td><strong style="color:var(--accent);">\${item.dealerId}</strong></td>
-            <td>\${item.dbaName}</td>
-            <td>\${item.launchDate}</td>
-            <td>\${timelineBadge}</td>
-            <td>\${item.superpodId}</td>
-            <td>\${notWorkedBadge}</td>
-            <td>\${bpBadge}</td>
-          \`;
-          tbody.appendChild(tr);
-        });
-
-      } else if (DATA.type === 'fixed_ops') {
-        thead.innerHTML = \`
-          <tr class="th-title-row">
-            <th>Tekion ID</th>
-            <th>Dealer ID</th>
-            <th>Dealership Name</th>
-            <th>Go-Live Date</th>
-            <th>Timeline</th>
-            <th>POD</th>
-            <th>Not Worked?</th>
-            <th>Fixed Ops Status</th>
-            <th>SLA Status (&le;85d)</th>
-            <th>Parts Blueprint</th>
-            <th>Service Blueprint</th>
-          </tr>
-          <tr class="th-filter-row">
-            <th><input type="text" class="col-filter-input" placeholder="Filter..." oninput="onFilterChange(0, this.value)" /></th>
-            <th><input type="text" class="col-filter-input" placeholder="Filter..." oninput="onFilterChange(1, this.value)" /></th>
-            <th><input type="text" class="col-filter-input" placeholder="Filter..." oninput="onFilterChange(2, this.value)" /></th>
-            <th><input type="text" class="col-filter-input" placeholder="Filter..." oninput="onFilterChange(3, this.value)" /></th>
-            <th>
-              <select id="filter-timeline" class="col-filter-select" onchange="onFilterChange(4, this.value)">
-                <option value="">All Timelines</option>
-              </select>
-            </th>
-            <th>
-              <select id="filter-pod" class="col-filter-select" onchange="onFilterChange(5, this.value)">
-                <option value="">All PODs</option>
-              </select>
-            </th>
-            <th>
-              <select id="filter-notworked" class="col-filter-select" onchange="onFilterChange(6, this.value)">
-                <option value="">All Ownership</option>
-              </select>
-            </th>
-            <th>
-              <select class="col-filter-select" onchange="onFilterChange(7, this.value)">
-                <option value="">All</option>
-                <option value="WIP">WIP</option>
-                <option value="TO DO">TO DO</option>
-              </select>
-            </th>
-            <th>
-              <select class="col-filter-select" onchange="onFilterChange(8, this.value)">
-                <option value="">All</option>
-                <option value="BREACHED">Breached</option>
-                <option value="EXCLUDED">Excluded (POD/OFS)</option>
-                <option value="ON TRACK">On Track</option>
-              </select>
-            </th>
-            <th>
-              <select class="col-filter-select" onchange="onFilterChange(9, this.value)">
-                <option value="">All</option>
-                <option value="Completed">Completed</option>
-                <option value="Pending">Pending</option>
-              </select>
-            </th>
-            <th>
-              <select class="col-filter-select" onchange="onFilterChange(10, this.value)">
-                <option value="">All</option>
-                <option value="Completed">Completed</option>
-                <option value="Pending">Pending</option>
-              </select>
-            </th>
-          </tr>
-        \`;
-
-        DATA.items.forEach(item => {
-          if (currentPreset === 'breached' && !item.isBreached) return;
-          if (currentPreset === 'excluded' && !item.isExcluded) return;
-
-          let slaLabel = "ON TRACK";
-          if (item.isExcluded) slaLabel = "EXCLUDED";
-          else if (item.isBreached) slaLabel = "BREACHED";
-
-          const partsLabel = item.blueprint.partsCompleted ? "Completed" : "Pending";
-          const serviceLabel = item.blueprint.serviceCompleted ? "Completed" : "Pending";
-
-          const rowValues = [
-            item.tekionId,
-            item.dealerId,
-            item.dbaName,
-            item.launchDate,
-            item.tLabel,
-            item.superpodId,
-            item.notWorked || "Handled by ARC",
-            item.fixedOpsStatus,
-            slaLabel,
-            partsLabel,
-            serviceLabel
-          ];
-
-          let matches = true;
-          for (const [colIdx, filterVal] of Object.entries(columnFilters)) {
-            if (!filterVal) continue;
-            const val = String(rowValues[colIdx] || '').toLowerCase();
-            if (!val.includes(filterVal.toLowerCase())) {
-              matches = false;
-              break;
-            }
-          }
-          if (!matches) return;
-          visible++;
-
-          renderedRowsData.push(rowValues);
-
-          const statusBadge = item.fixedOpsStatus === 'WIP'
-            ? '<span class="badge badge-wip">WIP</span>'
-            : '<span class="badge badge-neutral">TO DO</span>';
-
-          let slaBadge = '<span class="badge badge-neutral">On Track</span>';
-          if (item.isExcluded) {
-            slaBadge = '<span class="badge badge-excluded">○ Excluded (' + item.notWorked + ')</span>';
-          } else if (item.isBreached) {
-            slaBadge = '<span class="badge badge-breach">⚠ BREACHED (&le;85d)</span>';
-          }
-
-          const notWorkedBadge = item.notWorked
-            ? '<span class="badge badge-excluded">' + item.notWorked + '</span>'
-            : '<span style="color:#64748b; font-size:11px;">Handled by ARC</span>';
-
-          const tr = document.createElement('tr');
-          if (item.isBreached) tr.className = 'priority-row';
-          tr.innerHTML = \`
-            <td><strong>\${item.tekionId}</strong></td>
-            <td><strong style="color:var(--accent);">\${item.dealerId}</strong></td>
-            <td>\${item.dbaName}</td>
-            <td>\${item.launchDate}</td>
-            <td><span class="badge badge-neutral">\${item.tLabel}</span></td>
-            <td>\${item.superpodId}</td>
-            <td>\${notWorkedBadge}</td>
-            <td>\${statusBadge}</td>
-            <td>\${slaBadge}</td>
-            <td>\${item.blueprint.partsCompleted ? '<span class="badge badge-ok">✓ Done</span>' : '<span class="badge badge-wip">Pending</span>'}</td>
-            <td>\${item.blueprint.serviceCompleted ? '<span class="badge badge-ok">✓ Done</span>' : '<span class="badge badge-wip">Pending</span>'}</td>
-          \`;
-          tbody.appendChild(tr);
-        });
-
-      } else if (DATA.type === 'variable_ops') {
-        thead.innerHTML = \`
-          <tr class="th-title-row">
-            <th>Tekion ID</th>
-            <th>Dealer ID</th>
-            <th>Dealership Name</th>
-            <th>Go-Live Date</th>
-            <th>Timeline</th>
-            <th>POD</th>
-            <th>Not Worked?</th>
-            <th>Fixed Ops Prereq</th>
-            <th>Variable Ops Status</th>
-            <th>SLA Status (&le;65d)</th>
-            <th>Accounting BP</th>
-          </tr>
-          <tr class="th-filter-row">
-            <th><input type="text" class="col-filter-input" placeholder="Filter..." oninput="onFilterChange(0, this.value)" /></th>
-            <th><input type="text" class="col-filter-input" placeholder="Filter..." oninput="onFilterChange(1, this.value)" /></th>
-            <th><input type="text" class="col-filter-input" placeholder="Filter..." oninput="onFilterChange(2, this.value)" /></th>
-            <th><input type="text" class="col-filter-input" placeholder="Filter..." oninput="onFilterChange(3, this.value)" /></th>
-            <th>
-              <select id="filter-timeline" class="col-filter-select" onchange="onFilterChange(4, this.value)">
-                <option value="">All Timelines</option>
-              </select>
-            </th>
-            <th>
-              <select id="filter-pod" class="col-filter-select" onchange="onFilterChange(5, this.value)">
-                <option value="">All PODs</option>
-              </select>
-            </th>
-            <th>
-              <select id="filter-notworked" class="col-filter-select" onchange="onFilterChange(6, this.value)">
-                <option value="">All Ownership</option>
-              </select>
-            </th>
-            <th>
-              <select class="col-filter-select" onchange="onFilterChange(7, this.value)">
-                <option value="">All</option>
-                <option value="Done">Done</option>
-                <option value="Blocked">Blocked</option>
-              </select>
-            </th>
-            <th>
-              <select class="col-filter-select" onchange="onFilterChange(8, this.value)">
-                <option value="">All</option>
-                <option value="WIP">WIP</option>
-                <option value="TO DO">TO DO</option>
-              </select>
-            </th>
-            <th>
-              <select class="col-filter-select" onchange="onFilterChange(9, this.value)">
-                <option value="">All</option>
-                <option value="CRITICAL">Critical &le;55d</option>
-                <option value="BREACHED">Breached &le;65d</option>
-                <option value="EXCLUDED">Excluded (POD/OFS)</option>
-                <option value="ON TRACK">On Track</option>
-              </select>
-            </th>
-            <th>
-              <select class="col-filter-select" onchange="onFilterChange(10, this.value)">
-                <option value="">All</option>
-                <option value="Completed">Completed</option>
-                <option value="Pending">Pending</option>
-              </select>
-            </th>
-          </tr>
-        \`;
-
-        DATA.items.forEach(item => {
-          if (currentPreset === 'breached' && !item.isBreached) return;
-          if (currentPreset === 'critical' && !item.isCriticalBreached) return;
-          if (currentPreset === 'blocked' && !item.isBlockedByFixedOps) return;
-          if (currentPreset === 'excluded' && !item.isExcluded) return;
-
-          const prereqLabel = item.isFixedOpsCompleted ? "Done" : "Blocked";
-          let slaLabel = "ON TRACK";
-          if (item.isExcluded) slaLabel = "EXCLUDED";
-          else if (item.isCriticalBreached) slaLabel = "CRITICAL";
-          else if (item.isBreached) slaLabel = "BREACHED";
-
-          const acctLabel = item.blueprint.accountingCompleted ? "Completed" : "Pending";
-
-          const rowValues = [
-            item.tekionId,
-            item.dealerId,
-            item.dbaName,
-            item.launchDate,
-            item.tLabel,
-            item.superpodId,
-            item.notWorked || "Handled by ARC",
-            prereqLabel,
-            item.variableOpsStatus,
-            slaLabel,
-            acctLabel
-          ];
-
-          let matches = true;
-          for (const [colIdx, filterVal] of Object.entries(columnFilters)) {
-            if (!filterVal) continue;
-            const val = String(rowValues[colIdx] || '').toLowerCase();
-            if (!val.includes(filterVal.toLowerCase())) {
-              matches = false;
-              break;
-            }
-          }
-          if (!matches) return;
-          visible++;
-
-          renderedRowsData.push(rowValues);
-
-          const prereqBadge = item.isFixedOpsCompleted
-            ? '<span class="badge badge-ok">✓ Done</span>'
-            : '<span class="badge badge-breach">⛔ Fixed Ops Incomplete</span>';
-
-          const varStatusBadge = item.variableOpsStatus === 'WIP'
-            ? '<span class="badge badge-wip">WIP</span>'
-            : '<span class="badge badge-neutral">TO DO</span>';
-
-          let slaBadge = '<span class="badge badge-neutral">On Track</span>';
-          if (item.isExcluded) {
-            slaBadge = '<span class="badge badge-excluded">○ Excluded (' + item.notWorked + ')</span>';
-          } else if (item.isCriticalBreached) {
-            slaBadge = '<span class="badge badge-critical">🚨 CRITICAL (&le;55d)</span>';
-          } else if (item.isBreached) {
-            slaBadge = '<span class="badge badge-breach">⚠ BREACHED (&le;65d)</span>';
-          }
-
-          const notWorkedBadge = item.notWorked
-            ? '<span class="badge badge-excluded">' + item.notWorked + '</span>'
-            : '<span style="color:#64748b; font-size:11px;">Handled by ARC</span>';
-
-          const tr = document.createElement('tr');
-          if (item.isCriticalBreached) tr.className = 'priority-row';
-          tr.innerHTML = \`
-            <td><strong>\${item.tekionId}</strong></td>
-            <td><strong style="color:var(--accent);">\${item.dealerId}</strong></td>
-            <td>\${item.dbaName}</td>
-            <td>\${item.launchDate}</td>
-            <td><span class="badge badge-neutral">\${item.tLabel}</span></td>
-            <td>\${item.superpodId}</td>
-            <td>\${notWorkedBadge}</td>
-            <td>\${prereqBadge}</td>
-            <td>\${varStatusBadge}</td>
-            <td>\${slaBadge}</td>
-            <td>\${item.blueprint.accountingCompleted ? '<span class="badge badge-ok">✓ Done</span>' : '<span class="badge badge-wip">Pending</span>'}</td>
-          \`;
-          tbody.appendChild(tr);
-        });
-      }
-
-      document.getElementById('visible-count').textContent = visible;
-    }
-
-    function onFilterChange(colIndex, value) {
-      columnFilters[colIndex] = value.trim();
-      renderTable();
-    }
-
-    function setPreset(preset) {
-      currentPreset = preset;
-      document.querySelectorAll('.filter-pill').forEach(el => el.classList.remove('active'));
-      const activeBtn = document.getElementById('pill-' + preset);
-      if (activeBtn) activeBtn.classList.add('active');
-      renderTable();
-    }
-
-    function resetFilters() {
-      document.querySelectorAll('th input').forEach(el => el.value = '');
-      document.querySelectorAll('th select').forEach(el => el.value = '');
-      for (const key in columnFilters) delete columnFilters[key];
-      setPreset('all');
-    }
-
-    function copyTableForExcel() {
-      if (renderedRowsData.length === 0) {
-        alert("No rows visible to copy.");
-        return;
-      }
-
-      const headers = [];
-      document.querySelectorAll(".th-title-row th").forEach(th => headers.push(th.textContent.trim()));
-
-      const tsvLines = [headers.join("\\t")];
-      renderedRowsData.forEach(row => {
-        tsvLines.push(row.map(cell => String(cell || '').replace(/\\t|\\r?\\n/g, ' ')).join("\\t"));
-      });
-
-      const tsvContent = tsvLines.join("\\n");
-
-      navigator.clipboard.writeText(tsvContent).then(() => {
-        const btn = document.getElementById("copyBtn");
-        const originalText = btn.textContent;
-        btn.textContent = "✓ Copied " + renderedRowsData.length + " Rows!";
-        btn.classList.add("copied");
-        setTimeout(() => {
-          btn.textContent = originalText;
-          btn.classList.remove("copied");
-        }, 2000);
-      }).catch(err => {
-        alert("Could not copy directly to clipboard. Please allow clipboard permissions.");
-      });
-    }
-
-    renderKpis();
-    renderTable();
-    populateDropdownOptions();
-  </script>
-</body>
-</html>`;
+  return renderSlaReportHtml(reportData);
 }

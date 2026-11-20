@@ -3,6 +3,7 @@ import type { OnboardingStatus } from "../../services/storeOnboardingStatusApi";
 import type { CustomPhaseStatus } from "../../services/storesDb";
 import type { ExtendedStoreRecord } from "../Stores";
 import { sanitizeSetupError } from "../../services/storeSetupDataService";
+import type { StoreAssessment, Severity } from "../../services/storeAssessment";
 
 function getStatusVisual(status: OnboardingStatus) {
   if (status === "COMPLETED") {
@@ -260,6 +261,70 @@ export const CustomStatusSelect: React.FC<{
       >
         ▼
       </span>
+    </div>
+  );
+};
+const SEVERITY_UI: Record<Severity, { label: string; bg: string; fg: string; border: string }> = {
+  red: { label: "Needs Action", bg: "rgba(244, 63, 94, 0.18)", fg: "#fb7185", border: "rgba(244, 63, 94, 0.5)" },
+  amber: { label: "Waiting", bg: "rgba(251, 191, 36, 0.14)", fg: "#fbbf24", border: "rgba(251, 191, 36, 0.4)" },
+  green: { label: "Completed", bg: "rgba(74, 222, 128, 0.14)", fg: "#4ade80", border: "rgba(74, 222, 128, 0.4)" },
+  none: { label: "Done", bg: "rgba(148, 163, 184, 0.12)", fg: "#94a3b8", border: "rgba(148, 163, 184, 0.3)" },
+};
+
+/**
+ * Readiness pill. Needs Action lists every missing point below the pill (the pill's hover
+ * tooltip has the same list). Completed shows only the green pill. Decommissioned and
+ * Enterprise show only the grey pill; its hover text is the reason.
+ */
+export const ReadinessCell: React.FC<{ assessment: StoreAssessment }> = ({ assessment }) => {
+  const notWorked = assessment.decommissioned;
+  const isEnterpriseOnly = assessment.enterprise && !assessment.stageLabel.startsWith("Decommissioned");
+  const ui = notWorked
+    ? {
+        label: isEnterpriseOnly ? "Enterprise" : "Decommissioned",
+        bg: "rgba(100, 116, 139, 0.2)",
+        fg: "#cbd5e1",
+        border: "rgba(148, 163, 184, 0.4)",
+      }
+    : SEVERITY_UI[assessment.severity];
+  const points = assessment.severity === "red" ? assessment.reasons : [];
+  const att = assessment.attachments;
+  const pillTitle = notWorked
+    ? assessment.headline
+    : points.length > 0
+      ? points.join("\n")
+      : assessment.headline;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      <span
+        title={pillTitle}
+        style={{
+          alignSelf: "flex-start",
+          background: ui.bg,
+          color: ui.fg,
+          border: `1px solid ${ui.border}`,
+          borderRadius: 999,
+          padding: "2px 9px",
+          fontSize: 11,
+          fontWeight: 800,
+          whiteSpace: "nowrap",
+          cursor: "help",
+        }}
+      >
+        {ui.label}
+      </span>
+      {points.length > 0 && (
+        <ul style={{ margin: 0, paddingLeft: 14, fontSize: 11, color: "#cbd5e1", lineHeight: 1.4 }}>
+          {points.map((p) => (
+            <li key={p}>{p}</li>
+          ))}
+        </ul>
+      )}
+      {!notWorked && (
+        <span style={{ fontSize: 10, color: "#94a3b8" }} title="Attachments on Parts/Service (F) and Accounting (V) blueprint tasks">
+          📎 F {att.fixed}{att.incomplete ? "+" : ""} · V {att.variable}{att.incomplete ? "+" : ""}
+        </span>
+      )}
     </div>
   );
 };

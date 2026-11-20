@@ -9,7 +9,8 @@ import type {
 
 const STORAGE_KEY = "arcLatestCaptureState";
 const CUSTOM_RULES_STORAGE_KEY = "arcCustomWatchedApis";
-const DEFAULT_CUSTOM_EXPIRY_HOURS = 48;
+// 0 = keep the capture until the user removes the watch rule (no time-based expiry).
+const DEFAULT_CUSTOM_EXPIRY_HOURS = 0;
 
 const TENANT_ID = "861aedbb-44b4-4bcf-a125-49fa7baf1e26";
 const SPF_CLIENT_ID = "08e18876-6177-487e-b8b5-cf950c1e598c";
@@ -375,6 +376,7 @@ function upsertTekionProfile(
 }
 
 function isExpired(capturedAt: string, expiryHours: number): boolean {
+  if (!(expiryHours > 0)) return false; // 0 = never expires
   const ts = new Date(capturedAt).getTime();
   if (Number.isNaN(ts)) return true;
   return Date.now() - ts > expiryHours * 60 * 60 * 1000;
@@ -388,7 +390,7 @@ function pruneExpiredCustomCaptures(
   const next: Record<string, ArcCustomCapturedApi> = {};
   for (const [key, value] of Object.entries(captures)) {
     const expiryHours =
-      typeof value.expiryHours === "number" && value.expiryHours > 0
+      typeof value.expiryHours === "number" && value.expiryHours >= 0
         ? value.expiryHours
         : DEFAULT_CUSTOM_EXPIRY_HOURS;
 
@@ -765,7 +767,7 @@ function normalizeRuleList(input: unknown): ArcCustomWatchRule[] {
           ? raw.expiryHours
           : Number.parseInt(String(raw.expiryHours ?? ""), 10);
       const expiryHours =
-        Number.isFinite(expiryHoursRaw) && expiryHoursRaw > 0
+        Number.isFinite(expiryHoursRaw) && expiryHoursRaw >= 0
           ? expiryHoursRaw
           : DEFAULT_CUSTOM_EXPIRY_HOURS;
       const createdAt = normalizeString(raw.createdAt) || new Date().toISOString();
@@ -803,6 +805,41 @@ async function cleanupExpiredCustomCapturesAndSync(): Promise<void> {
   const next: ArcLatestCaptureState = {
     ...current,
     customCaptures: pruneExpiredCustomCaptures(current.customCaptures),
+  };
+  if (comparableSnapshot(current) !== comparableSnapshot(next)) {
+    await persistState(next);
+    await pushStateToLocalhostTabs(next);
+  }
+}
+
+// Dealer profiles older than 48 hours are stale. The selected profile is never removed.
+const PROFILE_FRESH_MS = 48 * 60 * 60 * 1000;
+
+async function removeStaleProfiles(keepId: string): Promise<number> {
+  const current = await loadStoredState();
+  const profiles = normalizeProfiles(current.tekionProfiles);
+  const now = Date.now();
+  const kept = profiles.filter(
+    (profile) =>
+      profile.id === keepId || now - (Date.parse(profile.capturedAt) || 0) < PROFILE_FRESH_MS
+  );
+  const removed = profiles.length - kept.length;
+  if (removed === 0) return 0;
+  const next: ArcLatestCaptureState = { ...current, tekionProfiles: kept };
+  await persistState(next);
+  await pushStateToLocalhostTabs(next);
+  return removed;
+}
+
+async function removeCapturesForDeletedRules(rules: ArcCustomWatchRule[]): Promise<void> {
+  const current = await loadStoredState();
+  const keepIds = new Set(rules.map((rule) => rule.id));
+  const kept = Object.fromEntries(
+    Object.entries(current.customCaptures ?? {}).filter(([id]) => keepIds.has(id))
+  );
+  const next: ArcLatestCaptureState = {
+    ...current,
+    customCaptures: Object.keys(kept).length > 0 ? kept : undefined,
   };
   if (comparableSnapshot(current) !== comparableSnapshot(next)) {
     await persistState(next);
@@ -970,6 +1007,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message?.type === "ARC_REMOVE_STALE_PROFILES") {
+    const keepId = typeof message.payload?.keepId === "string" ? message.payload.keepId : "";
+    void removeStaleProfiles(keepId).then((removed) => sendResponse({ success: true, removed }));
+    return true;
+  }
+
   if (message?.type === "ARC_SAVE_CUSTOM_RULES") {
     if (!Array.isArray(message.payload)) {
       sendResponse({ success: false, error: "Payload must be an array" });
@@ -977,7 +1020,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     }
     const rules = normalizeRuleList(message.payload);
     chrome.storage.local.set({ [CUSTOM_RULES_STORAGE_KEY]: rules }, () => {
-      sendResponse({ success: true });
+      // A capture stays only while its watch rule exists. Removing the rule removes its capture.
+      void removeCapturesForDeletedRules(rules).then(() => sendResponse({ success: true }));
     });
     return true;
   }

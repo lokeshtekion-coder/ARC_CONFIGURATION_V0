@@ -700,131 +700,6 @@
         ]
       },
       {
-        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "sectionOrder": 73,
-        "sectionType": "MAIN",
-        "logic": null,
-        "fields": [
-          {
-            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601145",
-            "fieldName": null,
-            "title": "Customer Pay GL Account Number",
-            "type": "SHORT_TEXT",
-            "required": true,
-            "logic": null,
-            "fieldOrder": 1,
-            "rawValue": "460A",
-            "decodedValue": "460A",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601146",
-            "fieldName": null,
-            "title": "Customer Pay Service Contracts",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 2,
-            "rawValue": "N/A",
-            "decodedValue": "N/A",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 2,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601147",
-            "fieldName": null,
-            "title": "Customer Pay Sublet GL Acct",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 3,
-            "rawValue": "466",
-            "decodedValue": "466",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 3,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601148",
-            "fieldName": null,
-            "title": "Customer Pay Body Shop GL Acct",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": {
-              "displayActionType": "SHOW",
-              "ruleMatchCondition": "ALL",
-              "rules": [
-                {
-                  "fieldId": "103601143",
-                  "operator": "IS",
-                  "value": "Body Shop"
-                }
-              ]
-            },
-            "fieldOrder": 4,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 4,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601149",
-            "fieldName": null,
-            "title": "Customer Pay Quick Lube GL Acct",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": {
-              "displayActionType": "SHOW",
-              "ruleMatchCondition": "ALL",
-              "rules": [
-                {
-                  "fieldId": "103601143",
-                  "operator": "IS",
-                  "value": "Express Lane/ Quick Lube"
-                }
-              ]
-            },
-            "fieldOrder": 5,
-            "hasUserValue": false,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
         "sectionId": "1786e104-8a79-4020-bb01-7b2ccff51197",
         "sectionName": "Internal Parts Payment Method",
         "sectionOrder": 101,
@@ -998,6 +873,131 @@
             "rawValue": "None",
             "decodedValue": "None",
             "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "sectionOrder": 73,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601145",
+            "fieldName": null,
+            "title": "Customer Pay GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "460A",
+            "decodedValue": "460A",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601146",
+            "fieldName": null,
+            "title": "Customer Pay Service Contracts",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "N/A",
+            "decodedValue": "N/A",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601147",
+            "fieldName": null,
+            "title": "Customer Pay Sublet GL Acct",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 3,
+            "rawValue": "466",
+            "decodedValue": "466",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601148",
+            "fieldName": null,
+            "title": "Customer Pay Body Shop GL Acct",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103601143",
+                  "operator": "IS",
+                  "value": "Body Shop"
+                }
+              ]
+            },
+            "fieldOrder": 4,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601149",
+            "fieldName": null,
+            "title": "Customer Pay Quick Lube GL Acct",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103601143",
+                  "operator": "IS",
+                  "value": "Express Lane/ Quick Lube"
+                }
+              ]
+            },
+            "fieldOrder": 5,
+            "hasUserValue": false,
             "subsectionName": null
           }
         ]
@@ -5041,6 +5041,111 @@
         ]
       },
       {
+        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+        "sectionName": "Service Warranty Sales GL Mapping",
+        "sectionOrder": 75,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+            "sectionName": "Service Warranty Sales GL Mapping",
+            "sectionOrder": 75,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601156",
+            "fieldName": null,
+            "title": "Warranty GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "N/A",
+            "decodedValue": "N/A",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+            "sectionName": "Service Warranty Sales GL Mapping",
+            "sectionOrder": 75,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601157",
+            "fieldName": null,
+            "title": "Warranty Sublet GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "N/A",
+            "decodedValue": "N/A",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+            "sectionName": "Service Warranty Sales GL Mapping",
+            "sectionOrder": 75,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601158",
+            "fieldName": null,
+            "title": "Warranty Quick Lube GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103601143",
+                  "operator": "IS",
+                  "value": "Express Lane/ Quick Lube"
+                }
+              ]
+            },
+            "fieldOrder": 3,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+            "sectionName": "Service Warranty Sales GL Mapping",
+            "sectionOrder": 75,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601159",
+            "fieldName": null,
+            "title": "Warranty Body Shop GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103601143",
+                  "operator": "IS",
+                  "value": "Body Shop"
+                }
+              ]
+            },
+            "fieldOrder": 4,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
         "sectionId": "2104febc-113c-40a3-adf4-6d9436a2890c",
         "sectionName": "Vehicle Sales Payables",
         "sectionOrder": 18,
@@ -5295,111 +5400,6 @@
             "rawValue": "324T",
             "decodedValue": "324T",
             "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
-        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-        "sectionName": "Service Warranty Sales GL Mapping",
-        "sectionOrder": 75,
-        "sectionType": "MAIN",
-        "logic": null,
-        "fields": [
-          {
-            "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-            "sectionName": "Service Warranty Sales GL Mapping",
-            "sectionOrder": 75,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601156",
-            "fieldName": null,
-            "title": "Warranty GL Account Number",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 1,
-            "rawValue": "N/A",
-            "decodedValue": "N/A",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-            "sectionName": "Service Warranty Sales GL Mapping",
-            "sectionOrder": 75,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601157",
-            "fieldName": null,
-            "title": "Warranty Sublet GL Account Number",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 2,
-            "rawValue": "N/A",
-            "decodedValue": "N/A",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-            "sectionName": "Service Warranty Sales GL Mapping",
-            "sectionOrder": 75,
-            "sectionType": "MAIN",
-            "rowIndex": 2,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601158",
-            "fieldName": null,
-            "title": "Warranty Quick Lube GL Account Number",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": {
-              "displayActionType": "SHOW",
-              "ruleMatchCondition": "ALL",
-              "rules": [
-                {
-                  "fieldId": "103601143",
-                  "operator": "IS",
-                  "value": "Express Lane/ Quick Lube"
-                }
-              ]
-            },
-            "fieldOrder": 3,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-            "sectionName": "Service Warranty Sales GL Mapping",
-            "sectionOrder": 75,
-            "sectionType": "MAIN",
-            "rowIndex": 3,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601159",
-            "fieldName": null,
-            "title": "Warranty Body Shop GL Account Number",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": {
-              "displayActionType": "SHOW",
-              "ruleMatchCondition": "ALL",
-              "rules": [
-                {
-                  "fieldId": "103601143",
-                  "operator": "IS",
-                  "value": "Body Shop"
-                }
-              ]
-            },
-            "fieldOrder": 4,
-            "hasUserValue": false,
             "subsectionName": null
           }
         ]
@@ -6246,6 +6246,133 @@
         ]
       },
       {
+        "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
+        "sectionName": "Used Vehicle Wholesale",
+        "sectionOrder": 15,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": [
+            {
+              "fieldId": "103600830",
+              "operator": "IS",
+              "value": "Wholesale"
+            }
+          ]
+        },
+        "fields": [
+          {
+            "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600853",
+            "fieldName": null,
+            "title": "Used Car Sale Account",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600856",
+            "fieldName": null,
+            "title": "Used Truck Sale Account",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600854",
+            "fieldName": null,
+            "title": "Used Car Sale Account - Certified",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 3,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600855",
+            "fieldName": null,
+            "title": "Used Car Sale Account - Non-Certified",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 4,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600857",
+            "fieldName": null,
+            "title": "Used Truck Sale Account - Certified",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 5,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600858",
+            "fieldName": null,
+            "title": "Used Truck Sale Account - Non-Certified",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 6,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
         "sectionId": "2bcfa981-a793-4cd5-a016-389cd4321385",
         "sectionName": "Parts Repair Order Sales Accounts",
         "sectionOrder": 82,
@@ -6692,133 +6819,6 @@
             "rawValue": "N/A",
             "decodedValue": "N/A",
             "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
-        "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
-        "sectionName": "Used Vehicle Wholesale",
-        "sectionOrder": 15,
-        "sectionType": "MAIN",
-        "logic": {
-          "displayActionType": "SHOW",
-          "ruleMatchCondition": "ALL",
-          "rules": [
-            {
-              "fieldId": "103600830",
-              "operator": "IS",
-              "value": "Wholesale"
-            }
-          ]
-        },
-        "fields": [
-          {
-            "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600853",
-            "fieldName": null,
-            "title": "Used Car Sale Account",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 1,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600856",
-            "fieldName": null,
-            "title": "Used Truck Sale Account",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 2,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 2,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600854",
-            "fieldName": null,
-            "title": "Used Car Sale Account - Certified",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 3,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 3,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600855",
-            "fieldName": null,
-            "title": "Used Car Sale Account - Non-Certified",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 4,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 4,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600857",
-            "fieldName": null,
-            "title": "Used Truck Sale Account - Certified",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 5,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 5,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600858",
-            "fieldName": null,
-            "title": "Used Truck Sale Account - Non-Certified",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 6,
-            "hasUserValue": false,
             "subsectionName": null
           }
         ]
@@ -9703,51 +9703,6 @@
         ]
       },
       {
-        "sectionId": "b513e539-b730-4e3e-b7d3-e65685789e9c",
-        "sectionName": null,
-        "sectionOrder": 999,
-        "sectionType": "SUBMISSION",
-        "logic": null,
-        "fields": [
-          {
-            "sectionId": "b513e539-b730-4e3e-b7d3-e65685789e9c",
-            "sectionName": null,
-            "sectionOrder": 999,
-            "sectionType": "SUBMISSION",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "05176f01-12cb-4513-b98f-aa0b0442a368",
-            "fieldName": null,
-            "title": null,
-            "type": "LOGO",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 1,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "b513e539-b730-4e3e-b7d3-e65685789e9c",
-            "sectionName": null,
-            "sectionOrder": 999,
-            "sectionType": "SUBMISSION",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "b17088f4-126e-4992-ab3d-997ed2f4b7c0",
-            "fieldName": null,
-            "title": null,
-            "type": "PARAGRAPH",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 2,
-            "hasUserValue": false,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
         "sectionId": "10765dc4-83a6-4cfa-a85a-cdb94d7f6d25",
         "sectionName": "Deal Posting Packs",
         "sectionOrder": 36,
@@ -9791,6 +9746,51 @@
             "required": false,
             "logic": null,
             "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "b513e539-b730-4e3e-b7d3-e65685789e9c",
+        "sectionName": null,
+        "sectionOrder": 999,
+        "sectionType": "SUBMISSION",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "b513e539-b730-4e3e-b7d3-e65685789e9c",
+            "sectionName": null,
+            "sectionOrder": 999,
+            "sectionType": "SUBMISSION",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "05176f01-12cb-4513-b98f-aa0b0442a368",
+            "fieldName": null,
+            "title": null,
+            "type": "LOGO",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "b513e539-b730-4e3e-b7d3-e65685789e9c",
+            "sectionName": null,
+            "sectionOrder": 999,
+            "sectionType": "SUBMISSION",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "b17088f4-126e-4992-ab3d-997ed2f4b7c0",
+            "fieldName": null,
+            "title": null,
+            "type": "PARAGRAPH",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
             "hasUserValue": false,
             "subsectionName": null
           }
@@ -10940,33 +10940,6 @@
         ]
       },
       {
-        "sectionId": "6d0092c7-2659-469c-9ef9-a6823f60555b",
-        "sectionName": "Cost Adjustments",
-        "sectionOrder": 64,
-        "sectionType": "MAIN",
-        "logic": null,
-        "fields": [
-          {
-            "sectionId": "6d0092c7-2659-469c-9ef9-a6823f60555b",
-            "sectionName": "Cost Adjustments",
-            "sectionOrder": 64,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "efcbc478-7739-41a6-a862-710b86dfd1bf",
-            "fieldName": null,
-            "title": "How many Cost Adjustments do you have?",
-            "type": "DROPDOWN",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "hasUserValue": false,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
         "sectionId": "6b6dc2d0-681f-4b05-a4ca-446eba918bf5",
         "sectionName": "Cost Adjustments #4",
         "sectionOrder": 68,
@@ -11036,6 +11009,33 @@
             "fieldName": null,
             "title": "Cost Adjustment Account #",
             "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "6d0092c7-2659-469c-9ef9-a6823f60555b",
+        "sectionName": "Cost Adjustments",
+        "sectionOrder": 64,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "6d0092c7-2659-469c-9ef9-a6823f60555b",
+            "sectionName": "Cost Adjustments",
+            "sectionOrder": 64,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "efcbc478-7739-41a6-a862-710b86dfd1bf",
+            "fieldName": null,
+            "title": "How many Cost Adjustments do you have?",
+            "type": "DROPDOWN",
             "required": false,
             "logic": null,
             "fieldOrder": 0,
@@ -14440,62 +14440,6 @@
         "hasUserValue": false
       },
       {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-        "fieldId": "103601145",
-        "title": "Customer Pay GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": true,
-        "rawValue": "460A",
-        "decodedValue": "460A",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-        "fieldId": "103601146",
-        "title": "Customer Pay Service Contracts",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N/A",
-        "decodedValue": "N/A",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-        "fieldId": "103601147",
-        "title": "Customer Pay Sublet GL Acct",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "466",
-        "decodedValue": "466",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-        "fieldId": "103601148",
-        "title": "Customer Pay Body Shop GL Acct",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-        "fieldId": "103601149",
-        "title": "Customer Pay Quick Lube GL Acct",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
         "sectionName": "Internal Parts Payment Method",
         "subsectionName": null,
         "sectionId": "1786e104-8a79-4020-bb01-7b2ccff51197",
@@ -14590,6 +14534,62 @@
         "rawValue": "None",
         "decodedValue": "None",
         "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+        "fieldId": "103601145",
+        "title": "Customer Pay GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "460A",
+        "decodedValue": "460A",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+        "fieldId": "103601146",
+        "title": "Customer Pay Service Contracts",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N/A",
+        "decodedValue": "N/A",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+        "fieldId": "103601147",
+        "title": "Customer Pay Sublet GL Acct",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "466",
+        "decodedValue": "466",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+        "fieldId": "103601148",
+        "title": "Customer Pay Body Shop GL Acct",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+        "fieldId": "103601149",
+        "title": "Customer Pay Quick Lube GL Acct",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
       },
       {
         "sectionName": "Parts Counter Sale Notes",
@@ -16304,6 +16304,50 @@
         "hasUserValue": false
       },
       {
+        "sectionName": "Service Warranty Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+        "fieldId": "103601156",
+        "title": "Warranty GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N/A",
+        "decodedValue": "N/A",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Warranty Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+        "fieldId": "103601157",
+        "title": "Warranty Sublet GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N/A",
+        "decodedValue": "N/A",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Warranty Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+        "fieldId": "103601158",
+        "title": "Warranty Quick Lube GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Service Warranty Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+        "fieldId": "103601159",
+        "title": "Warranty Body Shop GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
         "sectionName": "Vehicle Sales Payables",
         "subsectionName": null,
         "sectionId": "2104febc-113c-40a3-adf4-6d9436a2890c",
@@ -16446,50 +16490,6 @@
         "rawValue": "324T",
         "decodedValue": "324T",
         "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Warranty Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-        "fieldId": "103601156",
-        "title": "Warranty GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N/A",
-        "decodedValue": "N/A",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Warranty Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-        "fieldId": "103601157",
-        "title": "Warranty Sublet GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N/A",
-        "decodedValue": "N/A",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Warranty Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-        "fieldId": "103601158",
-        "title": "Warranty Quick Lube GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Service Warranty Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-        "fieldId": "103601159",
-        "title": "Warranty Body Shop GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
       },
       {
         "sectionName": "Source Specific RO Parts Sales GL Account",
@@ -16752,6 +16752,66 @@
         "hasUserValue": false
       },
       {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
+        "fieldId": "103600853",
+        "title": "Used Car Sale Account",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
+        "fieldId": "103600856",
+        "title": "Used Truck Sale Account",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
+        "fieldId": "103600854",
+        "title": "Used Car Sale Account - Certified",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
+        "fieldId": "103600855",
+        "title": "Used Car Sale Account - Non-Certified",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
+        "fieldId": "103600857",
+        "title": "Used Truck Sale Account - Certified",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
+        "fieldId": "103600858",
+        "title": "Used Truck Sale Account - Non-Certified",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
         "sectionName": "Parts Repair Order Sales Accounts",
         "subsectionName": null,
         "sectionId": "2bcfa981-a793-4cd5-a016-389cd4321385",
@@ -16934,66 +16994,6 @@
         "rawValue": "N/A",
         "decodedValue": "N/A",
         "hasUserValue": true
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
-        "fieldId": "103600853",
-        "title": "Used Car Sale Account",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
-        "fieldId": "103600856",
-        "title": "Used Truck Sale Account",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
-        "fieldId": "103600854",
-        "title": "Used Car Sale Account - Certified",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
-        "fieldId": "103600855",
-        "title": "Used Car Sale Account - Non-Certified",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
-        "fieldId": "103600857",
-        "title": "Used Truck Sale Account - Certified",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "365875ce-7292-474b-b22d-dcad94379de4",
-        "fieldId": "103600858",
-        "title": "Used Truck Sale Account - Non-Certified",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
       },
       {
         "sectionName": "Used Vehicle Personal Purchase",
@@ -18245,26 +18245,6 @@
         "hasUserValue": false
       },
       {
-        "sectionName": null,
-        "subsectionName": null,
-        "sectionId": "b513e539-b730-4e3e-b7d3-e65685789e9c",
-        "fieldId": "05176f01-12cb-4513-b98f-aa0b0442a368",
-        "title": null,
-        "type": "LOGO",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": null,
-        "subsectionName": null,
-        "sectionId": "b513e539-b730-4e3e-b7d3-e65685789e9c",
-        "fieldId": "b17088f4-126e-4992-ab3d-997ed2f4b7c0",
-        "title": null,
-        "type": "PARAGRAPH",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
         "sectionName": "Deal Posting Packs",
         "subsectionName": null,
         "sectionId": "10765dc4-83a6-4cfa-a85a-cdb94d7f6d25",
@@ -18281,6 +18261,26 @@
         "fieldId": "e4b416b1-f5f9-4cfc-b96e-f46e412014c9",
         "title": "How many deal posting packs do you have?",
         "type": "DROPDOWN",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": null,
+        "subsectionName": null,
+        "sectionId": "b513e539-b730-4e3e-b7d3-e65685789e9c",
+        "fieldId": "05176f01-12cb-4513-b98f-aa0b0442a368",
+        "title": null,
+        "type": "LOGO",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": null,
+        "subsectionName": null,
+        "sectionId": "b513e539-b730-4e3e-b7d3-e65685789e9c",
+        "fieldId": "b17088f4-126e-4992-ab3d-997ed2f4b7c0",
+        "title": null,
+        "type": "PARAGRAPH",
         "required": false,
         "hasUserValue": false
       },
@@ -18787,16 +18787,6 @@
         "hasUserValue": false
       },
       {
-        "sectionName": "Cost Adjustments",
-        "subsectionName": null,
-        "sectionId": "6d0092c7-2659-469c-9ef9-a6823f60555b",
-        "fieldId": "efcbc478-7739-41a6-a862-710b86dfd1bf",
-        "title": "How many Cost Adjustments do you have?",
-        "type": "DROPDOWN",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
         "sectionName": "Cost Adjustments #4",
         "subsectionName": null,
         "sectionId": "6b6dc2d0-681f-4b05-a4ca-446eba918bf5",
@@ -18823,6 +18813,16 @@
         "fieldId": "42a576b5-ed99-41ae-be43-a6110efac53c",
         "title": "Cost Adjustment Account #",
         "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Cost Adjustments",
+        "subsectionName": null,
+        "sectionId": "6d0092c7-2659-469c-9ef9-a6823f60555b",
+        "fieldId": "efcbc478-7739-41a6-a862-710b86dfd1bf",
+        "title": "How many Cost Adjustments do you have?",
+        "type": "DROPDOWN",
         "required": false,
         "hasUserValue": false
       },
@@ -20277,75 +20277,6 @@
         ]
       },
       {
-        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "sectionOrder": 73,
-        "sectionType": "MAIN",
-        "logic": null,
-        "fields": [
-          {
-            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601145",
-            "fieldName": null,
-            "title": "Customer Pay GL Account Number",
-            "type": "SHORT_TEXT",
-            "required": true,
-            "logic": null,
-            "fieldOrder": 1,
-            "rawValue": "460A",
-            "decodedValue": "460A",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601146",
-            "fieldName": null,
-            "title": "Customer Pay Service Contracts",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 2,
-            "rawValue": "N/A",
-            "decodedValue": "N/A",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 2,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601147",
-            "fieldName": null,
-            "title": "Customer Pay Sublet GL Acct",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 3,
-            "rawValue": "466",
-            "decodedValue": "466",
-            "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
         "sectionId": "1786e104-8a79-4020-bb01-7b2ccff51197",
         "sectionName": "Internal Parts Payment Method",
         "sectionOrder": 101,
@@ -20518,6 +20449,75 @@
             "fieldOrder": 1,
             "rawValue": "None",
             "decodedValue": "None",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "sectionOrder": 73,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601145",
+            "fieldName": null,
+            "title": "Customer Pay GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "460A",
+            "decodedValue": "460A",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601146",
+            "fieldName": null,
+            "title": "Customer Pay Service Contracts",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "N/A",
+            "decodedValue": "N/A",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601147",
+            "fieldName": null,
+            "title": "Customer Pay Sublet GL Acct",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 3,
+            "rawValue": "466",
+            "decodedValue": "466",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -22550,6 +22550,55 @@
         ]
       },
       {
+        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+        "sectionName": "Service Warranty Sales GL Mapping",
+        "sectionOrder": 75,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+            "sectionName": "Service Warranty Sales GL Mapping",
+            "sectionOrder": 75,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601156",
+            "fieldName": null,
+            "title": "Warranty GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "N/A",
+            "decodedValue": "N/A",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+            "sectionName": "Service Warranty Sales GL Mapping",
+            "sectionOrder": 75,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601157",
+            "fieldName": null,
+            "title": "Warranty Sublet GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "N/A",
+            "decodedValue": "N/A",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
         "sectionId": "2104febc-113c-40a3-adf4-6d9436a2890c",
         "sectionName": "Vehicle Sales Payables",
         "sectionOrder": 18,
@@ -22803,55 +22852,6 @@
             "fieldOrder": 12,
             "rawValue": "324T",
             "decodedValue": "324T",
-            "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
-        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-        "sectionName": "Service Warranty Sales GL Mapping",
-        "sectionOrder": 75,
-        "sectionType": "MAIN",
-        "logic": null,
-        "fields": [
-          {
-            "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-            "sectionName": "Service Warranty Sales GL Mapping",
-            "sectionOrder": 75,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601156",
-            "fieldName": null,
-            "title": "Warranty GL Account Number",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 1,
-            "rawValue": "N/A",
-            "decodedValue": "N/A",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-            "sectionName": "Service Warranty Sales GL Mapping",
-            "sectionOrder": 75,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601157",
-            "fieldName": null,
-            "title": "Warranty Sublet GL Account Number",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 2,
-            "rawValue": "N/A",
-            "decodedValue": "N/A",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -25775,42 +25775,6 @@
         "hasUserValue": true
       },
       {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-        "fieldId": "103601145",
-        "title": "Customer Pay GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": true,
-        "rawValue": "460A",
-        "decodedValue": "460A",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-        "fieldId": "103601146",
-        "title": "Customer Pay Service Contracts",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N/A",
-        "decodedValue": "N/A",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-        "fieldId": "103601147",
-        "title": "Customer Pay Sublet GL Acct",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "466",
-        "decodedValue": "466",
-        "hasUserValue": true
-      },
-      {
         "sectionName": "Internal Parts Payment Method",
         "subsectionName": null,
         "sectionId": "1786e104-8a79-4020-bb01-7b2ccff51197",
@@ -25904,6 +25868,42 @@
         "required": false,
         "rawValue": "None",
         "decodedValue": "None",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+        "fieldId": "103601145",
+        "title": "Customer Pay GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "460A",
+        "decodedValue": "460A",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+        "fieldId": "103601146",
+        "title": "Customer Pay Service Contracts",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N/A",
+        "decodedValue": "N/A",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+        "fieldId": "103601147",
+        "title": "Customer Pay Sublet GL Acct",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "466",
+        "decodedValue": "466",
         "hasUserValue": true
       },
       {
@@ -26729,6 +26729,30 @@
         "hasUserValue": true
       },
       {
+        "sectionName": "Service Warranty Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+        "fieldId": "103601156",
+        "title": "Warranty GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N/A",
+        "decodedValue": "N/A",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Warranty Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+        "fieldId": "103601157",
+        "title": "Warranty Sublet GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N/A",
+        "decodedValue": "N/A",
+        "hasUserValue": true
+      },
+      {
         "sectionName": "Vehicle Sales Payables",
         "subsectionName": null,
         "sectionId": "2104febc-113c-40a3-adf4-6d9436a2890c",
@@ -26870,30 +26894,6 @@
         "required": false,
         "rawValue": "324T",
         "decodedValue": "324T",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Warranty Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-        "fieldId": "103601156",
-        "title": "Warranty GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N/A",
-        "decodedValue": "N/A",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Warranty Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-        "fieldId": "103601157",
-        "title": "Warranty Sublet GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N/A",
-        "decodedValue": "N/A",
         "hasUserValue": true
       },
       {
@@ -28005,33 +28005,6 @@
         "decodedValue": "N/A"
       },
       {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-        "fieldId": "103601145",
-        "title": "Customer Pay GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": "true",
-        "decodedValue": "460A"
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-        "fieldId": "103601146",
-        "title": "Customer Pay Service Contracts",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "N/A"
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
-        "fieldId": "103601147",
-        "title": "Customer Pay Sublet GL Acct",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "466"
-      },
-      {
         "sectionName": "Internal Parts Payment Method",
         "sectionId": "1786e104-8a79-4020-bb01-7b2ccff51197",
         "fieldId": "103601326",
@@ -28102,6 +28075,33 @@
         "type": "DROPDOWN",
         "required": "false",
         "decodedValue": "None"
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+        "fieldId": "103601145",
+        "title": "Customer Pay GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "460A"
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+        "fieldId": "103601146",
+        "title": "Customer Pay Service Contracts",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "N/A"
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "sectionId": "79cfe7d6-6b5c-43c0-bf8b-4a6b6dcc9d2d",
+        "fieldId": "103601147",
+        "title": "Customer Pay Sublet GL Acct",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "466"
       },
       {
         "sectionName": "Service GL Mapping Notes",
@@ -28680,6 +28680,24 @@
         "decodedValue": "Yes"
       },
       {
+        "sectionName": "Service Warranty Sales GL Mapping",
+        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+        "fieldId": "103601156",
+        "title": "Warranty GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "N/A"
+      },
+      {
+        "sectionName": "Service Warranty Sales GL Mapping",
+        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
+        "fieldId": "103601157",
+        "title": "Warranty Sublet GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "N/A"
+      },
+      {
         "sectionName": "Vehicle Sales Payables",
         "sectionId": "2104febc-113c-40a3-adf4-6d9436a2890c",
         "fieldId": "103601062",
@@ -28786,24 +28804,6 @@
         "type": "SHORT_TEXT",
         "required": "false",
         "decodedValue": "324T"
-      },
-      {
-        "sectionName": "Service Warranty Sales GL Mapping",
-        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-        "fieldId": "103601156",
-        "title": "Warranty GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "N/A"
-      },
-      {
-        "sectionName": "Service Warranty Sales GL Mapping",
-        "sectionId": "2994efef-7273-4c37-8469-3fe6937b9721",
-        "fieldId": "103601157",
-        "title": "Warranty Sublet GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "N/A"
       },
       {
         "sectionName": "Source Specific RO Parts Sales GL Account",
@@ -29526,7 +29526,7 @@
         "decodedValue": "30000"
       }
     ],
-    "humanReadable": "[Cash - Vehicle Sales > —] Personal Purchase GL Account : N/A\n[Cash - Vehicle Sales > —] Only F&I - After Sale GL Account: N/A\n[Cash - Vehicle Sales > —] Business/Commercial GL Account : N/A\n[Cash - Vehicle Sales > —] DealerTrade GL Account: N/A\n[Cash - Vehicle Sales > —] Wholesale GL Account: N/A\n[Parts - Credit/Debit Card Payment Method > —] Counter Sales/Retail GL Account: 225C\n[Parts - Credit/Debit Card Payment Method > —] Wholesale GL Account: N/A\n[Service Customer Pay Sales GL Mapping > —] Customer Pay GL Account Number: 460A\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Service Contracts: N/A\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Sublet GL Acct: 466\n[Internal Parts Payment Method > —] We Owe GL Account: N/A\n[Internal Parts Payment Method > —] Other Supplies GL Account: N/A\n[Internal Parts Payment Method > —] New Car Inventory GL Account: N/A\n[Internal Parts Payment Method > —] Used Car Inventory GL Account: N/A\n[Internal Parts Payment Method > —] New Truck Inventory GL Account: N/A\n[Internal Parts Payment Method > —] Used Truck Inventory GL Account: N/A\n[Internal Parts Payment Method > —] Parts Policy GL Account: 01503\n[Finance Reserve GL Mapping > —] How many finance companies with reserves?: None\n[Service GL Mapping Notes > —] Additional Service GL Mapping Details Not Addressed Above : UPFIT LABOR SALES 463A1 COST 663A1\n[Parts Counter Sales > —] Do you have taxable and Non-Taxable Accounts?: No\n[Parts Counter Sales > —] Retail Counter Sales GL Acct: 482\n[Parts Counter Sales > —] Internal Counter Sales GL Acct: N/A\n[Parts Counter Sales > —] Wholesale Counter GL Acct: N/A\n[Check - Vehicle Sales > —] Individual Purchase GL Account : N/A\n[Check - Vehicle Sales > —] Only F&I - After Sale GL Account: N/A\n[Check - Vehicle Sales > —] Business/Commercial GL Account : N/A\n[Check - Vehicle Sales > —] DealerTrade GL Account: N/A\n[Check - Vehicle Sales > —] Wholesale GL Account: N/A\n[Parts - Cash Payment Method > —] Counter Sales/Retail GL Account: 225\n[Parts - Cash Payment Method > —] Wholesale GL Account: N/A\n[Fixed Ops Service GL Mapping > —] Departments : Service Department\n[Service - Payment Method - Internal > —] Which internal payment methods do you use?: Parts Dept Policy, Service Dept Policy, Service Dept  - Lot Damage, Parts Dept  - Lot Damage, Company Vehicle Service Dept, Company Vehicle Parts Dept\n[Parts - AR Charge Payment Method > —] Counter Sales/Retail GL Account: 220\n[Parts - AR Charge Payment Method > —] Wholesale GL Account: N/A\n[Service Internal Sales GL Mapping > —] Internal Pay GL Account Number: N/A\n[Service Internal Sales GL Mapping > —] Internal Pay Sublet GL Account Number: N/A\n[Accounts Receivable Settings > —] What date do you typically run your A/R statements?: 31st\n[Accounts Receivable Settings > —] Do you use A/R open item?: Yes\n[Accounts Receivable Settings > —] Which AR GL accounts do you use in the AR open-item feature?: 220\n[Accounts Receivable Settings > —] AR Account Number for Service ROs: 220\n[Accounts Receivable Settings > —] AR Account Number for Parts Tickets: 220\n[Accounts Receivable Settings > —] AR Account Number for Vehicle Sales: NA\n[Accounts Receivable Settings > —] Cash Clearing GL Account Number for AR: 225\n[Accounts Receivable Settings > —] Cash In Bank GL Account Number for AR: 203\n[Accounts Receivable Settings > —] Employee A/R GL Account Number: 212\n[Accounts Receivable Settings > —] Do all active employees have an employee A/R account?: Yes\n[Accounts Receivable Settings > —] What e-mail address do you want A/R statements to come from?: CHRIS@BRANNENMOTORS.COM\n[Accounts Receivable Settings > —] AR Discount GL Account: NA\n[Accounts Receivable Settings > —] AR Journal Name and Journal Number: ?\n[Accounts Receivable Settings > —] Do you charge finance charges on AR invoices?: Not now but we want to on Tekion\n[Accounts Receivable Settings > —] Do you offer customer discounts if they pay early?: No\n[Accounts Receivable Settings > —] AR invoices are delinquent after how many days?: 30 days\n[Accounts Receivable Settings > —] In what order would you like the detail to be on A/R statements?: Due Date - Oldest First\n[Used Vehicle GL Sale Account Mapping > —] Cash Receipt Cash Clearing GL Account Number: 225\n[Used Vehicle GL Sale Account Mapping > —] Select your Used Vehicle Sale Types: Others: NA\n[Service - Payment Methods - Customer Pay > —] Cash GL Account: 225\n[Service - Payment Methods - Customer Pay > —] Check GL Account: 225\n[Service - Payment Methods - Customer Pay > —] Credit/Debit Card GL Account: 225C\n[Service - Payment Methods - Customer Pay > —] AR Charge GL Account: 220\n[Service - Payment Methods - Customer Pay > —] Service Contract GL Account: N/A\n[Service - Payment Methods - Customer Pay > —] GM - OEM Reward GL Account: N/A\n[Service - Payment Methods - Warranty > —] Warranty Claim GL Account: N/A\n[Factory Receivables > —] Holdback GL Account Number: NA\n[Factory Receivables > —] Rebate GL Account Number: NA\n[Factory Receivables > —] Incentives GL Account Number: NA\n[General Department Information (Part 1) > —] Please select your country: USA\n[General Department Information (Part 1) > —] What are you retained earnings accounts and how are they used?: 370\n[General Department Information (Part 1) > —] What payroll provider do you currently use?: isolved/thread\n[General Department Information (Part 1) > —] What payroll provider will you use at the time of the Tekion ARC go live date?: isolved / thread\n[General Department Information (Part 1) > —] Please list all manufacturer dealer codes (and BAC codes for GM dealers): N/A\n[General Department Information (Part 1) > —] If you are a GM dealership, are you part of the BAM program?: N/A\n[General Department Information (Part 1) > —] Federal Tax ID / EIN:: 994218619\n[General Department Information (Part 1) > —] State Tax ID:: 308997482\n[General Department Information (Part 1) > —] State Dealer Code:: N/A\n[General Department Information (Part 1) > —] DMV #:: N/A\n[General Department Information (Part 1) > —] Are there any state/province specific identification numbers that print on every document such as Repair Orders?: NO\n[Parts and Labor Tax Rates > —] Is your tax rate for parts and labor the same?: No\n[Parts and Labor Tax Rates > —] Tax rate on Parts?: 8%\n[Parts and Labor Tax Rates > —] Tax rate on labor?: 0\n[Parts and Labor Tax Rates > —] Tax rate on sublet?: 0\n[Parts and Labor Tax Rates > —] Tax rate on deductible?: 0\n[Parts and Labor Tax Rates > —] Do you charge tax on shop supplies?: Yes\n[Vehicle Sales Payables > —] Lien Payoff GL Account: NA\n[Vehicle Sales Payables > —] Title Fee GL Account Number: NA\n[Vehicle Sales Payables > —] Registration GL Account Number: NA\n[Vehicle Sales Payables > —] Emissions GL Account Number: NA\n[Vehicle Sales Payables > —] Documentation Fee GL Account Number: NA\n[Vehicle Sales Payables > —] Bank or Acquisition Fee GL Account Number : NA\n[Vehicle Sales Payables > —] Lemon Law Fee GL Account Number: NA\n[Vehicle Sales Payables > —] Lien Fee GL Account Number: NA\n[Vehicle Sales Payables > —] Environment Protect Fee GL Account Number: NA\n[Vehicle Sales Payables > —] State Fee GL Account Number: NA\n[Vehicle Sales Payables > —] Waste Tire Fee GL Account Number: 324T\n[Vehicle Sales Payables > —] Tire Fee GL Account Number: 324T\n[Service Warranty Sales GL Mapping > —] Warranty GL Account Number: N/A\n[Service Warranty Sales GL Mapping > —] Warranty Sublet GL Account Number: N/A\n[Source Specific RO Parts Sales GL Account > —] Do you have Source Specific RO Parts Sales GL Accounts?: Not now but we would like to break these out on Tekion, Gas Oil Grease (GOG), Tires\n[Source Specific RO Parts Sales GL Account > —] Do you have non-taxable GL accounts for source specific RO Sale Accounts?: No\n[Parts - Check Payment Method > —] Counter Sales/Retail GL Account: 225\n[Parts - Check Payment Method > —] Wholesale GL Account: N/A\n[Parts Repair Order Sales Accounts > —] Parts RO Sales Optional Service Departments: Express Lane/Quick Lube, Fleet\n[Parts Repair Order Sales Accounts > —] Do you have taxable and Non-taxable accounts?: No\n[Parts Repair Order Sales Accounts > —] RO Customer Pay Parts Sales GL Account: 467\n[Parts Repair Order Sales Accounts > —] RO Service Contract Parts Sales GL Account: N/A\n[Parts Repair Order Sales Accounts > —] RO Quick Lube Parts Sales GL Account: N/A\n[Parts Repair Order Sales Accounts > —] RO Warranty Parts Sales GL Account: 467A1\n[Parts Repair Order Sales Accounts > —] RO Internal Parts Sales GL Account: N/A\n[Cash Receipts > —] Journal Name and Journal Number for Cash Receipts: 50 RECEIPT\n[Cash Receipts > —] How do you post your day collection from service and parts?: Deposit function in my existing DMS\n[Cash Receipts > —] How do you post customer down payments?: Others: NA\n[Credit/Debit Card - Vehicle Sales > —] Individual Purchase GL Account : N/A\n[Credit/Debit Card - Vehicle Sales > —] Only F&I - After Sale GL Account: N/A\n[Credit/Debit Card - Vehicle Sales > —] Business/Commercial GL Account : N/A\n[Credit/Debit Card - Vehicle Sales > —] DealerTrade GL Account: N/A\n[Credit/Debit Card - Vehicle Sales > —] Wholesale GL Account: N/A\n[Tekion Blueprint Submission > —] Please upload a sample payroll upload file (if applicable): VUE Import Contender Payroll PPE 09-19-26.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90037905/f119cc15-781b-457e-8722-12cc14baec6a/16de2565-8c05-4a5b-9257-441b54e277db/VUE%20Import%20Contender%20Payroll%20PPE%2009-19-26.xlsx)\n[Tekion Blueprint Submission > —] Are there any state/province, federal or OEM specific reporting which is used daily, weekly, monthly, quarterly or yearly?: STATE SALES TAX MONTHLY\n[Tekion Blueprint Submission > —] Is there anything else we need to know about your ARC accounting?: THIS COMPANY IS A FULL-SERVICE NAPA STOR PROVIDING FUEL, PARTS, ANMD SERVICE\n[Tekion Blueprint Submission > —] Name of Submitter: BRANDY WHITMAN\n[Payment Method and Fee Notes > —] Additional Payment Methods and Fee Details Not Addressed Above : WE HAVE FUEL ACCTS FOR FUEL SALES/COS/INV THAT NEED TO BE SET UP SIMILAR TO PARTS - ALSO TOWING ACCTS FOR OUR WRECKER COS 905A1 SALES 905A\n[OEM Reward > —] Counter Sales/Retail GL Account: N/A\n[OEM Reward > —] Wholesale GL Account: N/A\n[OEM Reward > —] Internal GL Account: N/A\n[OEM Reward > —] Repair GL Account: N/A\n[Used Vehicle Notes > —] Additional Used Vehicle Details Not Addressed Above : NO VEHICLES\n[AR Charge - Vehicle Sales > —] Individual Purchase GL Account : N/A\n[AR Charge - Vehicle Sales > —] Only F&I - After Sale GL Account: N/A\n[AR Charge - Vehicle Sales > —] Business/Commercial GL Account : N/A\n[AR Charge - Vehicle Sales > —] DealerTrade GL Account: N/A\n[AR Charge - Vehicle Sales > —] Wholesale GL Account: N/A\n[Parts and Service Fees > —] Shop Supplies GL Account: SALES 469 COST 669\n[Parts and Service Fees > —] Tire Fee GL Account: 324T FEE - SALES 490 COS 690\n[Parts and Service Fees > —] Environmental Fee GL Account: DONT HAVE ONE BUT NEED TO SET ONE UP\n[General Department Information (Part 2) > —] What would you like your first check # in Tekion to be?: NOT SURE YET - CLOSER TIME FRAME\n[General Department Information (Part 2) > —] What would you like your PO # in Tekion to be?: NOT SURE YET - CLOSER TIME FRAME\n[General Department Information (Part 2) > —] What banks do / will you send the Positive Pay file to?: AMERIS\n[General Department Information (Part 2) > —] Do you conduct Bank Reconciliation in your DMS?: Yes\n[General Department Information (Part 2) > —] What are the banks that you reconcile and what are the G/L accounts?: AMERIS, HUNTINGTON,\n[Accounts Payable Settings > —] On what date do you typically run your AP batch?: 6th\n[Accounts Payable Settings > —] What is your Invoice cutoff date?: 30th\n[Accounts Payable Settings > —] Which AP GL accounts do you use in the AP open-item feature? : 300\n[Accounts Payable Settings > —] In what order would you like your Invoices in Batch Payments to display?: Vendor Name\n[Accounts Payable Settings > —] What type of schedule is your A/P account?: Open Item\n[Accounts Payable Settings > —] In which month is your invoice cutoff date?: Date in previous month\n[Accounts Payable Settings > —] AP GL Account Number: 300\n[Accounts Payable Settings > —] AP Discount Account Number: N/A\n[Accounts Payable Settings > —] AP Cash payment Journal Name and Journal Number: JOURNAL 50 RECEIPT\n[Accounts Payable Settings > —] AP Bank Name: AMERIS BANK\n[Accounts Payable Settings > —] AP Bank Account GL Account Number: 203\n[CIT - Receivable - Vehicle Sales > —] Individual Purchase GL Account : N/A\n[CIT - Receivable - Vehicle Sales > —] Only F&I - After Sale GL Account: N/A\n[CIT - Receivable - Vehicle Sales > —] Business/Commercial GL Account : N/A\n[CIT - Receivable - Vehicle Sales > —] DealerTrade GL Account: N/A\n[CIT - Receivable - Vehicle Sales > —] Wholesale GL Account: N/A\n[Parts Source Specific GL Accounting > —] Do you have source specific inventory GL accounts?: Tires, Other, Gas Oil Grease (GOG)\n[Parts Source Specific GL Accounting > —] Do you have non-taxable source specific sale GL accounts?: No\n[Parts Source Specific GL Accounting > —] Tires Source Specific GL Account: 243\n[Parts Source Specific GL Accounting > —] GOG Source Specific GL Account: 244\n[Parts Source Specific GL Accounting > —] Other Source Specific Name: NAPA INVENTORY 242\n[Parts Source Specific GL Accounting > —] Other Source Specific Account Number: OUTSIDE VENDOR PARTS INV 242A - UPFIT INV 242B\n[Fixed Ops Other Accounts > —] Sales Tax - Labor GL Account: 0N/A\n[Fixed Ops Other Accounts > —] Sales Tax - Parts GL Account: 324\n[Fixed Ops Other Accounts > —] Freight - Taxable - GL Account: 324\n[Fixed Ops Other Accounts > —] Restocking Fee - GL Account: DONT HAVE ONE BUT WOULD LIKE TO SET IT UP\n[Service - Taxes > —] Are coupon discounts taken before or after tax is applied?: Before tax is applied\n[Service - Taxes > —] Is your tax rate the same for Parts, Labor, Sublets and Deductibles?: No\n[Service - Taxes > —] Are there any special tax conditions? Examples below: None\n[Service - Taxes > —] Tax rate for Labor: 0\n[Service - Taxes > —] Tax rate for Parts: 8%\n[Service - Taxes > —] Tax rate for Parts: 8%\n[Service - Taxes > —] Tax rate for Deductibles: 0\n[Parts Accounting Settings > —] Please select all that are taxable: : Parts\n[Parts Accounting Settings > —] What is the parts tax rate? : Others: 8%\n[Parts Accounting Settings > —] What is your current parts invoice #? : 21921\n[Parts Accounting Settings > —] What would you like your starting Purchase Order number to be?: N/A\n[Parts Accounting Settings > —] What do you want to start your parts invoice numbers in Tekion?: 30000"
+    "humanReadable": "[Cash - Vehicle Sales > —] Personal Purchase GL Account : N/A\n[Cash - Vehicle Sales > —] Only F&I - After Sale GL Account: N/A\n[Cash - Vehicle Sales > —] Business/Commercial GL Account : N/A\n[Cash - Vehicle Sales > —] DealerTrade GL Account: N/A\n[Cash - Vehicle Sales > —] Wholesale GL Account: N/A\n[Parts - Credit/Debit Card Payment Method > —] Counter Sales/Retail GL Account: 225C\n[Parts - Credit/Debit Card Payment Method > —] Wholesale GL Account: N/A\n[Internal Parts Payment Method > —] We Owe GL Account: N/A\n[Internal Parts Payment Method > —] Other Supplies GL Account: N/A\n[Internal Parts Payment Method > —] New Car Inventory GL Account: N/A\n[Internal Parts Payment Method > —] Used Car Inventory GL Account: N/A\n[Internal Parts Payment Method > —] New Truck Inventory GL Account: N/A\n[Internal Parts Payment Method > —] Used Truck Inventory GL Account: N/A\n[Internal Parts Payment Method > —] Parts Policy GL Account: 01503\n[Finance Reserve GL Mapping > —] How many finance companies with reserves?: None\n[Service Customer Pay Sales GL Mapping > —] Customer Pay GL Account Number: 460A\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Service Contracts: N/A\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Sublet GL Acct: 466\n[Service GL Mapping Notes > —] Additional Service GL Mapping Details Not Addressed Above : UPFIT LABOR SALES 463A1 COST 663A1\n[Parts Counter Sales > —] Do you have taxable and Non-Taxable Accounts?: No\n[Parts Counter Sales > —] Retail Counter Sales GL Acct: 482\n[Parts Counter Sales > —] Internal Counter Sales GL Acct: N/A\n[Parts Counter Sales > —] Wholesale Counter GL Acct: N/A\n[Check - Vehicle Sales > —] Individual Purchase GL Account : N/A\n[Check - Vehicle Sales > —] Only F&I - After Sale GL Account: N/A\n[Check - Vehicle Sales > —] Business/Commercial GL Account : N/A\n[Check - Vehicle Sales > —] DealerTrade GL Account: N/A\n[Check - Vehicle Sales > —] Wholesale GL Account: N/A\n[Parts - Cash Payment Method > —] Counter Sales/Retail GL Account: 225\n[Parts - Cash Payment Method > —] Wholesale GL Account: N/A\n[Fixed Ops Service GL Mapping > —] Departments : Service Department\n[Service - Payment Method - Internal > —] Which internal payment methods do you use?: Parts Dept Policy, Service Dept Policy, Service Dept  - Lot Damage, Parts Dept  - Lot Damage, Company Vehicle Service Dept, Company Vehicle Parts Dept\n[Parts - AR Charge Payment Method > —] Counter Sales/Retail GL Account: 220\n[Parts - AR Charge Payment Method > —] Wholesale GL Account: N/A\n[Service Internal Sales GL Mapping > —] Internal Pay GL Account Number: N/A\n[Service Internal Sales GL Mapping > —] Internal Pay Sublet GL Account Number: N/A\n[Accounts Receivable Settings > —] What date do you typically run your A/R statements?: 31st\n[Accounts Receivable Settings > —] Do you use A/R open item?: Yes\n[Accounts Receivable Settings > —] Which AR GL accounts do you use in the AR open-item feature?: 220\n[Accounts Receivable Settings > —] AR Account Number for Service ROs: 220\n[Accounts Receivable Settings > —] AR Account Number for Parts Tickets: 220\n[Accounts Receivable Settings > —] AR Account Number for Vehicle Sales: NA\n[Accounts Receivable Settings > —] Cash Clearing GL Account Number for AR: 225\n[Accounts Receivable Settings > —] Cash In Bank GL Account Number for AR: 203\n[Accounts Receivable Settings > —] Employee A/R GL Account Number: 212\n[Accounts Receivable Settings > —] Do all active employees have an employee A/R account?: Yes\n[Accounts Receivable Settings > —] What e-mail address do you want A/R statements to come from?: CHRIS@BRANNENMOTORS.COM\n[Accounts Receivable Settings > —] AR Discount GL Account: NA\n[Accounts Receivable Settings > —] AR Journal Name and Journal Number: ?\n[Accounts Receivable Settings > —] Do you charge finance charges on AR invoices?: Not now but we want to on Tekion\n[Accounts Receivable Settings > —] Do you offer customer discounts if they pay early?: No\n[Accounts Receivable Settings > —] AR invoices are delinquent after how many days?: 30 days\n[Accounts Receivable Settings > —] In what order would you like the detail to be on A/R statements?: Due Date - Oldest First\n[Used Vehicle GL Sale Account Mapping > —] Cash Receipt Cash Clearing GL Account Number: 225\n[Used Vehicle GL Sale Account Mapping > —] Select your Used Vehicle Sale Types: Others: NA\n[Service - Payment Methods - Customer Pay > —] Cash GL Account: 225\n[Service - Payment Methods - Customer Pay > —] Check GL Account: 225\n[Service - Payment Methods - Customer Pay > —] Credit/Debit Card GL Account: 225C\n[Service - Payment Methods - Customer Pay > —] AR Charge GL Account: 220\n[Service - Payment Methods - Customer Pay > —] Service Contract GL Account: N/A\n[Service - Payment Methods - Customer Pay > —] GM - OEM Reward GL Account: N/A\n[Service - Payment Methods - Warranty > —] Warranty Claim GL Account: N/A\n[Factory Receivables > —] Holdback GL Account Number: NA\n[Factory Receivables > —] Rebate GL Account Number: NA\n[Factory Receivables > —] Incentives GL Account Number: NA\n[General Department Information (Part 1) > —] Please select your country: USA\n[General Department Information (Part 1) > —] What are you retained earnings accounts and how are they used?: 370\n[General Department Information (Part 1) > —] What payroll provider do you currently use?: isolved/thread\n[General Department Information (Part 1) > —] What payroll provider will you use at the time of the Tekion ARC go live date?: isolved / thread\n[General Department Information (Part 1) > —] Please list all manufacturer dealer codes (and BAC codes for GM dealers): N/A\n[General Department Information (Part 1) > —] If you are a GM dealership, are you part of the BAM program?: N/A\n[General Department Information (Part 1) > —] Federal Tax ID / EIN:: 994218619\n[General Department Information (Part 1) > —] State Tax ID:: 308997482\n[General Department Information (Part 1) > —] State Dealer Code:: N/A\n[General Department Information (Part 1) > —] DMV #:: N/A\n[General Department Information (Part 1) > —] Are there any state/province specific identification numbers that print on every document such as Repair Orders?: NO\n[Parts and Labor Tax Rates > —] Is your tax rate for parts and labor the same?: No\n[Parts and Labor Tax Rates > —] Tax rate on Parts?: 8%\n[Parts and Labor Tax Rates > —] Tax rate on labor?: 0\n[Parts and Labor Tax Rates > —] Tax rate on sublet?: 0\n[Parts and Labor Tax Rates > —] Tax rate on deductible?: 0\n[Parts and Labor Tax Rates > —] Do you charge tax on shop supplies?: Yes\n[Service Warranty Sales GL Mapping > —] Warranty GL Account Number: N/A\n[Service Warranty Sales GL Mapping > —] Warranty Sublet GL Account Number: N/A\n[Vehicle Sales Payables > —] Lien Payoff GL Account: NA\n[Vehicle Sales Payables > —] Title Fee GL Account Number: NA\n[Vehicle Sales Payables > —] Registration GL Account Number: NA\n[Vehicle Sales Payables > —] Emissions GL Account Number: NA\n[Vehicle Sales Payables > —] Documentation Fee GL Account Number: NA\n[Vehicle Sales Payables > —] Bank or Acquisition Fee GL Account Number : NA\n[Vehicle Sales Payables > —] Lemon Law Fee GL Account Number: NA\n[Vehicle Sales Payables > —] Lien Fee GL Account Number: NA\n[Vehicle Sales Payables > —] Environment Protect Fee GL Account Number: NA\n[Vehicle Sales Payables > —] State Fee GL Account Number: NA\n[Vehicle Sales Payables > —] Waste Tire Fee GL Account Number: 324T\n[Vehicle Sales Payables > —] Tire Fee GL Account Number: 324T\n[Source Specific RO Parts Sales GL Account > —] Do you have Source Specific RO Parts Sales GL Accounts?: Not now but we would like to break these out on Tekion, Gas Oil Grease (GOG), Tires\n[Source Specific RO Parts Sales GL Account > —] Do you have non-taxable GL accounts for source specific RO Sale Accounts?: No\n[Parts - Check Payment Method > —] Counter Sales/Retail GL Account: 225\n[Parts - Check Payment Method > —] Wholesale GL Account: N/A\n[Parts Repair Order Sales Accounts > —] Parts RO Sales Optional Service Departments: Express Lane/Quick Lube, Fleet\n[Parts Repair Order Sales Accounts > —] Do you have taxable and Non-taxable accounts?: No\n[Parts Repair Order Sales Accounts > —] RO Customer Pay Parts Sales GL Account: 467\n[Parts Repair Order Sales Accounts > —] RO Service Contract Parts Sales GL Account: N/A\n[Parts Repair Order Sales Accounts > —] RO Quick Lube Parts Sales GL Account: N/A\n[Parts Repair Order Sales Accounts > —] RO Warranty Parts Sales GL Account: 467A1\n[Parts Repair Order Sales Accounts > —] RO Internal Parts Sales GL Account: N/A\n[Cash Receipts > —] Journal Name and Journal Number for Cash Receipts: 50 RECEIPT\n[Cash Receipts > —] How do you post your day collection from service and parts?: Deposit function in my existing DMS\n[Cash Receipts > —] How do you post customer down payments?: Others: NA\n[Credit/Debit Card - Vehicle Sales > —] Individual Purchase GL Account : N/A\n[Credit/Debit Card - Vehicle Sales > —] Only F&I - After Sale GL Account: N/A\n[Credit/Debit Card - Vehicle Sales > —] Business/Commercial GL Account : N/A\n[Credit/Debit Card - Vehicle Sales > —] DealerTrade GL Account: N/A\n[Credit/Debit Card - Vehicle Sales > —] Wholesale GL Account: N/A\n[Tekion Blueprint Submission > —] Please upload a sample payroll upload file (if applicable): VUE Import Contender Payroll PPE 09-19-26.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90037905/f119cc15-781b-457e-8722-12cc14baec6a/16de2565-8c05-4a5b-9257-441b54e277db/VUE%20Import%20Contender%20Payroll%20PPE%2009-19-26.xlsx)\n[Tekion Blueprint Submission > —] Are there any state/province, federal or OEM specific reporting which is used daily, weekly, monthly, quarterly or yearly?: STATE SALES TAX MONTHLY\n[Tekion Blueprint Submission > —] Is there anything else we need to know about your ARC accounting?: THIS COMPANY IS A FULL-SERVICE NAPA STOR PROVIDING FUEL, PARTS, ANMD SERVICE\n[Tekion Blueprint Submission > —] Name of Submitter: BRANDY WHITMAN\n[Payment Method and Fee Notes > —] Additional Payment Methods and Fee Details Not Addressed Above : WE HAVE FUEL ACCTS FOR FUEL SALES/COS/INV THAT NEED TO BE SET UP SIMILAR TO PARTS - ALSO TOWING ACCTS FOR OUR WRECKER COS 905A1 SALES 905A\n[OEM Reward > —] Counter Sales/Retail GL Account: N/A\n[OEM Reward > —] Wholesale GL Account: N/A\n[OEM Reward > —] Internal GL Account: N/A\n[OEM Reward > —] Repair GL Account: N/A\n[Used Vehicle Notes > —] Additional Used Vehicle Details Not Addressed Above : NO VEHICLES\n[AR Charge - Vehicle Sales > —] Individual Purchase GL Account : N/A\n[AR Charge - Vehicle Sales > —] Only F&I - After Sale GL Account: N/A\n[AR Charge - Vehicle Sales > —] Business/Commercial GL Account : N/A\n[AR Charge - Vehicle Sales > —] DealerTrade GL Account: N/A\n[AR Charge - Vehicle Sales > —] Wholesale GL Account: N/A\n[Parts and Service Fees > —] Shop Supplies GL Account: SALES 469 COST 669\n[Parts and Service Fees > —] Tire Fee GL Account: 324T FEE - SALES 490 COS 690\n[Parts and Service Fees > —] Environmental Fee GL Account: DONT HAVE ONE BUT NEED TO SET ONE UP\n[General Department Information (Part 2) > —] What would you like your first check # in Tekion to be?: NOT SURE YET - CLOSER TIME FRAME\n[General Department Information (Part 2) > —] What would you like your PO # in Tekion to be?: NOT SURE YET - CLOSER TIME FRAME\n[General Department Information (Part 2) > —] What banks do / will you send the Positive Pay file to?: AMERIS\n[General Department Information (Part 2) > —] Do you conduct Bank Reconciliation in your DMS?: Yes\n[General Department Information (Part 2) > —] What are the banks that you reconcile and what are the G/L accounts?: AMERIS, HUNTINGTON,\n[Accounts Payable Settings > —] On what date do you typically run your AP batch?: 6th\n[Accounts Payable Settings > —] What is your Invoice cutoff date?: 30th\n[Accounts Payable Settings > —] Which AP GL accounts do you use in the AP open-item feature? : 300\n[Accounts Payable Settings > —] In what order would you like your Invoices in Batch Payments to display?: Vendor Name\n[Accounts Payable Settings > —] What type of schedule is your A/P account?: Open Item\n[Accounts Payable Settings > —] In which month is your invoice cutoff date?: Date in previous month\n[Accounts Payable Settings > —] AP GL Account Number: 300\n[Accounts Payable Settings > —] AP Discount Account Number: N/A\n[Accounts Payable Settings > —] AP Cash payment Journal Name and Journal Number: JOURNAL 50 RECEIPT\n[Accounts Payable Settings > —] AP Bank Name: AMERIS BANK\n[Accounts Payable Settings > —] AP Bank Account GL Account Number: 203\n[CIT - Receivable - Vehicle Sales > —] Individual Purchase GL Account : N/A\n[CIT - Receivable - Vehicle Sales > —] Only F&I - After Sale GL Account: N/A\n[CIT - Receivable - Vehicle Sales > —] Business/Commercial GL Account : N/A\n[CIT - Receivable - Vehicle Sales > —] DealerTrade GL Account: N/A\n[CIT - Receivable - Vehicle Sales > —] Wholesale GL Account: N/A\n[Parts Source Specific GL Accounting > —] Do you have source specific inventory GL accounts?: Tires, Other, Gas Oil Grease (GOG)\n[Parts Source Specific GL Accounting > —] Do you have non-taxable source specific sale GL accounts?: No\n[Parts Source Specific GL Accounting > —] Tires Source Specific GL Account: 243\n[Parts Source Specific GL Accounting > —] GOG Source Specific GL Account: 244\n[Parts Source Specific GL Accounting > —] Other Source Specific Name: NAPA INVENTORY 242\n[Parts Source Specific GL Accounting > —] Other Source Specific Account Number: OUTSIDE VENDOR PARTS INV 242A - UPFIT INV 242B\n[Fixed Ops Other Accounts > —] Sales Tax - Labor GL Account: 0N/A\n[Fixed Ops Other Accounts > —] Sales Tax - Parts GL Account: 324\n[Fixed Ops Other Accounts > —] Freight - Taxable - GL Account: 324\n[Fixed Ops Other Accounts > —] Restocking Fee - GL Account: DONT HAVE ONE BUT WOULD LIKE TO SET IT UP\n[Service - Taxes > —] Are coupon discounts taken before or after tax is applied?: Before tax is applied\n[Service - Taxes > —] Is your tax rate the same for Parts, Labor, Sublets and Deductibles?: No\n[Service - Taxes > —] Are there any special tax conditions? Examples below: None\n[Service - Taxes > —] Tax rate for Labor: 0\n[Service - Taxes > —] Tax rate for Parts: 8%\n[Service - Taxes > —] Tax rate for Parts: 8%\n[Service - Taxes > —] Tax rate for Deductibles: 0\n[Parts Accounting Settings > —] Please select all that are taxable: : Parts\n[Parts Accounting Settings > —] What is the parts tax rate? : Others: 8%\n[Parts Accounting Settings > —] What is your current parts invoice #? : 21921\n[Parts Accounting Settings > —] What would you like your starting Purchase Order number to be?: N/A\n[Parts Accounting Settings > —] What do you want to start your parts invoice numbers in Tekion?: 30000"
   },
-  "savedAt": "2026-10-04T14:26:43.864Z"
+  "savedAt": "2026-10-13T18:54:41.514Z"
 }

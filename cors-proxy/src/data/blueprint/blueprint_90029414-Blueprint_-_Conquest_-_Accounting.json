@@ -3803,70 +3803,6 @@
         ]
       },
       {
-        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
-        "sectionName": "Finance Company #14",
-        "sectionOrder": 33,
-        "sectionType": "MAIN",
-        "logic": {
-          "displayActionType": "SHOW",
-          "ruleMatchCondition": "ANY",
-          "rules": [
-            {
-              "fieldId": "103601013",
-              "operator": "IS",
-              "value": "14"
-            },
-            {
-              "fieldId": "103601013",
-              "operator": "IS",
-              "value": "15"
-            }
-          ]
-        },
-        "fields": [
-          {
-            "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
-            "sectionName": "Finance Company #14",
-            "sectionOrder": 33,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601054",
-            "fieldName": null,
-            "title": "Finance Company Name",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 1,
-            "rawValue": "TD AUTO FINANCE",
-            "decodedValue": "TD AUTO FINANCE",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
-            "sectionName": "Finance Company #14",
-            "sectionOrder": 33,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601055",
-            "fieldName": null,
-            "title": "Finance Company GL Account Number",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 2,
-            "rawValue": "L2283",
-            "decodedValue": "L2283",
-            "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
         "sectionId": "4830c33c-882c-4316-8979-798837ce8dcf",
         "sectionName": "Used Vehicle GL Sale Account Mapping",
         "sectionOrder": 11,
@@ -3928,6 +3864,70 @@
               "Business / Commercial",
               "Wholesale"
             ],
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
+        "sectionName": "Finance Company #14",
+        "sectionOrder": 33,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ANY",
+          "rules": [
+            {
+              "fieldId": "103601013",
+              "operator": "IS",
+              "value": "14"
+            },
+            {
+              "fieldId": "103601013",
+              "operator": "IS",
+              "value": "15"
+            }
+          ]
+        },
+        "fields": [
+          {
+            "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
+            "sectionName": "Finance Company #14",
+            "sectionOrder": 33,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601054",
+            "fieldName": null,
+            "title": "Finance Company Name",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "TD AUTO FINANCE",
+            "decodedValue": "TD AUTO FINANCE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
+            "sectionName": "Finance Company #14",
+            "sectionOrder": 33,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601055",
+            "fieldName": null,
+            "title": "Finance Company GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "L2283",
+            "decodedValue": "L2283",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -12013,170 +12013,6 @@
         ]
       },
       {
-        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
-        "sectionName": "Deal Posting Pack #7",
-        "sectionOrder": 43,
-        "sectionType": "MAIN",
-        "logic": {
-          "displayActionType": "SHOW",
-          "ruleMatchCondition": "ALL",
-          "rules": [
-            {
-              "fieldId": "e4b416b1-f5f9-4cfc-b96e-f46e412014c9",
-              "operator": "IS",
-              "value": "9948bb93-4dcf-4ce8-ae60-11f13b3ae19b"
-            },
-            {
-              "fieldId": "e4b416b1-f5f9-4cfc-b96e-f46e412014c9",
-              "operator": "IS",
-              "value": "6e739d1b-ac68-4daa-bad6-9804ab59cb6e"
-            },
-            {
-              "fieldId": "e4b416b1-f5f9-4cfc-b96e-f46e412014c9",
-              "operator": "IS",
-              "value": "22143169-f73b-424b-9764-0f74a92c7e85"
-            },
-            {
-              "fieldId": "e4b416b1-f5f9-4cfc-b96e-f46e412014c9",
-              "operator": "IS",
-              "value": "208372bf-a415-437c-ad6d-231c925de300"
-            }
-          ]
-        },
-        "fields": [
-          {
-            "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
-            "sectionName": "Deal Posting Pack #7",
-            "sectionOrder": 43,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "2110530b-9e04-4da9-8323-e7e556b27ecc",
-            "fieldName": null,
-            "title": "Applicable vehicle types:",
-            "type": "SINGLE_CHOICE",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
-            "sectionName": "Deal Posting Pack #7",
-            "sectionOrder": 43,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "b9b7739a-acfd-4ceb-a8fe-90c2ffa2be14",
-            "fieldName": null,
-            "title": "Applicable body styles:",
-            "type": "SINGLE_CHOICE",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
-            "sectionName": "Deal Posting Pack #7",
-            "sectionOrder": 43,
-            "sectionType": "MAIN",
-            "rowIndex": 2,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "ed5e5508-6ad6-4955-b180-8a47b2a9e47d",
-            "fieldName": null,
-            "title": "Pack Name",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
-            "sectionName": "Deal Posting Pack #7",
-            "sectionOrder": 43,
-            "sectionType": "MAIN",
-            "rowIndex": 3,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "94e34a1e-27d6-4e9c-8224-52b0e71c586f",
-            "fieldName": null,
-            "title": "Pack Amount",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
-            "sectionName": "Deal Posting Pack #7",
-            "sectionOrder": 43,
-            "sectionType": "MAIN",
-            "rowIndex": 4,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "5f1d05ed-effe-4e57-98f6-a0f9ce38b3ce",
-            "fieldName": null,
-            "title": "Pack Account",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
-            "sectionName": "Deal Posting Pack #7",
-            "sectionOrder": 43,
-            "sectionType": "MAIN",
-            "rowIndex": 5,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "cd3cd7b1-aefa-4890-a7dc-576eafdd0f8c",
-            "fieldName": null,
-            "title": "Control Number",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
-            "sectionName": "Deal Posting Pack #7",
-            "sectionOrder": 43,
-            "sectionType": "MAIN",
-            "rowIndex": 6,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "415d9f7f-d5e2-48ef-9f72-ada31de48b42",
-            "fieldName": null,
-            "title": "Applicable Targeting (if needed)",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": {
-              "displayActionType": "SHOW",
-              "ruleMatchCondition": "ALL",
-              "rules": []
-            },
-            "fieldOrder": 0,
-            "hasUserValue": false,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
         "sectionId": "18cdbfa9-a313-46d2-8965-fb01033a870c",
         "sectionName": "Deal Posting Pack #3",
         "sectionOrder": 39,
@@ -12345,6 +12181,170 @@
             "columnIndex": 0,
             "fieldIndex": 0,
             "fieldId": "26e3c230-ee20-47a0-8789-a47976819294",
+            "fieldName": null,
+            "title": "Applicable Targeting (if needed)",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
+        "sectionName": "Deal Posting Pack #7",
+        "sectionOrder": 43,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": [
+            {
+              "fieldId": "e4b416b1-f5f9-4cfc-b96e-f46e412014c9",
+              "operator": "IS",
+              "value": "9948bb93-4dcf-4ce8-ae60-11f13b3ae19b"
+            },
+            {
+              "fieldId": "e4b416b1-f5f9-4cfc-b96e-f46e412014c9",
+              "operator": "IS",
+              "value": "6e739d1b-ac68-4daa-bad6-9804ab59cb6e"
+            },
+            {
+              "fieldId": "e4b416b1-f5f9-4cfc-b96e-f46e412014c9",
+              "operator": "IS",
+              "value": "22143169-f73b-424b-9764-0f74a92c7e85"
+            },
+            {
+              "fieldId": "e4b416b1-f5f9-4cfc-b96e-f46e412014c9",
+              "operator": "IS",
+              "value": "208372bf-a415-437c-ad6d-231c925de300"
+            }
+          ]
+        },
+        "fields": [
+          {
+            "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
+            "sectionName": "Deal Posting Pack #7",
+            "sectionOrder": 43,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "2110530b-9e04-4da9-8323-e7e556b27ecc",
+            "fieldName": null,
+            "title": "Applicable vehicle types:",
+            "type": "SINGLE_CHOICE",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
+            "sectionName": "Deal Posting Pack #7",
+            "sectionOrder": 43,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "b9b7739a-acfd-4ceb-a8fe-90c2ffa2be14",
+            "fieldName": null,
+            "title": "Applicable body styles:",
+            "type": "SINGLE_CHOICE",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
+            "sectionName": "Deal Posting Pack #7",
+            "sectionOrder": 43,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "ed5e5508-6ad6-4955-b180-8a47b2a9e47d",
+            "fieldName": null,
+            "title": "Pack Name",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
+            "sectionName": "Deal Posting Pack #7",
+            "sectionOrder": 43,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "94e34a1e-27d6-4e9c-8224-52b0e71c586f",
+            "fieldName": null,
+            "title": "Pack Amount",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
+            "sectionName": "Deal Posting Pack #7",
+            "sectionOrder": 43,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "5f1d05ed-effe-4e57-98f6-a0f9ce38b3ce",
+            "fieldName": null,
+            "title": "Pack Account",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
+            "sectionName": "Deal Posting Pack #7",
+            "sectionOrder": 43,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "cd3cd7b1-aefa-4890-a7dc-576eafdd0f8c",
+            "fieldName": null,
+            "title": "Control Number",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
+            "sectionName": "Deal Posting Pack #7",
+            "sectionOrder": 43,
+            "sectionType": "MAIN",
+            "rowIndex": 6,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "415d9f7f-d5e2-48ef-9f72-ada31de48b42",
             "fieldName": null,
             "title": "Applicable Targeting (if needed)",
             "type": "SHORT_TEXT",
@@ -16173,30 +16173,6 @@
         "hasUserValue": false
       },
       {
-        "sectionName": "Finance Company #14",
-        "subsectionName": null,
-        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
-        "fieldId": "103601054",
-        "title": "Finance Company Name",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "TD AUTO FINANCE",
-        "decodedValue": "TD AUTO FINANCE",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Finance Company #14",
-        "subsectionName": null,
-        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
-        "fieldId": "103601055",
-        "title": "Finance Company GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "L2283",
-        "decodedValue": "L2283",
-        "hasUserValue": true
-      },
-      {
         "sectionName": "Used Vehicle GL Sale Account Mapping",
         "subsectionName": null,
         "sectionId": "4830c33c-882c-4316-8979-798837ce8dcf",
@@ -16226,6 +16202,30 @@
           "Business / Commercial",
           "Wholesale"
         ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Finance Company #14",
+        "subsectionName": null,
+        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
+        "fieldId": "103601054",
+        "title": "Finance Company Name",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "TD AUTO FINANCE",
+        "decodedValue": "TD AUTO FINANCE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Finance Company #14",
+        "subsectionName": null,
+        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
+        "fieldId": "103601055",
+        "title": "Finance Company GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "L2283",
+        "decodedValue": "L2283",
         "hasUserValue": true
       },
       {
@@ -19753,76 +19753,6 @@
         "hasUserValue": false
       },
       {
-        "sectionName": "Deal Posting Pack #7",
-        "subsectionName": null,
-        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
-        "fieldId": "2110530b-9e04-4da9-8323-e7e556b27ecc",
-        "title": "Applicable vehicle types:",
-        "type": "SINGLE_CHOICE",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Deal Posting Pack #7",
-        "subsectionName": null,
-        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
-        "fieldId": "b9b7739a-acfd-4ceb-a8fe-90c2ffa2be14",
-        "title": "Applicable body styles:",
-        "type": "SINGLE_CHOICE",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Deal Posting Pack #7",
-        "subsectionName": null,
-        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
-        "fieldId": "ed5e5508-6ad6-4955-b180-8a47b2a9e47d",
-        "title": "Pack Name",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Deal Posting Pack #7",
-        "subsectionName": null,
-        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
-        "fieldId": "94e34a1e-27d6-4e9c-8224-52b0e71c586f",
-        "title": "Pack Amount",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Deal Posting Pack #7",
-        "subsectionName": null,
-        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
-        "fieldId": "5f1d05ed-effe-4e57-98f6-a0f9ce38b3ce",
-        "title": "Pack Account",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Deal Posting Pack #7",
-        "subsectionName": null,
-        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
-        "fieldId": "cd3cd7b1-aefa-4890-a7dc-576eafdd0f8c",
-        "title": "Control Number",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Deal Posting Pack #7",
-        "subsectionName": null,
-        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
-        "fieldId": "415d9f7f-d5e2-48ef-9f72-ada31de48b42",
-        "title": "Applicable Targeting (if needed)",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
         "sectionName": "Deal Posting Pack #3",
         "subsectionName": null,
         "sectionId": "18cdbfa9-a313-46d2-8965-fb01033a870c",
@@ -19887,6 +19817,76 @@
         "subsectionName": null,
         "sectionId": "18cdbfa9-a313-46d2-8965-fb01033a870c",
         "fieldId": "26e3c230-ee20-47a0-8789-a47976819294",
+        "title": "Applicable Targeting (if needed)",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Deal Posting Pack #7",
+        "subsectionName": null,
+        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
+        "fieldId": "2110530b-9e04-4da9-8323-e7e556b27ecc",
+        "title": "Applicable vehicle types:",
+        "type": "SINGLE_CHOICE",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Deal Posting Pack #7",
+        "subsectionName": null,
+        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
+        "fieldId": "b9b7739a-acfd-4ceb-a8fe-90c2ffa2be14",
+        "title": "Applicable body styles:",
+        "type": "SINGLE_CHOICE",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Deal Posting Pack #7",
+        "subsectionName": null,
+        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
+        "fieldId": "ed5e5508-6ad6-4955-b180-8a47b2a9e47d",
+        "title": "Pack Name",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Deal Posting Pack #7",
+        "subsectionName": null,
+        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
+        "fieldId": "94e34a1e-27d6-4e9c-8224-52b0e71c586f",
+        "title": "Pack Amount",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Deal Posting Pack #7",
+        "subsectionName": null,
+        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
+        "fieldId": "5f1d05ed-effe-4e57-98f6-a0f9ce38b3ce",
+        "title": "Pack Account",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Deal Posting Pack #7",
+        "subsectionName": null,
+        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
+        "fieldId": "cd3cd7b1-aefa-4890-a7dc-576eafdd0f8c",
+        "title": "Control Number",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Deal Posting Pack #7",
+        "subsectionName": null,
+        "sectionId": "0a7a3218-7576-4bab-9441-29cb6c12104f",
+        "fieldId": "415d9f7f-d5e2-48ef-9f72-ada31de48b42",
         "title": "Applicable Targeting (if needed)",
         "type": "SHORT_TEXT",
         "required": false,
@@ -23387,70 +23387,6 @@
         ]
       },
       {
-        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
-        "sectionName": "Finance Company #14",
-        "sectionOrder": 33,
-        "sectionType": "MAIN",
-        "logic": {
-          "displayActionType": "SHOW",
-          "ruleMatchCondition": "ANY",
-          "rules": [
-            {
-              "fieldId": "103601013",
-              "operator": "IS",
-              "value": "14"
-            },
-            {
-              "fieldId": "103601013",
-              "operator": "IS",
-              "value": "15"
-            }
-          ]
-        },
-        "fields": [
-          {
-            "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
-            "sectionName": "Finance Company #14",
-            "sectionOrder": 33,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601054",
-            "fieldName": null,
-            "title": "Finance Company Name",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 1,
-            "rawValue": "TD AUTO FINANCE",
-            "decodedValue": "TD AUTO FINANCE",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
-            "sectionName": "Finance Company #14",
-            "sectionOrder": 33,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601055",
-            "fieldName": null,
-            "title": "Finance Company GL Account Number",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 2,
-            "rawValue": "L2283",
-            "decodedValue": "L2283",
-            "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
         "sectionId": "4830c33c-882c-4316-8979-798837ce8dcf",
         "sectionName": "Used Vehicle GL Sale Account Mapping",
         "sectionOrder": 11,
@@ -23512,6 +23448,70 @@
               "Business / Commercial",
               "Wholesale"
             ],
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
+        "sectionName": "Finance Company #14",
+        "sectionOrder": 33,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ANY",
+          "rules": [
+            {
+              "fieldId": "103601013",
+              "operator": "IS",
+              "value": "14"
+            },
+            {
+              "fieldId": "103601013",
+              "operator": "IS",
+              "value": "15"
+            }
+          ]
+        },
+        "fields": [
+          {
+            "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
+            "sectionName": "Finance Company #14",
+            "sectionOrder": 33,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601054",
+            "fieldName": null,
+            "title": "Finance Company Name",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "TD AUTO FINANCE",
+            "decodedValue": "TD AUTO FINANCE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
+            "sectionName": "Finance Company #14",
+            "sectionOrder": 33,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601055",
+            "fieldName": null,
+            "title": "Finance Company GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "L2283",
+            "decodedValue": "L2283",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -31772,30 +31772,6 @@
         "hasUserValue": true
       },
       {
-        "sectionName": "Finance Company #14",
-        "subsectionName": null,
-        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
-        "fieldId": "103601054",
-        "title": "Finance Company Name",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "TD AUTO FINANCE",
-        "decodedValue": "TD AUTO FINANCE",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Finance Company #14",
-        "subsectionName": null,
-        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
-        "fieldId": "103601055",
-        "title": "Finance Company GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "L2283",
-        "decodedValue": "L2283",
-        "hasUserValue": true
-      },
-      {
         "sectionName": "Used Vehicle GL Sale Account Mapping",
         "subsectionName": null,
         "sectionId": "4830c33c-882c-4316-8979-798837ce8dcf",
@@ -31825,6 +31801,30 @@
           "Business / Commercial",
           "Wholesale"
         ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Finance Company #14",
+        "subsectionName": null,
+        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
+        "fieldId": "103601054",
+        "title": "Finance Company Name",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "TD AUTO FINANCE",
+        "decodedValue": "TD AUTO FINANCE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Finance Company #14",
+        "subsectionName": null,
+        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
+        "fieldId": "103601055",
+        "title": "Finance Company GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "L2283",
+        "decodedValue": "L2283",
         "hasUserValue": true
       },
       {
@@ -35318,24 +35318,6 @@
         "decodedValue": "[\"Due Date - Oldest First\"]"
       },
       {
-        "sectionName": "Finance Company #14",
-        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
-        "fieldId": "103601054",
-        "title": "Finance Company Name",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "TD AUTO FINANCE"
-      },
-      {
-        "sectionName": "Finance Company #14",
-        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
-        "fieldId": "103601055",
-        "title": "Finance Company GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "L2283"
-      },
-      {
         "sectionName": "Used Vehicle GL Sale Account Mapping",
         "sectionId": "4830c33c-882c-4316-8979-798837ce8dcf",
         "fieldId": "103600829",
@@ -35352,6 +35334,24 @@
         "type": "MULTIPLE_CHOICE",
         "required": "true",
         "decodedValue": "[\"Individual / Personal\",\"Business / Commercial\",\"Wholesale\"]"
+      },
+      {
+        "sectionName": "Finance Company #14",
+        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
+        "fieldId": "103601054",
+        "title": "Finance Company Name",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "TD AUTO FINANCE"
+      },
+      {
+        "sectionName": "Finance Company #14",
+        "sectionId": "20e55242-449b-4844-907d-e72727d3d681",
+        "fieldId": "103601055",
+        "title": "Finance Company GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "L2283"
       },
       {
         "sectionName": "Used Vehicle Business / Commercial",
@@ -37217,7 +37217,7 @@
         "decodedValue": "Cost of Sales"
       }
     ],
-    "humanReadable": "[Finance Company #10 > —] Finance Company Name: BANK OF AMERICA\n[Finance Company #10 > —] Finance Company GL Account Number: L2283\n[Vehicle Sale Commission GL Accounts > —] Vehicle Sales Salary, Wages & Commission GL Account: L3121\n[Vehicle Sale Commission GL Accounts > —] Paid Spiffs GL Account Number: L3121\n[Vehicle Sale Commission GL Accounts > —] NEW - Commission Expense Offset GL Account Number: L7001\n[Vehicle Sale Commission GL Accounts > —] NEW - Spiff Expense Offset GL Account Number: L7001\n[Vehicle Sale Commission GL Accounts > —] USED - Commission Offset GL Account Number: L7002\n[Vehicle Sale Commission GL Accounts > —] USED - Spiff Expense Offset GL Account: L7002\n[Cash - Vehicle Sales > —] Personal Purchase GL Account : L2040\n[Cash - Vehicle Sales > —] Only F&I - After Sale GL Account: L2040\n[Cash - Vehicle Sales > —] Business/Commercial GL Account : L2040\n[Cash - Vehicle Sales > —] DealerTrade GL Account: L2040\n[Cash - Vehicle Sales > —] Wholesale GL Account: L2040\n[Parts - Credit/Debit Card Payment Method > —] Counter Sales/Retail GL Account: L2040\n[Parts - Credit/Debit Card Payment Method > —] Wholesale GL Account: L2040\n[Used Vehicle Inventory > —] Journal Name and Journal Number: USED VEHICLE SALES JOURNAL # 20 / USED CAR WHOLESALE JOURNAL # 25\n[Used Vehicle Inventory > —] Inventory GL Account (Car): L2400 - LEXUS USED CAR\n[Used Vehicle Inventory > —] Inventory GL Account (Truck): L2400 - LEXUS USED CAR\n[Used Vehicle Inventory > —] Inventory GL Account (Other): L2409 - NON-LEXUS USED CAR\n[Used Vehicle Inventory > —] Specify \"Other\" Inventory Name: L2409 - NON-LEXUS USED CAR\n[Service Customer Pay Sales GL Mapping > —] Customer Pay GL Account Number: L4400\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Service Contracts: L4400\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Sublet GL Acct: L4460\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Quick Lube GL Acct: L4400\n[Internal Parts Payment Method > —] We Owe GL Account: NONE\n[Internal Parts Payment Method > —] Other Supplies GL Account: NONE\n[Internal Parts Payment Method > —] New Car Inventory GL Account: L2320\n[Internal Parts Payment Method > —] Used Car Inventory GL Account: L2400 - USED LEXUS / L2409 USED NON-LEXUS\n[Internal Parts Payment Method > —] New Truck Inventory GL Account: L2320\n[Internal Parts Payment Method > —] Used Truck Inventory GL Account: L2400 - USED LEXUS / L2409 USED NON-LEXUS\n[Internal Parts Payment Method > —] Parts Policy GL Account: L7115\n[Finance Reserve GL Mapping > —] How many finance companies with reserves?: 15\n[Parts Counter Sale Notes > —] Additional Parts Counter Sales Details Not Addressed Above : NEED TO DISCUSS PARTS SOURCING AND MAPPING TO THE FINANCIAL STATEMENT.\n[Finance Company #11 > —] Finance Company Name: DADE COUNTY FCU\n[Finance Company #11 > —] Finance Company GL Account Number: L2283\n[Parts Counter Sales > —] Do you have taxable and Non-Taxable Accounts?: Yes\n[Parts Counter Sales > —] Retail Counter Sales GL Acct: L4740\n[Parts Counter Sales > —] Retail Counter Sales GL Acct - Non-Taxable: L4740\n[Parts Counter Sales > —] Internal Counter Sales GL Acct: L4730\n[Parts Counter Sales > —] Internal Counter Sales GL Acct - Non-Taxable: L4730\n[Parts Counter Sales > —] Wholesale Counter GL Acct: L4750\n[Parts Counter Sales > —] Wholesale Counter Sales GL Acct - Non-Taxable: L4750\n[Check - Vehicle Sales > —] Individual Purchase GL Account : L2040\n[Check - Vehicle Sales > —] Only F&I - After Sale GL Account: L2040\n[Check - Vehicle Sales > —] Business/Commercial GL Account : L2040\n[Check - Vehicle Sales > —] DealerTrade GL Account: L2040\n[Check - Vehicle Sales > —] Wholesale GL Account: L2040\n[Parts - Cash Payment Method > —] Counter Sales/Retail GL Account: L2040\n[Parts - Cash Payment Method > —] Wholesale GL Account: L2040\n[Finance Company #4 > —] Finance Company Name: JP MORGAN CHASE BANK NA\n[Finance Company #4 > —] Finance Company GL Account Number: L2283\n[New Vehicle Inventory > —] Journal Name and Journal Number: RETAIL NEW VEHICLE SALES JOURNAL # 10 / LEASES NEW LEASE SALES JOURNAL # 11\n[New Vehicle Inventory > —] Inventory GL Account (Car): L2320\n[New Vehicle Inventory > —] Inventory GL Account (Truck): L2320\n[New Vehicle Inventory > —] Inventory GL Account (Rental): DO NOT HAVE RENTAL DEPARTMENT\n[New Vehicle Inventory > —] Inventory GL Account (Demo): L2300\n[New Vehicle Inventory > —] Inventory GL Account (Loaner): L2610\n[New Vehicle Inventory > —] Inventory GL Account (Company): L2750\n[Fixed Ops Service GL Mapping > —] Departments : Service Department, Express Lane/ Quick Lube, PDI, Reconditioning, Detail, Accessories\n[Service - Payment Method - Internal > —] Which internal payment methods do you use?: New Car Policy, Used Car Policy, Service Dept Policy, Parts Dept Policy, New Car Inventory, New Truck Inventory, Used Car Inventory, Used Truck Inventory, New Car - Lot Damage, Used Car - Lot Damage, Service Dept  - Lot Damage, Parts Dept  - Lot Damage\n[Service - Payment Method - Internal > —] New Car Policy  GL Account Number: L7111\n[Service - Payment Method - Internal > —] Used Car Policy GL Account Number: L7112\n[Service - Payment Method - Internal > —] Service Dept Policy GL Account Number: L7113\n[Service - Payment Method - Internal > —] Parts Dept Policy GL Account Number: L7115\n[Service - Payment Method - Internal > —] New Car Inventory GL Account Number: L2320\n[Service - Payment Method - Internal > —] New Truck Inventory GL Account Number: L2320\n[Service - Payment Method - Internal > —] Used Car Inventory GL Account Number: L2400 USED LEXUS / L2409 USED NON-LEXUS\n[Service - Payment Method - Internal > —] Used Truck Inventory GL Account Number: L2400 USED LEXUS / L2409 USED NON-LEXUS\n[Service - Payment Method - Internal > —] New Car - Lot Damage GL Account Number: L2320\n[Service - Payment Method - Internal > —] Used Car - Lot Damage GL Account Number: L2400 USED LEXUS / L2409 USED NON-LEXUS\n[Service - Payment Method - Internal > —] Service Dept - Lot Damage GL Account Number: L7113\n[Service - Payment Method - Internal > —] Parts Dept - Lot Damage GL Account Number: L7115\n[Parts - AR Charge Payment Method > —] Counter Sales/Retail GL Account: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Parts - AR Charge Payment Method > —] Wholesale GL Account: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Finance Company #2 > —] Finance Company Name: LEXUS FINANCIAL SERVICES\n[Finance Company #2 > —] Finance Company GL Account Number: L2283\n[Service Internal Sales GL Mapping > —] Internal Pay GL Account Number: L4430\n[Service Internal Sales GL Mapping > —] Internal Pay Sublet GL Account Number: L4460\n[Service Internal Sales GL Mapping > —] Internal Quick Lube GL Account Number: L4430\n[Accounts Receivable Settings > —] What date do you typically run your A/R statements?: 3rd\n[Accounts Receivable Settings > —] Do you use A/R open item?: Yes\n[Accounts Receivable Settings > —] Which AR GL accounts do you use in the AR open-item feature?: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Accounts Receivable Settings > —] AR Account Number for Service ROs: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Accounts Receivable Settings > —] AR Account Number for Parts Tickets: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Accounts Receivable Settings > —] AR Account Number for Vehicle Sales: NONE\n[Accounts Receivable Settings > —] Cash Clearing GL Account Number for AR: T2041 / T2042 (Let's discuss)\n[Accounts Receivable Settings > —] Cash In Bank GL Account Number for AR: T2020B\n[Accounts Receivable Settings > —] Employee A/R GL Account Number: L2105 - DO NOT RUN STATEMENTS\n[Accounts Receivable Settings > —] Do all active employees have an employee A/R account?: Yes\n[Accounts Receivable Settings > —] What e-mail address do you want A/R statements to come from?: ar@beanauto.com\n[Accounts Receivable Settings > —] AR Discount GL Account: NONE\n[Accounts Receivable Settings > —] AR Journal Name and Journal Number: CASH RECEIPTS OPEN ITEMS JOURNAL 57\n[Accounts Receivable Settings > —] Do you charge finance charges on AR invoices?: No\n[Accounts Receivable Settings > —] Do you offer customer discounts if they pay early?: No\n[Accounts Receivable Settings > —] AR invoices are delinquent after how many days?: 30 days\n[Accounts Receivable Settings > —] In what order would you like the detail to be on A/R statements?: Due Date - Oldest First\n[Finance Company #14 > —] Finance Company Name: TD AUTO FINANCE\n[Finance Company #14 > —] Finance Company GL Account Number: L2283\n[Used Vehicle GL Sale Account Mapping > —] Cash Receipt Cash Clearing GL Account Number: L2010\n[Used Vehicle GL Sale Account Mapping > —] Select your Used Vehicle Sale Types: Individual / Personal, Business / Commercial, Wholesale\n[Used Vehicle Business / Commercial > —] Used Car Sale Account: L4310 NON- LEXUS USED RETAIL\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Certified: L4303 LEXUS USED RETAIL CERTIFIED / L4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Non-Certified: L4305\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account: L4310 NON- LEXUS USED RETAIL\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account - Certified: L4303 LEXUS USED RETAIL CERTIFIED / L4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account - Non-Certified: L4305\n[Service - Payment Methods - Customer Pay > —] Cash GL Account: L2040\n[Service - Payment Methods - Customer Pay > —] Check GL Account: L2040\n[Service - Payment Methods - Customer Pay > —] Credit/Debit Card GL Account: L2040\n[Service - Payment Methods - Customer Pay > —] AR Charge GL Account: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Service - Payment Methods - Customer Pay > —] Service Contract GL Account: L2140\n[Service - Payment Methods - Customer Pay > —] GM - OEM Reward GL Account: NONE\n[Service - Payment Methods - Warranty > —] Warranty Claim GL Account: L2200\n[Deal Posting Pack Notes > —] Additional Deal Posting Packs Details Not Addressed Above : SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.\n[Factory Receivables > —] Holdback GL Account Number: NA\n[Factory Receivables > —] Rebate GL Account Number: L2240\n[Factory Receivables > —] Incentives GL Account Number: L2241 L2243 L2251 L2252 L2254\n[General Department Information (Part 1) > —] Please select your country: USA\n[General Department Information (Part 1) > —] What are you retained earnings accounts and how are they used?: L3920 - Retained Earnings.  Net Income is closed out to Retained Earnings once the year has been closed out in CDK.\nWe do have other accounts such as well which make up the Net Investment (Capital Stock, Additional Paid In Capital, and Dividends).\n[General Department Information (Part 1) > —] What payroll provider do you currently use?: PAYCOM\n[General Department Information (Part 1) > —] What payroll provider will you use at the time of the Tekion ARC go live date?: PAYCOM\n[General Department Information (Part 1) > —] Please list all manufacturer dealer codes (and BAC codes for GM dealers): 60915\n[General Department Information (Part 1) > —] Please describe the accounting G/L or Journal restrictions: Restrictions can apply to access to G/L or Journal or viewing G/L or Journal.\n[General Department Information (Part 1) > —] Federal Tax ID / EIN:: 52-2136189\n[General Department Information (Part 1) > —] State Tax ID:: 23-8012474627-0\n[General Department Information (Part 1) > —] State Dealer Code:: VF/1001186/1\n[General Department Information (Part 1) > —] DMV #:: VF/1001186/1\n[General Department Information (Part 1) > —] Are there any state/province specific identification numbers that print on every document such as Repair Orders?: MV25464\n[General Department Information (Part 1) > —] Please describe your accounting prefixes:: T = Kendall Toyota, L = Lexus of Kendall, J = West Kendall Toyota, N = Lexus of West Kendall\n[Parts and Labor Tax Rates > —] Is your tax rate for parts and labor the same?: Yes\n[Parts and Labor Tax Rates > —] Tax rate on Parts and Labor?: 6% STATE OF FLORIDA / 1% MIAMI DADE COUNTY CAPPED AT $5000.00\n[Parts and Labor Tax Rates > —] Additional notes on parts / service taxes: LABOR ALONE ON A REPAIR ORDER IS NOT TAXABLE. IF PARTS ARE SOLD WITH THE LABOR, THE ENTIRE REPAIR ORDER IS TAXABLE IN THE STATE OF FLORIDA\n[Parts and Labor Tax Rates > —] Do you charge tax on shop supplies?: Yes\n[Finance Company #9 > —] Finance Company Name: EXETER FINANCE\n[Finance Company #9 > —] Finance Company GL Account Number: L2283\n[Vehicle Sales Payables > —] Lien Payoff GL Account: L3010\n[Vehicle Sales Payables > —] Title Fee GL Account Number: L3030\n[Vehicle Sales Payables > —] Registration GL Account Number: L3030\n[Vehicle Sales Payables > —] Emissions GL Account Number: N/A\n[Vehicle Sales Payables > —] Documentation Fee GL Account Number: L2030\n[Vehicle Sales Payables > —] Bank or Acquisition Fee GL Account Number : L2030\n[Vehicle Sales Payables > —] Lemon Law Fee GL Account Number: L3030\n[Vehicle Sales Payables > —] Lien Fee GL Account Number: NONE\n[Vehicle Sales Payables > —] Environment Protect Fee GL Account Number: NONE\n[Vehicle Sales Payables > —] State Fee GL Account Number: LEAD ACID FEE L3146\n[Vehicle Sales Payables > —] Waste Tire Fee GL Account Number: L7195\n[Vehicle Sales Payables > —] Tire Fee GL Account Number: L3150\n[Service Warranty Sales GL Mapping > —] Warranty GL Account Number: L4420\n[Service Warranty Sales GL Mapping > —] Warranty Sublet GL Account Number: L4460\n[Service Warranty Sales GL Mapping > —] Warranty Quick Lube GL Account Number: L4420\n[Source Specific RO Parts Sales GL Account > —] Do you have Source Specific RO Parts Sales GL Accounts?: Tires, Gas Oil Grease (GOG), Accessories\n[Source Specific RO Parts Sales GL Account > —] Do you have non-taxable GL accounts for source specific RO Sale Accounts?: No\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Customer Pay RO Parts Sales GL Accounts: L4725\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Customer Pay RO Parts Sales GL Accounts - Non-Taxable: L4725\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Internal RO Parts Sales GL Accounts: L4734\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Warranty RO Parts Sales GL Accounts: L4720\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Customer Pay RO Parts Sales GL Accounts: L4770\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Customer Pay RO Parts Sales GL Accounts - Non-Taxable: L4770\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Internal RO Parts Sales GL Accounts: L4770\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Warranty RO Parts Sales GL Accounts: L4770\n[Parts - Check Payment Method > —] Counter Sales/Retail GL Account: L2040\n[Parts - Check Payment Method > —] Wholesale GL Account: L2040\n[Finance Company #1 > —] Finance Company Name: TOYOTA LEASE TRUST\n[Finance Company #1 > —] Finance Company GL Account Number: L2283\n[Finance Company #5 > —] Finance Company Name: CAPITAL ONE AUTO FINANCE\n[Finance Company #5 > —] Finance Company GL Account Number: L2283\n[Parts Repair Order Sales Accounts > —] Parts RO Sales Optional Service Departments: Express Lane/Quick Lube, Commercial/Business\n[Parts Repair Order Sales Accounts > —] Do you have taxable and Non-taxable accounts?: Yes\n[Parts Repair Order Sales Accounts > —] RO Customer Pay Parts Sales GL Account: L4700\n[Parts Repair Order Sales Accounts > —] RO Customer Pay Parts Sales GL Account - Non-Taxable: L4700\n[Parts Repair Order Sales Accounts > —] RO Service Contract Parts Sales GL Account: L4700\n[Parts Repair Order Sales Accounts > —] RO Service Contract Parts Sales GL Account - Non-Taxable: L4700\n[Parts Repair Order Sales Accounts > —] RO Quick Lube Parts Sales GL Account: L4700\n[Parts Repair Order Sales Accounts > —] RO Quick Lube Parts Sales GL Account - Non-Taxable: L4700\n[Parts Repair Order Sales Accounts > —] RO Commercial Parts Sales GL Account: L4700\n[Parts Repair Order Sales Accounts > —] RO Commercial Parts Sales GL Account - Non-Taxable: L4700\n[Parts Repair Order Sales Accounts > —] RO Warranty Parts Sales GL Account: L4720\n[Parts Repair Order Sales Accounts > —] RO Internal Parts Sales GL Account: L4730\n[Used Vehicle Wholesale > —] Used Car Sale Account: L4320 LEXUS USED WHOLESALE / L4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Truck Sale Account: L4320 LEXUS USED WHOLESALE / L4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Car Sale Account - Certified: L4320 LEXUS USED WHOLESALE / L4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Car Sale Account - Non-Certified: L4320 LEXUS USED WHOLESALE / L4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Certified: L4320 LEXUS USED WHOLESALE / L4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Non-Certified: L4320 LEXUS USED WHOLESALE / L4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Personal Purchase > —] Used Car Sale Account: L4310 NON- LEXUS USED RETAIL\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Certified: L4303 LEXUS USED RETAIL CERTIFIED / L4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Non-Certified: L4305\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account: L4310 NON- LEXUS USED RETAIL\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account - Certified: L4303 LEXUS USED RETAIL CERTIFIED / L4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account - Non-Certified: L4305\n[Cash Receipts > —] Journal Name and Journal Number for Cash Receipts: CASH RECEIPTS JOURNAL # 56\n[Cash Receipts > —] How do you post your day collection from service and parts?: Manual journal entry in my existing DMS\n[Cash Receipts > —] How do you post customer down payments?: Individual cash receipts\n[Parts RO Sales Notes > —] Additional Parts RO Sales Details Not Addressed Above : NEED TO DISCUSS PARTS SOURCING AND MAPPING TO THE FINANCIAL STATEMENT.\n[Credit/Debit Card - Vehicle Sales > —] Individual Purchase GL Account : L2040\n[Credit/Debit Card - Vehicle Sales > —] Only F&I - After Sale GL Account: L2040\n[Credit/Debit Card - Vehicle Sales > —] Business/Commercial GL Account : L2040\n[Credit/Debit Card - Vehicle Sales > —] DealerTrade GL Account: L2040\n[Credit/Debit Card - Vehicle Sales > —] Wholesale GL Account: L2040\n[Tekion Blueprint Submission > —] Please upload a sample payroll upload file (if applicable): PR08122026 LOK.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90029414/db411046-0c8c-48f0-ab81-84c4a85610b6/c9f620c3-b3d8-4f0e-8bc2-23844d32aa59/PR08122026%20LOK.xlsx)\n[Tekion Blueprint Submission > —] Are there any state/province, federal or OEM specific reporting which is used daily, weekly, monthly, quarterly or yearly?: 8300 LETTER, 1099 END OF YEAR GENERATED THRU CDK USING IRIS FORMAT FOR 1099 E FILING EXPORTED FROM CDK.\n[Tekion Blueprint Submission > —] Name of Submitter: JULIO CUBERO\n[Payment Method and Fee Notes > —] Additional Payment Methods and Fee Details Not Addressed Above : For parts intercompany sales, set up pay types to charge the stores inventory.\n[Finance Company #7 > —] Finance Company Name: SPACE COAST CREDIT UNION\n[Finance Company #7 > —] Finance Company GL Account Number: L2283\n[Finance Company #8 > —] Finance Company Name: SANTANDER CONSUMER USA\n[Finance Company #8 > —] Finance Company GL Account Number: L2283\n[Finance Reserve GL Mapping Notes > —] Additional Finance Reserves Details Not Addressed Above : WE HAVE MORE BANKS,\n[OEM Reward > —] Counter Sales/Retail GL Account: NONE\n[OEM Reward > —] Wholesale GL Account: NONE\n[OEM Reward > —] Internal GL Account: NONE\n[OEM Reward > —] Repair GL Account: NONE\n[Used Vehicle Notes > —] Additional Used Vehicle Details Not Addressed Above : NEED TO DISCUSS RECONDITIONING AND LEASES, BEAN CPO\n[AR Charge - Vehicle Sales > —] Individual Purchase GL Account : N/A\n[AR Charge - Vehicle Sales > —] Only F&I - After Sale GL Account: N/A\n[AR Charge - Vehicle Sales > —] Business/Commercial GL Account : N/A\n[AR Charge - Vehicle Sales > —] DealerTrade GL Account: L2115\n[AR Charge - Vehicle Sales > —] Wholesale GL Account: L2118\n[Parts and Service Fees > —] Shop Supplies GL Account: L7193\n[Parts and Service Fees > —] Tire Fee GL Account: L3150\n[Parts and Service Fees > —] Environmental Fee GL Account: L3146\n[General Department Information (Part 2) > —] What would you like your first check # in Tekion to be?: CHECKS WILL RUN THRU KENDALL TOYOTA AS WE HAVE CENTRALIZED ACCOUTING.\n[General Department Information (Part 2) > —] What would you like your PO # in Tekion to be?: L19000\n[General Department Information (Part 2) > —] What banks do / will you send the Positive Pay file to?: Bank of America\n[General Department Information (Part 2) > —] Do you conduct Bank Reconciliation in your DMS?: Yes\n[General Department Information (Part 2) > —] What are the banks that you reconcile and what are the G/L accounts?: Bank of America L2020B\n[Finance Company #15 > —] Finance Company Name: US BANK\n[Finance Company #15 > —] Finance Company GL Account Number: L2283\n[Finance Company #6 > —] Finance Company Name: ALLY FINANCIAL\n[Finance Company #6 > —] Finance Company GL Account Number: L2283\n[Accounts Payable Settings > —] On what date do you typically run your AP batch?: 7th\n[Accounts Payable Settings > —] What is your Invoice cutoff date?: 30th\n[Accounts Payable Settings > —] Which AP GL accounts do you use in the AP open-item feature? : T3000 WE HAVE CENTRALIZED ACCOUNTING WERE ALL INVOICES WILL BE POSTED TO\n[Accounts Payable Settings > —] In what order would you like your Invoices in Batch Payments to display?: Vendor Name\n[Accounts Payable Settings > —] What type of schedule is your A/P account?: Open Item\n[Accounts Payable Settings > —] In which month is your invoice cutoff date?: Date in previous month\n[Accounts Payable Settings > —] AP GL Account Number: T3000 WE HAVE CENTRALIZED ACCOUNTING WERE ALL INVOICES WILL BE POSTED TO\n[Accounts Payable Settings > —] AP Discount Account Number: T3000 WE HAVE CENTRALIZED ACCOUNTING WERE ALL INVOICES WILL BE POSTED TO\n[Accounts Payable Settings > —] AP Cash payment Journal Name and Journal Number: CASH DISBURSEMENT JOURNAL # 60\n[Accounts Payable Settings > —] Purchase Journal: Journal Name and Journal Number: GENEREAL PURCHASES JOURNAL 75\n[Accounts Payable Settings > —] AP Bank Name: Bank of America\n[Accounts Payable Settings > —] AP Bank Account GL Account Number: T2023B - Bank of America (Cash Disbursements) / T2222 - Credit Card Payables (We would like to setup a different account for ACHs as they are lumped into this\n[Accounts Payable Settings > —] Additional AP Details Not Addressed Above : Let's review as we have questions. Payments will run thru Kendall Toyota as we have centralized accounting.\n[Finance Company #13 > —] Finance Company Name: WESTLAKE FINANCIAL SERVICES\n[Finance Company #13 > —] Finance Company GL Account Number: L2283\n[CIT - Receivable - Vehicle Sales > —] Individual Purchase GL Account : L2030\n[CIT - Receivable - Vehicle Sales > —] Only F&I - After Sale GL Account: L2030\n[CIT - Receivable - Vehicle Sales > —] Business/Commercial GL Account : L2030\n[CIT - Receivable - Vehicle Sales > —] DealerTrade GL Account: N/A\n[CIT - Receivable - Vehicle Sales > —] Wholesale GL Account: N/A\n[Parts Source Specific GL Accounting > —] Do you have source specific inventory GL accounts?: Tires, Gas Oil Grease (GOG), Accessories, Other\n[Parts Source Specific GL Accounting > —] Do you have non-taxable source specific sale GL accounts?: No\n[Parts Source Specific GL Accounting > —] Tires Source Specific GL Account: L4725\n[Parts Source Specific GL Accounting > —] GOG Source Specific GL Account: L4770\n[Parts Source Specific GL Accounting > —] Accessories Specific GL Account: LET'S DISCUSS\n[Parts Source Specific GL Accounting > —] Other Source Specific Name: LET'S DISCUSS\n[Parts Source Specific GL Accounting > —] Other Source Specific Account Number: LET'S DISCUSS\n[Fixed Ops Other Accounts > —] Sales Tax - Labor GL Account: 6% STATE OF FLORIDA L3140 / 1% MIAMI DADE COUNTY L3141\n[Fixed Ops Other Accounts > —] Sales Tax - Parts GL Account: 6% STATE OF FLORIDA L3140 / 1% MIAMI DADE COUNTY L3141\n[Fixed Ops Other Accounts > —] Freight - Taxable - GL Account: L7185\n[Fixed Ops Other Accounts > —] Freight - Non-Taxable - GL Account: L7185\n[Fixed Ops Other Accounts > —] Other Supplies - GL Account: L7193\n[Fixed Ops Other Accounts > —] Other Supplies - Non-Taxable - GL Account: L7193\n[Fixed Ops Other Accounts > —] Restocking Fee - GL Account: L6799 20% PART AMOUNT\n[Finance Company #3 > —] Finance Company Name: WELLS FARGO AUTO FINANCE\n[Finance Company #3 > —] Finance Company GL Account Number: L2283\n[Finance Company #12 > —] Finance Company Name: LENDBUZZ FUNDING LLC\n[Finance Company #12 > —] Finance Company GL Account Number: L2283\n[Cost Adjustments #1 > —] Name of Cost Adjustment: Front End Delivery Fee\n[Cost Adjustments #1 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #1 > —] Cost Adjustment Account #: Cost of Sales\n[Commissions > —] Does your current DMS calculate sales commissions?: Yes\n[Commissions > —] Please select the staff for which commissions are calculated in the deal:: Salesperson\n[Commissions > —] Are BDC employees ever added in the commissions screen?: No\n[Commissions > —] Do you remove any packs from the commissionable gross? (please list out all): YES SEE EMAIL\n[Commissions > —] Please upload documentation containing sales commission details here:: JULY'26 COMM.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90029414/db411046-0c8c-48f0-ab81-84c4a85610b6/61840454-9ec9-4686-b1cc-db63bc8ea754/JULY'26%20COMM.xlsx)\n[Commissions > —] Additional Notes about Commissions: BDC EMPLOYEEDS ARE NOT CURRENTLY ADDED IN THE COMMISSION SCREEN, BUT WE WOULD BE INTERESTED IN DOING SO.\n[Service - Taxes > —] Are coupon discounts taken before or after tax is applied?: Before tax is applied\n[Service - Taxes > —] Is your tax rate the same for Parts, Labor, Sublets and Deductibles?: Yes\n[Service - Taxes > —] Are there any special tax conditions? Examples below: Others: DEDUCTIBLES TO BE TAXED\n[Service - Taxes > —] Tax rate for Parts and Labor: 6% STATE OF FLORIDA / 1% MIAMI-DADE COUNTY CAPPED AT $5000.00\n[Service - Taxes > —] Taxes - Additional Information / Notes: 1% MIAMI-DADE COUNTY CAPPED AT $5000.00\n[Service Accounting Settings > —] Do you use Quicklane or Express account sections on your financial statement?: No\n[Service Accounting Settings > —] What is your desired Tekion starting RO #?: 280000L\n[Service Accounting Settings > —] How do you track lane/express separately for Accounting?: N/A\n[Service Accounting Settings > —] Do you use a dedicated department in the service application to drive the QL/Express accounting, or specific labor op codes?: Labor Ops/Service Types\n[Service Accounting Settings > —] What is your current RO #?: 245365L and counting\n[Service Accounting Settings > —] Do you use a manufacturer reward/gift/loyalty rewards payment option?: N/A\n[Service Accounting Settings > —] Who is your credit card processing company?: Cenpos, Elavon\n[Parts Accounting Settings > —] Please select all that are taxable: : Parts, Gas Oil Grease (GOG), Freight, Charge tax when a core is sold, Refund tax when a core is returned\n[Parts Accounting Settings > —] What is the parts tax rate? : Others: 6% STATE OF FLORIDA / 1% MIAMI DADE COUNTY CAPPED AT $5000 SALES\n[Parts Accounting Settings > —] What is your current parts invoice #? : 143806\n[Parts Accounting Settings > —] What would you like your starting Purchase Order number to be?: L19000\n[Parts Accounting Settings > —] What do you want to start your parts invoice numbers in Tekion?: 150000\n[Vehicle Inventory Pack Notes > —] Additional Vehicle Inventory Posting Packs Details Not Addressed Above : SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.\n[Cost Adjustments #5 > —] Name of Cost Adjustment: Other / Miscellaneous\n[Cost Adjustments #5 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #5 > —] Cost Adjustment Account #: Cost of Sales\n[Cost Adjustments #2 > —] Name of Cost Adjustment: Broker Fee\n[Cost Adjustments #2 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #2 > —] Cost Adjustment Account #: Cost of Sales\n[Cost Adjustments #4 > —] Name of Cost Adjustment: Third Party Lease Fee\n[Cost Adjustments #4 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #4 > —] Cost Adjustment Account #: Cost of Sales\n[Cost Adjustments #3 > —] Name of Cost Adjustment: Back to Customer\n[Cost Adjustments #3 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #3 > —] Cost Adjustment Account #: Cost of Sales"
+    "humanReadable": "[Finance Company #10 > —] Finance Company Name: BANK OF AMERICA\n[Finance Company #10 > —] Finance Company GL Account Number: L2283\n[Vehicle Sale Commission GL Accounts > —] Vehicle Sales Salary, Wages & Commission GL Account: L3121\n[Vehicle Sale Commission GL Accounts > —] Paid Spiffs GL Account Number: L3121\n[Vehicle Sale Commission GL Accounts > —] NEW - Commission Expense Offset GL Account Number: L7001\n[Vehicle Sale Commission GL Accounts > —] NEW - Spiff Expense Offset GL Account Number: L7001\n[Vehicle Sale Commission GL Accounts > —] USED - Commission Offset GL Account Number: L7002\n[Vehicle Sale Commission GL Accounts > —] USED - Spiff Expense Offset GL Account: L7002\n[Cash - Vehicle Sales > —] Personal Purchase GL Account : L2040\n[Cash - Vehicle Sales > —] Only F&I - After Sale GL Account: L2040\n[Cash - Vehicle Sales > —] Business/Commercial GL Account : L2040\n[Cash - Vehicle Sales > —] DealerTrade GL Account: L2040\n[Cash - Vehicle Sales > —] Wholesale GL Account: L2040\n[Parts - Credit/Debit Card Payment Method > —] Counter Sales/Retail GL Account: L2040\n[Parts - Credit/Debit Card Payment Method > —] Wholesale GL Account: L2040\n[Used Vehicle Inventory > —] Journal Name and Journal Number: USED VEHICLE SALES JOURNAL # 20 / USED CAR WHOLESALE JOURNAL # 25\n[Used Vehicle Inventory > —] Inventory GL Account (Car): L2400 - LEXUS USED CAR\n[Used Vehicle Inventory > —] Inventory GL Account (Truck): L2400 - LEXUS USED CAR\n[Used Vehicle Inventory > —] Inventory GL Account (Other): L2409 - NON-LEXUS USED CAR\n[Used Vehicle Inventory > —] Specify \"Other\" Inventory Name: L2409 - NON-LEXUS USED CAR\n[Service Customer Pay Sales GL Mapping > —] Customer Pay GL Account Number: L4400\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Service Contracts: L4400\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Sublet GL Acct: L4460\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Quick Lube GL Acct: L4400\n[Internal Parts Payment Method > —] We Owe GL Account: NONE\n[Internal Parts Payment Method > —] Other Supplies GL Account: NONE\n[Internal Parts Payment Method > —] New Car Inventory GL Account: L2320\n[Internal Parts Payment Method > —] Used Car Inventory GL Account: L2400 - USED LEXUS / L2409 USED NON-LEXUS\n[Internal Parts Payment Method > —] New Truck Inventory GL Account: L2320\n[Internal Parts Payment Method > —] Used Truck Inventory GL Account: L2400 - USED LEXUS / L2409 USED NON-LEXUS\n[Internal Parts Payment Method > —] Parts Policy GL Account: L7115\n[Finance Reserve GL Mapping > —] How many finance companies with reserves?: 15\n[Parts Counter Sale Notes > —] Additional Parts Counter Sales Details Not Addressed Above : NEED TO DISCUSS PARTS SOURCING AND MAPPING TO THE FINANCIAL STATEMENT.\n[Finance Company #11 > —] Finance Company Name: DADE COUNTY FCU\n[Finance Company #11 > —] Finance Company GL Account Number: L2283\n[Parts Counter Sales > —] Do you have taxable and Non-Taxable Accounts?: Yes\n[Parts Counter Sales > —] Retail Counter Sales GL Acct: L4740\n[Parts Counter Sales > —] Retail Counter Sales GL Acct - Non-Taxable: L4740\n[Parts Counter Sales > —] Internal Counter Sales GL Acct: L4730\n[Parts Counter Sales > —] Internal Counter Sales GL Acct - Non-Taxable: L4730\n[Parts Counter Sales > —] Wholesale Counter GL Acct: L4750\n[Parts Counter Sales > —] Wholesale Counter Sales GL Acct - Non-Taxable: L4750\n[Check - Vehicle Sales > —] Individual Purchase GL Account : L2040\n[Check - Vehicle Sales > —] Only F&I - After Sale GL Account: L2040\n[Check - Vehicle Sales > —] Business/Commercial GL Account : L2040\n[Check - Vehicle Sales > —] DealerTrade GL Account: L2040\n[Check - Vehicle Sales > —] Wholesale GL Account: L2040\n[Parts - Cash Payment Method > —] Counter Sales/Retail GL Account: L2040\n[Parts - Cash Payment Method > —] Wholesale GL Account: L2040\n[Finance Company #4 > —] Finance Company Name: JP MORGAN CHASE BANK NA\n[Finance Company #4 > —] Finance Company GL Account Number: L2283\n[New Vehicle Inventory > —] Journal Name and Journal Number: RETAIL NEW VEHICLE SALES JOURNAL # 10 / LEASES NEW LEASE SALES JOURNAL # 11\n[New Vehicle Inventory > —] Inventory GL Account (Car): L2320\n[New Vehicle Inventory > —] Inventory GL Account (Truck): L2320\n[New Vehicle Inventory > —] Inventory GL Account (Rental): DO NOT HAVE RENTAL DEPARTMENT\n[New Vehicle Inventory > —] Inventory GL Account (Demo): L2300\n[New Vehicle Inventory > —] Inventory GL Account (Loaner): L2610\n[New Vehicle Inventory > —] Inventory GL Account (Company): L2750\n[Fixed Ops Service GL Mapping > —] Departments : Service Department, Express Lane/ Quick Lube, PDI, Reconditioning, Detail, Accessories\n[Service - Payment Method - Internal > —] Which internal payment methods do you use?: New Car Policy, Used Car Policy, Service Dept Policy, Parts Dept Policy, New Car Inventory, New Truck Inventory, Used Car Inventory, Used Truck Inventory, New Car - Lot Damage, Used Car - Lot Damage, Service Dept  - Lot Damage, Parts Dept  - Lot Damage\n[Service - Payment Method - Internal > —] New Car Policy  GL Account Number: L7111\n[Service - Payment Method - Internal > —] Used Car Policy GL Account Number: L7112\n[Service - Payment Method - Internal > —] Service Dept Policy GL Account Number: L7113\n[Service - Payment Method - Internal > —] Parts Dept Policy GL Account Number: L7115\n[Service - Payment Method - Internal > —] New Car Inventory GL Account Number: L2320\n[Service - Payment Method - Internal > —] New Truck Inventory GL Account Number: L2320\n[Service - Payment Method - Internal > —] Used Car Inventory GL Account Number: L2400 USED LEXUS / L2409 USED NON-LEXUS\n[Service - Payment Method - Internal > —] Used Truck Inventory GL Account Number: L2400 USED LEXUS / L2409 USED NON-LEXUS\n[Service - Payment Method - Internal > —] New Car - Lot Damage GL Account Number: L2320\n[Service - Payment Method - Internal > —] Used Car - Lot Damage GL Account Number: L2400 USED LEXUS / L2409 USED NON-LEXUS\n[Service - Payment Method - Internal > —] Service Dept - Lot Damage GL Account Number: L7113\n[Service - Payment Method - Internal > —] Parts Dept - Lot Damage GL Account Number: L7115\n[Parts - AR Charge Payment Method > —] Counter Sales/Retail GL Account: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Parts - AR Charge Payment Method > —] Wholesale GL Account: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Finance Company #2 > —] Finance Company Name: LEXUS FINANCIAL SERVICES\n[Finance Company #2 > —] Finance Company GL Account Number: L2283\n[Service Internal Sales GL Mapping > —] Internal Pay GL Account Number: L4430\n[Service Internal Sales GL Mapping > —] Internal Pay Sublet GL Account Number: L4460\n[Service Internal Sales GL Mapping > —] Internal Quick Lube GL Account Number: L4430\n[Accounts Receivable Settings > —] What date do you typically run your A/R statements?: 3rd\n[Accounts Receivable Settings > —] Do you use A/R open item?: Yes\n[Accounts Receivable Settings > —] Which AR GL accounts do you use in the AR open-item feature?: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Accounts Receivable Settings > —] AR Account Number for Service ROs: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Accounts Receivable Settings > —] AR Account Number for Parts Tickets: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Accounts Receivable Settings > —] AR Account Number for Vehicle Sales: NONE\n[Accounts Receivable Settings > —] Cash Clearing GL Account Number for AR: T2041 / T2042 (Let's discuss)\n[Accounts Receivable Settings > —] Cash In Bank GL Account Number for AR: T2020B\n[Accounts Receivable Settings > —] Employee A/R GL Account Number: L2105 - DO NOT RUN STATEMENTS\n[Accounts Receivable Settings > —] Do all active employees have an employee A/R account?: Yes\n[Accounts Receivable Settings > —] What e-mail address do you want A/R statements to come from?: ar@beanauto.com\n[Accounts Receivable Settings > —] AR Discount GL Account: NONE\n[Accounts Receivable Settings > —] AR Journal Name and Journal Number: CASH RECEIPTS OPEN ITEMS JOURNAL 57\n[Accounts Receivable Settings > —] Do you charge finance charges on AR invoices?: No\n[Accounts Receivable Settings > —] Do you offer customer discounts if they pay early?: No\n[Accounts Receivable Settings > —] AR invoices are delinquent after how many days?: 30 days\n[Accounts Receivable Settings > —] In what order would you like the detail to be on A/R statements?: Due Date - Oldest First\n[Used Vehicle GL Sale Account Mapping > —] Cash Receipt Cash Clearing GL Account Number: L2010\n[Used Vehicle GL Sale Account Mapping > —] Select your Used Vehicle Sale Types: Individual / Personal, Business / Commercial, Wholesale\n[Finance Company #14 > —] Finance Company Name: TD AUTO FINANCE\n[Finance Company #14 > —] Finance Company GL Account Number: L2283\n[Used Vehicle Business / Commercial > —] Used Car Sale Account: L4310 NON- LEXUS USED RETAIL\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Certified: L4303 LEXUS USED RETAIL CERTIFIED / L4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Non-Certified: L4305\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account: L4310 NON- LEXUS USED RETAIL\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account - Certified: L4303 LEXUS USED RETAIL CERTIFIED / L4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account - Non-Certified: L4305\n[Service - Payment Methods - Customer Pay > —] Cash GL Account: L2040\n[Service - Payment Methods - Customer Pay > —] Check GL Account: L2040\n[Service - Payment Methods - Customer Pay > —] Credit/Debit Card GL Account: L2040\n[Service - Payment Methods - Customer Pay > —] AR Charge GL Account: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Service - Payment Methods - Customer Pay > —] Service Contract GL Account: L2140\n[Service - Payment Methods - Customer Pay > —] GM - OEM Reward GL Account: NONE\n[Service - Payment Methods - Warranty > —] Warranty Claim GL Account: L2200\n[Deal Posting Pack Notes > —] Additional Deal Posting Packs Details Not Addressed Above : SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.\n[Factory Receivables > —] Holdback GL Account Number: NA\n[Factory Receivables > —] Rebate GL Account Number: L2240\n[Factory Receivables > —] Incentives GL Account Number: L2241 L2243 L2251 L2252 L2254\n[General Department Information (Part 1) > —] Please select your country: USA\n[General Department Information (Part 1) > —] What are you retained earnings accounts and how are they used?: L3920 - Retained Earnings.  Net Income is closed out to Retained Earnings once the year has been closed out in CDK.\nWe do have other accounts such as well which make up the Net Investment (Capital Stock, Additional Paid In Capital, and Dividends).\n[General Department Information (Part 1) > —] What payroll provider do you currently use?: PAYCOM\n[General Department Information (Part 1) > —] What payroll provider will you use at the time of the Tekion ARC go live date?: PAYCOM\n[General Department Information (Part 1) > —] Please list all manufacturer dealer codes (and BAC codes for GM dealers): 60915\n[General Department Information (Part 1) > —] Please describe the accounting G/L or Journal restrictions: Restrictions can apply to access to G/L or Journal or viewing G/L or Journal.\n[General Department Information (Part 1) > —] Federal Tax ID / EIN:: 52-2136189\n[General Department Information (Part 1) > —] State Tax ID:: 23-8012474627-0\n[General Department Information (Part 1) > —] State Dealer Code:: VF/1001186/1\n[General Department Information (Part 1) > —] DMV #:: VF/1001186/1\n[General Department Information (Part 1) > —] Are there any state/province specific identification numbers that print on every document such as Repair Orders?: MV25464\n[General Department Information (Part 1) > —] Please describe your accounting prefixes:: T = Kendall Toyota, L = Lexus of Kendall, J = West Kendall Toyota, N = Lexus of West Kendall\n[Parts and Labor Tax Rates > —] Is your tax rate for parts and labor the same?: Yes\n[Parts and Labor Tax Rates > —] Tax rate on Parts and Labor?: 6% STATE OF FLORIDA / 1% MIAMI DADE COUNTY CAPPED AT $5000.00\n[Parts and Labor Tax Rates > —] Additional notes on parts / service taxes: LABOR ALONE ON A REPAIR ORDER IS NOT TAXABLE. IF PARTS ARE SOLD WITH THE LABOR, THE ENTIRE REPAIR ORDER IS TAXABLE IN THE STATE OF FLORIDA\n[Parts and Labor Tax Rates > —] Do you charge tax on shop supplies?: Yes\n[Finance Company #9 > —] Finance Company Name: EXETER FINANCE\n[Finance Company #9 > —] Finance Company GL Account Number: L2283\n[Vehicle Sales Payables > —] Lien Payoff GL Account: L3010\n[Vehicle Sales Payables > —] Title Fee GL Account Number: L3030\n[Vehicle Sales Payables > —] Registration GL Account Number: L3030\n[Vehicle Sales Payables > —] Emissions GL Account Number: N/A\n[Vehicle Sales Payables > —] Documentation Fee GL Account Number: L2030\n[Vehicle Sales Payables > —] Bank or Acquisition Fee GL Account Number : L2030\n[Vehicle Sales Payables > —] Lemon Law Fee GL Account Number: L3030\n[Vehicle Sales Payables > —] Lien Fee GL Account Number: NONE\n[Vehicle Sales Payables > —] Environment Protect Fee GL Account Number: NONE\n[Vehicle Sales Payables > —] State Fee GL Account Number: LEAD ACID FEE L3146\n[Vehicle Sales Payables > —] Waste Tire Fee GL Account Number: L7195\n[Vehicle Sales Payables > —] Tire Fee GL Account Number: L3150\n[Service Warranty Sales GL Mapping > —] Warranty GL Account Number: L4420\n[Service Warranty Sales GL Mapping > —] Warranty Sublet GL Account Number: L4460\n[Service Warranty Sales GL Mapping > —] Warranty Quick Lube GL Account Number: L4420\n[Source Specific RO Parts Sales GL Account > —] Do you have Source Specific RO Parts Sales GL Accounts?: Tires, Gas Oil Grease (GOG), Accessories\n[Source Specific RO Parts Sales GL Account > —] Do you have non-taxable GL accounts for source specific RO Sale Accounts?: No\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Customer Pay RO Parts Sales GL Accounts: L4725\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Customer Pay RO Parts Sales GL Accounts - Non-Taxable: L4725\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Internal RO Parts Sales GL Accounts: L4734\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Warranty RO Parts Sales GL Accounts: L4720\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Customer Pay RO Parts Sales GL Accounts: L4770\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Customer Pay RO Parts Sales GL Accounts - Non-Taxable: L4770\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Internal RO Parts Sales GL Accounts: L4770\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Warranty RO Parts Sales GL Accounts: L4770\n[Parts - Check Payment Method > —] Counter Sales/Retail GL Account: L2040\n[Parts - Check Payment Method > —] Wholesale GL Account: L2040\n[Finance Company #1 > —] Finance Company Name: TOYOTA LEASE TRUST\n[Finance Company #1 > —] Finance Company GL Account Number: L2283\n[Finance Company #5 > —] Finance Company Name: CAPITAL ONE AUTO FINANCE\n[Finance Company #5 > —] Finance Company GL Account Number: L2283\n[Parts Repair Order Sales Accounts > —] Parts RO Sales Optional Service Departments: Express Lane/Quick Lube, Commercial/Business\n[Parts Repair Order Sales Accounts > —] Do you have taxable and Non-taxable accounts?: Yes\n[Parts Repair Order Sales Accounts > —] RO Customer Pay Parts Sales GL Account: L4700\n[Parts Repair Order Sales Accounts > —] RO Customer Pay Parts Sales GL Account - Non-Taxable: L4700\n[Parts Repair Order Sales Accounts > —] RO Service Contract Parts Sales GL Account: L4700\n[Parts Repair Order Sales Accounts > —] RO Service Contract Parts Sales GL Account - Non-Taxable: L4700\n[Parts Repair Order Sales Accounts > —] RO Quick Lube Parts Sales GL Account: L4700\n[Parts Repair Order Sales Accounts > —] RO Quick Lube Parts Sales GL Account - Non-Taxable: L4700\n[Parts Repair Order Sales Accounts > —] RO Commercial Parts Sales GL Account: L4700\n[Parts Repair Order Sales Accounts > —] RO Commercial Parts Sales GL Account - Non-Taxable: L4700\n[Parts Repair Order Sales Accounts > —] RO Warranty Parts Sales GL Account: L4720\n[Parts Repair Order Sales Accounts > —] RO Internal Parts Sales GL Account: L4730\n[Used Vehicle Wholesale > —] Used Car Sale Account: L4320 LEXUS USED WHOLESALE / L4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Truck Sale Account: L4320 LEXUS USED WHOLESALE / L4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Car Sale Account - Certified: L4320 LEXUS USED WHOLESALE / L4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Car Sale Account - Non-Certified: L4320 LEXUS USED WHOLESALE / L4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Certified: L4320 LEXUS USED WHOLESALE / L4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Non-Certified: L4320 LEXUS USED WHOLESALE / L4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Personal Purchase > —] Used Car Sale Account: L4310 NON- LEXUS USED RETAIL\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Certified: L4303 LEXUS USED RETAIL CERTIFIED / L4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Non-Certified: L4305\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account: L4310 NON- LEXUS USED RETAIL\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account - Certified: L4303 LEXUS USED RETAIL CERTIFIED / L4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account - Non-Certified: L4305\n[Cash Receipts > —] Journal Name and Journal Number for Cash Receipts: CASH RECEIPTS JOURNAL # 56\n[Cash Receipts > —] How do you post your day collection from service and parts?: Manual journal entry in my existing DMS\n[Cash Receipts > —] How do you post customer down payments?: Individual cash receipts\n[Parts RO Sales Notes > —] Additional Parts RO Sales Details Not Addressed Above : NEED TO DISCUSS PARTS SOURCING AND MAPPING TO THE FINANCIAL STATEMENT.\n[Credit/Debit Card - Vehicle Sales > —] Individual Purchase GL Account : L2040\n[Credit/Debit Card - Vehicle Sales > —] Only F&I - After Sale GL Account: L2040\n[Credit/Debit Card - Vehicle Sales > —] Business/Commercial GL Account : L2040\n[Credit/Debit Card - Vehicle Sales > —] DealerTrade GL Account: L2040\n[Credit/Debit Card - Vehicle Sales > —] Wholesale GL Account: L2040\n[Tekion Blueprint Submission > —] Please upload a sample payroll upload file (if applicable): PR08122026 LOK.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90029414/db411046-0c8c-48f0-ab81-84c4a85610b6/c9f620c3-b3d8-4f0e-8bc2-23844d32aa59/PR08122026%20LOK.xlsx)\n[Tekion Blueprint Submission > —] Are there any state/province, federal or OEM specific reporting which is used daily, weekly, monthly, quarterly or yearly?: 8300 LETTER, 1099 END OF YEAR GENERATED THRU CDK USING IRIS FORMAT FOR 1099 E FILING EXPORTED FROM CDK.\n[Tekion Blueprint Submission > —] Name of Submitter: JULIO CUBERO\n[Payment Method and Fee Notes > —] Additional Payment Methods and Fee Details Not Addressed Above : For parts intercompany sales, set up pay types to charge the stores inventory.\n[Finance Company #7 > —] Finance Company Name: SPACE COAST CREDIT UNION\n[Finance Company #7 > —] Finance Company GL Account Number: L2283\n[Finance Company #8 > —] Finance Company Name: SANTANDER CONSUMER USA\n[Finance Company #8 > —] Finance Company GL Account Number: L2283\n[Finance Reserve GL Mapping Notes > —] Additional Finance Reserves Details Not Addressed Above : WE HAVE MORE BANKS,\n[OEM Reward > —] Counter Sales/Retail GL Account: NONE\n[OEM Reward > —] Wholesale GL Account: NONE\n[OEM Reward > —] Internal GL Account: NONE\n[OEM Reward > —] Repair GL Account: NONE\n[Used Vehicle Notes > —] Additional Used Vehicle Details Not Addressed Above : NEED TO DISCUSS RECONDITIONING AND LEASES, BEAN CPO\n[AR Charge - Vehicle Sales > —] Individual Purchase GL Account : N/A\n[AR Charge - Vehicle Sales > —] Only F&I - After Sale GL Account: N/A\n[AR Charge - Vehicle Sales > —] Business/Commercial GL Account : N/A\n[AR Charge - Vehicle Sales > —] DealerTrade GL Account: L2115\n[AR Charge - Vehicle Sales > —] Wholesale GL Account: L2118\n[Parts and Service Fees > —] Shop Supplies GL Account: L7193\n[Parts and Service Fees > —] Tire Fee GL Account: L3150\n[Parts and Service Fees > —] Environmental Fee GL Account: L3146\n[General Department Information (Part 2) > —] What would you like your first check # in Tekion to be?: CHECKS WILL RUN THRU KENDALL TOYOTA AS WE HAVE CENTRALIZED ACCOUTING.\n[General Department Information (Part 2) > —] What would you like your PO # in Tekion to be?: L19000\n[General Department Information (Part 2) > —] What banks do / will you send the Positive Pay file to?: Bank of America\n[General Department Information (Part 2) > —] Do you conduct Bank Reconciliation in your DMS?: Yes\n[General Department Information (Part 2) > —] What are the banks that you reconcile and what are the G/L accounts?: Bank of America L2020B\n[Finance Company #15 > —] Finance Company Name: US BANK\n[Finance Company #15 > —] Finance Company GL Account Number: L2283\n[Finance Company #6 > —] Finance Company Name: ALLY FINANCIAL\n[Finance Company #6 > —] Finance Company GL Account Number: L2283\n[Accounts Payable Settings > —] On what date do you typically run your AP batch?: 7th\n[Accounts Payable Settings > —] What is your Invoice cutoff date?: 30th\n[Accounts Payable Settings > —] Which AP GL accounts do you use in the AP open-item feature? : T3000 WE HAVE CENTRALIZED ACCOUNTING WERE ALL INVOICES WILL BE POSTED TO\n[Accounts Payable Settings > —] In what order would you like your Invoices in Batch Payments to display?: Vendor Name\n[Accounts Payable Settings > —] What type of schedule is your A/P account?: Open Item\n[Accounts Payable Settings > —] In which month is your invoice cutoff date?: Date in previous month\n[Accounts Payable Settings > —] AP GL Account Number: T3000 WE HAVE CENTRALIZED ACCOUNTING WERE ALL INVOICES WILL BE POSTED TO\n[Accounts Payable Settings > —] AP Discount Account Number: T3000 WE HAVE CENTRALIZED ACCOUNTING WERE ALL INVOICES WILL BE POSTED TO\n[Accounts Payable Settings > —] AP Cash payment Journal Name and Journal Number: CASH DISBURSEMENT JOURNAL # 60\n[Accounts Payable Settings > —] Purchase Journal: Journal Name and Journal Number: GENEREAL PURCHASES JOURNAL 75\n[Accounts Payable Settings > —] AP Bank Name: Bank of America\n[Accounts Payable Settings > —] AP Bank Account GL Account Number: T2023B - Bank of America (Cash Disbursements) / T2222 - Credit Card Payables (We would like to setup a different account for ACHs as they are lumped into this\n[Accounts Payable Settings > —] Additional AP Details Not Addressed Above : Let's review as we have questions. Payments will run thru Kendall Toyota as we have centralized accounting.\n[Finance Company #13 > —] Finance Company Name: WESTLAKE FINANCIAL SERVICES\n[Finance Company #13 > —] Finance Company GL Account Number: L2283\n[CIT - Receivable - Vehicle Sales > —] Individual Purchase GL Account : L2030\n[CIT - Receivable - Vehicle Sales > —] Only F&I - After Sale GL Account: L2030\n[CIT - Receivable - Vehicle Sales > —] Business/Commercial GL Account : L2030\n[CIT - Receivable - Vehicle Sales > —] DealerTrade GL Account: N/A\n[CIT - Receivable - Vehicle Sales > —] Wholesale GL Account: N/A\n[Parts Source Specific GL Accounting > —] Do you have source specific inventory GL accounts?: Tires, Gas Oil Grease (GOG), Accessories, Other\n[Parts Source Specific GL Accounting > —] Do you have non-taxable source specific sale GL accounts?: No\n[Parts Source Specific GL Accounting > —] Tires Source Specific GL Account: L4725\n[Parts Source Specific GL Accounting > —] GOG Source Specific GL Account: L4770\n[Parts Source Specific GL Accounting > —] Accessories Specific GL Account: LET'S DISCUSS\n[Parts Source Specific GL Accounting > —] Other Source Specific Name: LET'S DISCUSS\n[Parts Source Specific GL Accounting > —] Other Source Specific Account Number: LET'S DISCUSS\n[Fixed Ops Other Accounts > —] Sales Tax - Labor GL Account: 6% STATE OF FLORIDA L3140 / 1% MIAMI DADE COUNTY L3141\n[Fixed Ops Other Accounts > —] Sales Tax - Parts GL Account: 6% STATE OF FLORIDA L3140 / 1% MIAMI DADE COUNTY L3141\n[Fixed Ops Other Accounts > —] Freight - Taxable - GL Account: L7185\n[Fixed Ops Other Accounts > —] Freight - Non-Taxable - GL Account: L7185\n[Fixed Ops Other Accounts > —] Other Supplies - GL Account: L7193\n[Fixed Ops Other Accounts > —] Other Supplies - Non-Taxable - GL Account: L7193\n[Fixed Ops Other Accounts > —] Restocking Fee - GL Account: L6799 20% PART AMOUNT\n[Finance Company #3 > —] Finance Company Name: WELLS FARGO AUTO FINANCE\n[Finance Company #3 > —] Finance Company GL Account Number: L2283\n[Finance Company #12 > —] Finance Company Name: LENDBUZZ FUNDING LLC\n[Finance Company #12 > —] Finance Company GL Account Number: L2283\n[Cost Adjustments #1 > —] Name of Cost Adjustment: Front End Delivery Fee\n[Cost Adjustments #1 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #1 > —] Cost Adjustment Account #: Cost of Sales\n[Commissions > —] Does your current DMS calculate sales commissions?: Yes\n[Commissions > —] Please select the staff for which commissions are calculated in the deal:: Salesperson\n[Commissions > —] Are BDC employees ever added in the commissions screen?: No\n[Commissions > —] Do you remove any packs from the commissionable gross? (please list out all): YES SEE EMAIL\n[Commissions > —] Please upload documentation containing sales commission details here:: JULY'26 COMM.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90029414/db411046-0c8c-48f0-ab81-84c4a85610b6/61840454-9ec9-4686-b1cc-db63bc8ea754/JULY'26%20COMM.xlsx)\n[Commissions > —] Additional Notes about Commissions: BDC EMPLOYEEDS ARE NOT CURRENTLY ADDED IN THE COMMISSION SCREEN, BUT WE WOULD BE INTERESTED IN DOING SO.\n[Service - Taxes > —] Are coupon discounts taken before or after tax is applied?: Before tax is applied\n[Service - Taxes > —] Is your tax rate the same for Parts, Labor, Sublets and Deductibles?: Yes\n[Service - Taxes > —] Are there any special tax conditions? Examples below: Others: DEDUCTIBLES TO BE TAXED\n[Service - Taxes > —] Tax rate for Parts and Labor: 6% STATE OF FLORIDA / 1% MIAMI-DADE COUNTY CAPPED AT $5000.00\n[Service - Taxes > —] Taxes - Additional Information / Notes: 1% MIAMI-DADE COUNTY CAPPED AT $5000.00\n[Service Accounting Settings > —] Do you use Quicklane or Express account sections on your financial statement?: No\n[Service Accounting Settings > —] What is your desired Tekion starting RO #?: 280000L\n[Service Accounting Settings > —] How do you track lane/express separately for Accounting?: N/A\n[Service Accounting Settings > —] Do you use a dedicated department in the service application to drive the QL/Express accounting, or specific labor op codes?: Labor Ops/Service Types\n[Service Accounting Settings > —] What is your current RO #?: 245365L and counting\n[Service Accounting Settings > —] Do you use a manufacturer reward/gift/loyalty rewards payment option?: N/A\n[Service Accounting Settings > —] Who is your credit card processing company?: Cenpos, Elavon\n[Parts Accounting Settings > —] Please select all that are taxable: : Parts, Gas Oil Grease (GOG), Freight, Charge tax when a core is sold, Refund tax when a core is returned\n[Parts Accounting Settings > —] What is the parts tax rate? : Others: 6% STATE OF FLORIDA / 1% MIAMI DADE COUNTY CAPPED AT $5000 SALES\n[Parts Accounting Settings > —] What is your current parts invoice #? : 143806\n[Parts Accounting Settings > —] What would you like your starting Purchase Order number to be?: L19000\n[Parts Accounting Settings > —] What do you want to start your parts invoice numbers in Tekion?: 150000\n[Vehicle Inventory Pack Notes > —] Additional Vehicle Inventory Posting Packs Details Not Addressed Above : SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.\n[Cost Adjustments #5 > —] Name of Cost Adjustment: Other / Miscellaneous\n[Cost Adjustments #5 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #5 > —] Cost Adjustment Account #: Cost of Sales\n[Cost Adjustments #2 > —] Name of Cost Adjustment: Broker Fee\n[Cost Adjustments #2 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #2 > —] Cost Adjustment Account #: Cost of Sales\n[Cost Adjustments #4 > —] Name of Cost Adjustment: Third Party Lease Fee\n[Cost Adjustments #4 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #4 > —] Cost Adjustment Account #: Cost of Sales\n[Cost Adjustments #3 > —] Name of Cost Adjustment: Back to Customer\n[Cost Adjustments #3 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #3 > —] Cost Adjustment Account #: Cost of Sales"
   },
-  "savedAt": "2026-10-01T17:25:42.119Z"
+  "savedAt": "2026-10-29T12:26:32.871Z"
 }

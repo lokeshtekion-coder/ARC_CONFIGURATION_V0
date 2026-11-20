@@ -8,7 +8,7 @@ import {
   type SlackRecipientCandidate,
   type SlackDirectoryUser,
 } from "../../services/storeSlackHelper";
-import { fetchSetupDataForStore } from "../../services/storeSetupDataService";
+import { fetchSetupWithMapFallback } from "../../services/storeSetupWithFallback";
 import {
   executePreprodMapPipeline,
   type PreprodValidationResult,
@@ -42,7 +42,11 @@ export const DealerMetaModal: React.FC<{
   row: ExtendedStoreRecord | null;
   onClose: () => void;
   onToast: (message: string) => void;
-  onSetupFetched: (tekionId: string, setupData: StoreSetupData) => void;
+  onSetupFetched: (
+    tekionId: string,
+    setupData: StoreSetupData | undefined,
+    extra: { errorNote: string; preprodValidation?: PreprodValidationResult }
+  ) => void;
   onTasksSnapshot?: (tekionId: string, tasks: any, complete: boolean) => void;
   onTaskOperationalStatusChange: (
     tekionId: string,
@@ -197,32 +201,31 @@ export const DealerMetaModal: React.FC<{
     if (!row) return;
     setLoadingSetup(true);
     try {
-      // 1. Attempt primary setup fetch
-      const setupData = await fetchSetupDataForStore(row, { force: true });
-      onSetupFetched(row.tekion_id, setupData);
-      onToast("✅ Setup data fetched");
-    } catch (error: unknown) {
-      const errMsg = error instanceof Error ? error.message : "Failed to fetch setup data";
-      onToast(`⚠ Setup failed: ${errMsg}. Running 2nd automation (MAP)...`);
+      // Same path as the batch button and the bot: fetch, then MAP fallback when setup is missing or incomplete.
+      const outcome = await fetchSetupWithMapFallback(row);
+      if (outcome.preprodValidation) setLocalMapResult(outcome.preprodValidation);
+      onSetupFetched(row.tekion_id, outcome.setupData, {
+        errorNote: outcome.errorNote,
+        preprodValidation: outcome.preprodValidation,
+      });
 
-      // 2. Trigger fallback automation
-      const candidate = row.tenant_code || (row as any).tenant_name || "";
-      if (candidate) {
-        try {
-          const mapResult = await executePreprodMapPipeline(candidate, row.dealer_id);
-          setLocalMapResult(mapResult);
-          row.preprod_validation = mapResult;
-          row.setup_data_error = errMsg;
-          void saveStores([row]);
-          onToast(
-            mapResult.isValidTenant
-              ? `✅ MAP 2nd Automation: ${mapResult.tenantName} (${mapResult.employeeCount} employees, ${mapResult.accountNumberCount} accts)`
-              : `⚠️ MAP Validation failed: ${mapResult.validationError}`
-          );
-        } catch (mapErr) {
-          onToast(`❌ 2nd Automation error: ${mapErr instanceof Error ? mapErr.message : "MAP failed"}`);
-        }
+      const parts: string[] = [];
+      if (outcome.setupError) parts.push(`⚠ Setup failed: ${outcome.setupError}`);
+      if (outcome.complete) parts.push(`✅ ACCTS ${outcome.accts} (done)`);
+      else parts.push(`⚠ ACCTS ${outcome.accts} (needs >50)`);
+      if (outcome.preprodValidation) {
+        const m = outcome.preprodValidation;
+        parts.push(
+          m.isValidTenant
+            ? `MAP verified: ${m.tenantName} (${m.employeeCount} employees, ${m.accountNumberCount} accts)`
+            : `MAP validation failed: ${m.validationError}`
+        );
+      } else if (outcome.mapError) {
+        parts.push(`MAP not run: ${outcome.mapError}`);
       }
+      onToast(parts.join(" · "));
+    } catch (error: unknown) {
+      onToast(`❌ ${error instanceof Error ? error.message : "Setup failed"}`);
     } finally {
       setLoadingSetup(false);
     }
@@ -239,8 +242,11 @@ export const DealerMetaModal: React.FC<{
     try {
       const result = await executePreprodMapPipeline(candidate, row.dealer_id);
       setLocalMapResult(result);
-      row.preprod_validation = result;
-      void saveStores([row]);
+      const updatedStore = {
+        ...row,
+        preprod_validation: result,
+      };
+      void saveStores([updatedStore]);
       if (result.isValidTenant) {
         onToast(`✅ Verified MAP: ${result.tenantName} (${result.employeeCount ?? "—"} employees, ${result.accountNumberCount ?? "—"} accounts)`);
       } else {
@@ -264,7 +270,6 @@ export const DealerMetaModal: React.FC<{
   const preprodSchedulingUrl = `https://preprod-conscheduling.tekioncloud.com/consumer-scheduling/sign-in/phone?accessToken=${encodeURIComponent(token)}`;
   const prodSchedulingUrl = `https://conscheduling.tekioncloud.com/consumer-scheduling/sign-in/phone?accessToken=${encodeURIComponent(token)}`;
 
-  // Copy both URLs formatted across two distinct lines & open both in new browser tabs
   const handleOpenAndCopyConsumerLinks = () => {
     const textToCopy = `Preprod: ${preprodSchedulingUrl}\nProd: ${prodSchedulingUrl}`;
     void navigator.clipboard.writeText(textToCopy);
@@ -277,8 +282,23 @@ export const DealerMetaModal: React.FC<{
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="update-modal-dialog" onClick={(e) => e.stopPropagation()}>
-        <div className="update-modal-header">
+      <div
+        className="update-modal-dialog"
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "92vw",
+          maxWidth: 1300,
+          height: "85vh",
+          maxHeight: 900,
+          background: "#0a0f1d",
+          borderRadius: 10,
+          border: "1px solid #1e293b",
+          display: "flex",
+          flexDirection: "column",
+          overflow: "hidden",
+        }}
+      >
+        <div className="update-modal-header" style={{ padding: "14px 20px", borderBottom: "1px solid #1e293b", background: "#0d1424" }}>
           <div className="update-header-meta">
             <span className="update-header-title" style={{ fontSize: 18, fontWeight: 800 }}>
               {row.dba_name || "Dealership"}
@@ -291,7 +311,7 @@ export const DealerMetaModal: React.FC<{
           <button className="btn-secondary btn-sm" onClick={onClose}>✕</button>
         </div>
 
-        <div className="update-store-hud">
+        <div className="update-store-hud" style={{ padding: "12px 20px", background: "#080c17", borderBottom: "1px solid #1e293b" }}>
           <div className="hud-telemetry-group">
             <div className="hud-telemetry-item">
               <span className="hud-label">Project:</span>
@@ -315,7 +335,6 @@ export const DealerMetaModal: React.FC<{
               )}
             </div>
 
-            {/* Tenant HUD Item: Defaults to Slate Gray, Shifts to Green with Checkmark on MAP Verification */}
             <div className="hud-telemetry-item">
               <span className="hud-label">Tenant:</span>
               <span
@@ -332,7 +351,6 @@ export const DealerMetaModal: React.FC<{
               </span>
             </div>
 
-            {/* Consumer Links with 1-Click Copy Both and Simultaneous Open */}
             <div className="hud-telemetry-item">
               <span className="hud-label">Consumer:</span>
               <a
@@ -404,7 +422,6 @@ export const DealerMetaModal: React.FC<{
                 {loadingMapVerify ? "⏳ Verifying..." : "⚡ Verify MAP"}
               </button>
 
-              {/* Supplemental MAP Counts inside HUD */}
               {localMapResult && (
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginLeft: 4 }}>
                   {localMapResult.employeeCount && localMapResult.employeeCount !== "—" && (
@@ -436,7 +453,7 @@ export const DealerMetaModal: React.FC<{
           </div>
         </div>
 
-        <div className="update-nav-segmented">
+        <div className="update-nav-segmented" style={{ padding: "0 20px", background: "#0d1424", borderBottom: "1px solid #1e293b" }}>
           <button
             type="button"
             className={`update-nav-tab ${tab === "tasks" ? "active" : ""}`}
@@ -453,7 +470,7 @@ export const DealerMetaModal: React.FC<{
           </button>
         </div>
 
-        <div style={{ overflowY: "auto", flex: 1 }}>
+        <div style={{ overflowY: "auto", flex: 1, minHeight: 0 }}>
           {tab === "tasks" && (
             <DealerTasksPanel
               row={row}
@@ -464,7 +481,7 @@ export const DealerMetaModal: React.FC<{
           )}
 
           {tab === "slack" && (
-            <div className="slack-workspace-layout" style={{ padding: "16px 20px 20px 20px" }}>
+            <div className="slack-workspace-layout" style={{ padding: "20px" }}>
               <div className="slack-recipients-card">
                 <div className="slack-card-header">
                   <span className="slack-card-title">Recipients ({selectedRecipients.length})</span>

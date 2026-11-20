@@ -22,6 +22,7 @@ import {
   requestLatestCaptureFromExtension,
   subscribeToExtensionCapture,
   loadLatestExtensionCapture,
+  removeStaleDealerProfiles,
   ArcLatestCaptureState,
   ArcTekionProfile,
   ArcCustomCapturedApi,
@@ -40,7 +41,28 @@ import {
 } from "../services/blueprintDecodeBot";
 import { syncAccountingBootstrapForDealer } from "../services/bootstrapSyncBot";
 
-const MAX_PROFILE_AGE_MS = 48 * 60 * 60 * 1000;
+// Remembers which capture of the selected Dealer Profile was last applied to Global Headers.
+const SELECTED_PROFILE_APPLIED_AT_KEY = "arc_selected_dealer_profile_applied_at";
+
+// Freshness of a Dealer Profile card. Profiles are treated as usable for 48 hours after capture,
+// which is how long the server keeps them working in practice (the token's own 30-day expiry is not the limit).
+const PROFILE_FRESH_HOURS = 48;
+
+function profileTokenStatus(profile: ArcTekionProfile): { label: string; color: string } {
+  const capturedMs = Date.parse(profile.capturedAt || "");
+  if (Number.isNaN(capturedMs)) {
+    return { label: "Capture time unknown", color: "#cbd5e1" };
+  }
+  const freshUntilMs = capturedMs + PROFILE_FRESH_HOURS * 60 * 60 * 1000;
+  const until = formatSavedAt(new Date(freshUntilMs).toISOString());
+  if (Date.now() >= freshUntilMs) {
+    return { label: `Expired (captured ${formatSavedAt(profile.capturedAt)}, 48h limit). Reload a Tekion page to capture a fresh one.`, color: "#fca5a5" };
+  }
+  if (freshUntilMs - Date.now() < 12 * 60 * 60 * 1000) {
+    return { label: `Fresh until ${until} (expiring soon)`, color: "#fde68a" };
+  }
+  return { label: `Fresh until ${until}`, color: "#86efac" };
+}
 const TOC_API_ENDPOINT = "https://us-west1-tapapi.tekioncloud.com/tapapi/v2/usermanagement/getuserprofile";
 
 const logger = {
@@ -512,6 +534,7 @@ const TokenCard: React.FC<TokenCardProps> = React.memo(
 
 const DealerProfileCard: React.FC<DealerProfileCardProps> = React.memo(
   ({ profile, isSelected, onSelect }) => {
+    const tokenStatus = profileTokenStatus(profile);
     return (
       <div className={`compact-card dealer-profile-card ${isSelected ? "selected" : ""}`}>
         <div
@@ -530,6 +553,7 @@ const DealerProfileCard: React.FC<DealerProfileCardProps> = React.memo(
             <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 4, wordBreak: "break-word" }}>
               {profile.tenantName || "Unknown Tenant"}
             </div>
+            <div style={{ color: tokenStatus.color, fontSize: 12, marginTop: 4 }}>{tokenStatus.label}</div>
           </div>
 
           <button
@@ -679,12 +703,31 @@ const CustomCaptureCard: React.FC<{
   );
 };
 
+// Shows whether a watch rule has a live capture. The capture is used by any feature that reads it
+// (for example User Reset Option 3) until the rule is removed.
+const WatchRuleCaptureStatus: React.FC<{ ruleId: string }> = ({ ruleId }) => {
+  const capture = loadLatestExtensionCapture()?.customCaptures?.[ruleId];
+  if (!capture) {
+    return (
+      <div style={{ color: "#fde68a", fontSize: 11, marginTop: 4 }}>
+        ◐ Waiting for a matching request. Open the page that calls this API.
+      </div>
+    );
+  }
+  return (
+    <div style={{ color: "#86efac", fontSize: 11, marginTop: 4 }}>
+      ● Captured {formatSavedAt(capture.capturedAt)} · last seen {formatSavedAt(capture.lastSeenAt)} · used as default until removed
+    </div>
+  );
+};
+
 const WatchRulesManager: React.FC = () => {
   const { rules, isExtensionConnected, addRule, removeRule } = useArcRules();
   const [pattern, setPattern] = useState("");
   const [label, setLabel] = useState("");
   const [matchMode, setMatchMode] = useState<"includes" | "exact">("includes");
-  const [expiryHours, setExpiryHours] = useState(48);
+  // 0 = keep until removed (default). Any positive number = auto-expire after that many hours.
+  const [expiryHours, setExpiryHours] = useState(0);
 
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
@@ -699,7 +742,7 @@ const WatchRulesManager: React.FC = () => {
 
     setPattern("");
     setLabel("");
-    setExpiryHours(48);
+    setExpiryHours(0);
   };
 
   return (
@@ -755,10 +798,10 @@ const WatchRulesManager: React.FC = () => {
           <input
             className="st-input"
             type="number"
-            min={1}
+            min={0}
             value={expiryHours}
-            onChange={(e) => setExpiryHours(Number(e.target.value))}
-            placeholder="Expiry (hours)"
+            onChange={(e) => setExpiryHours(Math.max(0, Number(e.target.value) || 0))}
+            placeholder="Expiry hours (0 = until removed)"
             style={{ width: 140 }}
           />
 
@@ -784,8 +827,9 @@ const WatchRulesManager: React.FC = () => {
                 <div style={{ color: "#f8fafc", fontWeight: 700, fontSize: 14 }}>{rule.label}</div>
                 <div style={{ color: "#94a3b8", fontSize: 12, fontFamily: "monospace" }}>{rule.pattern}</div>
                 <div style={{ color: "#64748b", fontSize: 11, marginTop: 4 }}>
-                  Mode: {rule.matchMode} • Expiry: {rule.expiryHours}h
+                  Mode: {rule.matchMode} • {rule.expiryHours > 0 ? `Expires after ${rule.expiryHours}h` : "Kept until you remove it"}
                 </div>
+                <WatchRuleCaptureStatus ruleId={rule.id} />
               </div>
               <button
                 type="button"
@@ -852,12 +896,12 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
   const hasUnsavedChanges = tokensAreDirty || headersAreDirty;
 
   const activeProfiles = useMemo(() => {
+    // Every captured profile is listed, newest first. Expired tokens are shown with a status
+    // instead of disappearing, so a selected profile never vanishes after two days.
     const rawProfiles = latestCapture?.tekionProfiles ?? [];
-    const now = Date.now();
-    return rawProfiles.filter((p) => {
-      if (!p.capturedAt) return false;
-      return now - new Date(p.capturedAt).getTime() <= MAX_PROFILE_AGE_MS;
-    });
+    return [...rawProfiles].sort(
+      (a, b) => (Date.parse(b.capturedAt || "") || 0) - (Date.parse(a.capturedAt || "") || 0)
+    );
   }, [latestCapture]);
 
   const customCaptures = useMemo(() => {
@@ -899,6 +943,13 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
     }
   }, [tocCapture, storesCustomCaptureId, storesApiCaptureId]);
 
+  const staleProfileCount = useMemo(() => {
+    const now = Date.now();
+    return activeProfiles.filter(
+      (p) => p.id !== selectedDealerProfileId && now - (Date.parse(p.capturedAt) || 0) >= 48 * 60 * 60 * 1000
+    ).length;
+  }, [activeProfiles, selectedDealerProfileId]);
+
   const filteredProfiles = useMemo(() => {
     if (!deferredSearchQuery.trim()) return activeProfiles;
     const q = deferredSearchQuery.toLowerCase();
@@ -915,6 +966,34 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
     if (messageTimerRef.current) window.clearTimeout(messageTimerRef.current);
     messageTimerRef.current = window.setTimeout(() => setMessage(null), 3000);
   }, []);
+
+  // Keeps the selected Dealer Profile's headers current. When the extension captures a newer
+  // version of the selected profile (for example after the token was renewed), the new headers
+  // are applied automatically. Nothing is re-applied when the capture has not changed, so manual
+  // header edits survive a page reload.
+  useEffect(() => {
+    if (!selectedDealerProfileId) return;
+    const profile = (latestCapture?.tekionProfiles ?? []).find((p) => p.id === selectedDealerProfileId);
+    if (!profile) return;
+    let appliedAt = "";
+    try {
+      appliedAt = localStorage.getItem(SELECTED_PROFILE_APPLIED_AT_KEY) ?? "";
+    } catch {
+      appliedAt = "";
+    }
+    if (appliedAt === profile.capturedAt) return;
+    const pairs = toKeyValuePairs(profile.bootstrapHeaders);
+    if (pairs.length === 0) return;
+    setGlobalHeaders(pairs);
+    saveGlobalHeaders(pairs);
+    setSavedGlobalHeadersSnapshot(pairs);
+    try {
+      localStorage.setItem(SELECTED_PROFILE_APPLIED_AT_KEY, profile.capturedAt);
+    } catch {
+      /* ignore */
+    }
+    showMessage("success", `Headers refreshed from the latest capture of Dealer ${profile.dealerId || profile.id}`);
+  }, [latestCapture, selectedDealerProfileId, showMessage]);
 
   const refreshFromStorage = useCallback(
     (options?: { preserveEdits?: boolean }) => {
@@ -1159,6 +1238,11 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
       const pairs = toKeyValuePairs(profile.bootstrapHeaders);
       setSelectedDealerProfileId(profile.id);
       saveSelectedDealerProfileId(profile.id);
+      try {
+        localStorage.setItem(SELECTED_PROFILE_APPLIED_AT_KEY, profile.capturedAt);
+      } catch {
+        /* storage unavailable: the sync below simply re-applies on next load */
+      }
       setGlobalHeaders(pairs);
       saveGlobalHeaders(pairs);
       showMessage("success", `Applied ${pairs.length} headers from Dealer ${profile.dealerId}`);
@@ -1776,6 +1860,32 @@ export const Settings: React.FC<Props> = ({ onBack }) => {
                     onChange={(e) => setDealerSearchQuery(e.target.value)}
                     style={{ width: "100%" }}
                   />
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
+                  <div style={{ color: "#94a3b8", fontSize: 12 }}>
+                    {staleProfileCount} profile(s) older than 48h. The selected profile is never removed.
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-secondary btn-sm"
+                    disabled={staleProfileCount === 0}
+                    style={{
+                      padding: "8px 14px",
+                      fontWeight: 700,
+                      color: staleProfileCount === 0 ? "#64748b" : "#fca5a5",
+                      border: `1px solid ${staleProfileCount === 0 ? "rgba(148,163,184,0.2)" : "rgba(248,113,113,0.5)"}`,
+                      background: staleProfileCount === 0 ? "transparent" : "rgba(248,113,113,0.12)",
+                      borderRadius: 8,
+                      cursor: staleProfileCount === 0 ? "not-allowed" : "pointer",
+                    }}
+                    onClick={async () => {
+                      if (!window.confirm(`Remove ${staleProfileCount} expired dealer profile(s)? The selected profile is kept.`)) return;
+                      const removed = await removeStaleDealerProfiles(selectedDealerProfileId ?? undefined);
+                      showMessage("success", `Removed ${removed} expired dealer profile(s).`);
+                    }}
+                  >
+                    Remove expired profiles
+                  </button>
                 </div>
                 <div style={{ display: "grid", gap: 16 }}>
                   {filteredProfiles.map((profile) => (

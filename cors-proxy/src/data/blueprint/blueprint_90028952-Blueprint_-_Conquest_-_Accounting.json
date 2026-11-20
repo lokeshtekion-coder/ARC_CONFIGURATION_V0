@@ -726,133 +726,6 @@
         ]
       },
       {
-        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "sectionOrder": 73,
-        "sectionType": "MAIN",
-        "logic": null,
-        "fields": [
-          {
-            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601145",
-            "fieldName": null,
-            "title": "Customer Pay GL Account Number",
-            "type": "SHORT_TEXT",
-            "required": true,
-            "logic": null,
-            "fieldOrder": 1,
-            "rawValue": "N4400",
-            "decodedValue": "N4400",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601146",
-            "fieldName": null,
-            "title": "Customer Pay Service Contracts",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 2,
-            "rawValue": "N4400",
-            "decodedValue": "N4400",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 2,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601147",
-            "fieldName": null,
-            "title": "Customer Pay Sublet GL Acct",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 3,
-            "rawValue": "N4460",
-            "decodedValue": "N4460",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 3,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601148",
-            "fieldName": null,
-            "title": "Customer Pay Body Shop GL Acct",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": {
-              "displayActionType": "SHOW",
-              "ruleMatchCondition": "ALL",
-              "rules": [
-                {
-                  "fieldId": "103601143",
-                  "operator": "IS",
-                  "value": "Body Shop"
-                }
-              ]
-            },
-            "fieldOrder": 4,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 4,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601149",
-            "fieldName": null,
-            "title": "Customer Pay Quick Lube GL Acct",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": {
-              "displayActionType": "SHOW",
-              "ruleMatchCondition": "ALL",
-              "rules": [
-                {
-                  "fieldId": "103601143",
-                  "operator": "IS",
-                  "value": "Express Lane/ Quick Lube"
-                }
-              ]
-            },
-            "fieldOrder": 5,
-            "rawValue": "N4400",
-            "decodedValue": "N4400",
-            "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
         "sectionId": "6c54daa2-911f-4db0-bc4c-5508bd1daedf",
         "sectionName": "Internal Parts Payment Method",
         "sectionOrder": 101,
@@ -996,6 +869,133 @@
             "fieldOrder": 7,
             "rawValue": "N7115",
             "decodedValue": "N7115",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "sectionOrder": 73,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601145",
+            "fieldName": null,
+            "title": "Customer Pay GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "N4400",
+            "decodedValue": "N4400",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601146",
+            "fieldName": null,
+            "title": "Customer Pay Service Contracts",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "N4400",
+            "decodedValue": "N4400",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601147",
+            "fieldName": null,
+            "title": "Customer Pay Sublet GL Acct",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 3,
+            "rawValue": "N4460",
+            "decodedValue": "N4460",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601148",
+            "fieldName": null,
+            "title": "Customer Pay Body Shop GL Acct",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103601143",
+                  "operator": "IS",
+                  "value": "Body Shop"
+                }
+              ]
+            },
+            "fieldOrder": 4,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601149",
+            "fieldName": null,
+            "title": "Customer Pay Quick Lube GL Acct",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103601143",
+                  "operator": "IS",
+                  "value": "Express Lane/ Quick Lube"
+                }
+              ]
+            },
+            "fieldOrder": 5,
+            "rawValue": "N4400",
+            "decodedValue": "N4400",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -4233,35 +4233,6 @@
         ]
       },
       {
-        "sectionId": "4e34137c-a795-4c6d-ae75-363f9798b918",
-        "sectionName": "Service - Payment Methods - Warranty",
-        "sectionOrder": 94,
-        "sectionType": "MAIN",
-        "logic": null,
-        "fields": [
-          {
-            "sectionId": "4e34137c-a795-4c6d-ae75-363f9798b918",
-            "sectionName": "Service - Payment Methods - Warranty",
-            "sectionOrder": 94,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601279",
-            "fieldName": null,
-            "title": "Warranty Claim GL Account",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 1,
-            "rawValue": "N2200",
-            "decodedValue": "N2200",
-            "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
         "sectionId": "da180dfe-3a85-412b-9c0b-291e992df2bf",
         "sectionName": "Deal Posting Pack Notes",
         "sectionOrder": 47,
@@ -4285,6 +4256,35 @@
             "fieldOrder": 1,
             "rawValue": "SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.",
             "decodedValue": "SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "4e34137c-a795-4c6d-ae75-363f9798b918",
+        "sectionName": "Service - Payment Methods - Warranty",
+        "sectionOrder": 94,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "4e34137c-a795-4c6d-ae75-363f9798b918",
+            "sectionName": "Service - Payment Methods - Warranty",
+            "sectionOrder": 94,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601279",
+            "fieldName": null,
+            "title": "Warranty Claim GL Account",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "N2200",
+            "decodedValue": "N2200",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -6873,145 +6873,6 @@
         ]
       },
       {
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "sectionName": "Used Vehicle Wholesale",
-        "sectionOrder": 15,
-        "sectionType": "MAIN",
-        "logic": {
-          "displayActionType": "SHOW",
-          "ruleMatchCondition": "ALL",
-          "rules": [
-            {
-              "fieldId": "103600830",
-              "operator": "IS",
-              "value": "Wholesale"
-            }
-          ]
-        },
-        "fields": [
-          {
-            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600853",
-            "fieldName": null,
-            "title": "Used Car Sale Account",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 1,
-            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600856",
-            "fieldName": null,
-            "title": "Used Truck Sale Account",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 2,
-            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 2,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600854",
-            "fieldName": null,
-            "title": "Used Car Sale Account - Certified",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 3,
-            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 3,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600855",
-            "fieldName": null,
-            "title": "Used Car Sale Account - Non-Certified",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 4,
-            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 4,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600857",
-            "fieldName": null,
-            "title": "Used Truck Sale Account - Certified",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 5,
-            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 5,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600858",
-            "fieldName": null,
-            "title": "Used Truck Sale Account - Non-Certified",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 6,
-            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
         "sectionId": "0ade2dd9-5dd8-4eb1-b970-3246517a3d69",
         "sectionName": "Used Vehicle Personal Purchase",
         "sectionOrder": 12,
@@ -7145,6 +7006,145 @@
             "fieldOrder": 6,
             "rawValue": "N4305",
             "decodedValue": "N4305",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "sectionName": "Used Vehicle Wholesale",
+        "sectionOrder": 15,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": [
+            {
+              "fieldId": "103600830",
+              "operator": "IS",
+              "value": "Wholesale"
+            }
+          ]
+        },
+        "fields": [
+          {
+            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600853",
+            "fieldName": null,
+            "title": "Used Car Sale Account",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600856",
+            "fieldName": null,
+            "title": "Used Truck Sale Account",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600854",
+            "fieldName": null,
+            "title": "Used Car Sale Account - Certified",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 3,
+            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600855",
+            "fieldName": null,
+            "title": "Used Car Sale Account - Non-Certified",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 4,
+            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600857",
+            "fieldName": null,
+            "title": "Used Truck Sale Account - Certified",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 5,
+            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600858",
+            "fieldName": null,
+            "title": "Used Truck Sale Account - Non-Certified",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 6,
+            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -13181,6 +13181,181 @@
         ]
       },
       {
+        "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
+        "sectionName": "Vehicle Inventory Pack #4",
+        "sectionOrder": 54,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ANY",
+          "rules": [
+            {
+              "fieldId": "103601084",
+              "operator": "IS",
+              "value": "4"
+            },
+            {
+              "fieldId": "103601084",
+              "operator": "IS",
+              "value": "5"
+            },
+            {
+              "fieldId": "103601084",
+              "operator": "IS",
+              "value": "6"
+            },
+            {
+              "fieldId": "103601084",
+              "operator": "IS",
+              "value": "7"
+            },
+            {
+              "fieldId": "103601084",
+              "operator": "IS",
+              "value": "8"
+            },
+            {
+              "fieldId": "103601084",
+              "operator": "IS",
+              "value": "9"
+            },
+            {
+              "fieldId": "103601084",
+              "operator": "IS",
+              "value": "10"
+            }
+          ]
+        },
+        "fields": [
+          {
+            "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
+            "sectionName": "Vehicle Inventory Pack #4",
+            "sectionOrder": 54,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "23c00ebb-c893-43a0-86c4-5844094ba9f4",
+            "fieldName": null,
+            "title": "Applicable Vehicle Types:",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
+            "sectionName": "Vehicle Inventory Pack #4",
+            "sectionOrder": 54,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "ff7e58da-9a14-4439-a1cf-d9e64a250b0c",
+            "fieldName": null,
+            "title": "Applicable Body Styles:",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
+            "sectionName": "Vehicle Inventory Pack #4",
+            "sectionOrder": 54,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "16ce070d-2e71-40be-a98f-68e06f64b9bc",
+            "fieldName": null,
+            "title": "Pack Name",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 2,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
+            "sectionName": "Vehicle Inventory Pack #4",
+            "sectionOrder": 54,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "a6114c44-eec4-45f9-a77c-ea5557b0d96e",
+            "fieldName": null,
+            "title": "Pack Amount",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 5,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
+            "sectionName": "Vehicle Inventory Pack #4",
+            "sectionOrder": 54,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "ee9edbef-90bd-4e2e-a119-468ebcc6d9d9",
+            "fieldName": null,
+            "title": "Pack GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 3,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
+            "sectionName": "Vehicle Inventory Pack #4",
+            "sectionOrder": 54,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "f6b9d4af-f6a4-4dac-bf0b-f91c6981ce92",
+            "fieldName": null,
+            "title": "Control Number",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
+            "sectionName": "Vehicle Inventory Pack #4",
+            "sectionOrder": 54,
+            "sectionType": "MAIN",
+            "rowIndex": 6,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "62db7847-bfe6-4aa6-9b31-a6197164888e",
+            "fieldName": null,
+            "title": "Applicable additional Targeting (if needed)",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
         "sectionId": "a7e177c2-b3df-4515-960a-d2fcbd671042",
         "sectionName": "Vehicle Inventory Pack #3",
         "sectionOrder": 53,
@@ -13349,181 +13524,6 @@
             "columnIndex": 0,
             "fieldIndex": 0,
             "fieldId": "01f8c0c7-ede7-4bcf-a26b-94d0685d8cad",
-            "fieldName": null,
-            "title": "Applicable additional Targeting (if needed)",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 0,
-            "hasUserValue": false,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
-        "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
-        "sectionName": "Vehicle Inventory Pack #4",
-        "sectionOrder": 54,
-        "sectionType": "MAIN",
-        "logic": {
-          "displayActionType": "SHOW",
-          "ruleMatchCondition": "ANY",
-          "rules": [
-            {
-              "fieldId": "103601084",
-              "operator": "IS",
-              "value": "4"
-            },
-            {
-              "fieldId": "103601084",
-              "operator": "IS",
-              "value": "5"
-            },
-            {
-              "fieldId": "103601084",
-              "operator": "IS",
-              "value": "6"
-            },
-            {
-              "fieldId": "103601084",
-              "operator": "IS",
-              "value": "7"
-            },
-            {
-              "fieldId": "103601084",
-              "operator": "IS",
-              "value": "8"
-            },
-            {
-              "fieldId": "103601084",
-              "operator": "IS",
-              "value": "9"
-            },
-            {
-              "fieldId": "103601084",
-              "operator": "IS",
-              "value": "10"
-            }
-          ]
-        },
-        "fields": [
-          {
-            "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
-            "sectionName": "Vehicle Inventory Pack #4",
-            "sectionOrder": 54,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "23c00ebb-c893-43a0-86c4-5844094ba9f4",
-            "fieldName": null,
-            "title": "Applicable Vehicle Types:",
-            "type": "MULTIPLE_CHOICE",
-            "required": true,
-            "logic": null,
-            "fieldOrder": 0,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
-            "sectionName": "Vehicle Inventory Pack #4",
-            "sectionOrder": 54,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "ff7e58da-9a14-4439-a1cf-d9e64a250b0c",
-            "fieldName": null,
-            "title": "Applicable Body Styles:",
-            "type": "MULTIPLE_CHOICE",
-            "required": true,
-            "logic": null,
-            "fieldOrder": 0,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
-            "sectionName": "Vehicle Inventory Pack #4",
-            "sectionOrder": 54,
-            "sectionType": "MAIN",
-            "rowIndex": 2,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "16ce070d-2e71-40be-a98f-68e06f64b9bc",
-            "fieldName": null,
-            "title": "Pack Name",
-            "type": "SHORT_TEXT",
-            "required": true,
-            "logic": null,
-            "fieldOrder": 2,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
-            "sectionName": "Vehicle Inventory Pack #4",
-            "sectionOrder": 54,
-            "sectionType": "MAIN",
-            "rowIndex": 3,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "a6114c44-eec4-45f9-a77c-ea5557b0d96e",
-            "fieldName": null,
-            "title": "Pack Amount",
-            "type": "SHORT_TEXT",
-            "required": true,
-            "logic": null,
-            "fieldOrder": 5,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
-            "sectionName": "Vehicle Inventory Pack #4",
-            "sectionOrder": 54,
-            "sectionType": "MAIN",
-            "rowIndex": 4,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "ee9edbef-90bd-4e2e-a119-468ebcc6d9d9",
-            "fieldName": null,
-            "title": "Pack GL Account Number",
-            "type": "SHORT_TEXT",
-            "required": true,
-            "logic": null,
-            "fieldOrder": 3,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
-            "sectionName": "Vehicle Inventory Pack #4",
-            "sectionOrder": 54,
-            "sectionType": "MAIN",
-            "rowIndex": 5,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "f6b9d4af-f6a4-4dac-bf0b-f91c6981ce92",
-            "fieldName": null,
-            "title": "Control Number",
-            "type": "SHORT_TEXT",
-            "required": true,
-            "logic": null,
-            "fieldOrder": 0,
-            "hasUserValue": false,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
-            "sectionName": "Vehicle Inventory Pack #4",
-            "sectionOrder": 54,
-            "sectionType": "MAIN",
-            "rowIndex": 6,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "62db7847-bfe6-4aa6-9b31-a6197164888e",
             "fieldName": null,
             "title": "Applicable additional Targeting (if needed)",
             "type": "SHORT_TEXT",
@@ -14813,64 +14813,6 @@
         "hasUserValue": false
       },
       {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-        "fieldId": "103601145",
-        "title": "Customer Pay GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": true,
-        "rawValue": "N4400",
-        "decodedValue": "N4400",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-        "fieldId": "103601146",
-        "title": "Customer Pay Service Contracts",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4400",
-        "decodedValue": "N4400",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-        "fieldId": "103601147",
-        "title": "Customer Pay Sublet GL Acct",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4460",
-        "decodedValue": "N4460",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-        "fieldId": "103601148",
-        "title": "Customer Pay Body Shop GL Acct",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-        "fieldId": "103601149",
-        "title": "Customer Pay Quick Lube GL Acct",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4400",
-        "decodedValue": "N4400",
-        "hasUserValue": true
-      },
-      {
         "sectionName": "Internal Parts Payment Method",
         "subsectionName": null,
         "sectionId": "6c54daa2-911f-4db0-bc4c-5508bd1daedf",
@@ -14952,6 +14894,64 @@
         "required": false,
         "rawValue": "N7115",
         "decodedValue": "N7115",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+        "fieldId": "103601145",
+        "title": "Customer Pay GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "N4400",
+        "decodedValue": "N4400",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+        "fieldId": "103601146",
+        "title": "Customer Pay Service Contracts",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4400",
+        "decodedValue": "N4400",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+        "fieldId": "103601147",
+        "title": "Customer Pay Sublet GL Acct",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4460",
+        "decodedValue": "N4460",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+        "fieldId": "103601148",
+        "title": "Customer Pay Body Shop GL Acct",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+        "fieldId": "103601149",
+        "title": "Customer Pay Quick Lube GL Acct",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4400",
+        "decodedValue": "N4400",
         "hasUserValue": true
       },
       {
@@ -16387,18 +16387,6 @@
         "hasUserValue": false
       },
       {
-        "sectionName": "Service - Payment Methods - Warranty",
-        "subsectionName": null,
-        "sectionId": "4e34137c-a795-4c6d-ae75-363f9798b918",
-        "fieldId": "103601279",
-        "title": "Warranty Claim GL Account",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N2200",
-        "decodedValue": "N2200",
-        "hasUserValue": true
-      },
-      {
         "sectionName": "Deal Posting Pack Notes",
         "subsectionName": null,
         "sectionId": "da180dfe-3a85-412b-9c0b-291e992df2bf",
@@ -16408,6 +16396,18 @@
         "required": false,
         "rawValue": "SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.",
         "decodedValue": "SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service - Payment Methods - Warranty",
+        "subsectionName": null,
+        "sectionId": "4e34137c-a795-4c6d-ae75-363f9798b918",
+        "fieldId": "103601279",
+        "title": "Warranty Claim GL Account",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N2200",
+        "decodedValue": "N2200",
         "hasUserValue": true
       },
       {
@@ -17459,78 +17459,6 @@
         "hasUserValue": true
       },
       {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600853",
-        "title": "Used Car Sale Account",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600856",
-        "title": "Used Truck Sale Account",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600854",
-        "title": "Used Car Sale Account - Certified",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600855",
-        "title": "Used Car Sale Account - Non-Certified",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600857",
-        "title": "Used Truck Sale Account - Certified",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600858",
-        "title": "Used Truck Sale Account - Non-Certified",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "hasUserValue": true
-      },
-      {
         "sectionName": "Used Vehicle Personal Purchase",
         "subsectionName": null,
         "sectionId": "0ade2dd9-5dd8-4eb1-b970-3246517a3d69",
@@ -17600,6 +17528,78 @@
         "required": false,
         "rawValue": "N4305",
         "decodedValue": "N4305",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600853",
+        "title": "Used Car Sale Account",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600856",
+        "title": "Used Truck Sale Account",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600854",
+        "title": "Used Car Sale Account - Certified",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600855",
+        "title": "Used Car Sale Account - Non-Certified",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600857",
+        "title": "Used Truck Sale Account - Certified",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600858",
+        "title": "Used Truck Sale Account - Non-Certified",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
         "hasUserValue": true
       },
       {
@@ -20251,76 +20251,6 @@
         "hasUserValue": false
       },
       {
-        "sectionName": "Vehicle Inventory Pack #3",
-        "subsectionName": null,
-        "sectionId": "a7e177c2-b3df-4515-960a-d2fcbd671042",
-        "fieldId": "dd2d3e1f-162c-49f8-86a9-7dc149fb2eaa",
-        "title": "Applicable Vehicle Types:",
-        "type": "MULTIPLE_CHOICE",
-        "required": true,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Vehicle Inventory Pack #3",
-        "subsectionName": null,
-        "sectionId": "a7e177c2-b3df-4515-960a-d2fcbd671042",
-        "fieldId": "aca60194-34d4-47d5-a855-4b09c3a281f7",
-        "title": "Applicable Body Styles:",
-        "type": "MULTIPLE_CHOICE",
-        "required": true,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Vehicle Inventory Pack #3",
-        "subsectionName": null,
-        "sectionId": "a7e177c2-b3df-4515-960a-d2fcbd671042",
-        "fieldId": "8c199f3c-a83f-4139-b3e1-6b641cf1c0e4",
-        "title": "Pack Name",
-        "type": "SHORT_TEXT",
-        "required": true,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Vehicle Inventory Pack #3",
-        "subsectionName": null,
-        "sectionId": "a7e177c2-b3df-4515-960a-d2fcbd671042",
-        "fieldId": "8f6d3b04-45a9-4c1b-bdef-142d3e9f29e5",
-        "title": "Pack Amount",
-        "type": "SHORT_TEXT",
-        "required": true,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Vehicle Inventory Pack #3",
-        "subsectionName": null,
-        "sectionId": "a7e177c2-b3df-4515-960a-d2fcbd671042",
-        "fieldId": "873d29c0-1bb5-4fc3-98e7-09e9ac56e84a",
-        "title": "Pack GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": true,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Vehicle Inventory Pack #3",
-        "subsectionName": null,
-        "sectionId": "a7e177c2-b3df-4515-960a-d2fcbd671042",
-        "fieldId": "433c638b-7007-4738-858f-7f288992df5b",
-        "title": "Control Number",
-        "type": "SHORT_TEXT",
-        "required": true,
-        "hasUserValue": false
-      },
-      {
-        "sectionName": "Vehicle Inventory Pack #3",
-        "subsectionName": null,
-        "sectionId": "a7e177c2-b3df-4515-960a-d2fcbd671042",
-        "fieldId": "01f8c0c7-ede7-4bcf-a26b-94d0685d8cad",
-        "title": "Applicable additional Targeting (if needed)",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "hasUserValue": false
-      },
-      {
         "sectionName": "Vehicle Inventory Pack #4",
         "subsectionName": null,
         "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
@@ -20385,6 +20315,76 @@
         "subsectionName": null,
         "sectionId": "4cae3ee0-e6f1-4333-8a92-b8e729a61940",
         "fieldId": "62db7847-bfe6-4aa6-9b31-a6197164888e",
+        "title": "Applicable additional Targeting (if needed)",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Vehicle Inventory Pack #3",
+        "subsectionName": null,
+        "sectionId": "a7e177c2-b3df-4515-960a-d2fcbd671042",
+        "fieldId": "dd2d3e1f-162c-49f8-86a9-7dc149fb2eaa",
+        "title": "Applicable Vehicle Types:",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Vehicle Inventory Pack #3",
+        "subsectionName": null,
+        "sectionId": "a7e177c2-b3df-4515-960a-d2fcbd671042",
+        "fieldId": "aca60194-34d4-47d5-a855-4b09c3a281f7",
+        "title": "Applicable Body Styles:",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Vehicle Inventory Pack #3",
+        "subsectionName": null,
+        "sectionId": "a7e177c2-b3df-4515-960a-d2fcbd671042",
+        "fieldId": "8c199f3c-a83f-4139-b3e1-6b641cf1c0e4",
+        "title": "Pack Name",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Vehicle Inventory Pack #3",
+        "subsectionName": null,
+        "sectionId": "a7e177c2-b3df-4515-960a-d2fcbd671042",
+        "fieldId": "8f6d3b04-45a9-4c1b-bdef-142d3e9f29e5",
+        "title": "Pack Amount",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Vehicle Inventory Pack #3",
+        "subsectionName": null,
+        "sectionId": "a7e177c2-b3df-4515-960a-d2fcbd671042",
+        "fieldId": "873d29c0-1bb5-4fc3-98e7-09e9ac56e84a",
+        "title": "Pack GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Vehicle Inventory Pack #3",
+        "subsectionName": null,
+        "sectionId": "a7e177c2-b3df-4515-960a-d2fcbd671042",
+        "fieldId": "433c638b-7007-4738-858f-7f288992df5b",
+        "title": "Control Number",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Vehicle Inventory Pack #3",
+        "subsectionName": null,
+        "sectionId": "a7e177c2-b3df-4515-960a-d2fcbd671042",
+        "fieldId": "01f8c0c7-ede7-4bcf-a26b-94d0685d8cad",
         "title": "Applicable additional Targeting (if needed)",
         "type": "SHORT_TEXT",
         "required": false,
@@ -21303,105 +21303,6 @@
         ]
       },
       {
-        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "sectionOrder": 73,
-        "sectionType": "MAIN",
-        "logic": null,
-        "fields": [
-          {
-            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601145",
-            "fieldName": null,
-            "title": "Customer Pay GL Account Number",
-            "type": "SHORT_TEXT",
-            "required": true,
-            "logic": null,
-            "fieldOrder": 1,
-            "rawValue": "N4400",
-            "decodedValue": "N4400",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601146",
-            "fieldName": null,
-            "title": "Customer Pay Service Contracts",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 2,
-            "rawValue": "N4400",
-            "decodedValue": "N4400",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 2,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601147",
-            "fieldName": null,
-            "title": "Customer Pay Sublet GL Acct",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 3,
-            "rawValue": "N4460",
-            "decodedValue": "N4460",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-            "sectionName": "Service Customer Pay Sales GL Mapping",
-            "sectionOrder": 73,
-            "sectionType": "MAIN",
-            "rowIndex": 4,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601149",
-            "fieldName": null,
-            "title": "Customer Pay Quick Lube GL Acct",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": {
-              "displayActionType": "SHOW",
-              "ruleMatchCondition": "ALL",
-              "rules": [
-                {
-                  "fieldId": "103601143",
-                  "operator": "IS",
-                  "value": "Express Lane/ Quick Lube"
-                }
-              ]
-            },
-            "fieldOrder": 5,
-            "rawValue": "N4400",
-            "decodedValue": "N4400",
-            "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
         "sectionId": "6c54daa2-911f-4db0-bc4c-5508bd1daedf",
         "sectionName": "Internal Parts Payment Method",
         "sectionOrder": 101,
@@ -21545,6 +21446,105 @@
             "fieldOrder": 7,
             "rawValue": "N7115",
             "decodedValue": "N7115",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "sectionOrder": 73,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601145",
+            "fieldName": null,
+            "title": "Customer Pay GL Account Number",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "N4400",
+            "decodedValue": "N4400",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601146",
+            "fieldName": null,
+            "title": "Customer Pay Service Contracts",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "N4400",
+            "decodedValue": "N4400",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601147",
+            "fieldName": null,
+            "title": "Customer Pay Sublet GL Acct",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 3,
+            "rawValue": "N4460",
+            "decodedValue": "N4460",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+            "sectionName": "Service Customer Pay Sales GL Mapping",
+            "sectionOrder": 73,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601149",
+            "fieldName": null,
+            "title": "Customer Pay Quick Lube GL Acct",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "103601143",
+                  "operator": "IS",
+                  "value": "Express Lane/ Quick Lube"
+                }
+              ]
+            },
+            "fieldOrder": 5,
+            "rawValue": "N4400",
+            "decodedValue": "N4400",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -23794,35 +23794,6 @@
         ]
       },
       {
-        "sectionId": "4e34137c-a795-4c6d-ae75-363f9798b918",
-        "sectionName": "Service - Payment Methods - Warranty",
-        "sectionOrder": 94,
-        "sectionType": "MAIN",
-        "logic": null,
-        "fields": [
-          {
-            "sectionId": "4e34137c-a795-4c6d-ae75-363f9798b918",
-            "sectionName": "Service - Payment Methods - Warranty",
-            "sectionOrder": 94,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103601279",
-            "fieldName": null,
-            "title": "Warranty Claim GL Account",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 1,
-            "rawValue": "N2200",
-            "decodedValue": "N2200",
-            "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
         "sectionId": "da180dfe-3a85-412b-9c0b-291e992df2bf",
         "sectionName": "Deal Posting Pack Notes",
         "sectionOrder": 47,
@@ -23846,6 +23817,35 @@
             "fieldOrder": 1,
             "rawValue": "SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.",
             "decodedValue": "SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "4e34137c-a795-4c6d-ae75-363f9798b918",
+        "sectionName": "Service - Payment Methods - Warranty",
+        "sectionOrder": 94,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "4e34137c-a795-4c6d-ae75-363f9798b918",
+            "sectionName": "Service - Payment Methods - Warranty",
+            "sectionOrder": 94,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103601279",
+            "fieldName": null,
+            "title": "Warranty Claim GL Account",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "N2200",
+            "decodedValue": "N2200",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -26227,145 +26227,6 @@
         ]
       },
       {
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "sectionName": "Used Vehicle Wholesale",
-        "sectionOrder": 15,
-        "sectionType": "MAIN",
-        "logic": {
-          "displayActionType": "SHOW",
-          "ruleMatchCondition": "ALL",
-          "rules": [
-            {
-              "fieldId": "103600830",
-              "operator": "IS",
-              "value": "Wholesale"
-            }
-          ]
-        },
-        "fields": [
-          {
-            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 0,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600853",
-            "fieldName": null,
-            "title": "Used Car Sale Account",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 1,
-            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 1,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600856",
-            "fieldName": null,
-            "title": "Used Truck Sale Account",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 2,
-            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 2,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600854",
-            "fieldName": null,
-            "title": "Used Car Sale Account - Certified",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 3,
-            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 3,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600855",
-            "fieldName": null,
-            "title": "Used Car Sale Account - Non-Certified",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 4,
-            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 4,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600857",
-            "fieldName": null,
-            "title": "Used Truck Sale Account - Certified",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 5,
-            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "hasUserValue": true,
-            "subsectionName": null
-          },
-          {
-            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-            "sectionName": "Used Vehicle Wholesale",
-            "sectionOrder": 15,
-            "sectionType": "MAIN",
-            "rowIndex": 5,
-            "columnIndex": 0,
-            "fieldIndex": 0,
-            "fieldId": "103600858",
-            "fieldName": null,
-            "title": "Used Truck Sale Account - Non-Certified",
-            "type": "SHORT_TEXT",
-            "required": false,
-            "logic": null,
-            "fieldOrder": 6,
-            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-            "hasUserValue": true,
-            "subsectionName": null
-          }
-        ]
-      },
-      {
         "sectionId": "0ade2dd9-5dd8-4eb1-b970-3246517a3d69",
         "sectionName": "Used Vehicle Personal Purchase",
         "sectionOrder": 12,
@@ -26499,6 +26360,145 @@
             "fieldOrder": 6,
             "rawValue": "N4305",
             "decodedValue": "N4305",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "sectionName": "Used Vehicle Wholesale",
+        "sectionOrder": 15,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": [
+            {
+              "fieldId": "103600830",
+              "operator": "IS",
+              "value": "Wholesale"
+            }
+          ]
+        },
+        "fields": [
+          {
+            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600853",
+            "fieldName": null,
+            "title": "Used Car Sale Account",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600856",
+            "fieldName": null,
+            "title": "Used Truck Sale Account",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600854",
+            "fieldName": null,
+            "title": "Used Car Sale Account - Certified",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 3,
+            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600855",
+            "fieldName": null,
+            "title": "Used Car Sale Account - Non-Certified",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 4,
+            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600857",
+            "fieldName": null,
+            "title": "Used Truck Sale Account - Certified",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 5,
+            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+            "sectionName": "Used Vehicle Wholesale",
+            "sectionOrder": 15,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600858",
+            "fieldName": null,
+            "title": "Used Truck Sale Account - Non-Certified",
+            "type": "SHORT_TEXT",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 6,
+            "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+            "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
             "hasUserValue": true,
             "subsectionName": null
           }
@@ -30865,54 +30865,6 @@
         "hasUserValue": true
       },
       {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-        "fieldId": "103601145",
-        "title": "Customer Pay GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": true,
-        "rawValue": "N4400",
-        "decodedValue": "N4400",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-        "fieldId": "103601146",
-        "title": "Customer Pay Service Contracts",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4400",
-        "decodedValue": "N4400",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-        "fieldId": "103601147",
-        "title": "Customer Pay Sublet GL Acct",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4460",
-        "decodedValue": "N4460",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "subsectionName": null,
-        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-        "fieldId": "103601149",
-        "title": "Customer Pay Quick Lube GL Acct",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4400",
-        "decodedValue": "N4400",
-        "hasUserValue": true
-      },
-      {
         "sectionName": "Internal Parts Payment Method",
         "subsectionName": null,
         "sectionId": "6c54daa2-911f-4db0-bc4c-5508bd1daedf",
@@ -30994,6 +30946,54 @@
         "required": false,
         "rawValue": "N7115",
         "decodedValue": "N7115",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+        "fieldId": "103601145",
+        "title": "Customer Pay GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "N4400",
+        "decodedValue": "N4400",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+        "fieldId": "103601146",
+        "title": "Customer Pay Service Contracts",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4400",
+        "decodedValue": "N4400",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+        "fieldId": "103601147",
+        "title": "Customer Pay Sublet GL Acct",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4460",
+        "decodedValue": "N4460",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "subsectionName": null,
+        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+        "fieldId": "103601149",
+        "title": "Customer Pay Quick Lube GL Acct",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4400",
+        "decodedValue": "N4400",
         "hasUserValue": true
       },
       {
@@ -32045,18 +32045,6 @@
         "hasUserValue": true
       },
       {
-        "sectionName": "Service - Payment Methods - Warranty",
-        "subsectionName": null,
-        "sectionId": "4e34137c-a795-4c6d-ae75-363f9798b918",
-        "fieldId": "103601279",
-        "title": "Warranty Claim GL Account",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N2200",
-        "decodedValue": "N2200",
-        "hasUserValue": true
-      },
-      {
         "sectionName": "Deal Posting Pack Notes",
         "subsectionName": null,
         "sectionId": "da180dfe-3a85-412b-9c0b-291e992df2bf",
@@ -32066,6 +32054,18 @@
         "required": false,
         "rawValue": "SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.",
         "decodedValue": "SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Service - Payment Methods - Warranty",
+        "subsectionName": null,
+        "sectionId": "4e34137c-a795-4c6d-ae75-363f9798b918",
+        "fieldId": "103601279",
+        "title": "Warranty Claim GL Account",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N2200",
+        "decodedValue": "N2200",
         "hasUserValue": true
       },
       {
@@ -32887,78 +32887,6 @@
         "hasUserValue": true
       },
       {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600853",
-        "title": "Used Car Sale Account",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600856",
-        "title": "Used Truck Sale Account",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600854",
-        "title": "Used Car Sale Account - Certified",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600855",
-        "title": "Used Car Sale Account - Non-Certified",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600857",
-        "title": "Used Truck Sale Account - Certified",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "hasUserValue": true
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "subsectionName": null,
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600858",
-        "title": "Used Truck Sale Account - Non-Certified",
-        "type": "SHORT_TEXT",
-        "required": false,
-        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
-        "hasUserValue": true
-      },
-      {
         "sectionName": "Used Vehicle Personal Purchase",
         "subsectionName": null,
         "sectionId": "0ade2dd9-5dd8-4eb1-b970-3246517a3d69",
@@ -33028,6 +32956,78 @@
         "required": false,
         "rawValue": "N4305",
         "decodedValue": "N4305",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600853",
+        "title": "Used Car Sale Account",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600856",
+        "title": "Used Truck Sale Account",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600854",
+        "title": "Used Car Sale Account - Certified",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600855",
+        "title": "Used Car Sale Account - Non-Certified",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600857",
+        "title": "Used Truck Sale Account - Certified",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "subsectionName": null,
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600858",
+        "title": "Used Truck Sale Account - Non-Certified",
+        "type": "SHORT_TEXT",
+        "required": false,
+        "rawValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE",
         "hasUserValue": true
       },
       {
@@ -34731,42 +34731,6 @@
         "decodedValue": "N2409 - NON-LEXUS USED CAR"
       },
       {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-        "fieldId": "103601145",
-        "title": "Customer Pay GL Account Number",
-        "type": "SHORT_TEXT",
-        "required": "true",
-        "decodedValue": "N4400"
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-        "fieldId": "103601146",
-        "title": "Customer Pay Service Contracts",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "N4400"
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-        "fieldId": "103601147",
-        "title": "Customer Pay Sublet GL Acct",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "N4460"
-      },
-      {
-        "sectionName": "Service Customer Pay Sales GL Mapping",
-        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
-        "fieldId": "103601149",
-        "title": "Customer Pay Quick Lube GL Acct",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "N4400"
-      },
-      {
         "sectionName": "Internal Parts Payment Method",
         "sectionId": "6c54daa2-911f-4db0-bc4c-5508bd1daedf",
         "fieldId": "103601326",
@@ -34828,6 +34792,42 @@
         "type": "SHORT_TEXT",
         "required": "false",
         "decodedValue": "N7115"
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+        "fieldId": "103601145",
+        "title": "Customer Pay GL Account Number",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "N4400"
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+        "fieldId": "103601146",
+        "title": "Customer Pay Service Contracts",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "N4400"
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+        "fieldId": "103601147",
+        "title": "Customer Pay Sublet GL Acct",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "N4460"
+      },
+      {
+        "sectionName": "Service Customer Pay Sales GL Mapping",
+        "sectionId": "6b9ae27d-447c-468c-ae11-4e49e96e7b17",
+        "fieldId": "103601149",
+        "title": "Customer Pay Quick Lube GL Acct",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "N4400"
       },
       {
         "sectionName": "Finance Reserve GL Mapping",
@@ -35559,15 +35559,6 @@
         "decodedValue": "NONE"
       },
       {
-        "sectionName": "Service - Payment Methods - Warranty",
-        "sectionId": "4e34137c-a795-4c6d-ae75-363f9798b918",
-        "fieldId": "103601279",
-        "title": "Warranty Claim GL Account",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "N2200"
-      },
-      {
         "sectionName": "Deal Posting Pack Notes",
         "sectionId": "da180dfe-3a85-412b-9c0b-291e992df2bf",
         "fieldId": "103601126",
@@ -35575,6 +35566,15 @@
         "type": "LONG_TEXT",
         "required": "false",
         "decodedValue": "SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME."
+      },
+      {
+        "sectionName": "Service - Payment Methods - Warranty",
+        "sectionId": "4e34137c-a795-4c6d-ae75-363f9798b918",
+        "fieldId": "103601279",
+        "title": "Warranty Claim GL Account",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "N2200"
       },
       {
         "sectionName": "Factory Receivables",
@@ -36171,60 +36171,6 @@
         "decodedValue": "N4730"
       },
       {
-        "sectionName": "Used Vehicle Wholesale",
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600853",
-        "title": "Used Car Sale Account",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE"
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600856",
-        "title": "Used Truck Sale Account",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE"
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600854",
-        "title": "Used Car Sale Account - Certified",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE"
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600855",
-        "title": "Used Car Sale Account - Non-Certified",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE"
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600857",
-        "title": "Used Truck Sale Account - Certified",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE"
-      },
-      {
-        "sectionName": "Used Vehicle Wholesale",
-        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
-        "fieldId": "103600858",
-        "title": "Used Truck Sale Account - Non-Certified",
-        "type": "SHORT_TEXT",
-        "required": "false",
-        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE"
-      },
-      {
         "sectionName": "Used Vehicle Personal Purchase",
         "sectionId": "0ade2dd9-5dd8-4eb1-b970-3246517a3d69",
         "fieldId": "103600832",
@@ -36277,6 +36223,60 @@
         "type": "SHORT_TEXT",
         "required": "false",
         "decodedValue": "N4305"
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600853",
+        "title": "Used Car Sale Account",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE"
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600856",
+        "title": "Used Truck Sale Account",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE"
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600854",
+        "title": "Used Car Sale Account - Certified",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE"
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600855",
+        "title": "Used Car Sale Account - Non-Certified",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE"
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600857",
+        "title": "Used Truck Sale Account - Certified",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE"
+      },
+      {
+        "sectionName": "Used Vehicle Wholesale",
+        "sectionId": "626f8128-2ff0-4d5b-b073-357cdee5dffa",
+        "fieldId": "103600858",
+        "title": "Used Truck Sale Account - Non-Certified",
+        "type": "SHORT_TEXT",
+        "required": "false",
+        "decodedValue": "N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE"
       },
       {
         "sectionName": "Cash Receipts",
@@ -37332,7 +37332,7 @@
         "decodedValue": "Cost of Sales"
       }
     ],
-    "humanReadable": "[Finance Company #10 > —] Finance Company Name: EXETER FINANCE\n[Finance Company #10 > —] Finance Company GL Account Number: N2283\n[Vehicle Sale Commission GL Accounts > —] Vehicle Sales Salary, Wages & Commission GL Account: N3121\n[Vehicle Sale Commission GL Accounts > —] Paid Spiffs GL Account Number: N3121\n[Vehicle Sale Commission GL Accounts > —] NEW - Commission Expense Offset GL Account Number: N7001\n[Vehicle Sale Commission GL Accounts > —] NEW - Spiff Expense Offset GL Account Number: N7001\n[Vehicle Sale Commission GL Accounts > —] USED - Commission Offset GL Account Number: N7002\n[Vehicle Sale Commission GL Accounts > —] USED - Spiff Expense Offset GL Account: N7002\n[Cash - Vehicle Sales > —] Personal Purchase GL Account : N2040\n[Cash - Vehicle Sales > —] Only F&I - After Sale GL Account: N2040\n[Cash - Vehicle Sales > —] Business/Commercial GL Account : N2040\n[Cash - Vehicle Sales > —] DealerTrade GL Account: N2040\n[Cash - Vehicle Sales > —] Wholesale GL Account: N2040\n[Parts - Credit/Debit Card Payment Method > —] Counter Sales/Retail GL Account: N2040\n[Parts - Credit/Debit Card Payment Method > —] Wholesale GL Account: N2040\n[Used Vehicle Inventory > —] Journal Name and Journal Number: USED VEHICLE SALES JOURNAL # 20 / USED CAR WHOLESALE JOURNAL # 25\n[Used Vehicle Inventory > —] Inventory GL Account (Car): N2400-LEXUS USED CAR\n[Used Vehicle Inventory > —] Inventory GL Account (Truck): N2400-LEXUS USED CAR\n[Used Vehicle Inventory > —] Inventory GL Account (Other): N2409 - NON-LEXUS USED CAR\n[Used Vehicle Inventory > —] Specify \"Other\" Inventory Name: N2409 - NON-LEXUS USED CAR\n[Service Customer Pay Sales GL Mapping > —] Customer Pay GL Account Number: N4400\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Service Contracts: N4400\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Sublet GL Acct: N4460\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Quick Lube GL Acct: N4400\n[Internal Parts Payment Method > —] We Owe GL Account: NONE\n[Internal Parts Payment Method > —] Other Supplies GL Account: NONE\n[Internal Parts Payment Method > —] New Car Inventory GL Account: N2320\n[Internal Parts Payment Method > —] Used Car Inventory GL Account: N2400 USED LEXUS / N2409 USED NON LEXUS\n[Internal Parts Payment Method > —] New Truck Inventory GL Account: N2320\n[Internal Parts Payment Method > —] Used Truck Inventory GL Account: N2400 USED LEXUS / N2409 USED NON LEXUS\n[Internal Parts Payment Method > —] Parts Policy GL Account: N7115\n[Finance Reserve GL Mapping > —] How many finance companies with reserves?: 15\n[Parts Counter Sale Notes > —] Additional Parts Counter Sales Details Not Addressed Above : NEED TO DISCUSS PARTS SOURCING AND MAPPING TO THE FINANCIAL STATEMENT.\n[Finance Company #11 > —] Finance Company Name: TD AUTO FINANCE\n[Finance Company #11 > —] Finance Company GL Account Number: N2283\n[Parts Counter Sales > —] Do you have taxable and Non-Taxable Accounts?: Yes\n[Parts Counter Sales > —] Retail Counter Sales GL Acct: N4740\n[Parts Counter Sales > —] Retail Counter Sales GL Acct - Non-Taxable: N4740\n[Parts Counter Sales > —] Internal Counter Sales GL Acct: N4730\n[Parts Counter Sales > —] Internal Counter Sales GL Acct - Non-Taxable: N4730\n[Parts Counter Sales > —] Wholesale Counter GL Acct: N4750\n[Parts Counter Sales > —] Wholesale Counter Sales GL Acct - Non-Taxable: N4750\n[Check - Vehicle Sales > —] Individual Purchase GL Account : N2040\n[Check - Vehicle Sales > —] Only F&I - After Sale GL Account: N2040\n[Check - Vehicle Sales > —] Business/Commercial GL Account : N2040\n[Check - Vehicle Sales > —] DealerTrade GL Account: N2040\n[Check - Vehicle Sales > —] Wholesale GL Account: N2040\n[Parts - Cash Payment Method > —] Counter Sales/Retail GL Account: N2040\n[Parts - Cash Payment Method > —] Wholesale GL Account: N2040\n[Finance Company #4 > —] Finance Company Name: WELLS FARGO AUTO FINANCE\n[Finance Company #4 > —] Finance Company GL Account Number: N2283\n[New Vehicle Inventory > —] Journal Name and Journal Number: RETAIL NEW VEHICLE SALES JOURNAL # 10 / LEASES NEW LEASE SALES JOURNAL # 11\n[New Vehicle Inventory > —] Inventory GL Account (Car): N2320\n[New Vehicle Inventory > —] Inventory GL Account (Truck): N2320\n[New Vehicle Inventory > —] Inventory GL Account (Rental): DO NOT HAVE RENTAL DEPARTMENT\n[New Vehicle Inventory > —] Inventory GL Account (Demo): N2300\n[New Vehicle Inventory > —] Inventory GL Account (Loaner): N2610\n[New Vehicle Inventory > —] Inventory GL Account (Company): N2750\n[Fixed Ops Service GL Mapping > —] Departments : Service Department, Express Lane/ Quick Lube, PDI, Reconditioning, Detail, Accessories\n[Service - Payment Method - Internal > —] Which internal payment methods do you use?: New Car Policy, Used Car Policy, Service Dept Policy, Parts Dept Policy, New Car Inventory, New Truck Inventory, Used Car Inventory, Used Truck Inventory, New Car - Lot Damage, Used Car - Lot Damage, Service Dept  - Lot Damage, Parts Dept  - Lot Damage\n[Service - Payment Method - Internal > —] New Car Policy  GL Account Number: N7111\n[Service - Payment Method - Internal > —] Used Car Policy GL Account Number: N7112\n[Service - Payment Method - Internal > —] Service Dept Policy GL Account Number: N7113\n[Service - Payment Method - Internal > —] Parts Dept Policy GL Account Number: N7115\n[Service - Payment Method - Internal > —] New Car Inventory GL Account Number: N2320\n[Service - Payment Method - Internal > —] New Truck Inventory GL Account Number: N2320\n[Service - Payment Method - Internal > —] Used Car Inventory GL Account Number: N2400 FOR USED LEXUS / N2409 FOR USED NON-LEXUS\n[Service - Payment Method - Internal > —] Used Truck Inventory GL Account Number: N2400 FOR USED LEXUS / N2409 FOR USED NON-LEXUS\n[Service - Payment Method - Internal > —] New Car - Lot Damage GL Account Number: N2320\n[Service - Payment Method - Internal > —] Used Car - Lot Damage GL Account Number: N2400 FOR USED LEXUS / N2409 FOR USED NON-LEXUS\n[Service - Payment Method - Internal > —] Service Dept - Lot Damage GL Account Number: N7113\n[Service - Payment Method - Internal > —] Parts Dept - Lot Damage GL Account Number: N7115\n[Parts - AR Charge Payment Method > —] Counter Sales/Retail GL Account: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Parts - AR Charge Payment Method > —] Wholesale GL Account: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Finance Company #2 > —] Finance Company Name: TOYOTA LEASE TRUST\n[Finance Company #2 > —] Finance Company GL Account Number: N2283\n[Service Internal Sales GL Mapping > —] Internal Pay GL Account Number: N4430\n[Service Internal Sales GL Mapping > —] Internal Pay Sublet GL Account Number: N4460\n[Service Internal Sales GL Mapping > —] Internal Quick Lube GL Account Number: N4430\n[Accounts Receivable Settings > —] What date do you typically run your A/R statements?: 3rd\n[Accounts Receivable Settings > —] Do you use A/R open item?: Yes\n[Accounts Receivable Settings > —] Which AR GL accounts do you use in the AR open-item feature?: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Accounts Receivable Settings > —] AR Account Number for Service ROs: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Accounts Receivable Settings > —] AR Account Number for Parts Tickets: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Accounts Receivable Settings > —] AR Account Number for Vehicle Sales: NONE\n[Accounts Receivable Settings > —] Cash Clearing GL Account Number for AR: T2041 / T2042 (Let's discuss)\n[Accounts Receivable Settings > —] Cash In Bank GL Account Number for AR: T2020B\n[Accounts Receivable Settings > —] Employee A/R GL Account Number: N2105 - DO NOT RUN STATEMENTS\n[Accounts Receivable Settings > —] Do all active employees have an employee A/R account?: Yes\n[Accounts Receivable Settings > —] What e-mail address do you want A/R statements to come from?: ar@beanauto.com\n[Accounts Receivable Settings > —] AR Discount GL Account: None\n[Accounts Receivable Settings > —] AR Journal Name and Journal Number: CASH RECEIPTS OPEN ITEMS JOURNAL 57\n[Accounts Receivable Settings > —] Do you charge finance charges on AR invoices?: No\n[Accounts Receivable Settings > —] Do you offer customer discounts if they pay early?: No\n[Accounts Receivable Settings > —] AR invoices are delinquent after how many days?: 30 days\n[Accounts Receivable Settings > —] In what order would you like the detail to be on A/R statements?: Due Date - Oldest First\n[Finance Company #14 > —] Finance Company Name: LENDBUZZ FUNDING LLC\n[Finance Company #14 > —] Finance Company GL Account Number: N2283\n[Used Vehicle GL Sale Account Mapping > —] Cash Receipt Cash Clearing GL Account Number: N2010\n[Used Vehicle GL Sale Account Mapping > —] Select your Used Vehicle Sale Types: Individual / Personal, Business / Commercial, Wholesale\n[Used Vehicle Business / Commercial > —] Used Car Sale Account: N4310 NON- LEXUS USED RETAIL\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Certified: N4303 LEXUS USED RETAIL CERTIFIED / N4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Non-Certified: N4305\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account: N4310 NON- LEXUS USED RETAIL\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account - Certified: N4303 LEXUS USED RETAIL CERTIFIED / N4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account - Non-Certified: N4305\n[Service - Payment Methods - Customer Pay > —] Cash GL Account: N2040\n[Service - Payment Methods - Customer Pay > —] Check GL Account: N2040\n[Service - Payment Methods - Customer Pay > —] Credit/Debit Card GL Account: N2040\n[Service - Payment Methods - Customer Pay > —] AR Charge GL Account: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Service - Payment Methods - Customer Pay > —] Service Contract GL Account: N2140\n[Service - Payment Methods - Customer Pay > —] GM - OEM Reward GL Account: NONE\n[Service - Payment Methods - Warranty > —] Warranty Claim GL Account: N2200\n[Deal Posting Pack Notes > —] Additional Deal Posting Packs Details Not Addressed Above : SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.\n[Factory Receivables > —] Holdback GL Account Number: NA\n[Factory Receivables > —] Rebate GL Account Number: N2240\n[Factory Receivables > —] Incentives GL Account Number: N2241 N2243 N2251 N2252 N2254\n[General Department Information (Part 1) > —] Please select your country: USA\n[General Department Information (Part 1) > —] What are you retained earnings accounts and how are they used?: N3920- Retained Earnings.  Net Income is closed out to Retained Earnings once the year has been closed out in CDK.\nWe do have other accounts such as well which make up the Net Investment (Capital Stock, Additional Paid In Capital, and Dividends).\n[General Department Information (Part 1) > —] What payroll provider do you currently use?: PAYCOM\n[General Department Information (Part 1) > —] What payroll provider will you use at the time of the Tekion ARC go live date?: PAYCOM\n[General Department Information (Part 1) > —] Please list all manufacturer dealer codes (and BAC codes for GM dealers): 60932\n[General Department Information (Part 1) > —] Please describe the accounting G/L or Journal restrictions: Restrictions can apply to access to G/L or Journal or viewing G/L or Journal.\n[General Department Information (Part 1) > —] Federal Tax ID / EIN:: 52-2136189\n[General Department Information (Part 1) > —] State Tax ID:: 23-8013386976-4\n[General Department Information (Part 1) > —] State Dealer Code:: VF/1001186/2\n[General Department Information (Part 1) > —] DMV #:: VF/1001186/2\n[General Department Information (Part 1) > —] Are there any state/province specific identification numbers that print on every document such as Repair Orders?: MV55623\n[General Department Information (Part 1) > —] Please describe your accounting prefixes:: T = Kendall Toyota, L = Lexus of Kendall, J = West Kendall Toyota, N = Lexus of West Kendall\n[Parts and Labor Tax Rates > —] Is your tax rate for parts and labor the same?: Yes\n[Parts and Labor Tax Rates > —] Tax rate on Parts and Labor?: 6% STATE OF FLORIDA / 1% MIAMI DADE COUNTY CAPPED AT $5000.00\n[Parts and Labor Tax Rates > —] Additional notes on parts / service taxes: LABOR ALONE ON A REPAIR ORDER IS NOT TAXABLE. IF PARTS ARE SOLD WITH THE LABOR, THE ENTIRE REPAIR ORDER IS TAXABLE IN THE STATE OF FLORIDA.\n[Parts and Labor Tax Rates > —] Do you charge tax on shop supplies?: Yes\n[Finance Company #9 > —] Finance Company Name: SANTANDER CONSUMER USA\n[Finance Company #9 > —] Finance Company GL Account Number: N2283\n[Vehicle Sales Payables > —] Lien Payoff GL Account: N3010\n[Vehicle Sales Payables > —] Title Fee GL Account Number: N3030\n[Vehicle Sales Payables > —] Registration GL Account Number: N3030\n[Vehicle Sales Payables > —] Emissions GL Account Number: N/A\n[Vehicle Sales Payables > —] Documentation Fee GL Account Number: N2030\n[Vehicle Sales Payables > —] Bank or Acquisition Fee GL Account Number : N2030\n[Vehicle Sales Payables > —] Lemon Law Fee GL Account Number: N3030\n[Vehicle Sales Payables > —] Lien Fee GL Account Number: N/A\n[Vehicle Sales Payables > —] Environment Protect Fee GL Account Number: NONE\n[Vehicle Sales Payables > —] State Fee GL Account Number: LEAD ACID FEE N3146\n[Vehicle Sales Payables > —] Waste Tire Fee GL Account Number: N7195\n[Vehicle Sales Payables > —] Tire Fee GL Account Number: N3150\n[Service Warranty Sales GL Mapping > —] Warranty GL Account Number: N4420\n[Service Warranty Sales GL Mapping > —] Warranty Sublet GL Account Number: N4460\n[Service Warranty Sales GL Mapping > —] Warranty Quick Lube GL Account Number: N4420\n[Source Specific RO Parts Sales GL Account > —] Do you have Source Specific RO Parts Sales GL Accounts?: Tires, Gas Oil Grease (GOG), Accessories\n[Source Specific RO Parts Sales GL Account > —] Do you have non-taxable GL accounts for source specific RO Sale Accounts?: No\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Customer Pay RO Parts Sales GL Accounts: N4725\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Customer Pay RO Parts Sales GL Accounts - Non-Taxable: N4725\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Internal RO Parts Sales GL Accounts: N4734\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Warranty RO Parts Sales GL Accounts: N4720\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Customer Pay RO Parts Sales GL Accounts: N4770\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Customer Pay RO Parts Sales GL Accounts - Non-Taxable: N4770\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Internal RO Parts Sales GL Accounts: N4770\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Warranty RO Parts Sales GL Accounts: N4770\n[Parts - Check Payment Method > —] Counter Sales/Retail GL Account: N2040\n[Parts - Check Payment Method > —] Wholesale GL Account: N2040\n[Finance Company #1 > —] Finance Company Name: ALLY FINANCIAL (FOR LEASES)\n[Finance Company #1 > —] Finance Company GL Account Number: N2283\n[Finance Company #5 > —] Finance Company Name: JP MORGAN CHASE BANK NA\n[Finance Company #5 > —] Finance Company GL Account Number: N2283\n[Parts Repair Order Sales Accounts > —] Parts RO Sales Optional Service Departments: Express Lane/Quick Lube, Commercial/Business\n[Parts Repair Order Sales Accounts > —] Do you have taxable and Non-taxable accounts?: Yes\n[Parts Repair Order Sales Accounts > —] RO Customer Pay Parts Sales GL Account: N4700\n[Parts Repair Order Sales Accounts > —] RO Customer Pay Parts Sales GL Account - Non-Taxable: N4700\n[Parts Repair Order Sales Accounts > —] RO Service Contract Parts Sales GL Account: N4700\n[Parts Repair Order Sales Accounts > —] RO Service Contract Parts Sales GL Account - Non-Taxable: N4700\n[Parts Repair Order Sales Accounts > —] RO Quick Lube Parts Sales GL Account: N4700\n[Parts Repair Order Sales Accounts > —] RO Quick Lube Parts Sales GL Account - Non-Taxable: N4700\n[Parts Repair Order Sales Accounts > —] RO Commercial Parts Sales GL Account: N4700\n[Parts Repair Order Sales Accounts > —] RO Commercial Parts Sales GL Account - Non-Taxable: N4700\n[Parts Repair Order Sales Accounts > —] RO Fleet Parts Sales GL Account: N4700\n[Parts Repair Order Sales Accounts > —] RO Fleet Parts Sales GL Account - Non-Taxable: N4700\n[Parts Repair Order Sales Accounts > —] RO Warranty Parts Sales GL Account: N4720\n[Parts Repair Order Sales Accounts > —] RO Internal Parts Sales GL Account: N4730\n[Used Vehicle Wholesale > —] Used Car Sale Account: N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Truck Sale Account: N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Car Sale Account - Certified: N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Car Sale Account - Non-Certified: N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Certified: N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Non-Certified: N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Personal Purchase > —] Used Car Sale Account: N4310 NON- LEXUS USED RETAIL\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Certified: N4303 LEXUS USED RETAIL CERTIFIED / N4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Non-Certified: N4305\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account: N4310 NON- LEXUS USED RETAIL\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account - Certified: N4303 LEXUS USED RETAIL CERTIFIED / N4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account - Non-Certified: N4305\n[Cash Receipts > —] Journal Name and Journal Number for Cash Receipts: CASH RECEIPTS JOURNAL # 56\n[Cash Receipts > —] How do you post your day collection from service and parts?: Manual journal entry in my existing DMS\n[Cash Receipts > —] How do you post customer down payments?: Individual cash receipts\n[Parts RO Sales Notes > —] Additional Parts RO Sales Details Not Addressed Above : NEED TO DISCUSS PARTS SOURCING AND MAPPING TO THE FINANCIAL STATEMENT.\n[Credit/Debit Card - Vehicle Sales > —] Individual Purchase GL Account : N2040\n[Credit/Debit Card - Vehicle Sales > —] Only F&I - After Sale GL Account: N2040\n[Credit/Debit Card - Vehicle Sales > —] Business/Commercial GL Account : N2040\n[Credit/Debit Card - Vehicle Sales > —] DealerTrade GL Account: N2040\n[Credit/Debit Card - Vehicle Sales > —] Wholesale GL Account: N2040\n[Tekion Blueprint Submission > —] Please upload a sample payroll upload file (if applicable): PR08122026 LWK.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90028952/a82e40ed-9c99-441d-afed-bf045f1fa1a9/e83f1763-8d7f-4385-b31d-00ebecf61d8f/PR08122026%20LWK.xlsx)\n[Tekion Blueprint Submission > —] Are there any state/province, federal or OEM specific reporting which is used daily, weekly, monthly, quarterly or yearly?: 8300 LETTER, 1099 END OF YEAR GENERATED THRU CDK USING IRIS FORMAT FOR 1099 E FILING EXPORTED FROM CDK.\n[Tekion Blueprint Submission > —] Name of Submitter: JULIO CUBERO\n[Payment Method and Fee Notes > —] Additional Payment Methods and Fee Details Not Addressed Above : LET'S DISCUSS ENVIRONMENTAL FEE. DOES IT EQUAL LEAD ACID BATTERY.\n[Finance Company #7 > —] Finance Company Name: ALLY FINANCIAL (RETAIL)\n[Finance Company #7 > —] Finance Company GL Account Number: N2283\n[Finance Company #8 > —] Finance Company Name: SPACE COAST CREDIT UNION\n[Finance Company #8 > —] Finance Company GL Account Number: N2283\n[Finance Reserve GL Mapping Notes > —] Additional Finance Reserves Details Not Addressed Above : WE HAVE MORE BANKS, ABOUT 10-12 MORE.\n[OEM Reward > —] Counter Sales/Retail GL Account: NONE\n[OEM Reward > —] Wholesale GL Account: NONE\n[OEM Reward > —] Internal GL Account: NONE\n[OEM Reward > —] Repair GL Account: NONE\n[Used Vehicle Notes > —] Additional Used Vehicle Details Not Addressed Above : NEED TO DISCUSS RECONDITIONING AND LEASES\n[AR Charge - Vehicle Sales > —] Individual Purchase GL Account : N/A\n[AR Charge - Vehicle Sales > —] Only F&I - After Sale GL Account: N/A\n[AR Charge - Vehicle Sales > —] Business/Commercial GL Account : N/A\n[AR Charge - Vehicle Sales > —] DealerTrade GL Account: N2115\n[AR Charge - Vehicle Sales > —] Wholesale GL Account: N2118\n[Parts and Service Fees > —] Shop Supplies GL Account: N7193\n[Parts and Service Fees > —] Tire Fee GL Account: N3150\n[Parts and Service Fees > —] Environmental Fee GL Account: N3146\n[General Department Information (Part 2) > —] What would you like your first check # in Tekion to be?: CHECKS WILL RUN THRU KENDALL TOYOTA AS WE HAVE CENTRALIZED ACCOUTING.\n[General Department Information (Part 2) > —] What would you like your PO # in Tekion to be?: N25000\n[General Department Information (Part 2) > —] What banks do / will you send the Positive Pay file to?: Bank of America\n[General Department Information (Part 2) > —] Do you conduct Bank Reconciliation in your DMS?: Yes\n[General Department Information (Part 2) > —] What are the banks that you reconcile and what are the G/L accounts?: Bank of America N2020B\n[Finance Company #15 > —] Finance Company Name: WESTLAKE FINANCIAL SERVICES\n[Finance Company #15 > —] Finance Company GL Account Number: N2283\n[Finance Company #6 > —] Finance Company Name: CAPITAL ONE AUTO FINANCE\n[Finance Company #6 > —] Finance Company GL Account Number: N2283\n[Accounts Payable Settings > —] On what date do you typically run your AP batch?: 7th\n[Accounts Payable Settings > —] What is your Invoice cutoff date?: 30th\n[Accounts Payable Settings > —] Which AP GL accounts do you use in the AP open-item feature? : T3000 WE HAVE CENTRALIZED ACCOUNTING WERE ALL INVOICES WILL BE POSTED TO\n[Accounts Payable Settings > —] In what order would you like your Invoices in Batch Payments to display?: Vendor Name\n[Accounts Payable Settings > —] What type of schedule is your A/P account?: Open Item\n[Accounts Payable Settings > —] In which month is your invoice cutoff date?: Date in previous month\n[Accounts Payable Settings > —] AP GL Account Number: T3000 WE HAVE CENTRALIZED ACCOUNTING WERE ALL INVOICES WILL BE POSTED TO\n[Accounts Payable Settings > —] AP Discount Account Number: T3000 WE HAVE CENTRALIZED ACCOUNTING WERE ALL INVOICES WILL BE POSTED TO\n[Accounts Payable Settings > —] AP Cash payment Journal Name and Journal Number: CASH DISBURSEMENT JOURNAL # 60\n[Accounts Payable Settings > —] Purchase Journal: Journal Name and Journal Number: GENEREAL PURCHASES JOURNAL 75\n[Accounts Payable Settings > —] AP Bank Name: Bank of America\n[Accounts Payable Settings > —] AP Bank Account GL Account Number: T2023B - Bank of America (Cash Disbursements) / T2222 - Credit Card Payables (We would like to setup a different account for ACHs as they are lumped into this\n[Accounts Payable Settings > —] Additional AP Details Not Addressed Above : Let's review as we have questions. Payments will run thru Kendall Toyota as we have centralized accounting.\n[Finance Company #13 > —] Finance Company Name: DADE COUNTY FCU\n[Finance Company #13 > —] Finance Company GL Account Number: N2283\n[CIT - Receivable - Vehicle Sales > —] Individual Purchase GL Account : N2030\n[CIT - Receivable - Vehicle Sales > —] Only F&I - After Sale GL Account: N2030\n[CIT - Receivable - Vehicle Sales > —] Business/Commercial GL Account : N2030\n[CIT - Receivable - Vehicle Sales > —] DealerTrade GL Account: N/A\n[CIT - Receivable - Vehicle Sales > —] Wholesale GL Account: N/A\n[Parts Source Specific GL Accounting > —] Do you have source specific inventory GL accounts?: Tires, Gas Oil Grease (GOG), Accessories, Other\n[Parts Source Specific GL Accounting > —] Do you have non-taxable source specific sale GL accounts?: No\n[Parts Source Specific GL Accounting > —] Tires Source Specific GL Account: N4725\n[Parts Source Specific GL Accounting > —] GOG Source Specific GL Account: N4770\n[Parts Source Specific GL Accounting > —] Accessories Specific GL Account: LET'S DISCUSS\n[Parts Source Specific GL Accounting > —] Other Source Specific Name: LET'S DISCUSS\n[Parts Source Specific GL Accounting > —] Other Source Specific Account Number: LET'S DISCUSS\n[Fixed Ops Other Accounts > —] Sales Tax - Labor GL Account: 6% STATE OF FLORIDA N3140 / 1% MIAMI DADE COUNTY N3141\n[Fixed Ops Other Accounts > —] Sales Tax - Parts GL Account: 6% STATE OF FLORIDA N3140 / 1% MIAMI DADE COUNTY N3141\n[Fixed Ops Other Accounts > —] Freight - Taxable - GL Account: N7185\n[Fixed Ops Other Accounts > —] Freight - Non-Taxable - GL Account: N7185\n[Fixed Ops Other Accounts > —] Other Supplies - GL Account: N7193\n[Fixed Ops Other Accounts > —] Other Supplies - Non-Taxable - GL Account: N7193\n[Fixed Ops Other Accounts > —] Restocking Fee - GL Account: N6799 20% PART AMOUNT\n[Finance Company #3 > —] Finance Company Name: LEXUS FINANCIAL SERVICES\n[Finance Company #3 > —] Finance Company GL Account Number: N2283\n[Finance Company #12 > —] Finance Company Name: BANK OF AMERICA\n[Finance Company #12 > —] Finance Company GL Account Number: N2283\n[Cost Adjustments #1 > —] Name of Cost Adjustment: Front End Delivery Fee\n[Cost Adjustments #1 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #1 > —] Cost Adjustment Account #: Cost of Sales\n[Commissions > —] Does your current DMS calculate sales commissions?: Yes\n[Commissions > —] Please select the staff for which commissions are calculated in the deal:: Salesperson\n[Commissions > —] Are BDC employees ever added in the commissions screen?: No\n[Commissions > —] Do you remove any packs from the commissionable gross? (please list out all): YES SEE EMAIL\n[Commissions > —] Please upload documentation containing sales commission details here:: JULY COMISSIONS.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90028952/a82e40ed-9c99-441d-afed-bf045f1fa1a9/61c80616-f0a0-486b-8610-a041806ed882/JULY%20COMISSIONS.xlsx)\n[Commissions > —] Additional Notes about Commissions: BDC EMPLOYEEDS ARE NOT CURRENTLY ADDED IN THE COMMISSION SCREEN, BUT WE WOULD BE INTERESTED IN DOING SO.\n[Service - Taxes > —] Are coupon discounts taken before or after tax is applied?: Before tax is applied\n[Service - Taxes > —] Is your tax rate the same for Parts, Labor, Sublets and Deductibles?: Yes\n[Service - Taxes > —] Are there any special tax conditions? Examples below: Others: DEDUCTIBLES TO BE TAXED\n[Service - Taxes > —] Tax rate for Parts and Labor: 6% STATE OF FLORIDA / 1% MIAMI-DADE COUNTY CAPPED AT $5000.00\n[Service - Taxes > —] Taxes - Additional Information / Notes: 1% MIAMI-DADE COUNTY CAPPED AT $5000.00\n[Service Accounting Settings > —] Do you use Quicklane or Express account sections on your financial statement?: No\n[Service Accounting Settings > —] What is your desired Tekion starting RO #?: 375000N\n[Service Accounting Settings > —] How do you track lane/express separately for Accounting?: N/A\n[Service Accounting Settings > —] Do you use a dedicated department in the service application to drive the QL/Express accounting, or specific labor op codes?: Labor Ops/Service Types\n[Service Accounting Settings > —] What is your current RO #?: 338487N-AND COUNTING\n[Service Accounting Settings > —] Do you use a manufacturer reward/gift/loyalty rewards payment option?: N/A\n[Service Accounting Settings > —] Who is your credit card processing company?: Cenpos, Elavon\n[Parts Accounting Settings > —] Please select all that are taxable: : Parts, Gas Oil Grease (GOG), Freight, Charge tax when a core is sold, Refund tax when a core is returned\n[Parts Accounting Settings > —] What is the parts tax rate? : Others: 6% STATE OF FLORIDA / 1% MIAMI DADE COUNTY CAPPED AT $5000 SALES\n[Parts Accounting Settings > —] What is your current parts invoice #? : 244643\n[Parts Accounting Settings > —] What would you like your starting Purchase Order number to be?: N25000\n[Parts Accounting Settings > —] What do you want to start your parts invoice numbers in Tekion?: 260000\n[Vehicle Inventory Pack Notes > —] Additional Vehicle Inventory Posting Packs Details Not Addressed Above : SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.\n[Cost Adjustments #5 > —] Name of Cost Adjustment: Other / Miscellaneous\n[Cost Adjustments #5 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #5 > —] Cost Adjustment Account #: Cost of Sales\n[Cost Adjustments #2 > —] Name of Cost Adjustment: Broker Fee\n[Cost Adjustments #2 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #2 > —] Cost Adjustment Account #: Cost of Sales\n[Cost Adjustments #4 > —] Name of Cost Adjustment: Third Party Lease Fee\n[Cost Adjustments #4 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #4 > —] Cost Adjustment Account #: Cost of Sales\n[Cost Adjustments #3 > —] Name of Cost Adjustment: Back to Customer\n[Cost Adjustments #3 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #3 > —] Cost Adjustment Account #: Cost of Sales"
+    "humanReadable": "[Finance Company #10 > —] Finance Company Name: EXETER FINANCE\n[Finance Company #10 > —] Finance Company GL Account Number: N2283\n[Vehicle Sale Commission GL Accounts > —] Vehicle Sales Salary, Wages & Commission GL Account: N3121\n[Vehicle Sale Commission GL Accounts > —] Paid Spiffs GL Account Number: N3121\n[Vehicle Sale Commission GL Accounts > —] NEW - Commission Expense Offset GL Account Number: N7001\n[Vehicle Sale Commission GL Accounts > —] NEW - Spiff Expense Offset GL Account Number: N7001\n[Vehicle Sale Commission GL Accounts > —] USED - Commission Offset GL Account Number: N7002\n[Vehicle Sale Commission GL Accounts > —] USED - Spiff Expense Offset GL Account: N7002\n[Cash - Vehicle Sales > —] Personal Purchase GL Account : N2040\n[Cash - Vehicle Sales > —] Only F&I - After Sale GL Account: N2040\n[Cash - Vehicle Sales > —] Business/Commercial GL Account : N2040\n[Cash - Vehicle Sales > —] DealerTrade GL Account: N2040\n[Cash - Vehicle Sales > —] Wholesale GL Account: N2040\n[Parts - Credit/Debit Card Payment Method > —] Counter Sales/Retail GL Account: N2040\n[Parts - Credit/Debit Card Payment Method > —] Wholesale GL Account: N2040\n[Used Vehicle Inventory > —] Journal Name and Journal Number: USED VEHICLE SALES JOURNAL # 20 / USED CAR WHOLESALE JOURNAL # 25\n[Used Vehicle Inventory > —] Inventory GL Account (Car): N2400-LEXUS USED CAR\n[Used Vehicle Inventory > —] Inventory GL Account (Truck): N2400-LEXUS USED CAR\n[Used Vehicle Inventory > —] Inventory GL Account (Other): N2409 - NON-LEXUS USED CAR\n[Used Vehicle Inventory > —] Specify \"Other\" Inventory Name: N2409 - NON-LEXUS USED CAR\n[Internal Parts Payment Method > —] We Owe GL Account: NONE\n[Internal Parts Payment Method > —] Other Supplies GL Account: NONE\n[Internal Parts Payment Method > —] New Car Inventory GL Account: N2320\n[Internal Parts Payment Method > —] Used Car Inventory GL Account: N2400 USED LEXUS / N2409 USED NON LEXUS\n[Internal Parts Payment Method > —] New Truck Inventory GL Account: N2320\n[Internal Parts Payment Method > —] Used Truck Inventory GL Account: N2400 USED LEXUS / N2409 USED NON LEXUS\n[Internal Parts Payment Method > —] Parts Policy GL Account: N7115\n[Service Customer Pay Sales GL Mapping > —] Customer Pay GL Account Number: N4400\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Service Contracts: N4400\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Sublet GL Acct: N4460\n[Service Customer Pay Sales GL Mapping > —] Customer Pay Quick Lube GL Acct: N4400\n[Finance Reserve GL Mapping > —] How many finance companies with reserves?: 15\n[Parts Counter Sale Notes > —] Additional Parts Counter Sales Details Not Addressed Above : NEED TO DISCUSS PARTS SOURCING AND MAPPING TO THE FINANCIAL STATEMENT.\n[Finance Company #11 > —] Finance Company Name: TD AUTO FINANCE\n[Finance Company #11 > —] Finance Company GL Account Number: N2283\n[Parts Counter Sales > —] Do you have taxable and Non-Taxable Accounts?: Yes\n[Parts Counter Sales > —] Retail Counter Sales GL Acct: N4740\n[Parts Counter Sales > —] Retail Counter Sales GL Acct - Non-Taxable: N4740\n[Parts Counter Sales > —] Internal Counter Sales GL Acct: N4730\n[Parts Counter Sales > —] Internal Counter Sales GL Acct - Non-Taxable: N4730\n[Parts Counter Sales > —] Wholesale Counter GL Acct: N4750\n[Parts Counter Sales > —] Wholesale Counter Sales GL Acct - Non-Taxable: N4750\n[Check - Vehicle Sales > —] Individual Purchase GL Account : N2040\n[Check - Vehicle Sales > —] Only F&I - After Sale GL Account: N2040\n[Check - Vehicle Sales > —] Business/Commercial GL Account : N2040\n[Check - Vehicle Sales > —] DealerTrade GL Account: N2040\n[Check - Vehicle Sales > —] Wholesale GL Account: N2040\n[Parts - Cash Payment Method > —] Counter Sales/Retail GL Account: N2040\n[Parts - Cash Payment Method > —] Wholesale GL Account: N2040\n[Finance Company #4 > —] Finance Company Name: WELLS FARGO AUTO FINANCE\n[Finance Company #4 > —] Finance Company GL Account Number: N2283\n[New Vehicle Inventory > —] Journal Name and Journal Number: RETAIL NEW VEHICLE SALES JOURNAL # 10 / LEASES NEW LEASE SALES JOURNAL # 11\n[New Vehicle Inventory > —] Inventory GL Account (Car): N2320\n[New Vehicle Inventory > —] Inventory GL Account (Truck): N2320\n[New Vehicle Inventory > —] Inventory GL Account (Rental): DO NOT HAVE RENTAL DEPARTMENT\n[New Vehicle Inventory > —] Inventory GL Account (Demo): N2300\n[New Vehicle Inventory > —] Inventory GL Account (Loaner): N2610\n[New Vehicle Inventory > —] Inventory GL Account (Company): N2750\n[Fixed Ops Service GL Mapping > —] Departments : Service Department, Express Lane/ Quick Lube, PDI, Reconditioning, Detail, Accessories\n[Service - Payment Method - Internal > —] Which internal payment methods do you use?: New Car Policy, Used Car Policy, Service Dept Policy, Parts Dept Policy, New Car Inventory, New Truck Inventory, Used Car Inventory, Used Truck Inventory, New Car - Lot Damage, Used Car - Lot Damage, Service Dept  - Lot Damage, Parts Dept  - Lot Damage\n[Service - Payment Method - Internal > —] New Car Policy  GL Account Number: N7111\n[Service - Payment Method - Internal > —] Used Car Policy GL Account Number: N7112\n[Service - Payment Method - Internal > —] Service Dept Policy GL Account Number: N7113\n[Service - Payment Method - Internal > —] Parts Dept Policy GL Account Number: N7115\n[Service - Payment Method - Internal > —] New Car Inventory GL Account Number: N2320\n[Service - Payment Method - Internal > —] New Truck Inventory GL Account Number: N2320\n[Service - Payment Method - Internal > —] Used Car Inventory GL Account Number: N2400 FOR USED LEXUS / N2409 FOR USED NON-LEXUS\n[Service - Payment Method - Internal > —] Used Truck Inventory GL Account Number: N2400 FOR USED LEXUS / N2409 FOR USED NON-LEXUS\n[Service - Payment Method - Internal > —] New Car - Lot Damage GL Account Number: N2320\n[Service - Payment Method - Internal > —] Used Car - Lot Damage GL Account Number: N2400 FOR USED LEXUS / N2409 FOR USED NON-LEXUS\n[Service - Payment Method - Internal > —] Service Dept - Lot Damage GL Account Number: N7113\n[Service - Payment Method - Internal > —] Parts Dept - Lot Damage GL Account Number: N7115\n[Parts - AR Charge Payment Method > —] Counter Sales/Retail GL Account: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Parts - AR Charge Payment Method > —] Wholesale GL Account: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Finance Company #2 > —] Finance Company Name: TOYOTA LEASE TRUST\n[Finance Company #2 > —] Finance Company GL Account Number: N2283\n[Service Internal Sales GL Mapping > —] Internal Pay GL Account Number: N4430\n[Service Internal Sales GL Mapping > —] Internal Pay Sublet GL Account Number: N4460\n[Service Internal Sales GL Mapping > —] Internal Quick Lube GL Account Number: N4430\n[Accounts Receivable Settings > —] What date do you typically run your A/R statements?: 3rd\n[Accounts Receivable Settings > —] Do you use A/R open item?: Yes\n[Accounts Receivable Settings > —] Which AR GL accounts do you use in the AR open-item feature?: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Accounts Receivable Settings > —] AR Account Number for Service ROs: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Accounts Receivable Settings > —] AR Account Number for Parts Tickets: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Accounts Receivable Settings > —] AR Account Number for Vehicle Sales: NONE\n[Accounts Receivable Settings > —] Cash Clearing GL Account Number for AR: T2041 / T2042 (Let's discuss)\n[Accounts Receivable Settings > —] Cash In Bank GL Account Number for AR: T2020B\n[Accounts Receivable Settings > —] Employee A/R GL Account Number: N2105 - DO NOT RUN STATEMENTS\n[Accounts Receivable Settings > —] Do all active employees have an employee A/R account?: Yes\n[Accounts Receivable Settings > —] What e-mail address do you want A/R statements to come from?: ar@beanauto.com\n[Accounts Receivable Settings > —] AR Discount GL Account: None\n[Accounts Receivable Settings > —] AR Journal Name and Journal Number: CASH RECEIPTS OPEN ITEMS JOURNAL 57\n[Accounts Receivable Settings > —] Do you charge finance charges on AR invoices?: No\n[Accounts Receivable Settings > —] Do you offer customer discounts if they pay early?: No\n[Accounts Receivable Settings > —] AR invoices are delinquent after how many days?: 30 days\n[Accounts Receivable Settings > —] In what order would you like the detail to be on A/R statements?: Due Date - Oldest First\n[Finance Company #14 > —] Finance Company Name: LENDBUZZ FUNDING LLC\n[Finance Company #14 > —] Finance Company GL Account Number: N2283\n[Used Vehicle GL Sale Account Mapping > —] Cash Receipt Cash Clearing GL Account Number: N2010\n[Used Vehicle GL Sale Account Mapping > —] Select your Used Vehicle Sale Types: Individual / Personal, Business / Commercial, Wholesale\n[Used Vehicle Business / Commercial > —] Used Car Sale Account: N4310 NON- LEXUS USED RETAIL\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Certified: N4303 LEXUS USED RETAIL CERTIFIED / N4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Business / Commercial > —] Used Car Sale Account - Non-Certified: N4305\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account: N4310 NON- LEXUS USED RETAIL\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account - Certified: N4303 LEXUS USED RETAIL CERTIFIED / N4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Business / Commercial > —] Used Truck Sale Account - Non-Certified: N4305\n[Service - Payment Methods - Customer Pay > —] Cash GL Account: N2040\n[Service - Payment Methods - Customer Pay > —] Check GL Account: N2040\n[Service - Payment Methods - Customer Pay > —] Credit/Debit Card GL Account: N2040\n[Service - Payment Methods - Customer Pay > —] AR Charge GL Account: T2100 - WE HAVE CENTRALIZED ACCOUNTING\n[Service - Payment Methods - Customer Pay > —] Service Contract GL Account: N2140\n[Service - Payment Methods - Customer Pay > —] GM - OEM Reward GL Account: NONE\n[Deal Posting Pack Notes > —] Additional Deal Posting Packs Details Not Addressed Above : SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.\n[Service - Payment Methods - Warranty > —] Warranty Claim GL Account: N2200\n[Factory Receivables > —] Holdback GL Account Number: NA\n[Factory Receivables > —] Rebate GL Account Number: N2240\n[Factory Receivables > —] Incentives GL Account Number: N2241 N2243 N2251 N2252 N2254\n[General Department Information (Part 1) > —] Please select your country: USA\n[General Department Information (Part 1) > —] What are you retained earnings accounts and how are they used?: N3920- Retained Earnings.  Net Income is closed out to Retained Earnings once the year has been closed out in CDK.\nWe do have other accounts such as well which make up the Net Investment (Capital Stock, Additional Paid In Capital, and Dividends).\n[General Department Information (Part 1) > —] What payroll provider do you currently use?: PAYCOM\n[General Department Information (Part 1) > —] What payroll provider will you use at the time of the Tekion ARC go live date?: PAYCOM\n[General Department Information (Part 1) > —] Please list all manufacturer dealer codes (and BAC codes for GM dealers): 60932\n[General Department Information (Part 1) > —] Please describe the accounting G/L or Journal restrictions: Restrictions can apply to access to G/L or Journal or viewing G/L or Journal.\n[General Department Information (Part 1) > —] Federal Tax ID / EIN:: 52-2136189\n[General Department Information (Part 1) > —] State Tax ID:: 23-8013386976-4\n[General Department Information (Part 1) > —] State Dealer Code:: VF/1001186/2\n[General Department Information (Part 1) > —] DMV #:: VF/1001186/2\n[General Department Information (Part 1) > —] Are there any state/province specific identification numbers that print on every document such as Repair Orders?: MV55623\n[General Department Information (Part 1) > —] Please describe your accounting prefixes:: T = Kendall Toyota, L = Lexus of Kendall, J = West Kendall Toyota, N = Lexus of West Kendall\n[Parts and Labor Tax Rates > —] Is your tax rate for parts and labor the same?: Yes\n[Parts and Labor Tax Rates > —] Tax rate on Parts and Labor?: 6% STATE OF FLORIDA / 1% MIAMI DADE COUNTY CAPPED AT $5000.00\n[Parts and Labor Tax Rates > —] Additional notes on parts / service taxes: LABOR ALONE ON A REPAIR ORDER IS NOT TAXABLE. IF PARTS ARE SOLD WITH THE LABOR, THE ENTIRE REPAIR ORDER IS TAXABLE IN THE STATE OF FLORIDA.\n[Parts and Labor Tax Rates > —] Do you charge tax on shop supplies?: Yes\n[Finance Company #9 > —] Finance Company Name: SANTANDER CONSUMER USA\n[Finance Company #9 > —] Finance Company GL Account Number: N2283\n[Vehicle Sales Payables > —] Lien Payoff GL Account: N3010\n[Vehicle Sales Payables > —] Title Fee GL Account Number: N3030\n[Vehicle Sales Payables > —] Registration GL Account Number: N3030\n[Vehicle Sales Payables > —] Emissions GL Account Number: N/A\n[Vehicle Sales Payables > —] Documentation Fee GL Account Number: N2030\n[Vehicle Sales Payables > —] Bank or Acquisition Fee GL Account Number : N2030\n[Vehicle Sales Payables > —] Lemon Law Fee GL Account Number: N3030\n[Vehicle Sales Payables > —] Lien Fee GL Account Number: N/A\n[Vehicle Sales Payables > —] Environment Protect Fee GL Account Number: NONE\n[Vehicle Sales Payables > —] State Fee GL Account Number: LEAD ACID FEE N3146\n[Vehicle Sales Payables > —] Waste Tire Fee GL Account Number: N7195\n[Vehicle Sales Payables > —] Tire Fee GL Account Number: N3150\n[Service Warranty Sales GL Mapping > —] Warranty GL Account Number: N4420\n[Service Warranty Sales GL Mapping > —] Warranty Sublet GL Account Number: N4460\n[Service Warranty Sales GL Mapping > —] Warranty Quick Lube GL Account Number: N4420\n[Source Specific RO Parts Sales GL Account > —] Do you have Source Specific RO Parts Sales GL Accounts?: Tires, Gas Oil Grease (GOG), Accessories\n[Source Specific RO Parts Sales GL Account > —] Do you have non-taxable GL accounts for source specific RO Sale Accounts?: No\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Customer Pay RO Parts Sales GL Accounts: N4725\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Customer Pay RO Parts Sales GL Accounts - Non-Taxable: N4725\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Internal RO Parts Sales GL Accounts: N4734\n[Source Specific RO Parts Sales GL Account > —] Tires Source Specific Warranty RO Parts Sales GL Accounts: N4720\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Customer Pay RO Parts Sales GL Accounts: N4770\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Customer Pay RO Parts Sales GL Accounts - Non-Taxable: N4770\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Internal RO Parts Sales GL Accounts: N4770\n[Source Specific RO Parts Sales GL Account > —] GOG Source Specific Warranty RO Parts Sales GL Accounts: N4770\n[Parts - Check Payment Method > —] Counter Sales/Retail GL Account: N2040\n[Parts - Check Payment Method > —] Wholesale GL Account: N2040\n[Finance Company #1 > —] Finance Company Name: ALLY FINANCIAL (FOR LEASES)\n[Finance Company #1 > —] Finance Company GL Account Number: N2283\n[Finance Company #5 > —] Finance Company Name: JP MORGAN CHASE BANK NA\n[Finance Company #5 > —] Finance Company GL Account Number: N2283\n[Parts Repair Order Sales Accounts > —] Parts RO Sales Optional Service Departments: Express Lane/Quick Lube, Commercial/Business\n[Parts Repair Order Sales Accounts > —] Do you have taxable and Non-taxable accounts?: Yes\n[Parts Repair Order Sales Accounts > —] RO Customer Pay Parts Sales GL Account: N4700\n[Parts Repair Order Sales Accounts > —] RO Customer Pay Parts Sales GL Account - Non-Taxable: N4700\n[Parts Repair Order Sales Accounts > —] RO Service Contract Parts Sales GL Account: N4700\n[Parts Repair Order Sales Accounts > —] RO Service Contract Parts Sales GL Account - Non-Taxable: N4700\n[Parts Repair Order Sales Accounts > —] RO Quick Lube Parts Sales GL Account: N4700\n[Parts Repair Order Sales Accounts > —] RO Quick Lube Parts Sales GL Account - Non-Taxable: N4700\n[Parts Repair Order Sales Accounts > —] RO Commercial Parts Sales GL Account: N4700\n[Parts Repair Order Sales Accounts > —] RO Commercial Parts Sales GL Account - Non-Taxable: N4700\n[Parts Repair Order Sales Accounts > —] RO Fleet Parts Sales GL Account: N4700\n[Parts Repair Order Sales Accounts > —] RO Fleet Parts Sales GL Account - Non-Taxable: N4700\n[Parts Repair Order Sales Accounts > —] RO Warranty Parts Sales GL Account: N4720\n[Parts Repair Order Sales Accounts > —] RO Internal Parts Sales GL Account: N4730\n[Used Vehicle Personal Purchase > —] Used Car Sale Account: N4310 NON- LEXUS USED RETAIL\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Certified: N4303 LEXUS USED RETAIL CERTIFIED / N4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Personal Purchase > —] Used Car Sale Account - Non-Certified: N4305\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account: N4310 NON- LEXUS USED RETAIL\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account - Certified: N4303 LEXUS USED RETAIL CERTIFIED / N4304 LEXUS USED LEASED CERTIFIED\n[Used Vehicle Personal Purchase > —] Used Truck Sale Account - Non-Certified: N4305\n[Used Vehicle Wholesale > —] Used Car Sale Account: N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Truck Sale Account: N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Car Sale Account - Certified: N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Car Sale Account - Non-Certified: N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Certified: N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE\n[Used Vehicle Wholesale > —] Used Truck Sale Account - Non-Certified: N4320 LEXUS USED WHOLESALE / N4322 NON-LEXUS USED WHOLESALE\n[Cash Receipts > —] Journal Name and Journal Number for Cash Receipts: CASH RECEIPTS JOURNAL # 56\n[Cash Receipts > —] How do you post your day collection from service and parts?: Manual journal entry in my existing DMS\n[Cash Receipts > —] How do you post customer down payments?: Individual cash receipts\n[Parts RO Sales Notes > —] Additional Parts RO Sales Details Not Addressed Above : NEED TO DISCUSS PARTS SOURCING AND MAPPING TO THE FINANCIAL STATEMENT.\n[Credit/Debit Card - Vehicle Sales > —] Individual Purchase GL Account : N2040\n[Credit/Debit Card - Vehicle Sales > —] Only F&I - After Sale GL Account: N2040\n[Credit/Debit Card - Vehicle Sales > —] Business/Commercial GL Account : N2040\n[Credit/Debit Card - Vehicle Sales > —] DealerTrade GL Account: N2040\n[Credit/Debit Card - Vehicle Sales > —] Wholesale GL Account: N2040\n[Tekion Blueprint Submission > —] Please upload a sample payroll upload file (if applicable): PR08122026 LWK.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90028952/a82e40ed-9c99-441d-afed-bf045f1fa1a9/e83f1763-8d7f-4385-b31d-00ebecf61d8f/PR08122026%20LWK.xlsx)\n[Tekion Blueprint Submission > —] Are there any state/province, federal or OEM specific reporting which is used daily, weekly, monthly, quarterly or yearly?: 8300 LETTER, 1099 END OF YEAR GENERATED THRU CDK USING IRIS FORMAT FOR 1099 E FILING EXPORTED FROM CDK.\n[Tekion Blueprint Submission > —] Name of Submitter: JULIO CUBERO\n[Payment Method and Fee Notes > —] Additional Payment Methods and Fee Details Not Addressed Above : LET'S DISCUSS ENVIRONMENTAL FEE. DOES IT EQUAL LEAD ACID BATTERY.\n[Finance Company #7 > —] Finance Company Name: ALLY FINANCIAL (RETAIL)\n[Finance Company #7 > —] Finance Company GL Account Number: N2283\n[Finance Company #8 > —] Finance Company Name: SPACE COAST CREDIT UNION\n[Finance Company #8 > —] Finance Company GL Account Number: N2283\n[Finance Reserve GL Mapping Notes > —] Additional Finance Reserves Details Not Addressed Above : WE HAVE MORE BANKS, ABOUT 10-12 MORE.\n[OEM Reward > —] Counter Sales/Retail GL Account: NONE\n[OEM Reward > —] Wholesale GL Account: NONE\n[OEM Reward > —] Internal GL Account: NONE\n[OEM Reward > —] Repair GL Account: NONE\n[Used Vehicle Notes > —] Additional Used Vehicle Details Not Addressed Above : NEED TO DISCUSS RECONDITIONING AND LEASES\n[AR Charge - Vehicle Sales > —] Individual Purchase GL Account : N/A\n[AR Charge - Vehicle Sales > —] Only F&I - After Sale GL Account: N/A\n[AR Charge - Vehicle Sales > —] Business/Commercial GL Account : N/A\n[AR Charge - Vehicle Sales > —] DealerTrade GL Account: N2115\n[AR Charge - Vehicle Sales > —] Wholesale GL Account: N2118\n[Parts and Service Fees > —] Shop Supplies GL Account: N7193\n[Parts and Service Fees > —] Tire Fee GL Account: N3150\n[Parts and Service Fees > —] Environmental Fee GL Account: N3146\n[General Department Information (Part 2) > —] What would you like your first check # in Tekion to be?: CHECKS WILL RUN THRU KENDALL TOYOTA AS WE HAVE CENTRALIZED ACCOUTING.\n[General Department Information (Part 2) > —] What would you like your PO # in Tekion to be?: N25000\n[General Department Information (Part 2) > —] What banks do / will you send the Positive Pay file to?: Bank of America\n[General Department Information (Part 2) > —] Do you conduct Bank Reconciliation in your DMS?: Yes\n[General Department Information (Part 2) > —] What are the banks that you reconcile and what are the G/L accounts?: Bank of America N2020B\n[Finance Company #15 > —] Finance Company Name: WESTLAKE FINANCIAL SERVICES\n[Finance Company #15 > —] Finance Company GL Account Number: N2283\n[Finance Company #6 > —] Finance Company Name: CAPITAL ONE AUTO FINANCE\n[Finance Company #6 > —] Finance Company GL Account Number: N2283\n[Accounts Payable Settings > —] On what date do you typically run your AP batch?: 7th\n[Accounts Payable Settings > —] What is your Invoice cutoff date?: 30th\n[Accounts Payable Settings > —] Which AP GL accounts do you use in the AP open-item feature? : T3000 WE HAVE CENTRALIZED ACCOUNTING WERE ALL INVOICES WILL BE POSTED TO\n[Accounts Payable Settings > —] In what order would you like your Invoices in Batch Payments to display?: Vendor Name\n[Accounts Payable Settings > —] What type of schedule is your A/P account?: Open Item\n[Accounts Payable Settings > —] In which month is your invoice cutoff date?: Date in previous month\n[Accounts Payable Settings > —] AP GL Account Number: T3000 WE HAVE CENTRALIZED ACCOUNTING WERE ALL INVOICES WILL BE POSTED TO\n[Accounts Payable Settings > —] AP Discount Account Number: T3000 WE HAVE CENTRALIZED ACCOUNTING WERE ALL INVOICES WILL BE POSTED TO\n[Accounts Payable Settings > —] AP Cash payment Journal Name and Journal Number: CASH DISBURSEMENT JOURNAL # 60\n[Accounts Payable Settings > —] Purchase Journal: Journal Name and Journal Number: GENEREAL PURCHASES JOURNAL 75\n[Accounts Payable Settings > —] AP Bank Name: Bank of America\n[Accounts Payable Settings > —] AP Bank Account GL Account Number: T2023B - Bank of America (Cash Disbursements) / T2222 - Credit Card Payables (We would like to setup a different account for ACHs as they are lumped into this\n[Accounts Payable Settings > —] Additional AP Details Not Addressed Above : Let's review as we have questions. Payments will run thru Kendall Toyota as we have centralized accounting.\n[Finance Company #13 > —] Finance Company Name: DADE COUNTY FCU\n[Finance Company #13 > —] Finance Company GL Account Number: N2283\n[CIT - Receivable - Vehicle Sales > —] Individual Purchase GL Account : N2030\n[CIT - Receivable - Vehicle Sales > —] Only F&I - After Sale GL Account: N2030\n[CIT - Receivable - Vehicle Sales > —] Business/Commercial GL Account : N2030\n[CIT - Receivable - Vehicle Sales > —] DealerTrade GL Account: N/A\n[CIT - Receivable - Vehicle Sales > —] Wholesale GL Account: N/A\n[Parts Source Specific GL Accounting > —] Do you have source specific inventory GL accounts?: Tires, Gas Oil Grease (GOG), Accessories, Other\n[Parts Source Specific GL Accounting > —] Do you have non-taxable source specific sale GL accounts?: No\n[Parts Source Specific GL Accounting > —] Tires Source Specific GL Account: N4725\n[Parts Source Specific GL Accounting > —] GOG Source Specific GL Account: N4770\n[Parts Source Specific GL Accounting > —] Accessories Specific GL Account: LET'S DISCUSS\n[Parts Source Specific GL Accounting > —] Other Source Specific Name: LET'S DISCUSS\n[Parts Source Specific GL Accounting > —] Other Source Specific Account Number: LET'S DISCUSS\n[Fixed Ops Other Accounts > —] Sales Tax - Labor GL Account: 6% STATE OF FLORIDA N3140 / 1% MIAMI DADE COUNTY N3141\n[Fixed Ops Other Accounts > —] Sales Tax - Parts GL Account: 6% STATE OF FLORIDA N3140 / 1% MIAMI DADE COUNTY N3141\n[Fixed Ops Other Accounts > —] Freight - Taxable - GL Account: N7185\n[Fixed Ops Other Accounts > —] Freight - Non-Taxable - GL Account: N7185\n[Fixed Ops Other Accounts > —] Other Supplies - GL Account: N7193\n[Fixed Ops Other Accounts > —] Other Supplies - Non-Taxable - GL Account: N7193\n[Fixed Ops Other Accounts > —] Restocking Fee - GL Account: N6799 20% PART AMOUNT\n[Finance Company #3 > —] Finance Company Name: LEXUS FINANCIAL SERVICES\n[Finance Company #3 > —] Finance Company GL Account Number: N2283\n[Finance Company #12 > —] Finance Company Name: BANK OF AMERICA\n[Finance Company #12 > —] Finance Company GL Account Number: N2283\n[Cost Adjustments #1 > —] Name of Cost Adjustment: Front End Delivery Fee\n[Cost Adjustments #1 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #1 > —] Cost Adjustment Account #: Cost of Sales\n[Commissions > —] Does your current DMS calculate sales commissions?: Yes\n[Commissions > —] Please select the staff for which commissions are calculated in the deal:: Salesperson\n[Commissions > —] Are BDC employees ever added in the commissions screen?: No\n[Commissions > —] Do you remove any packs from the commissionable gross? (please list out all): YES SEE EMAIL\n[Commissions > —] Please upload documentation containing sales commission details here:: JULY COMISSIONS.xlsx (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90028952/a82e40ed-9c99-441d-afed-bf045f1fa1a9/61c80616-f0a0-486b-8610-a041806ed882/JULY%20COMISSIONS.xlsx)\n[Commissions > —] Additional Notes about Commissions: BDC EMPLOYEEDS ARE NOT CURRENTLY ADDED IN THE COMMISSION SCREEN, BUT WE WOULD BE INTERESTED IN DOING SO.\n[Service - Taxes > —] Are coupon discounts taken before or after tax is applied?: Before tax is applied\n[Service - Taxes > —] Is your tax rate the same for Parts, Labor, Sublets and Deductibles?: Yes\n[Service - Taxes > —] Are there any special tax conditions? Examples below: Others: DEDUCTIBLES TO BE TAXED\n[Service - Taxes > —] Tax rate for Parts and Labor: 6% STATE OF FLORIDA / 1% MIAMI-DADE COUNTY CAPPED AT $5000.00\n[Service - Taxes > —] Taxes - Additional Information / Notes: 1% MIAMI-DADE COUNTY CAPPED AT $5000.00\n[Service Accounting Settings > —] Do you use Quicklane or Express account sections on your financial statement?: No\n[Service Accounting Settings > —] What is your desired Tekion starting RO #?: 375000N\n[Service Accounting Settings > —] How do you track lane/express separately for Accounting?: N/A\n[Service Accounting Settings > —] Do you use a dedicated department in the service application to drive the QL/Express accounting, or specific labor op codes?: Labor Ops/Service Types\n[Service Accounting Settings > —] What is your current RO #?: 338487N-AND COUNTING\n[Service Accounting Settings > —] Do you use a manufacturer reward/gift/loyalty rewards payment option?: N/A\n[Service Accounting Settings > —] Who is your credit card processing company?: Cenpos, Elavon\n[Parts Accounting Settings > —] Please select all that are taxable: : Parts, Gas Oil Grease (GOG), Freight, Charge tax when a core is sold, Refund tax when a core is returned\n[Parts Accounting Settings > —] What is the parts tax rate? : Others: 6% STATE OF FLORIDA / 1% MIAMI DADE COUNTY CAPPED AT $5000 SALES\n[Parts Accounting Settings > —] What is your current parts invoice #? : 244643\n[Parts Accounting Settings > —] What would you like your starting Purchase Order number to be?: N25000\n[Parts Accounting Settings > —] What do you want to start your parts invoice numbers in Tekion?: 260000\n[Vehicle Inventory Pack Notes > —] Additional Vehicle Inventory Posting Packs Details Not Addressed Above : SEVERAL PACKS PER DEAL. THESE PACKS CREDIT GROSS, EXPENSES, AND OTHER INCOME.\n[Cost Adjustments #5 > —] Name of Cost Adjustment: Other / Miscellaneous\n[Cost Adjustments #5 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #5 > —] Cost Adjustment Account #: Cost of Sales\n[Cost Adjustments #2 > —] Name of Cost Adjustment: Broker Fee\n[Cost Adjustments #2 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #2 > —] Cost Adjustment Account #: Cost of Sales\n[Cost Adjustments #4 > —] Name of Cost Adjustment: Third Party Lease Fee\n[Cost Adjustments #4 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #4 > —] Cost Adjustment Account #: Cost of Sales\n[Cost Adjustments #3 > —] Name of Cost Adjustment: Back to Customer\n[Cost Adjustments #3 > —] Cost Adjustment Gross: Front Gross\n[Cost Adjustments #3 > —] Cost Adjustment Account #: Cost of Sales"
   },
-  "savedAt": "2026-10-01T17:25:44.341Z"
+  "savedAt": "2026-10-13T19:00:26.620Z"
 }

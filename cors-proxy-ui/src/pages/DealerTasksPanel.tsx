@@ -1,30 +1,8 @@
 /**
- * DealerTasksPanel Component
- *
- * Purpose:
- * Renders an operational management workspace for a dealership's TAP (Tekion Automation Platform)
- * blueprint tasks across three functional departments: Parts, Service, and Accounting.
- *
- * Core Capabilities:
- * 1. Task Lifecycle & Status Sync:
- *    - Fetches and caches module-level blueprint tasks via TAP APIs.
- *    - Allows users to transition task statuses (e.g., 'new' -> 'inprogress' -> 'completed').
- *    - Automatically derives and rolls up operational statuses for Fixed Ops (Parts + Service)
- *      and Variable Ops (Accounting), propagating changes back to the parent Stores tracker.
- *
- * 2. Attachment Management:
- *    - Scans and loads task file attachments asynchronously.
- *    - Emits snapshot updates (`onTasksSnapshot`) with attachment counts to surface metrics
- *      and incomplete quality-audit flags in the main Stores table.
- *    - Supports uploading local attachments directly to individual TAP tasks.
- *
- * 3. Smart Mention Comments:
- *    - Auto-populates pre-formatted templates ("Flag Issue" / "Completion Note").
- *    - Automatically detects relevant department leads from Slack candidate lists to tag
- *      the appropriate POD/lead email in comments.
+ * DealerTasksPanel Component (Spacious, Clean Layout with ProseMirror Parser)
  */
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import {
   resolveStoreProjectId,
   type CustomPhaseStatus,
@@ -37,11 +15,14 @@ import {
   uploadTapTaskAttachment,
   fetchTaskAttachments,
   fetchTaskAttachmentsOrNull,
+  fetchTapTaskComments,
+  formatDueDateInfo,
   type TapAttachmentItem,
   type TapBlueprintModule,
   type TapTask,
   type TapTaskCommentMention,
   type TapTaskStatus,
+  type TapTaskCommentItem,
 } from "../services/tapTasksApi";
 import {
   buildStoreSlackDraftContext,
@@ -52,6 +33,7 @@ export interface TapTaskWithAttachment extends Partial<TapTask> {
   taskId: number;
   taskName: string;
   status: TapTaskStatus | string;
+  dueDate?: number | null;
   taskAttachmentCount?: number;
   attachments?: TapAttachmentItem[];
   id?: string;
@@ -70,8 +52,9 @@ export interface StoreBlueprintTasksCache {
   fetchedAt?: string;
 }
 
-export type TapTaskDetail = TapTaskWithAttachment;
+// Aliases exported for backward compatibility across Stores.tsx and DealerMetaModal
 export type StoreBlueprintTasks = StoreBlueprintTasksCache;
+export type TapTaskDetail = TapTaskWithAttachment;
 
 interface Props {
   row: StoreRecord & { fetched_blueprint_tasks?: StoreBlueprintTasksCache };
@@ -81,8 +64,11 @@ interface Props {
     field: "fixed_ops_status" | "variable_ops_status",
     value: CustomPhaseStatus
   ) => Promise<void> | void;
-  /** Reports resolved tasks + attachment counts so the Stores table can show them. */
-  onTasksSnapshot?: (tekionId: string, tasks: TapTasksByModuleWithAttachment, complete: boolean) => void;
+  onTasksSnapshot?: (
+    tekionId: string,
+    tasks: TapTasksByModuleWithAttachment,
+    complete: boolean
+  ) => void;
 }
 
 type CommentTemplate = "issue" | "completed";
@@ -97,11 +83,11 @@ const MODULES: TapBlueprintModule[] = ["parts", "service", "accounting"];
 
 const moduleMeta: Record<
   TapBlueprintModule,
-  { label: string; operationalName: "Fixed Ops" | "Variable Ops"; icon: string }
+  { label: string; operationalName: "Fixed Ops" | "Variable Ops" }
 > = {
-  parts: { label: "Parts", operationalName: "Fixed Ops", icon: "📦" },
-  service: { label: "Service", operationalName: "Fixed Ops", icon: "🔧" },
-  accounting: { label: "Accounting", operationalName: "Variable Ops", icon: "📊" },
+  parts: { label: "Parts", operationalName: "Fixed Ops" },
+  service: { label: "Service", operationalName: "Fixed Ops" },
+  accounting: { label: "Accounting", operationalName: "Variable Ops" },
 };
 
 function normalizeStatus(status?: string): TapTaskStatus {
@@ -118,34 +104,18 @@ function nextStatus(status: TapTaskStatus): "inprogress" | "completed" | null {
   return null;
 }
 
-function lifecycleButtonLabel(status: TapTaskStatus): string {
-  if (status === "new") return "▶ Start Task";
-  if (status === "inprogress") return "✓ Mark Completed";
-  if (status === "completed") return "✓ Completed";
-  return "Duplicate";
-}
-
 function calculatePhaseStatus(tasks: TapTaskWithAttachment[]): CustomPhaseStatus {
   const statuses = tasks.map((task) => normalizeStatus(task.status));
-  if (statuses.length === 0 || statuses.every((status) => status === "new")) {
-    return "TO DO";
-  }
-  if (statuses.every((status) => status === "completed")) {
-    return "Completed";
-  }
+  if (statuses.length === 0 || statuses.every((status) => status === "new")) return "TO DO";
+  if (statuses.every((status) => status === "completed")) return "Completed";
   return "WIP";
 }
 
 function calculateFixedOpsStatus(tasks: TapTasksByModuleWithAttachment): CustomPhaseStatus {
   const partsStatus = calculatePhaseStatus(tasks.parts);
   const serviceStatus = calculatePhaseStatus(tasks.service);
-
-  if (partsStatus === "Completed" && serviceStatus === "Completed") {
-    return "Completed";
-  }
-  if (partsStatus === "TO DO" && serviceStatus === "TO DO") {
-    return "TO DO";
-  }
+  if (partsStatus === "Completed" && serviceStatus === "Completed") return "Completed";
+  if (partsStatus === "TO DO" && serviceStatus === "TO DO") return "TO DO";
   return "WIP";
 }
 
@@ -211,22 +181,26 @@ export default function DealerTasksPanel({
   const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [busyTaskId, setBusyTaskId] = useState<number | null>(null);
+
+  // Comments feed
+  const [comments, setComments] = useState<TapTaskCommentItem[]>([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+
+  // Composer
   const [commentTemplate, setCommentTemplate] = useState<CommentTemplate>("issue");
   const [commentText, setCommentText] = useState("");
   const [postingComment, setPostingComment] = useState(false);
+
+  // Uploads
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [loadingAttachments, setLoadingAttachments] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Resolves primary onboarding_project_id, then falls back to ds_onboarding_project_id
   const resolvedProjectId = resolveStoreProjectId(row);
-
   const moduleTasks = tasks[activeModule];
   const selectedTask =
-    moduleTasks.find((task: TapTaskWithAttachment) => task.taskId === selectedTaskId) ??
-    moduleTasks[0] ??
-    null;
+    moduleTasks.find((task) => task.taskId === selectedTaskId) ?? moduleTasks[0] ?? null;
 
   const dealerContext = useMemo(
     () => ({
@@ -242,6 +216,40 @@ export default function DealerTasksPanel({
     [row, activeModule]
   );
 
+  const dueInfo = useMemo(
+    () => formatDueDateInfo(selectedTask?.dueDate),
+    [selectedTask?.dueDate]
+  );
+
+  const loadCommentsForCurrentTask = useCallback(
+    async (taskId?: number) => {
+      if (!taskId) {
+        setComments([]);
+        return;
+      }
+      setLoadingComments(true);
+      try {
+        const items = await fetchTapTaskComments(taskId, dealerContext);
+        setComments(items);
+      } catch (err) {
+        console.warn("[DealerTasksPanel] Failed loading comments", err);
+        setComments([]);
+      } finally {
+        setLoadingComments(false);
+      }
+    },
+    [dealerContext]
+  );
+
+  useEffect(() => {
+    if (selectedTask?.taskId) {
+      void loadCommentsForCurrentTask(selectedTask.taskId);
+    } else {
+      setComments([]);
+    }
+  }, [selectedTask?.taskId, loadCommentsForCurrentTask]);
+
+  // Scan and hydrate attachments in background
   useEffect(() => {
     const pending: Array<{ module: TapBlueprintModule; taskId: number }> = [];
     for (const m of MODULES) {
@@ -283,8 +291,7 @@ export default function DealerTasksPanel({
     const complete = all.every((t) => t.attachments !== undefined);
     const anyLoaded = all.some((t) => t.attachments !== undefined);
     if (anyLoaded) onTasksSnapshot(row.tekion_id, tasks, complete);
-    // eslint-disable-next-line react-hooks/exhaustive-dependencies
-  }, [tasks]);
+  }, [tasks, onTasksSnapshot, row.tekion_id]);
 
   const loadTasks = async (forceRemote = false) => {
     if (
@@ -301,6 +308,7 @@ export default function DealerTasksPanel({
           taskId: Number(t.taskId ?? t.id ?? 0),
           taskName: t.taskName ?? t.name ?? "Task",
           status: t.status ?? "new",
+          dueDate: t.dueDate ?? null,
           taskAttachmentCount: Number(t.taskAttachmentCount ?? t.attachments?.length ?? 0),
           attachments: t.attachments,
         })),
@@ -309,6 +317,7 @@ export default function DealerTasksPanel({
           taskId: Number(t.taskId ?? t.id ?? 0),
           taskName: t.taskName ?? t.name ?? "Task",
           status: t.status ?? "new",
+          dueDate: t.dueDate ?? null,
           taskAttachmentCount: Number(t.taskAttachmentCount ?? t.attachments?.length ?? 0),
           attachments: t.attachments,
         })),
@@ -317,63 +326,64 @@ export default function DealerTasksPanel({
           taskId: Number(t.taskId ?? t.id ?? 0),
           taskName: t.taskName ?? t.name ?? "Task",
           status: t.status ?? "new",
+          dueDate: t.dueDate ?? null,
           taskAttachmentCount: Number(t.taskAttachmentCount ?? t.attachments?.length ?? 0),
           attachments: t.attachments,
         })),
       };
 
       setTasks(cachedFormatted);
-      const firstModule =
-        MODULES.find((m) => cachedFormatted[m].length > 0) ?? "parts";
+      const firstModule = MODULES.find((m) => cachedFormatted[m].length > 0) ?? "parts";
       setActiveModule(firstModule);
       setSelectedTaskId(cachedFormatted[firstModule][0]?.taskId ?? null);
       return;
     }
 
     if (!resolvedProjectId) {
-      onToast("❌ This dealer does not have a TAP project ID (missing onboarding_project_id & ds_onboarding_project_id).");
+      onToast("❌ This dealer does not have a TAP project ID.");
       return;
     }
 
     setLoading(true);
     try {
-      const result = await fetchTapBlueprintTasks(resolvedProjectId, dealerContext);
+      // In popup refresh: always check if there is an indexed cache, otherwise discovers live
+      const result = await fetchTapBlueprintTasks(
+        resolvedProjectId,
+        dealerContext,
+        row.ds_onboarding_project_id,
+        forceRemote ? null : row.blueprint_task_index
+      );
+
+      const tasksMap = result.tasks;
 
       const formattedResult: TapTasksByModuleWithAttachment = {
-        parts: (result.parts || []).map((t: any) => ({
+        parts: (tasksMap.parts || []).map((t: any) => ({
           ...t,
           taskId: Number(t.taskId ?? t.id ?? 0),
           taskName: t.taskName ?? t.name ?? "Task",
+          dueDate: t.dueDate ?? null,
           taskAttachmentCount: Number(t.taskAttachmentCount ?? t.attachmentCount ?? 0),
         })),
-        service: (result.service || []).map((t: any) => ({
+        service: (tasksMap.service || []).map((t: any) => ({
           ...t,
           taskId: Number(t.taskId ?? t.id ?? 0),
           taskName: t.taskName ?? t.name ?? "Task",
+          dueDate: t.dueDate ?? null,
           taskAttachmentCount: Number(t.taskAttachmentCount ?? t.attachmentCount ?? 0),
         })),
-        accounting: (result.accounting || []).map((t: any) => ({
+        accounting: (tasksMap.accounting || []).map((t: any) => ({
           ...t,
           taskId: Number(t.taskId ?? t.id ?? 0),
           taskName: t.taskName ?? t.name ?? "Task",
+          dueDate: t.dueDate ?? null,
           taskAttachmentCount: Number(t.taskAttachmentCount ?? t.attachmentCount ?? 0),
         })),
       };
 
       setTasks(formattedResult);
-
-      const firstModule =
-        MODULES.find((module) => formattedResult[module].length > 0) ?? "parts";
+      const firstModule = MODULES.find((module) => formattedResult[module].length > 0) ?? "parts";
       setActiveModule(firstModule);
       setSelectedTaskId(formattedResult[firstModule][0]?.taskId ?? null);
-
-      if (
-        !formattedResult.parts.length &&
-        !formattedResult.service.length &&
-        !formattedResult.accounting.length
-      ) {
-        onToast("⚠ No matching DS - Onboarding blueprint tasks were found.");
-      }
     } catch (error) {
       console.error("[DealerTasksPanel] TAP task load failed", error);
       onToast("❌ TAP task functions is not working");
@@ -388,7 +398,6 @@ export default function DealerTasksPanel({
     setSelectedTaskId(null);
     setCommentTemplate("issue");
     void loadTasks(false);
-    // eslint-disable-next-line react-hooks/exhaustive-dependencies
   }, [row.tekion_id, resolvedProjectId]);
 
   useEffect(() => {
@@ -423,37 +432,26 @@ export default function DealerTasksPanel({
 
       const nextTasks: TapTasksByModuleWithAttachment = {
         ...tasks,
-        [activeModule]: tasks[activeModule].map((item: TapTaskWithAttachment) =>
+        [activeModule]: tasks[activeModule].map((item) =>
           item.taskId === task.taskId ? { ...item, status: updatedStatus } : item
         ),
       };
 
       setTasks(nextTasks);
       await applyDerivedOperationalStatuses(nextTasks);
-
-      onToast(
-        `✅ ${moduleMeta[activeModule].label} task updated to ${
-          updatedStatus === "inprogress" ? "In Progress" : "Completed"
-        }`
-      );
+      onToast(`✅ Updated to ${updatedStatus === "inprogress" ? "In Progress" : "Completed"}`);
     } catch (error) {
-      console.error("[DealerTasksPanel] TAP task status update failed", error);
-      onToast("❌ TAP task functions is not working");
+      console.error("[DealerTasksPanel] Status update failed", error);
+      onToast("❌ Status update failed");
     } finally {
       setBusyTaskId(null);
     }
-  };
-
-  const applyTemplate = (template: CommentTemplate) => {
-    setCommentTemplate(template);
-    setCommentText(defaultComment(activeModule, template, recipients));
   };
 
   const postComment = async () => {
     if (!selectedTask || !commentText.trim()) return;
 
     setPostingComment(true);
-
     const activeMentions = recipients.filter(
       (r) =>
         commentText.toLowerCase().includes(`@${r.name.toLowerCase()}`) ||
@@ -467,10 +465,12 @@ export default function DealerTasksPanel({
         activeMentions,
         dealerContext
       );
-      onToast("✅ TAP comment posted");
+      onToast("✅ Comment posted to TAP");
+      setCommentText(defaultComment(activeModule, commentTemplate, recipients));
+      void loadCommentsForCurrentTask(selectedTask.taskId);
     } catch (error) {
-      console.error("[DealerTasksPanel] TAP comment post failed", error);
-      onToast("❌ TAP task functions is not working");
+      console.error("[DealerTasksPanel] Post comment failed", error);
+      onToast("❌ Failed to post comment");
     } finally {
       setPostingComment(false);
     }
@@ -505,8 +505,8 @@ export default function DealerTasksPanel({
       setSelectedFile(null);
       if (fileInputRef.current) fileInputRef.current.value = "";
     } catch (error) {
-      console.error("[DealerTasksPanel] TAP attachment upload failed", error);
-      onToast("❌ TAP task functions is not working");
+      console.error("[DealerTasksPanel] Upload failed", error);
+      onToast("❌ Upload failed");
     } finally {
       setUploading(false);
     }
@@ -516,346 +516,553 @@ export default function DealerTasksPanel({
     selectedTask?.attachments?.length ?? selectedTask?.taskAttachmentCount ?? 0;
 
   return (
-    <div className="tasks-shell-grid">
-      <aside className="tasks-module-nav">
-        {MODULES.map((module) => {
-          const count = tasks[module].length;
-          const isCompleted =
-            count > 0 &&
-            tasks[module].every((t) => normalizeStatus(t.status) === "completed");
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100%",
+        minHeight: 640,
+        background: "#0a0f1d",
+        color: "#f1f5f9",
+        fontFamily: "system-ui, -apple-system, sans-serif",
+      }}
+    >
+      {/* 1. TOP HEADER NAVIGATION */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "14px 24px",
+          borderBottom: "1px solid #1e293b",
+          background: "#0d1424",
+        }}
+      >
+        <div style={{ display: "flex", gap: 10 }}>
+          {MODULES.map((module) => {
+            const count = tasks[module].length;
+            const isCompleted =
+              count > 0 && tasks[module].every((t) => normalizeStatus(t.status) === "completed");
+            const isActive = activeModule === module;
 
-          return (
-            <button
-              key={module}
-              type="button"
-              className={`module-nav-btn ${activeModule === module ? "active" : ""}`}
-              onClick={() => setActiveModule(module)}
-            >
-              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                <span>{moduleMeta[module].icon}</span>
+            return (
+              <button
+                key={module}
+                type="button"
+                onClick={() => setActiveModule(module)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  padding: "8px 16px",
+                  borderRadius: 6,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  border: isActive ? "1px solid #475569" : "1px solid transparent",
+                  background: isActive ? "#1e293b" : "transparent",
+                  color: isActive ? "#f8fafc" : "#94a3b8",
+                  transition: "all 0.15s ease",
+                }}
+              >
                 <span>{moduleMeta[module].label}</span>
-              </span>
-              <span className="module-badge-count">
-                {isCompleted ? "✓" : count}
-              </span>
-            </button>
-          );
-        })}
-
-        <div style={{ marginTop: "auto", paddingTop: 10 }}>
-          <button
-            type="button"
-            className="btn-secondary btn-sm"
-            style={{ width: "100%", justifyContent: "center" }}
-            disabled={loading}
-            onClick={() => void loadTasks(true)}
-          >
-            {loading ? "Loading…" : "↻ Reload"}
-          </button>
+                <span
+                  style={{
+                    padding: "2px 7px",
+                    borderRadius: 12,
+                    fontSize: 11,
+                    fontWeight: 700,
+                    background: isCompleted ? "rgba(34, 197, 94, 0.16)" : "#1e293b",
+                    color: isCompleted ? "#4ade80" : "#94a3b8",
+                  }}
+                >
+                  {isCompleted ? "✓" : count}
+                </span>
+              </button>
+            );
+          })}
         </div>
-      </aside>
 
-      <section style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {loading ? (
-          <div style={{ color: "#94a3b8", padding: 30, textAlign: "center" }}>
-            Loading blueprint tasks…
-          </div>
-        ) : !moduleTasks.length ? (
+        <button
+          type="button"
+          onClick={() => void loadTasks(true)}
+          disabled={loading}
+          style={{
+            background: "#1e293b",
+            border: "1px solid #334155",
+            color: "#cbd5e1",
+            borderRadius: 6,
+            padding: "6px 14px",
+            fontSize: 12,
+            fontWeight: 600,
+            cursor: "pointer",
+          }}
+        >
+          {loading ? "Refreshing..." : "↻ Reload"}
+        </button>
+      </div>
+
+      {/* 2. SUB-TASK PILL BAR */}
+      {moduleTasks.length > 1 && (
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            padding: "10px 24px",
+            background: "#080c17",
+            borderBottom: "1px solid #1e293b",
+            overflowX: "auto",
+          }}
+        >
+          {moduleTasks.map((t) => {
+            const isSelected = selectedTask?.taskId === t.taskId;
+            const tDue = formatDueDateInfo(t.dueDate);
+            const isDone = normalizeStatus(t.status) === "completed";
+
+            return (
+              <button
+                key={t.taskId}
+                type="button"
+                onClick={() => setSelectedTaskId(t.taskId)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "6px 12px",
+                  borderRadius: 6,
+                  fontSize: 12,
+                  fontWeight: isSelected ? 600 : 500,
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  background: isSelected ? "#1e293b" : "#101726",
+                  border: isSelected ? "1px solid #475569" : "1px solid #1e293b",
+                  color: isSelected ? "#f8fafc" : "#94a3b8",
+                }}
+              >
+                <span style={{ color: "#64748b" }}>#{t.taskId}</span>
+                <span style={{ maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis" }}>{t.taskName}</span>
+                {tDue?.isOverdue && !isDone && (
+                  <span style={{ color: "#f87171", fontSize: 10, fontWeight: 700 }}>OVERDUE</span>
+                )}
+                {isDone && <span style={{ color: "#4ade80", fontSize: 10 }}>✓</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* 3. DUAL-PANE BODY */}
+      {loading ? (
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", fontSize: 14 }}>
+          Loading task data...
+        </div>
+      ) : !selectedTask ? (
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", color: "#64748b", fontSize: 14 }}>
+          No active tasks found in {moduleMeta[activeModule].label}.
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "1.15fr 1fr", flex: 1, minHeight: 0 }}>
+          {/* LEFT COLUMN: Metadata, Schedule, Attachments */}
           <div
             style={{
-              color: "#94a3b8",
-              padding: 40,
-              border: "1px dashed rgba(255, 255, 255, 0.12)",
-              borderRadius: 12,
-              textAlign: "center",
+              padding: "24px 28px",
+              borderRight: "1px solid #1e293b",
+              overflowY: "auto",
+              display: "flex",
+              flexDirection: "column",
+              gap: 20,
             }}
           >
-            No active {moduleMeta[activeModule].label} blueprint configuration tasks found.
-          </div>
-        ) : (
-          <>
-            {moduleTasks.length > 1 && (
+            {/* Task Info */}
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#94a3b8", background: "#1e293b", padding: "2px 8px", borderRadius: 4 }}>
+                  TASK #{selectedTask.taskId}
+                </span>
+                <span style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
+                  {moduleMeta[activeModule].operationalName}
+                </span>
+              </div>
+              <h2 style={{ margin: "0 0 10px 0", fontSize: 19, fontWeight: 700, color: "#f8fafc", lineHeight: 1.3 }}>
+                {selectedTask.taskName}
+              </h2>
+              {selectedTask.descriptionPlain && (
+                <p style={{ margin: 0, fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>
+                  {selectedTask.descriptionPlain}
+                </p>
+              )}
+            </div>
+
+            {/* Schedule & Action Card */}
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "16px 20px",
+                borderRadius: 8,
+                background: "#111827",
+                border: "1px solid #1e293b",
+                gap: 14,
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                <span style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase", fontWeight: 700 }}>
+                  Due Date Schedule
+                </span>
+                {dueInfo ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, fontWeight: 600 }}>
+                    {dueInfo.isOverdue ? (
+                      <span
+                        style={{
+                          background: "rgba(239, 68, 68, 0.15)",
+                          color: "#f87171",
+                          border: "1px solid rgba(239, 68, 68, 0.3)",
+                          padding: "2px 8px",
+                          borderRadius: 4,
+                          fontSize: 12,
+                          fontWeight: 700,
+                        }}
+                      >
+                        ⚠️ Overdue by {Math.abs(dueInfo.daysRemaining)} days
+                      </span>
+                    ) : (
+                      <span style={{ color: "#cbd5e1" }}>📅 {dueInfo.formattedDate}</span>
+                    )}
+                    <span style={{ color: "#64748b", fontSize: 12 }}>({dueInfo.formattedDate})</span>
+                  </div>
+                ) : (
+                  <span style={{ fontSize: 13, color: "#64748b" }}>No due date specified</span>
+                )}
+              </div>
+
+              {/* Status Transition Button */}
+              <button
+                type="button"
+                disabled={!nextStatus(normalizeStatus(selectedTask.status)) || busyTaskId === selectedTask.taskId}
+                onClick={() => void changeTaskStatus(selectedTask)}
+                style={{
+                  padding: "8px 18px",
+                  borderRadius: 6,
+                  fontWeight: 600,
+                  fontSize: 13,
+                  cursor: "pointer",
+                  border: "none",
+                  background:
+                    normalizeStatus(selectedTask.status) === "completed"
+                      ? "rgba(34, 197, 94, 0.15)"
+                      : "#2563eb",
+                  color: normalizeStatus(selectedTask.status) === "completed" ? "#4ade80" : "#ffffff",
+                }}
+              >
+                {busyTaskId === selectedTask.taskId
+                  ? "Saving..."
+                  : normalizeStatus(selectedTask.status) === "new"
+                  ? "Start Task"
+                  : normalizeStatus(selectedTask.status) === "inprogress"
+                  ? "Mark Completed"
+                  : "✓ Completed"}
+              </button>
+            </div>
+
+            {/* Attachments Section */}
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#cbd5e1" }}>
+                  Attachments ({currentAttachmentCount})
+                </span>
+                {loadingAttachments && <span style={{ fontSize: 12, color: "#64748b" }}>Checking files...</span>}
+              </div>
+
               <div
                 style={{
                   display: "flex",
-                  gap: 8,
-                  overflowX: "auto",
-                  paddingBottom: 6,
+                  flexDirection: "column",
+                  gap: 10,
+                  padding: "14px 16px",
+                  borderRadius: 8,
+                  background: "#111827",
+                  border: "1px solid #1e293b",
                 }}
               >
-                {moduleTasks.map((t) => {
-                  const isSelected = selectedTask?.taskId === t.taskId;
-                  const attCount =
-                    t.attachments?.length ?? t.taskAttachmentCount ?? 0;
-                  return (
-                    <button
-                      key={t.taskId}
-                      type="button"
-                      onClick={() => setSelectedTaskId(t.taskId)}
-                      style={{
-                        padding: "6px 12px",
-                        borderRadius: 8,
-                        background: isSelected
-                          ? "rgba(56, 189, 248, 0.16)"
-                          : "rgba(30, 41, 59, 0.5)",
-                        border: `1px solid ${
-                          isSelected
-                            ? "rgba(56, 189, 248, 0.4)"
-                            : "rgba(148, 163, 184, 0.15)"
-                        }`,
-                        color: isSelected ? "#38bdf8" : "#94a3b8",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 6,
-                        whiteSpace: "nowrap",
-                        fontSize: 11,
-                        fontWeight: 600,
-                      }}
-                    >
-                      <span>#{t.taskId}</span>
-                      <span
-                        style={{
-                          maxWidth: 140,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                        }}
-                      >
-                        {t.taskName}
-                      </span>
-                      <span
-                        style={{
-                          fontSize: 10,
-                          padding: "1px 5px",
-                          borderRadius: 4,
-                          background:
-                            attCount > 0
-                              ? "rgba(56, 189, 248, 0.25)"
-                              : "rgba(148, 163, 184, 0.15)",
-                          color: attCount > 0 ? "#38bdf8" : "#94a3b8",
-                        }}
-                      >
-                        📎 {attCount}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
-            {selectedTask && (
-              <div className="task-hero-card">
-                <div className="task-hero-top">
-                  <div>
-                    <div className="task-hero-title">
-                      <span className="task-id-tag">#{selectedTask.taskId}</span>
-                      {selectedTask.taskName}
-                    </div>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        marginTop: 6,
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      <div style={{ fontSize: 11, color: "#64748b" }}>
-                        Notify Lead:{" "}
-                        <strong style={{ color: "#38bdf8" }}>
-                          {recipients.map((r) => r.name).join(", ") || "None assigned"}
-                        </strong>
-                      </div>
-
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: 4,
-                          padding: "3px 8px",
-                          borderRadius: 6,
-                          fontSize: 11,
-                          fontWeight: 700,
-                          lineHeight: 1,
-                          background:
-                            currentAttachmentCount > 0
-                              ? "rgba(56, 189, 248, 0.18)"
-                              : "rgba(148, 163, 184, 0.12)",
-                          color: currentAttachmentCount > 0 ? "#38bdf8" : "#94a3b8",
-                          border: `1px solid ${
-                            currentAttachmentCount > 0
-                              ? "rgba(56, 189, 248, 0.35)"
-                              : "rgba(148, 163, 184, 0.2)"
-                          }`,
-                        }}
-                      >
-                        <span>📎</span>
-                        <span>
-                          {loadingAttachments
-                            ? "Checking..."
-                            : `${currentAttachmentCount} ${
-                                currentAttachmentCount === 1
-                                  ? "Attachment"
-                                  : "Attachments"
-                              }`}
-                        </span>
-                      </span>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    className="btn-postman task-lifecycle-btn"
-                    disabled={
-                      !nextStatus(normalizeStatus(selectedTask.status)) ||
-                      busyTaskId === selectedTask.taskId
-                    }
-                    onClick={() => void changeTaskStatus(selectedTask)}
-                  >
-                    {busyTaskId === selectedTask.taskId
-                      ? "Updating…"
-                      : lifecycleButtonLabel(normalizeStatus(selectedTask.status))}
-                  </button>
-                </div>
-
-                {selectedTask.attachments && selectedTask.attachments.length > 0 && (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: 6,
-                      marginTop: 10,
-                      padding: "8px 10px",
-                      borderRadius: 6,
-                      background: "rgba(15, 23, 42, 0.5)",
-                      border: "1px solid rgba(56, 189, 248, 0.2)",
-                    }}
-                  >
+                {selectedTask.attachments && selectedTask.attachments.length > 0 ? (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                     {selectedTask.attachments.map((att) => (
                       <a
                         key={att.id}
                         href={att.link}
                         target="_blank"
                         rel="noreferrer"
-                        title="Click to view/download file"
                         style={{
                           display: "inline-flex",
                           alignItems: "center",
-                          gap: 5,
-                          fontSize: 11,
-                          color: "#38bdf8",
-                          background: "rgba(56, 189, 248, 0.12)",
-                          padding: "3px 8px",
-                          borderRadius: 4,
+                          gap: 8,
+                          padding: "6px 12px",
+                          borderRadius: 6,
+                          background: "#1e293b",
+                          border: "1px solid #334155",
+                          color: "#cbd5e1",
                           textDecoration: "none",
-                          border: "1px solid rgba(56, 189, 248, 0.25)",
+                          fontSize: 12,
+                          fontWeight: 500,
                         }}
                       >
                         <span>📄</span>
-                        <span>{att.name}</span>
-                        <span style={{ fontSize: 9, opacity: 0.7 }}>↗</span>
+                        <span style={{ maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {att.name}
+                        </span>
+                        <span style={{ fontSize: 10, color: "#64748b" }}>↗</span>
                       </a>
                     ))}
                   </div>
-                )}
-
-                {selectedTask.descriptionPlain && (
-                  <div
-                    style={{
-                      color: "#94a3b8",
-                      fontSize: 12,
-                      lineHeight: 1.4,
-                      marginTop: 8,
-                    }}
-                  >
-                    {selectedTask.descriptionPlain}
+                ) : (
+                  <div style={{ fontSize: 12, color: "#64748b", padding: "4px 0" }}>
+                    No attachments uploaded to this task.
                   </div>
                 )}
-              </div>
-            )}
 
-            <div className="task-composer-card">
-              <div className="composer-toolbar">
-                <div className="composer-template-pills">
-                  <button
-                    type="button"
-                    className={`template-pill-btn ${
-                      commentTemplate === "issue" ? "active" : ""
-                    }`}
-                    onClick={() => applyTemplate("issue")}
-                  >
-                    ⚠ Flag Issue
-                  </button>
-                  <button
-                    type="button"
-                    className={`template-pill-btn ${
-                      commentTemplate === "completed" ? "active" : ""
-                    }`}
-                    onClick={() => applyTemplate("completed")}
-                  >
-                    ✓ Completion Note
-                  </button>
-                </div>
-                <span style={{ fontSize: 11, color: "#64748b" }}>
-                  Backspace <strong>@Name</strong> to post without notifying
-                </span>
-              </div>
-
-              <textarea
-                className="composer-textarea"
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-              />
-
-              <div className="composer-footer">
-                <div className="attach-action-wrap">
+                {/* Upload Action */}
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4, paddingTop: 10, borderTop: "1px solid #1e293b" }}>
                   <input
                     ref={fileInputRef}
                     id={`file-picker-${row.tekion_id}`}
                     type="file"
                     hidden
-                    disabled={!selectedTask || uploading}
+                    disabled={uploading}
                     onChange={(e) => setSelectedFile(e.target.files?.[0] ?? null)}
                   />
                   <label
                     htmlFor={`file-picker-${row.tekion_id}`}
-                    className="btn-secondary btn-sm"
-                    style={{ cursor: "pointer" }}
+                    style={{
+                      padding: "6px 12px",
+                      borderRadius: 6,
+                      background: "#1e293b",
+                      border: "1px solid #334155",
+                      fontSize: 12,
+                      cursor: "pointer",
+                      fontWeight: 600,
+                      color: "#cbd5e1",
+                    }}
                   >
-                    📎 {selectedFile ? "Change File" : "Attach File"}
+                    {selectedFile ? "Change File" : "+ Attach Document"}
                   </label>
 
                   {selectedFile && (
                     <>
-                      <span className="attached-filename-chip" title={selectedFile.name}>
+                      <span style={{ fontSize: 12, color: "#e2e8f0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 220 }}>
                         {selectedFile.name}
                       </span>
                       <button
                         type="button"
-                        className="btn-postman btn-sm"
                         disabled={uploading}
                         onClick={() => void uploadFile()}
+                        style={{
+                          padding: "6px 14px",
+                          borderRadius: 6,
+                          background: "#2563eb",
+                          color: "#fff",
+                          border: "none",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: "pointer",
+                        }}
                       >
-                        {uploading ? "Uploading…" : "Upload"}
+                        {uploading ? "Uploading..." : "Upload"}
                       </button>
                     </>
                   )}
                 </div>
+              </div>
+            </div>
+          </div>
 
+          {/* RIGHT COLUMN: Conversation Stream */}
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              background: "#080c17",
+              height: "100%",
+            }}
+          >
+            {/* Feed Header */}
+            <div
+              style={{
+                padding: "16px 20px",
+                borderBottom: "1px solid #1e293b",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                Task Comments ({comments.length})
+              </span>
+              {loadingComments && <span style={{ fontSize: 12, color: "#64748b" }}>Loading comments...</span>}
+            </div>
+
+            {/* Scrollable Conversation Thread */}
+            <div
+              style={{
+                flex: 1,
+                overflowY: "auto",
+                padding: "20px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 14,
+              }}
+            >
+              {!loadingComments && comments.length === 0 ? (
+                <div style={{ textAlign: "center", color: "#64748b", fontSize: 13, margin: "auto 0" }}>
+                  No comments posted on this task yet.
+                </div>
+              ) : (
+                comments.map((item, idx) => {
+                  const author =
+                    typeof item.createdBy === "object"
+                      ? item.createdBy.name || item.createdBy.email || "Tekion User"
+                      : item.createdBy || "Tekion User";
+
+                  const timeStr = item.createdAt
+                    ? new Date(item.createdAt < 10000000000 ? item.createdAt * 1000 : item.createdAt).toLocaleDateString([], {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "";
+
+                  return (
+                    <div
+                      key={item.id || idx}
+                      style={{
+                        padding: "12px 14px",
+                        borderRadius: 8,
+                        background: "#111827",
+                        border: "1px solid #1e293b",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 6,
+                      }}
+                    >
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: "#e2e8f0" }}>{author}</span>
+                        {timeStr && <span style={{ fontSize: 11, color: "#64748b" }}>{timeStr}</span>}
+                      </div>
+
+                      <div
+                        style={{
+                          fontSize: 13,
+                          color: "#cbd5e1",
+                          lineHeight: 1.5,
+                          whiteSpace: "pre-wrap",
+                        }}
+                      >
+                        {item.content}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Anchored Composer Area */}
+            <div
+              style={{
+                padding: "16px 20px",
+                borderTop: "1px solid #1e293b",
+                background: "#0d1424",
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+              }}
+            >
+              {/* Template Buttons */}
+              <div style={{ display: "flex", gap: 8 }}>
                 <button
                   type="button"
-                  className="btn-postman"
-                  disabled={!selectedTask || postingComment || !commentText.trim()}
-                  onClick={() => void postComment()}
+                  onClick={() => {
+                    setCommentTemplate("issue");
+                    setCommentText(defaultComment(activeModule, "issue", recipients));
+                  }}
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: 4,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    background: commentTemplate === "issue" ? "rgba(239, 68, 68, 0.15)" : "#1e293b",
+                    color: commentTemplate === "issue" ? "#f87171" : "#94a3b8",
+                    border: "1px solid #334155",
+                  }}
                 >
-                  {postingComment ? "Posting…" : "Post Comment"}
+                  Flag Issue
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setCommentTemplate("completed");
+                    setCommentText(defaultComment(activeModule, "completed", recipients));
+                  }}
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: 4,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    background: commentTemplate === "completed" ? "rgba(34, 197, 94, 0.15)" : "#1e293b",
+                    color: commentTemplate === "completed" ? "#4ade80" : "#94a3b8",
+                    border: "1px solid #334155",
+                  }}
+                >
+                  Note Complete
+                </button>
+              </div>
+
+              <textarea
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Write a comment or tag team members..."
+                rows={3}
+                style={{
+                  width: "100%",
+                  boxSizing: "border-box",
+                  background: "#080c17",
+                  color: "#f8fafc",
+                  border: "1px solid #334155",
+                  borderRadius: 6,
+                  padding: "10px",
+                  fontSize: 13,
+                  outline: "none",
+                  resize: "none",
+                  lineHeight: 1.4,
+                }}
+              />
+
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <button
+                  type="button"
+                  disabled={postingComment || !commentText.trim()}
+                  onClick={() => void postComment()}
+                  style={{
+                    padding: "8px 18px",
+                    borderRadius: 6,
+                    background: "#2563eb",
+                    color: "#ffffff",
+                    border: "none",
+                    fontWeight: 600,
+                    fontSize: 12,
+                    cursor: "pointer",
+                  }}
+                >
+                  {postingComment ? "Posting..." : "Post Comment"}
                 </button>
               </div>
             </div>
-          </>
-        )}
-      </section>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@ import type { ExtendedStoreRecord } from "./Stores";
 import type { LearnedRule, ChatMessage, StoresAIProps } from "./stores-ai/types";
 import { loadLearnedRules, saveLearnedRules } from "./stores-ai/memoryStore";
 import { calculateDiffDays } from "./stores-ai/engine/timeline";
+import { isNotWorkedByArc } from "../services/storeAssessment";
 import { normalizeStoreList } from "./stores-ai/engine/normalizeStores";
 import { executeStoreQuery } from "./stores-ai/engine/queryEngine";
 import { interpretNaturalLanguageQuery } from "./stores-ai/engine/queryInterpreter";
@@ -336,7 +337,8 @@ export const StoresAI: React.FC<StoresAIProps> = ({
     return records
       .filter((r) => {
         const diff = calculateDiffDays(r.launch_date);
-        return diff >= 0 && diff <= 90;
+        // Decommissioned / Enterprise stores are not worked by ARC, so they are left out of the Copilot scope
+        return diff >= 0 && diff <= 90 && !isNotWorkedByArc(r);
       })
       .sort((a, b) => calculateDiffDays(a.launch_date) - calculateDiffDays(b.launch_date));
   }, [records]);
@@ -458,18 +460,38 @@ export const StoresAI: React.FC<StoresAIProps> = ({
 
         if (isFollowUp && lastQueryResult) {
           const idsSet = new Set(lastQueryResult.storeIds);
-          targetStores = records.filter((r) => idsSet.has(r.dealer_id));
+          targetStores = t90Stores.filter((r) => idsSet.has(r.dealer_id));
           exportDescription = `Filtered Query (${lastQueryResult.description})`;
         } else {
           const compiled = await interpretNaturalLanguageQuery(q, token);
           const matchedFacts = executeStoreQuery(compiled, normalizedFacts);
-          if (matchedFacts.length > 0 && matchedFacts.length < normalizedFacts.length) {
+          if (matchedFacts.length === 0) {
+            // Never send the full list when nothing matched
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === botMsgId ? { ...m, text: "No stores matched that request, so nothing was sent to Slack." } : m
+              )
+            );
+            setIsStreaming(false);
+            return;
+          }
+          if (matchedFacts.length < normalizedFacts.length) {
             const idsSet = new Set(matchedFacts.map((f) => f.dealerId));
-            targetStores = records.filter((r) => idsSet.has(r.dealer_id));
+            targetStores = t90Stores.filter((r) => idsSet.has(r.dealer_id));
             exportDescription = `Matched ${targetStores.length} stores based on filters`;
           } else {
             targetStores = t90Stores;
           }
+        }
+
+        if (targetStores.length === 0) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === botMsgId ? { ...m, text: "No stores matched that request, so nothing was sent to Slack." } : m
+            )
+          );
+          setIsStreaming(false);
+          return;
         }
 
         const dispatchResult = await dispatchStoresCsvToSlack(targetStores, exportDescription);

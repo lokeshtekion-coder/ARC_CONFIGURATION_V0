@@ -1,6 +1,7 @@
 import type { ExtendedStoreRecord } from "../../Stores";
 import type { StoreEvaluatedState } from "../types";
 import { calculateDiffDays } from "./timeline";
+import { isNotWorkedByArc, readinessStage } from "../../../services/storeAssessment";
 
 export function evaluateDependencies(t90Stores: ExtendedStoreRecord[]): StoreEvaluatedState[] {
   const report: StoreEvaluatedState[] = [];
@@ -12,7 +13,7 @@ export function evaluateDependencies(t90Stores: ExtendedStoreRecord[]): StoreEva
     const isTotallyExcluded =
       notWorked === "Fixed + Variable handled by POD" ||
       notWorked === "Fixed + Variable OFS";
-    if (isTotallyExcluded) continue;
+    if (isTotallyExcluded || isNotWorkedByArc(r)) continue;
 
     const variableBlockers: string[] = [];
     const partsBpDone = r.blueprint_statuses?.parts === "COMPLETED";
@@ -61,7 +62,12 @@ export function evaluateDependencies(t90Stores: ExtendedStoreRecord[]): StoreEva
         );
       }
 
-      if (acctBpDone && fixedOpsSatisfied) {
+      // Same readiness rule as the Stores table: blueprints, Fixed Ops, Accounting blueprint, COA and ACCTS counts.
+      const readiness = readinessStage(r);
+      if (acctBpDone && fixedOpsSatisfied && readiness.stage !== "READY") {
+        variableBlockers.push(readiness.label);
+      }
+      if (acctBpDone && fixedOpsSatisfied && readiness.stage === "READY") {
         if (varOwner) {
           variableOpsReadyToConfigure = true;
         } else {

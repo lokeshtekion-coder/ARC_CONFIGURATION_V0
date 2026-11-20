@@ -1,6 +1,7 @@
 import type { ExtendedStoreRecord } from "../../Stores";
 import type { StoreFact } from "../types/queryDsl";
 import { calculateDiffDays } from "./timeline";
+import { isNotWorkedByArc } from "../../../services/storeAssessment";
 
 export function normalizeStoreRecord(r: ExtendedStoreRecord): StoreFact {
   const launchDays = calculateDiffDays(r.launch_date);
@@ -21,7 +22,9 @@ export function normalizeStoreRecord(r: ExtendedStoreRecord): StoreFact {
     nwLower.includes("variable ops handled by pod") ||
     nwLower.includes("fixed + variable");
 
+  // Decommissioned in Pre-Prod or Enterprise tenant: ARC does not work these, so they are never actionable
   const isFullyExcluded =
+    isNotWorkedByArc(r) ||
     nwLower === "ofs" ||
     nwLower.includes("fixed + variable handled by pod") ||
     nwLower.includes("fixed + variable ofs") ||

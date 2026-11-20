@@ -1,0 +1,6785 @@
+{
+  "dealerId": "8216",
+  "timestamp": "2026-11-16T10-39-07-435Z",
+  "bootstrap": {
+    "dealerId": "8216",
+    "glAccounts": [
+      {
+        "key": "8216_8216_5540",
+        "accountName": "SLS INTERNAL LABOR",
+        "accountNumber": "5540",
+        "active": true,
+        "id": "8216_5540",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2031",
+        "accountName": "PDI RECEIVABLES",
+        "accountNumber": "2031",
+        "active": true,
+        "id": "8216_2031",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3120",
+        "accountName": "NEW-DEMO EXPENSE",
+        "accountNumber": "3120",
+        "active": true,
+        "id": "8216_3120",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4451",
+        "accountName": "DIS FLEET CARS",
+        "accountNumber": "4451",
+        "active": true,
+        "id": "8216_4451",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4450",
+        "accountName": "SLS FLEET CARS",
+        "accountNumber": "4450",
+        "active": true,
+        "id": "8216_4450",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3360",
+        "accountName": "USD F&I MGRS COMMISSIONS",
+        "accountNumber": "3360",
+        "active": true,
+        "id": "8216_3360",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2030",
+        "accountName": "NOTES PAYABLE",
+        "accountNumber": "2030",
+        "active": true,
+        "id": "8216_2030",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_1180",
+        "accountName": "ALLOW FOR DOUBTFUL ACCTS",
+        "accountNumber": "1180",
+        "active": true,
+        "id": "8216_1180",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2270",
+        "accountName": "NOTES PAY-USED VEHICLES",
+        "accountNumber": "2270",
+        "active": true,
+        "id": "8216_2270",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4207",
+        "accountName": "C/S RTL 300 SERIES INCENT",
+        "accountNumber": "4207",
+        "active": true,
+        "id": "8216_4207",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4206",
+        "accountName": "C/S LSE 300 SERIES",
+        "accountNumber": "4206",
+        "active": true,
+        "id": "8216_4206",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4205",
+        "accountName": "C/S RTL 300 SERIES",
+        "accountNumber": "4205",
+        "active": true,
+        "id": "8216_4205",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4447",
+        "accountName": "C/S RTL PATRIOT INCENT",
+        "accountNumber": "4447",
+        "active": true,
+        "id": "8216_4447",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4446",
+        "accountName": "C/S LSE PATRIOT",
+        "accountNumber": "4446",
+        "active": true,
+        "id": "8216_4446",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4203",
+        "accountName": "SLS LSE 300 SERIES",
+        "accountNumber": "4203",
+        "active": true,
+        "id": "8216_4203",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4445",
+        "accountName": "C/S RTL PATRIOT",
+        "accountNumber": "4445",
+        "active": true,
+        "id": "8216_4445",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5775",
+        "accountName": "C/S SERV CONT SOLD PARTS CNTR",
+        "accountNumber": "5775",
+        "active": true,
+        "id": "8216_5775",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5535",
+        "accountName": "C/S ROAD READY LABOR MECH",
+        "accountNumber": "5535",
+        "active": true,
+        "id": "8216_5535",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_1190",
+        "accountName": "DUE FROM F&I -CURR",
+        "accountNumber": "1190",
+        "active": true,
+        "id": "8216_1190",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_5550",
+        "accountName": "SLS NON AUTO CUST LABOR",
+        "accountNumber": "5550",
+        "active": true,
+        "id": "8216_5550",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4465",
+        "accountName": "C/S FLEET TRUCKS",
+        "accountNumber": "4465",
+        "active": true,
+        "id": "8216_4465",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4461",
+        "accountName": "DIS FLEET TRUCKS",
+        "accountNumber": "4461",
+        "active": true,
+        "id": "8216_4461",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4460",
+        "accountName": "SLS FLEET TRUCKS",
+        "accountNumber": "4460",
+        "active": true,
+        "id": "8216_4460",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_1191",
+        "accountName": "FINANCE RESERVE-CAPITAL ONE",
+        "accountNumber": "1191",
+        "active": true,
+        "id": "8216_1191",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2281",
+        "accountName": "N/P-CPOV",
+        "accountNumber": "2281",
+        "active": true,
+        "id": "8216_2281",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3370",
+        "accountName": "USD F&I MGRS SALARIES",
+        "accountNumber": "3370",
+        "active": true,
+        "id": "8216_3370",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1192",
+        "accountName": "FINANCE RESERVE-STELLANTIS",
+        "accountNumber": "1192",
+        "active": true,
+        "id": "8216_1192",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4455",
+        "accountName": "C/S FLEET CARS",
+        "accountNumber": "4455",
+        "active": true,
+        "id": "8216_4455",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5545",
+        "accountName": "C/S INTERNAL LABOR",
+        "accountNumber": "5545",
+        "active": true,
+        "id": "8216_5545",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5560",
+        "accountName": "SLS MECH SUBLET WORK",
+        "accountNumber": "5560",
+        "active": true,
+        "id": "8216_5560",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2070A",
+        "accountName": "AMERIPLUS EXTENDED WARRANTY",
+        "accountNumber": "2070A",
+        "active": true,
+        "id": "8216_2070A",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_5565",
+        "accountName": "C/S MECH SUBLET WORK",
+        "accountNumber": "5565",
+        "active": true,
+        "id": "8216_5565",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4476",
+        "accountName": "C/S LSE GR WAGONEER",
+        "accountNumber": "4476",
+        "active": true,
+        "id": "8216_4476",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4233",
+        "accountName": "SLS LSE VIPER",
+        "accountNumber": "4233",
+        "active": true,
+        "id": "8216_4233",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4475",
+        "accountName": "C/S RTL GR WAGONEER",
+        "accountNumber": "4475",
+        "active": true,
+        "id": "8216_4475",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4231",
+        "accountName": "DIS RTL VIPER",
+        "accountNumber": "4231",
+        "active": true,
+        "id": "8216_4231",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4473",
+        "accountName": "SLS LSE GR WAGONEER",
+        "accountNumber": "4473",
+        "active": true,
+        "id": "8216_4473",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4230",
+        "accountName": "SLS RTL VIPER",
+        "accountNumber": "4230",
+        "active": true,
+        "id": "8216_4230",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4471",
+        "accountName": "DIS RTL GR WAGONEER",
+        "accountNumber": "4471",
+        "active": true,
+        "id": "8216_4471",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4470",
+        "accountName": "SLS RTL GR WAGONEER",
+        "accountNumber": "4470",
+        "active": true,
+        "id": "8216_4470",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3380",
+        "accountName": "USD ADVERTISING-INTERNET ONLY",
+        "accountNumber": "3380",
+        "active": true,
+        "id": "8216_3380",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2050",
+        "accountName": "DIVIDENDS PAYABLE",
+        "accountNumber": "2050",
+        "active": true,
+        "id": "8216_2050",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_5555",
+        "accountName": "C/S NON AUTO CUST LABOR",
+        "accountNumber": "5555",
+        "active": true,
+        "id": "8216_5555",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_2070G",
+        "accountName": "GWC EXTENDED WARRANTY",
+        "accountNumber": "2070G",
+        "active": true,
+        "id": "8216_2070G",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_2070H",
+        "accountName": "HEADSTART WARRANTY",
+        "accountNumber": "2070H",
+        "active": true,
+        "id": "8216_2070H",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_5570",
+        "accountName": "SLS SUBLET WARR MECH",
+        "accountNumber": "5570",
+        "active": true,
+        "id": "8216_5570",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5575",
+        "accountName": "C/S SUBLET WARR MECH",
+        "accountNumber": "5575",
+        "active": true,
+        "id": "8216_5575",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4487",
+        "accountName": "C/S RTL RAM CHS CAB 3500 INCEN",
+        "accountNumber": "4487",
+        "active": true,
+        "id": "8216_4487",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4486",
+        "accountName": "C/S LSE RAM CHS CAB 3500",
+        "accountNumber": "4486",
+        "active": true,
+        "id": "8216_4486",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4485",
+        "accountName": "C/S RTL RAM CHS CAB 3500",
+        "accountNumber": "4485",
+        "active": true,
+        "id": "8216_4485",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4483",
+        "accountName": "SLS LSE RAM CHS CAB 3500",
+        "accountNumber": "4483",
+        "active": true,
+        "id": "8216_4483",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3151",
+        "accountName": "NEW-FLRPLAN INT CREDITS",
+        "accountNumber": "3151",
+        "active": true,
+        "id": "8216_3151",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2060",
+        "accountName": "VEHICLE LIEN PAYOFF",
+        "accountNumber": "2060",
+        "active": true,
+        "id": "8216_2060",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4481",
+        "accountName": "DIS RTL RAM CHS CAB 3500",
+        "accountNumber": "4481",
+        "active": true,
+        "id": "8216_4481",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3150",
+        "accountName": "NEW-FLOOR PLAN INTEREST",
+        "accountNumber": "3150",
+        "active": true,
+        "id": "8216_3150",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2061",
+        "accountName": "CERTIFIED PAY",
+        "accountNumber": "2061",
+        "active": true,
+        "id": "8216_2061",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4480",
+        "accountName": "SLS RTL RAM CHS CAB 3500",
+        "accountNumber": "4480",
+        "active": true,
+        "id": "8216_4480",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4237",
+        "accountName": "C/S RTL VIPER INCENT",
+        "accountNumber": "4237",
+        "active": true,
+        "id": "8216_4237",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4236",
+        "accountName": "C/S LSE VIPER",
+        "accountNumber": "4236",
+        "active": true,
+        "id": "8216_4236",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4235",
+        "accountName": "C/S RTL VIPER",
+        "accountNumber": "4235",
+        "active": true,
+        "id": "8216_4235",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4477",
+        "accountName": "C/S RTL GR WAGONEER INCENT",
+        "accountNumber": "4477",
+        "active": true,
+        "id": "8216_4477",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5580",
+        "accountName": "SLS QUICK SVC LBR MECH",
+        "accountNumber": "5580",
+        "active": true,
+        "id": "8216_5580",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2070",
+        "accountName": "MOPAR EXTEND WARRANTY",
+        "accountNumber": "2070",
+        "active": true,
+        "id": "8216_2070",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_5585",
+        "accountName": "C/S QUICK SVC LBR MECH",
+        "accountNumber": "5585",
+        "active": true,
+        "id": "8216_5585",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4256",
+        "accountName": "C/S LSE OTH NEW CAR CDJR",
+        "accountNumber": "4256",
+        "active": true,
+        "id": "8216_4256",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4255",
+        "accountName": "C/S RTL OTH NEW CAR CDJR",
+        "accountNumber": "4255",
+        "active": true,
+        "id": "8216_4255",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4253",
+        "accountName": "SLS LSE OTH NEW CAR CDJR",
+        "accountNumber": "4253",
+        "active": true,
+        "id": "8216_4253",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4251",
+        "accountName": "DIS RTL OTH NEW CAR CDJR",
+        "accountNumber": "4251",
+        "active": true,
+        "id": "8216_4251",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2071",
+        "accountName": "EXT WARR REC - ETCH",
+        "accountNumber": "2071",
+        "active": true,
+        "id": "8216_2071",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4250",
+        "accountName": "SLS RTL OTH NEW CAR CDJR",
+        "accountNumber": "4250",
+        "active": true,
+        "id": "8216_4250",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3160",
+        "accountName": "NEW F&I MGRS COMMISSIONS",
+        "accountNumber": "3160",
+        "active": true,
+        "id": "8216_3160",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3170",
+        "accountName": "\\\\",
+        "accountNumber": "3170",
+        "active": true,
+        "id": "8216_3170",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_5594",
+        "accountName": "MECH UNAPPLIED/VAR LABOR",
+        "accountNumber": "5594",
+        "active": true,
+        "id": "8216_5594",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4266",
+        "accountName": "C/S LSE OTH NEW CARS COMP",
+        "accountNumber": "4266",
+        "active": true,
+        "id": "8216_4266",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4265",
+        "accountName": "C/S RTL OTH NEW CARS COMP",
+        "accountNumber": "4265",
+        "active": true,
+        "id": "8216_4265",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4263",
+        "accountName": "SLS LSE OTH NEW CARS COMP",
+        "accountNumber": "4263",
+        "active": true,
+        "id": "8216_4263",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4261",
+        "accountName": "DIS RTL OTH NEW CARS COMP",
+        "accountNumber": "4261",
+        "active": true,
+        "id": "8216_4261",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4260",
+        "accountName": "SLS RTL OTH NEW CARS COMP",
+        "accountNumber": "4260",
+        "active": true,
+        "id": "8216_4260",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4270",
+        "accountName": "SLS RTL GRAND CARAVAN",
+        "accountNumber": "4270",
+        "active": true,
+        "id": "8216_4270",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3180",
+        "accountName": "NEW ADVERTISING-INTERNET ONLY",
+        "accountNumber": "3180",
+        "active": true,
+        "id": "8216_3180",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4036",
+        "accountName": "C/S LSE OTH NEW CAR AR/F",
+        "accountNumber": "4036",
+        "active": true,
+        "id": "8216_4036",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4035",
+        "accountName": "C/S RTL OTH NEW CAR AR/F",
+        "accountNumber": "4035",
+        "active": true,
+        "id": "8216_4035",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4277",
+        "accountName": "C/S RTL GRAND CARAVAN INCENT",
+        "accountNumber": "4277",
+        "active": true,
+        "id": "8216_4277",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4276",
+        "accountName": "C/S LSE GRAND CARAVAN",
+        "accountNumber": "4276",
+        "active": true,
+        "id": "8216_4276",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4033",
+        "accountName": "SLS LSE OTH NEW CAR AR/F",
+        "accountNumber": "4033",
+        "active": true,
+        "id": "8216_4033",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4275",
+        "accountName": "C/S RTL GRAND CARAVAN",
+        "accountNumber": "4275",
+        "active": true,
+        "id": "8216_4275",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4031",
+        "accountName": "DIS RTL OTH NEW CAR AR/F",
+        "accountNumber": "4031",
+        "active": true,
+        "id": "8216_4031",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4273",
+        "accountName": "SLS LSE GRAND CARAVAN",
+        "accountNumber": "4273",
+        "active": true,
+        "id": "8216_4273",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4030",
+        "accountName": "SLS RTL OTH NEW CAR AR/F",
+        "accountNumber": "4030",
+        "active": true,
+        "id": "8216_4030",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4271",
+        "accountName": "DIS RTL GRAND CARAVAN",
+        "accountNumber": "4271",
+        "active": true,
+        "id": "8216_4271",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4281",
+        "accountName": "DIS RTL TOWN & CNTRY/PACIFICA",
+        "accountNumber": "4281",
+        "active": true,
+        "id": "8216_4281",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4280",
+        "accountName": "SLS RTL TOWN & CNTRY/PACIFICA",
+        "accountNumber": "4280",
+        "active": true,
+        "id": "8216_4280",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4287",
+        "accountName": "C/S RTL PACIFICA INCENT",
+        "accountNumber": "4287",
+        "active": true,
+        "id": "8216_4287",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4286",
+        "accountName": "C/S LSE TOWN & CNTRY/PACIFICA",
+        "accountNumber": "4286",
+        "active": true,
+        "id": "8216_4286",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4285",
+        "accountName": "C/S RTL TOWN & CNTRY/PACIFICA",
+        "accountNumber": "4285",
+        "active": true,
+        "id": "8216_4285",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4283",
+        "accountName": "SLS LSE PACIFICA",
+        "accountNumber": "4283",
+        "active": true,
+        "id": "8216_4283",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4850",
+        "accountName": "USD INSURANCE CONTRACTS",
+        "accountNumber": "4850",
+        "active": true,
+        "id": "8216_4850",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_1340",
+        "accountName": "INV- JERRDAN",
+        "accountNumber": "1340",
+        "active": true,
+        "id": "8216_1340",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4603",
+        "accountName": "DEALER TRANSFERS",
+        "accountNumber": "4603",
+        "active": true,
+        "id": "8216_4603",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4840",
+        "accountName": "SLS CPOV SERV CONTRACTS",
+        "accountNumber": "4840",
+        "active": true,
+        "id": "8216_4840",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4841",
+        "accountName": "DIS CPOV SERV CONTRACTS",
+        "accountNumber": "4841",
+        "active": true,
+        "id": "8216_4841",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5930",
+        "accountName": "SLS MOPAR EXP LANE WARR PRT",
+        "accountNumber": "5930",
+        "active": true,
+        "id": "8216_5930",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4845",
+        "accountName": "C/S CPOV SERV CONTRACTS",
+        "accountNumber": "4845",
+        "active": true,
+        "id": "8216_4845",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5935",
+        "accountName": "C/S MOPAR EXP LANE WARR PRT",
+        "accountNumber": "5935",
+        "active": true,
+        "id": "8216_5935",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4860",
+        "accountName": "SLS U/V MAINT ONLY CONTRACTS",
+        "accountNumber": "4860",
+        "active": true,
+        "id": "8216_4860",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5950",
+        "accountName": "SLS NON AUTO & MISC",
+        "accountNumber": "5950",
+        "active": true,
+        "id": "8216_5950",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3530",
+        "accountName": "PRT-ADVERTISING",
+        "accountNumber": "3530",
+        "active": true,
+        "id": "8216_3530",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3772",
+        "accountName": "USD-TRAVEL & ENTERTAIN",
+        "accountNumber": "3772",
+        "active": true,
+        "id": "8216_3772",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1351",
+        "accountName": "INV-L I P-MECH",
+        "accountNumber": "1351",
+        "active": true,
+        "id": "8216_1351",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3771",
+        "accountName": "NEW-TRAVEL & ENTERTAIN",
+        "accountNumber": "3771",
+        "active": true,
+        "id": "8216_3771",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1110",
+        "accountName": "ACCTS RCVBLE-VEHICLE",
+        "accountNumber": "1110",
+        "active": true,
+        "id": "8216_1110",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1352",
+        "accountName": "INV-L I P-B&P",
+        "accountNumber": "1352",
+        "active": true,
+        "id": "8216_1352",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3770",
+        "accountName": "TRAVEL & ENTERTAINMENT",
+        "accountNumber": "3770",
+        "active": true,
+        "id": "8216_3770",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_2680",
+        "accountName": "LIFO RESERVE INV-ADJ",
+        "accountNumber": "2680",
+        "active": true,
+        "id": "8216_2680",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1100",
+        "accountName": "ACCTS RCVBLE-P & S",
+        "accountNumber": "1100",
+        "active": true,
+        "id": "8216_1100",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3520",
+        "accountName": "PRT-PERSONNEL TRAINING",
+        "accountNumber": "3520",
+        "active": true,
+        "id": "8216_3520",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_5940",
+        "accountName": "SLS MOPAR EXP LANE INTL PRT",
+        "accountNumber": "5940",
+        "active": true,
+        "id": "8216_5940",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5700",
+        "accountName": "SLS P&A MECH RO",
+        "accountNumber": "5700",
+        "active": true,
+        "id": "8216_5700",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5945",
+        "accountName": "C/S MOPAR EXP LANE INTL PRT",
+        "accountNumber": "5945",
+        "active": true,
+        "id": "8216_5945",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5705",
+        "accountName": "C/S P&A MECH RO",
+        "accountNumber": "5705",
+        "active": true,
+        "id": "8216_5705",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4870",
+        "accountName": "SLS U/V PROTEST PROD & ACCESS",
+        "accountNumber": "4870",
+        "active": true,
+        "id": "8216_4870",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5960",
+        "accountName": "SLS MOPAR EXPRESS LANE CP LBR",
+        "accountNumber": "5960",
+        "active": true,
+        "id": "8216_5960",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4630",
+        "accountName": "NEW INSURANCE CONTRACTS",
+        "accountNumber": "4630",
+        "active": true,
+        "id": "8216_4630",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3783",
+        "accountName": "MEC-BAD DEBTS",
+        "accountNumber": "3783",
+        "active": true,
+        "id": "8216_3783",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1120",
+        "accountName": "NOTES RCVBLE-CUSTOMER",
+        "accountNumber": "1120",
+        "active": true,
+        "id": "8216_1120",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1362",
+        "accountName": "INV-B&P MATERIAL",
+        "accountNumber": "1362",
+        "active": true,
+        "id": "8216_1362",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3540",
+        "accountName": "PRT-SUPPLY TOOL & LNDRY",
+        "accountNumber": "3540",
+        "active": true,
+        "id": "8216_3540",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3782",
+        "accountName": "USD-BAD DEBTS",
+        "accountNumber": "3782",
+        "active": true,
+        "id": "8216_3782",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1363",
+        "accountName": "INV-SUBLET WORK",
+        "accountNumber": "1363",
+        "active": true,
+        "id": "8216_1363",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3781",
+        "accountName": "NEW-BAD DEBTS",
+        "accountNumber": "3781",
+        "active": true,
+        "id": "8216_3781",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3780",
+        "accountName": "BAD DEBTS",
+        "accountNumber": "3780",
+        "active": true,
+        "id": "8216_3780",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_1361",
+        "accountName": "INV-GASOIL & LUBE",
+        "accountNumber": "1361",
+        "active": true,
+        "id": "8216_1361",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4627",
+        "accountName": "C/S RTL RAM PROMASTER INCENT",
+        "accountNumber": "4627",
+        "active": true,
+        "id": "8216_4627",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4626",
+        "accountName": "C/S LSE RAM PROMASTER",
+        "accountNumber": "4626",
+        "active": true,
+        "id": "8216_4626",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4625",
+        "accountName": "C/S RTL RAM PROMASTER",
+        "accountNumber": "4625",
+        "active": true,
+        "id": "8216_4625",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4623",
+        "accountName": "SLS LSE RAM PROMASTER",
+        "accountNumber": "4623",
+        "active": true,
+        "id": "8216_4623",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3775",
+        "accountName": "PRT-TRAVEL & ENTERTAIN",
+        "accountNumber": "3775",
+        "active": true,
+        "id": "8216_3775",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4621",
+        "accountName": "DIS RTL RAM PROMASTER",
+        "accountNumber": "4621",
+        "active": true,
+        "id": "8216_4621",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3774",
+        "accountName": "BDY-TRAVEL & ENTERTAIN",
+        "accountNumber": "3774",
+        "active": true,
+        "id": "8216_3774",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2200",
+        "accountName": "NOTES PAY-NEW VEHICLES",
+        "accountNumber": "2200",
+        "active": true,
+        "id": "8216_2200",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3773",
+        "accountName": "MEC-TRAVEL & ENTERTAIN",
+        "accountNumber": "3773",
+        "active": true,
+        "id": "8216_3773",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4620",
+        "accountName": "SLS RTL RAM PROMASTER",
+        "accountNumber": "4620",
+        "active": true,
+        "id": "8216_4620",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5710",
+        "accountName": "SLS P&A SERV CONT MECH",
+        "accountNumber": "5710",
+        "active": true,
+        "id": "8216_5710",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4865",
+        "accountName": "C/S U/V MAINT ONLY CONTRACTS",
+        "accountNumber": "4865",
+        "active": true,
+        "id": "8216_4865",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5955",
+        "accountName": "C/S NON AUTO & MISC",
+        "accountNumber": "5955",
+        "active": true,
+        "id": "8216_5955",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5715",
+        "accountName": "C/S P&A SERV CONT MECH",
+        "accountNumber": "5715",
+        "active": true,
+        "id": "8216_5715",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4881",
+        "accountName": "DOC FEE (ADM) INCOME - USED",
+        "accountNumber": "4881",
+        "active": true,
+        "id": "8216_4881",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8216_8216_5970",
+        "accountName": "SLS MOPAR EXPRESS LANE SC LBR",
+        "accountNumber": "5970",
+        "active": true,
+        "id": "8216_5970",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5730",
+        "accountName": "SLS P&A RETAIL",
+        "accountNumber": "5730",
+        "active": true,
+        "id": "8216_5730",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4640",
+        "accountName": "SLS N/V MAINT ONLY CONTRACTS",
+        "accountNumber": "4640",
+        "active": true,
+        "id": "8216_4640",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3550",
+        "accountName": "PRT-FREIGHT",
+        "accountNumber": "3550",
+        "active": true,
+        "id": "8216_3550",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1370",
+        "accountName": "INV-NON AUTO",
+        "accountNumber": "1370",
+        "active": true,
+        "id": "8216_1370",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3785",
+        "accountName": "PRT-BAD DEBTS",
+        "accountNumber": "3785",
+        "active": true,
+        "id": "8216_3785",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3300",
+        "accountName": "USD-SLS PERSONNEL TRNG",
+        "accountNumber": "3300",
+        "active": true,
+        "id": "8216_3300",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3784",
+        "accountName": "BDY-BAD DEBTS",
+        "accountNumber": "3784",
+        "active": true,
+        "id": "8216_3784",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_5720",
+        "accountName": "SLS P&A MECH WARRANTY",
+        "accountNumber": "5720",
+        "active": true,
+        "id": "8216_5720",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4875",
+        "accountName": "C/S U/V PROTECT PROD & ACCESS",
+        "accountNumber": "4875",
+        "active": true,
+        "id": "8216_4875",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5965",
+        "accountName": "C/S MOPAR EXPRESS LANE CP LBR",
+        "accountNumber": "5965",
+        "active": true,
+        "id": "8216_5965",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5725",
+        "accountName": "C/S P&A MECH WARRANTY",
+        "accountNumber": "5725",
+        "active": true,
+        "id": "8216_5725",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4890",
+        "accountName": "SLS U/V OTHER F&I",
+        "accountNumber": "4890",
+        "active": true,
+        "id": "8216_4890",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5980",
+        "accountName": "SLS MOPAR EXP LANE WARR LBR",
+        "accountNumber": "5980",
+        "active": true,
+        "id": "8216_5980",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5740",
+        "accountName": "SLS P&A WHOLESALE",
+        "accountNumber": "5740",
+        "active": true,
+        "id": "8216_5740",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4410",
+        "accountName": "SLS NEW OTH NEW TRKS COMP",
+        "accountNumber": "4410",
+        "active": true,
+        "id": "8216_4410",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3320",
+        "accountName": "USD-DEMO EXPENSE",
+        "accountNumber": "3320",
+        "active": true,
+        "id": "8216_3320",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4650",
+        "accountName": "SLS N/V PROTECT PROD & ACCESS",
+        "accountNumber": "4650",
+        "active": true,
+        "id": "8216_4650",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_1140",
+        "accountName": "OTHER REC - AMEX - OTHER",
+        "accountNumber": "1140",
+        "active": true,
+        "id": "8216_1140",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3560",
+        "accountName": "PRT-POLICY ADJUSTMENTS",
+        "accountNumber": "3560",
+        "active": true,
+        "id": "8216_3560",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4406",
+        "accountName": "C/S LSE RECREATIONAL VEH",
+        "accountNumber": "4406",
+        "active": true,
+        "id": "8216_4406",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4405",
+        "accountName": "C/S RTL RECREATIONAL VEH",
+        "accountNumber": "4405",
+        "active": true,
+        "id": "8216_4405",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4645",
+        "accountName": "C/S N/V MAINT ONLY CONTRACTS",
+        "accountNumber": "4645",
+        "active": true,
+        "id": "8216_4645",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4403",
+        "accountName": "SLS LSE RECREATIONAL VEH",
+        "accountNumber": "4403",
+        "active": true,
+        "id": "8216_4403",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4401",
+        "accountName": "DIS NEW RECREATIONAL VEH",
+        "accountNumber": "4401",
+        "active": true,
+        "id": "8216_4401",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4400",
+        "accountName": "SLS RTL RECREATIONAL VEH",
+        "accountNumber": "4400",
+        "active": true,
+        "id": "8216_4400",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5975",
+        "accountName": "C/S MOPAR EXPRESS LANE SC LBR",
+        "accountNumber": "5975",
+        "active": true,
+        "id": "8216_5975",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5735",
+        "accountName": "C/S P&A RETAIL",
+        "accountNumber": "5735",
+        "active": true,
+        "id": "8216_5735",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5990",
+        "accountName": "SLS MOPAR EXP LANE INTL LBR",
+        "accountNumber": "5990",
+        "active": true,
+        "id": "8216_5990",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5750",
+        "accountName": "SLS P&A INTERNAL MECH",
+        "accountNumber": "5750",
+        "active": true,
+        "id": "8216_5750",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5510",
+        "accountName": "SLS SER CONT LBR MECH",
+        "accountNumber": "5510",
+        "active": true,
+        "id": "8216_5510",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4421",
+        "accountName": "DIS RTL RENEGADE",
+        "accountNumber": "4421",
+        "active": true,
+        "id": "8216_4421",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4420",
+        "accountName": "SLS RTL RENEGADE",
+        "accountNumber": "4420",
+        "active": true,
+        "id": "8216_4420",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4661",
+        "accountName": "DOC FEE (ADM) INCOME - NEW",
+        "accountNumber": "4661",
+        "active": true,
+        "id": "8216_4661",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8216_8216_3570",
+        "accountName": "PRT-VEHICLE EXPENSE",
+        "accountNumber": "3570",
+        "active": true,
+        "id": "8216_3570",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4416",
+        "accountName": "C/S LSE OTH NEW TRKS COMP",
+        "accountNumber": "4416",
+        "active": true,
+        "id": "8216_4416",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4415",
+        "accountName": "C/S NEW OTH NEW TRKS COMP",
+        "accountNumber": "4415",
+        "active": true,
+        "id": "8216_4415",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4655",
+        "accountName": "C/S N/V PROTECT PROD & ACCESS",
+        "accountNumber": "4655",
+        "active": true,
+        "id": "8216_4655",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4413",
+        "accountName": "SLS LSE OTH NEW TRKS COMP",
+        "accountNumber": "4413",
+        "active": true,
+        "id": "8216_4413",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4411",
+        "accountName": "DIS NEW OTH NEW TRKS COMP",
+        "accountNumber": "4411",
+        "active": true,
+        "id": "8216_4411",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4895",
+        "accountName": "C/S U/V OTHER F&I",
+        "accountNumber": "4895",
+        "active": true,
+        "id": "8216_4895",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5500",
+        "accountName": "SLS CUSTOMER LABOR MECH",
+        "accountNumber": "5500",
+        "active": true,
+        "id": "8216_5500",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5985",
+        "accountName": "C/S MOPAR EXP LANE WARR LBR",
+        "accountNumber": "5985",
+        "active": true,
+        "id": "8216_5985",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5745",
+        "accountName": "C/S P&A WHOLESALE",
+        "accountNumber": "5745",
+        "active": true,
+        "id": "8216_5745",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5505",
+        "accountName": "C/S CUSTOMER LABOR MECH",
+        "accountNumber": "5505",
+        "active": true,
+        "id": "8216_5505",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5760",
+        "accountName": "SLS P&A QIK SVC OIL LUB",
+        "accountNumber": "5760",
+        "active": true,
+        "id": "8216_5760",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5520",
+        "accountName": "SLS MECH WARRANTY LABOR",
+        "accountNumber": "5520",
+        "active": true,
+        "id": "8216_5520",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2011",
+        "accountName": "ACCTS PAY-TRADE CREDITOR",
+        "accountNumber": "2011",
+        "active": true,
+        "id": "8216_2011",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_1164",
+        "accountName": "FLOOR PLAN ALLOWANCE",
+        "accountNumber": "1164",
+        "active": true,
+        "id": "8216_1164",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3100",
+        "accountName": "NEW-SLS PERSONNEL TRNG",
+        "accountNumber": "3100",
+        "active": true,
+        "id": "8216_3100",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2012",
+        "accountName": "ACCTS PAY-VEH LIEN PAYOFF",
+        "accountNumber": "2012",
+        "active": true,
+        "id": "8216_2012",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_1165",
+        "accountName": "WHOLESALE PARTS COMP",
+        "accountNumber": "1165",
+        "active": true,
+        "id": "8216_1165",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1162",
+        "accountName": "HOLDBACK-NEW CAR & TRK",
+        "accountNumber": "1162",
+        "active": true,
+        "id": "8216_1162",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1163",
+        "accountName": "SPECIAL VEHICLE INCOME",
+        "accountNumber": "1163",
+        "active": true,
+        "id": "8216_1163",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1160",
+        "accountName": "WARR/SERVICE CLAIMS/RR",
+        "accountNumber": "1160",
+        "active": true,
+        "id": "8216_1160",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4670",
+        "accountName": "SLS N/V OTHER F&I",
+        "accountNumber": "4670",
+        "active": true,
+        "id": "8216_4670",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_1161",
+        "accountName": "WARR/SVC CLIAMS/RR",
+        "accountNumber": "1161",
+        "active": true,
+        "id": "8216_1161",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3580",
+        "accountName": "PRT-DEPR EQUIP",
+        "accountNumber": "3580",
+        "active": true,
+        "id": "8216_3580",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4427",
+        "accountName": "C/S RTL RENEGADE INCENT",
+        "accountNumber": "4427",
+        "active": true,
+        "id": "8216_4427",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4426",
+        "accountName": "C/S LSE RENEGADE",
+        "accountNumber": "4426",
+        "active": true,
+        "id": "8216_4426",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4425",
+        "accountName": "C/S RTL RENEGADE",
+        "accountNumber": "4425",
+        "active": true,
+        "id": "8216_4425",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4423",
+        "accountName": "SLS LSE RENEGADE",
+        "accountNumber": "4423",
+        "active": true,
+        "id": "8216_4423",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5995",
+        "accountName": "C/S MOPAR EXP LANE INTL LBR",
+        "accountNumber": "5995",
+        "active": true,
+        "id": "8216_5995",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5755",
+        "accountName": "C/S P&A INTERNAL MECH",
+        "accountNumber": "5755",
+        "active": true,
+        "id": "8216_5755",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5515",
+        "accountName": "C/S SER CONT LBR MECH",
+        "accountNumber": "5515",
+        "active": true,
+        "id": "8216_5515",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5770",
+        "accountName": "SLS SERV CONT SOLD PARTS CNTR",
+        "accountNumber": "5770",
+        "active": true,
+        "id": "8216_5770",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5530",
+        "accountName": "SLS ROAD READY LABOR MECH",
+        "accountNumber": "5530",
+        "active": true,
+        "id": "8216_5530",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2022",
+        "accountName": "WE OWE",
+        "accountNumber": "2022",
+        "active": true,
+        "id": "8216_2022",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4201",
+        "accountName": "SLS RTL 300 SERIES",
+        "accountNumber": "4201",
+        "active": true,
+        "id": "8216_4201",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4443",
+        "accountName": "SLS LSE PATRIOT",
+        "accountNumber": "4443",
+        "active": true,
+        "id": "8216_4443",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4200",
+        "accountName": "DIS RTL 300 SERIES",
+        "accountNumber": "4200",
+        "active": true,
+        "id": "8216_4200",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2020",
+        "accountName": "CUSTOMER REFUNDS PAYABLE",
+        "accountNumber": "2020",
+        "active": true,
+        "id": "8216_2020",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4441",
+        "accountName": "DIS RTL PATRIOT",
+        "accountNumber": "4441",
+        "active": true,
+        "id": "8216_4441",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2021",
+        "accountName": "LIC & REG FEE PYBL",
+        "accountNumber": "2021",
+        "active": true,
+        "id": "8216_2021",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4440",
+        "accountName": "SLS RTL PATRIOT",
+        "accountNumber": "4440",
+        "active": true,
+        "id": "8216_4440",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_1171",
+        "accountName": "SUNBIT",
+        "accountNumber": "1171",
+        "active": true,
+        "id": "8216_1171",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3350",
+        "accountName": "USD-FLOOR PLAN INTEREST",
+        "accountNumber": "3350",
+        "active": true,
+        "id": "8216_3350",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2260",
+        "accountName": "NOTES PAY-DEMOS",
+        "accountNumber": "2260",
+        "active": true,
+        "id": "8216_2260",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4680",
+        "accountName": "NEW F&I CHARGEBACKS",
+        "accountNumber": "4680",
+        "active": true,
+        "id": "8216_4680",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3590",
+        "accountName": "PRT-MAINTRPRRENT EQUIP",
+        "accountNumber": "3590",
+        "active": true,
+        "id": "8216_3590",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1170",
+        "accountName": "CASH SALES",
+        "accountNumber": "1170",
+        "active": true,
+        "id": "8216_1170",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2017",
+        "accountName": "TIRE WASTE MANAGEMENT",
+        "accountNumber": "2017",
+        "active": true,
+        "id": "8216_2017",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_1168",
+        "accountName": "DLR CASH/CONSUMER REBATE",
+        "accountNumber": "1168",
+        "active": true,
+        "id": "8216_1168",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2015",
+        "accountName": "LTD OWNERS",
+        "accountNumber": "2015",
+        "active": true,
+        "id": "8216_2015",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_2016",
+        "accountName": "LTD INTERCOMPANY",
+        "accountNumber": "2016",
+        "active": true,
+        "id": "8216_2016",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_1166",
+        "accountName": "INVENTORY REBATES",
+        "accountNumber": "1166",
+        "active": true,
+        "id": "8216_1166",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2013",
+        "accountName": "ACCTS PAY-EMPL DEDUCT",
+        "accountNumber": "2013",
+        "active": true,
+        "id": "8216_2013",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_1167",
+        "accountName": "OTHER FACTORY RCVBLES",
+        "accountNumber": "1167",
+        "active": true,
+        "id": "8216_1167",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2014",
+        "accountName": "ACCTS PAY-OTHER",
+        "accountNumber": "2014",
+        "active": true,
+        "id": "8216_2014",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4675",
+        "accountName": "C/S N/V OTHER F&I",
+        "accountNumber": "4675",
+        "active": true,
+        "id": "8216_4675",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5765",
+        "accountName": "C/S P&A QIK SVC OIL LUB",
+        "accountNumber": "5765",
+        "active": true,
+        "id": "8216_5765",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5525",
+        "accountName": "C/S MECH WARRANTY LABOR",
+        "accountNumber": "5525",
+        "active": true,
+        "id": "8216_5525",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_1612",
+        "accountName": "DEPR-BLDGS & EQUIPMENT",
+        "accountNumber": "1612",
+        "active": true,
+        "id": "8216_1612",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2700",
+        "accountName": "CAPITAL STOCK-PREFRD",
+        "accountNumber": "2700",
+        "active": true,
+        "id": "8216_2700",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8216_8216_1611",
+        "accountName": "BLDGS & EQUIPMENT",
+        "accountNumber": "1611",
+        "active": true,
+        "id": "8216_1611",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_6080",
+        "accountName": "GAIN ON CAPITAL ASSETS",
+        "accountNumber": "6080",
+        "active": true,
+        "id": "8216_6080",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8216_8216_3802",
+        "accountName": "USD-MISCELLANEOUS",
+        "accountNumber": "3802",
+        "active": true,
+        "id": "8216_3802",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3801",
+        "accountName": "NEW-MISCELLANEOUS",
+        "accountNumber": "3801",
+        "active": true,
+        "id": "8216_3801",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3800",
+        "accountName": "MISCELLANEOUS",
+        "accountNumber": "3800",
+        "active": true,
+        "id": "8216_3800",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_1621",
+        "accountName": "SERVICE EQUIPMENT",
+        "accountNumber": "1621",
+        "active": true,
+        "id": "8216_1621",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2710",
+        "accountName": "CAPITAL STOCK-COMMON",
+        "accountNumber": "2710",
+        "active": true,
+        "id": "8216_2710",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8216_8216_1622",
+        "accountName": "DEPR-SERVICE EQUIP",
+        "accountNumber": "1622",
+        "active": true,
+        "id": "8216_1622",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3805",
+        "accountName": "PRT-MISCELLANEOUS",
+        "accountNumber": "3805",
+        "active": true,
+        "id": "8216_3805",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3804",
+        "accountName": "BDY-MISCELLANEOUS",
+        "accountNumber": "3804",
+        "active": true,
+        "id": "8216_3804",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3803",
+        "accountName": "MEC-MISCELLANEOUS",
+        "accountNumber": "3803",
+        "active": true,
+        "id": "8216_3803",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2014A",
+        "accountName": "AMEX",
+        "accountNumber": "2014A",
+        "active": true,
+        "id": "8216_2014A",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_6090",
+        "accountName": "7090",
+        "accountNumber": "6090",
+        "active": true,
+        "id": "8216_6090",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8216_8216_2014C",
+        "accountName": "FCA STATEMENT-CURRENT",
+        "accountNumber": "2014C",
+        "active": true,
+        "id": "8216_2014C",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_6091",
+        "accountName": "SERVICE CHARGE INCOME",
+        "accountNumber": "6091",
+        "active": true,
+        "id": "8216_6091",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8216_8216_2014D",
+        "accountName": "FCA STATEMENT-DEFERRED",
+        "accountNumber": "2014D",
+        "active": true,
+        "id": "8216_2014D",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_8030",
+        "accountName": "L&R-LEASE INCOME",
+        "accountNumber": "8030",
+        "active": true,
+        "id": "8216_8030",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8216_8216_3813",
+        "accountName": "MEC-MORTGAGE INTEREST",
+        "accountNumber": "3813",
+        "active": true,
+        "id": "8216_3813",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3812",
+        "accountName": "USD-MORTGAGE INTEREST",
+        "accountNumber": "3812",
+        "active": true,
+        "id": "8216_3812",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3811",
+        "accountName": "NEW-MORTGAGE INTEREST",
+        "accountNumber": "3811",
+        "active": true,
+        "id": "8216_3811",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1632",
+        "accountName": "DEPR-P & A EQUIP",
+        "accountNumber": "1632",
+        "active": true,
+        "id": "8216_1632",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3810",
+        "accountName": "INTEREST ON MORTGAGE",
+        "accountNumber": "3810",
+        "active": true,
+        "id": "8216_3810",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_2720",
+        "accountName": "ADDL PD IN CAPITAL",
+        "accountNumber": "2720",
+        "active": true,
+        "id": "8216_2720",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8216_8216_1631",
+        "accountName": "PARTS & ACCES EQUIP",
+        "accountNumber": "1631",
+        "active": true,
+        "id": "8216_1631",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2960",
+        "accountName": "EST INC TAX-CURR YR",
+        "accountNumber": "2960",
+        "active": true,
+        "id": "8216_2960",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4900",
+        "accountName": "USD F&I CHARGEBACKS",
+        "accountNumber": "4900",
+        "active": true,
+        "id": "8216_4900",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3815",
+        "accountName": "PRT-MORTGAGE INTEREST",
+        "accountNumber": "3815",
+        "active": true,
+        "id": "8216_3815",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3814",
+        "accountName": "BDY-MORTGAGE INTEREST",
+        "accountNumber": "3814",
+        "active": true,
+        "id": "8216_3814",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3824",
+        "accountName": "BDY-RENT",
+        "accountNumber": "3824",
+        "active": true,
+        "id": "8216_3824",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4915",
+        "accountName": "C/S CPO NON AUTO",
+        "accountNumber": "4915",
+        "active": true,
+        "id": "8216_4915",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3823",
+        "accountName": "MEC-RENT",
+        "accountNumber": "3823",
+        "active": true,
+        "id": "8216_3823",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3822",
+        "accountName": "USD-RENT",
+        "accountNumber": "3822",
+        "active": true,
+        "id": "8216_3822",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3821",
+        "accountName": "NEW-RENT",
+        "accountNumber": "3821",
+        "active": true,
+        "id": "8216_3821",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1641",
+        "accountName": "COMPANY CARS & SERV VEH",
+        "accountNumber": "1641",
+        "active": true,
+        "id": "8216_1641",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3820",
+        "accountName": "RENT",
+        "accountNumber": "3820",
+        "active": true,
+        "id": "8216_3820",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_1400",
+        "accountName": "MARKETABLE SECURITIES",
+        "accountNumber": "1400",
+        "active": true,
+        "id": "8216_1400",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1642",
+        "accountName": "DEPR-CO CARS & SERV VEH",
+        "accountNumber": "1642",
+        "active": true,
+        "id": "8216_1642",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4910",
+        "accountName": "SLS CPO NON AUTO",
+        "accountNumber": "4910",
+        "active": true,
+        "id": "8216_4910",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3825",
+        "accountName": "PRT-RENT",
+        "accountNumber": "3825",
+        "active": true,
+        "id": "8216_3825",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2990",
+        "accountName": "PROFIT OR LOSS-CURRENT",
+        "accountNumber": "2990",
+        "active": true,
+        "id": "8216_2990",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8216_8216_3835",
+        "accountName": "PRT-AMORT OF LEASEHOLDS",
+        "accountNumber": "3835",
+        "active": true,
+        "id": "8216_3835",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3834",
+        "accountName": "BDY-AMORT OF LEASEHOLDS",
+        "accountNumber": "3834",
+        "active": true,
+        "id": "8216_3834",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3833",
+        "accountName": "MEC-AMORT OF LEASEHOLDS",
+        "accountNumber": "3833",
+        "active": true,
+        "id": "8216_3833",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3832",
+        "accountName": "USD-AMORT OF LEASEHOLDS",
+        "accountNumber": "3832",
+        "active": true,
+        "id": "8216_3832",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1652",
+        "accountName": "DEPR-FURN & FXTRS",
+        "accountNumber": "1652",
+        "active": true,
+        "id": "8216_1652",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2500",
+        "accountName": "RESERVE FOR REPO LOSS",
+        "accountNumber": "2500",
+        "active": true,
+        "id": "8216_2500",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3831",
+        "accountName": "NEW-AMORT OF LEASEHOLDS",
+        "accountNumber": "3831",
+        "active": true,
+        "id": "8216_3831",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3830",
+        "accountName": "AMORT OF LEASEHOLDS",
+        "accountNumber": "3830",
+        "active": true,
+        "id": "8216_3830",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_1651",
+        "accountName": "FURNITURE & FIXTURES",
+        "accountNumber": "1651",
+        "active": true,
+        "id": "8216_1651",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4923",
+        "accountName": "CPOV INSURANCE CONTRACTS",
+        "accountNumber": "4923",
+        "active": true,
+        "id": "8216_4923",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3845",
+        "accountName": "PRT-DEPR BLDG & EQUIP",
+        "accountNumber": "3845",
+        "active": true,
+        "id": "8216_3845",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3844",
+        "accountName": "BDY-DEPR BLDG & EQUIP",
+        "accountNumber": "3844",
+        "active": true,
+        "id": "8216_3844",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3843",
+        "accountName": "MEC-DEPR BLDG & EQUIP",
+        "accountNumber": "3843",
+        "active": true,
+        "id": "8216_3843",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3842",
+        "accountName": "USD-DEPR BLDG & EQUIP",
+        "accountNumber": "3842",
+        "active": true,
+        "id": "8216_3842",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3841",
+        "accountName": "NEW-DEPR BLDG & EQUIP",
+        "accountNumber": "3841",
+        "active": true,
+        "id": "8216_3841",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1661",
+        "accountName": "LEASEHOLDS",
+        "accountNumber": "1661",
+        "active": true,
+        "id": "8216_1661",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3840",
+        "accountName": "DEPR BUILDING & EQUIP",
+        "accountNumber": "3840",
+        "active": true,
+        "id": "8216_3840",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_1662",
+        "accountName": "AMORT-LEASEHOLDS",
+        "accountNumber": "1662",
+        "active": true,
+        "id": "8216_1662",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2750",
+        "accountName": "RETAINED EARNINGS",
+        "accountNumber": "2750",
+        "active": true,
+        "id": "8216_2750",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8216_8216_3860",
+        "accountName": "INSURANCE REAL ESTATE",
+        "accountNumber": "3860",
+        "active": true,
+        "id": "8216_3860",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_8070",
+        "accountName": "RENTAL INCOME (BASIC)",
+        "accountNumber": "8070",
+        "active": true,
+        "id": "8216_8070",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8216_8216_2770",
+        "accountName": "DIVIDENDS",
+        "accountNumber": "2770",
+        "active": true,
+        "id": "8216_2770",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8216_8216_8071",
+        "accountName": "RENTAL INCOME (MILEAGE)",
+        "accountNumber": "8071",
+        "active": true,
+        "id": "8216_8071",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8216_8216_4704",
+        "accountName": "REC USED CARS RTL (NON-CPOV)",
+        "accountNumber": "4704",
+        "active": true,
+        "id": "8216_4704",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3855",
+        "accountName": "PRT-REAL ESTATE TAXES",
+        "accountNumber": "3855",
+        "active": true,
+        "id": "8216_3855",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3854",
+        "accountName": "BDY-REAL ESTATE TAXES",
+        "accountNumber": "3854",
+        "active": true,
+        "id": "8216_3854",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4701",
+        "accountName": "DIS USED CARS RTL (NON-CPOV)",
+        "accountNumber": "4701",
+        "active": true,
+        "id": "8216_4701",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4700",
+        "accountName": "SLS USED CARS RTL (NON-CPOV)",
+        "accountNumber": "4700",
+        "active": true,
+        "id": "8216_4700",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3853",
+        "accountName": "MEC-REAL ESTATE TAXES",
+        "accountNumber": "3853",
+        "active": true,
+        "id": "8216_3853",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3852",
+        "accountName": "USD-REAL ESTATE TAXES",
+        "accountNumber": "3852",
+        "active": true,
+        "id": "8216_3852",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3851",
+        "accountName": "NEW-REAL ESTATE TAXES",
+        "accountNumber": "3851",
+        "active": true,
+        "id": "8216_3851",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3850",
+        "accountName": "REAL ESTATE TAXES",
+        "accountNumber": "3850",
+        "active": true,
+        "id": "8216_3850",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_4705",
+        "accountName": "C/S USED CARS RTL (NON-CPOV)",
+        "accountNumber": "4705",
+        "active": true,
+        "id": "8216_4705",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_2011F",
+        "accountName": "EOY ADJ (3001F)",
+        "accountNumber": "2011F",
+        "active": true,
+        "id": "8216_2011F",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3871",
+        "accountName": "NEW-MAINT & REPAIRS",
+        "accountNumber": "3871",
+        "active": true,
+        "id": "8216_3871",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3870",
+        "accountName": "MAINT & REPAIRS",
+        "accountNumber": "3870",
+        "active": true,
+        "id": "8216_3870",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_1451",
+        "accountName": "PREPAID-ADVERTISING",
+        "accountNumber": "1451",
+        "active": true,
+        "id": "8216_1451",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_5805",
+        "accountName": "C/S P&A B&P RO",
+        "accountNumber": "5805",
+        "active": true,
+        "id": "8216_5805",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4715",
+        "accountName": "C/S USED TRUCKS RTL (NON-CPOV)",
+        "accountNumber": "4715",
+        "active": true,
+        "id": "8216_4715",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_1205",
+        "accountName": "INV-OTHER NEW CARS-CDJR",
+        "accountNumber": "1205",
+        "active": true,
+        "id": "8216_1205",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3625",
+        "accountName": "PRT-ADMIN & GEN SALARY",
+        "accountNumber": "3625",
+        "active": true,
+        "id": "8216_3625",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4714",
+        "accountName": "REC USED TRUCKS RTL (NON-CPOV)",
+        "accountNumber": "4714",
+        "active": true,
+        "id": "8216_4714",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_1206",
+        "accountName": "INV-OTHER NEW CARS-AR/F",
+        "accountNumber": "1206",
+        "active": true,
+        "id": "8216_1206",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3624",
+        "accountName": "BDY-ADMIN & GEN SALARY",
+        "accountNumber": "3624",
+        "active": true,
+        "id": "8216_3624",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3623",
+        "accountName": "MEC-ADMIN & GEN SALARY",
+        "accountNumber": "3623",
+        "active": true,
+        "id": "8216_3623",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3865",
+        "accountName": "PRT-INSUR REAL ESTATE",
+        "accountNumber": "3865",
+        "active": true,
+        "id": "8216_3865",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1201",
+        "accountName": "NEW CAR NOSH",
+        "accountNumber": "1201",
+        "active": true,
+        "id": "8216_1201",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4711",
+        "accountName": "DIS USED TRUCKS RTL (NON-CPOV)",
+        "accountNumber": "4711",
+        "active": true,
+        "id": "8216_4711",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3622",
+        "accountName": "USD-ADMIN & GEN SALARY",
+        "accountNumber": "3622",
+        "active": true,
+        "id": "8216_3622",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3864",
+        "accountName": "BDY-INSUR REAL ESTATE",
+        "accountNumber": "3864",
+        "active": true,
+        "id": "8216_3864",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3621",
+        "accountName": "NEW-ADMIN & GEN SALARY",
+        "accountNumber": "3621",
+        "active": true,
+        "id": "8216_3621",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3863",
+        "accountName": "3862",
+        "accountNumber": "3863",
+        "active": true,
+        "id": "8216_3863",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4710",
+        "accountName": "SLS USED TRUCKS RTL (NON-CPOV)",
+        "accountNumber": "4710",
+        "active": true,
+        "id": "8216_4710",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3620",
+        "accountName": "ADMIN & GEN SALARIES",
+        "accountNumber": "3620",
+        "active": true,
+        "id": "8216_3620",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_3862",
+        "accountName": "USD-INSUR REAL ESTATE",
+        "accountNumber": "3862",
+        "active": true,
+        "id": "8216_3862",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1200",
+        "accountName": "INV-NEW CARS",
+        "accountNumber": "1200",
+        "active": true,
+        "id": "8216_1200",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3861",
+        "accountName": "NEW-INSUR REAL ESTATE",
+        "accountNumber": "3861",
+        "active": true,
+        "id": "8216_3861",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4950",
+        "accountName": "SLS RTL GLADIATOR 4DR",
+        "accountNumber": "4950",
+        "active": true,
+        "id": "8216_4950",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4951",
+        "accountName": "DIS RTL GLADIATOR 4DR",
+        "accountNumber": "4951",
+        "active": true,
+        "id": "8216_4951",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4953",
+        "accountName": "SLS LSE GLADIATOR 4DR",
+        "accountNumber": "4953",
+        "active": true,
+        "id": "8216_4953",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5800",
+        "accountName": "SLS P&A B&P RO",
+        "accountNumber": "5800",
+        "active": true,
+        "id": "8216_5800",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4955",
+        "accountName": "C/S RTL GLADIATOR 4DR",
+        "accountNumber": "4955",
+        "active": true,
+        "id": "8216_4955",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4956",
+        "accountName": "C/S LSE GLADIATOR 4DR",
+        "accountNumber": "4956",
+        "active": true,
+        "id": "8216_4956",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4291",
+        "accountName": "DIS RTL RAM HD 2500/3500",
+        "accountNumber": "4291",
+        "active": true,
+        "id": "8216_4291",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4290",
+        "accountName": "SLS RTL RAM HD 2500/3500",
+        "accountNumber": "4290",
+        "active": true,
+        "id": "8216_4290",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4297",
+        "accountName": "C/S RTL RAM HD 2500-3500 INCEN",
+        "accountNumber": "4297",
+        "active": true,
+        "id": "8216_4297",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4296",
+        "accountName": "C/S LSE RAM HD 2500/3500",
+        "accountNumber": "4296",
+        "active": true,
+        "id": "8216_4296",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4295",
+        "accountName": "C/S RTL RAM HD 2500/3500",
+        "accountNumber": "4295",
+        "active": true,
+        "id": "8216_4295",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4293",
+        "accountName": "SLS LSE RAM HD 2500/3500",
+        "accountNumber": "4293",
+        "active": true,
+        "id": "8216_4293",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_1160A",
+        "accountName": "WARR/SERVICE CLAIMS OLD",
+        "accountNumber": "1160A",
+        "active": true,
+        "id": "8216_1160A",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_9510",
+        "accountName": "L&R-BAD DEBTS",
+        "accountNumber": "9510",
+        "active": true,
+        "id": "8216_9510",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_6010",
+        "accountName": "CASH DISCOUNTS EARNED",
+        "accountNumber": "6010",
+        "active": true,
+        "id": "8216_6010",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8216_8216_4071",
+        "accountName": "DIS RTL CHALLENGER",
+        "accountNumber": "4071",
+        "active": true,
+        "id": "8216_4071",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4070",
+        "accountName": "SLS RTL CHALLENGER",
+        "accountNumber": "4070",
+        "active": true,
+        "id": "8216_4070",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_7100",
+        "accountName": "LIFO ADJUSTMENT",
+        "accountNumber": "7100",
+        "active": true,
+        "id": "8216_7100",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4077",
+        "accountName": "C/S RTL CHALLENGER INCENT",
+        "accountNumber": "4077",
+        "active": true,
+        "id": "8216_4077",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4076",
+        "accountName": "C/S LSE CHALLENGER",
+        "accountNumber": "4076",
+        "active": true,
+        "id": "8216_4076",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4075",
+        "accountName": "C/S RTL CHALLENGER",
+        "accountNumber": "4075",
+        "active": true,
+        "id": "8216_4075",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4073",
+        "accountName": "SLS LSE CHALLENGER",
+        "accountNumber": "4073",
+        "active": true,
+        "id": "8216_4073",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_9999",
+        "accountName": "Generic",
+        "accountNumber": "9999",
+        "active": true,
+        "id": "8216_9999",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8216_8216_4083",
+        "accountName": "SLS LSE 200 SERIES 4DR SEDAN",
+        "accountNumber": "4083",
+        "active": true,
+        "id": "8216_4083",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4081",
+        "accountName": "DIS RTL 200 SERIES 4DR SEDAN",
+        "accountNumber": "4081",
+        "active": true,
+        "id": "8216_4081",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4080",
+        "accountName": "SLS RTL 200 SERIES 4DR SEDAN",
+        "accountNumber": "4080",
+        "active": true,
+        "id": "8216_4080",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4087",
+        "accountName": "C/S RTL 200 4DR SEDAN INCENT",
+        "accountNumber": "4087",
+        "active": true,
+        "id": "8216_4087",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4086",
+        "accountName": "C/S LSE 200 SERIES 4DR SEDAN",
+        "accountNumber": "4086",
+        "active": true,
+        "id": "8216_4086",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4085",
+        "accountName": "C/S RTL 200 SERIES 4DR SEDAN",
+        "accountNumber": "4085",
+        "active": true,
+        "id": "8216_4085",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_9300",
+        "accountName": "L&R INTEREST",
+        "accountNumber": "9300",
+        "active": true,
+        "id": "8216_9300",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4093",
+        "accountName": "SLS LSE CHARGER",
+        "accountNumber": "4093",
+        "active": true,
+        "id": "8216_4093",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4091",
+        "accountName": "SLS RTL CHARGER",
+        "accountNumber": "4091",
+        "active": true,
+        "id": "8216_4091",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4090",
+        "accountName": "DIS RTL CHARGER",
+        "accountNumber": "4090",
+        "active": true,
+        "id": "8216_4090",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4097",
+        "accountName": "C/S RTL CHARGER INCENT",
+        "accountNumber": "4097",
+        "active": true,
+        "id": "8216_4097",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4096",
+        "accountName": "C/S LSE CHARGER",
+        "accountNumber": "4096",
+        "active": true,
+        "id": "8216_4096",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4095",
+        "accountName": "C/S RTL CHARGER",
+        "accountNumber": "4095",
+        "active": true,
+        "id": "8216_4095",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_6030",
+        "accountName": "INTEREST EARNED",
+        "accountNumber": "6030",
+        "active": true,
+        "id": "8216_6030",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8216_8216_2900",
+        "accountName": "PRIOR YEAR ADJUSTMENTS",
+        "accountNumber": "2900",
+        "active": true,
+        "id": "8216_2900",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8216_8216_2270I",
+        "accountName": "PAYABLE TO LUXURY/TRADEUP",
+        "accountNumber": "2270I",
+        "active": true,
+        "id": "8216_2270I",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_9550",
+        "accountName": "L&R-MISCELLANEOUS",
+        "accountNumber": "9550",
+        "active": true,
+        "id": "8216_9550",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_GOONAP",
+        "accountName": "TEMP/AP",
+        "accountNumber": "GOONAP",
+        "active": true,
+        "id": "8216_GOONAP",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_7150",
+        "accountName": "NET L&R EXPENSE",
+        "accountNumber": "7150",
+        "active": true,
+        "id": "8216_7150",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1600",
+        "accountName": "LAND",
+        "accountNumber": "1600",
+        "active": true,
+        "id": "8216_1600",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_5660",
+        "accountName": "SLS B&P MATERIAL",
+        "accountNumber": "5660",
+        "active": true,
+        "id": "8216_5660",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2154",
+        "accountName": "ACCRU-SALES TAX - OUT OF STATE",
+        "accountNumber": "2154",
+        "active": true,
+        "id": "8216_2154",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4333",
+        "accountName": "SLS LSE COMPASS",
+        "accountNumber": "4333",
+        "active": true,
+        "id": "8216_4333",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2155",
+        "accountName": "ACCRU-DMV",
+        "accountNumber": "2155",
+        "active": true,
+        "id": "8216_2155",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4573",
+        "accountName": "NEW F&I AUTO",
+        "accountNumber": "4573",
+        "active": true,
+        "id": "8216_4573",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_2152",
+        "accountName": "ACCRU-SALES TAX-CITY",
+        "accountNumber": "2152",
+        "active": true,
+        "id": "8216_2152",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4331",
+        "accountName": "DIS RTL COMPASS",
+        "accountNumber": "4331",
+        "active": true,
+        "id": "8216_4331",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2153",
+        "accountName": "ACCRU-SALES TAX-OTHER",
+        "accountNumber": "2153",
+        "active": true,
+        "id": "8216_2153",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4330",
+        "accountName": "SLS RTL COMPASS",
+        "accountNumber": "4330",
+        "active": true,
+        "id": "8216_4330",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2150",
+        "accountName": "ACCRU-SALES TAX-NASSAU",
+        "accountNumber": "2150",
+        "active": true,
+        "id": "8216_2150",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3240",
+        "accountName": "USD-WARR/POLICY EXPENSE",
+        "accountNumber": "3240",
+        "active": true,
+        "id": "8216_3240",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3482",
+        "accountName": "B&P-DEPR EQUIP",
+        "accountNumber": "3482",
+        "active": true,
+        "id": "8216_3482",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3481",
+        "accountName": "MECH-DEPR EQUIP",
+        "accountNumber": "3481",
+        "active": true,
+        "id": "8216_3481",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2151",
+        "accountName": "ACCRU-SALES TAX-SUFFOLK",
+        "accountNumber": "2151",
+        "active": true,
+        "id": "8216_2151",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_1060",
+        "accountName": "CONTRACTS IN TRANSIT",
+        "accountNumber": "1060",
+        "active": true,
+        "id": "8216_1060",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4327",
+        "accountName": "C/S RTL WRANGLER INCENT",
+        "accountNumber": "4327",
+        "active": true,
+        "id": "8216_4327",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4326",
+        "accountName": "C/S LSE WRANGLER",
+        "accountNumber": "4326",
+        "active": true,
+        "id": "8216_4326",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4325",
+        "accountName": "C/S RTL WRANGLER",
+        "accountNumber": "4325",
+        "active": true,
+        "id": "8216_4325",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_2145",
+        "accountName": "ACCRU-LOCAL INCOME TAX",
+        "accountNumber": "2145",
+        "active": true,
+        "id": "8216_2145",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_2146",
+        "accountName": "SALES TAX PREPAYMENT",
+        "accountNumber": "2146",
+        "active": true,
+        "id": "8216_2146",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4323",
+        "accountName": "SLS LSE WRANGLER",
+        "accountNumber": "4323",
+        "active": true,
+        "id": "8216_4323",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5655",
+        "accountName": "C/S B&P SUBLET WARR",
+        "accountNumber": "5655",
+        "active": true,
+        "id": "8216_5655",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5673",
+        "accountName": "UNAPPLIED TIME B&P",
+        "accountNumber": "5673",
+        "active": true,
+        "id": "8216_5673",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4585",
+        "accountName": "C/S N/V SERV CONTRACTS",
+        "accountNumber": "4585",
+        "active": true,
+        "id": "8216_4585",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4343",
+        "accountName": "SLS LSE WAGONEER",
+        "accountNumber": "4343",
+        "active": true,
+        "id": "8216_4343",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3010",
+        "accountName": "NEW SALESPERSONS COMMISSIONS",
+        "accountNumber": "3010",
+        "active": true,
+        "id": "8216_3010",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4341",
+        "accountName": "DIS RTL WAGONEER",
+        "accountNumber": "4341",
+        "active": true,
+        "id": "8216_4341",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4340",
+        "accountName": "SLS RTL WAGONEER",
+        "accountNumber": "4340",
+        "active": true,
+        "id": "8216_4340",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3492",
+        "accountName": "B&P-MAINTRPRRENT EQUIP",
+        "accountNumber": "3492",
+        "active": true,
+        "id": "8216_3492",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4581",
+        "accountName": "DIS N/V SERV CONTRACTS",
+        "accountNumber": "4581",
+        "active": true,
+        "id": "8216_4581",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4580",
+        "accountName": "SLS N/V SERV CONTRACTS",
+        "accountNumber": "4580",
+        "active": true,
+        "id": "8216_4580",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3491",
+        "accountName": "MECH-MAINTRPRRENT EQUIP",
+        "accountNumber": "3491",
+        "active": true,
+        "id": "8216_3491",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2160",
+        "accountName": "ACCRU-INCOME TAX",
+        "accountNumber": "2160",
+        "active": true,
+        "id": "8216_2160",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4337",
+        "accountName": "C/S RTL COMPASS INCENT",
+        "accountNumber": "4337",
+        "active": true,
+        "id": "8216_4337",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4336",
+        "accountName": "C/S LSE COMPASS",
+        "accountNumber": "4336",
+        "active": true,
+        "id": "8216_4336",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4335",
+        "accountName": "C/S RTL COMPASS",
+        "accountNumber": "4335",
+        "active": true,
+        "id": "8216_4335",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5665",
+        "accountName": "C/S B&P MATERIAL",
+        "accountNumber": "5665",
+        "active": true,
+        "id": "8216_5665",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5680",
+        "accountName": "SLS SER CONT SOLD SRV LANE",
+        "accountNumber": "5680",
+        "active": true,
+        "id": "8216_5680",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5685",
+        "accountName": "C/S SER CONT SOLD SRV LANE",
+        "accountNumber": "5685",
+        "active": true,
+        "id": "8216_5685",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_1190S",
+        "accountName": "STELLANTIS RESERVES",
+        "accountNumber": "1190S",
+        "active": true,
+        "id": "8216_1190S",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1190T",
+        "accountName": "TRUIST RESERVES",
+        "accountNumber": "1190T",
+        "active": true,
+        "id": "8216_1190T",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4355",
+        "accountName": "C/S RTL DURANGO",
+        "accountNumber": "4355",
+        "active": true,
+        "id": "8216_4355",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4596",
+        "accountName": "C/S LSE DART",
+        "accountNumber": "4596",
+        "active": true,
+        "id": "8216_4596",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4595",
+        "accountName": "C/S RTL DART",
+        "accountNumber": "4595",
+        "active": true,
+        "id": "8216_4595",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_2174",
+        "accountName": "ACCRU-MISCELLANEOUS",
+        "accountNumber": "2174",
+        "active": true,
+        "id": "8216_2174",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4353",
+        "accountName": "SLS LSE DURANGO",
+        "accountNumber": "4353",
+        "active": true,
+        "id": "8216_4353",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_1190G",
+        "accountName": "GM-AMERICREDIT RESERVES",
+        "accountNumber": "1190G",
+        "active": true,
+        "id": "8216_1190G",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4593",
+        "accountName": "SLS LSE DART",
+        "accountNumber": "4593",
+        "active": true,
+        "id": "8216_4593",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2172",
+        "accountName": "ACCRU-LEGAL & AUDIT",
+        "accountNumber": "2172",
+        "active": true,
+        "id": "8216_2172",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4351",
+        "accountName": "DIS RTL DURANGO",
+        "accountNumber": "4351",
+        "active": true,
+        "id": "8216_4351",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3020",
+        "accountName": "NEW SALES MGRS COMMISSIONS",
+        "accountNumber": "3020",
+        "active": true,
+        "id": "8216_3020",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2173",
+        "accountName": "ACCRU-EMPLR PENSION CONT",
+        "accountNumber": "2173",
+        "active": true,
+        "id": "8216_2173",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4350",
+        "accountName": "SLS RTL DURANGO",
+        "accountNumber": "4350",
+        "active": true,
+        "id": "8216_4350",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4591",
+        "accountName": "DIS RTL DART",
+        "accountNumber": "4591",
+        "active": true,
+        "id": "8216_4591",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3260",
+        "accountName": "USD-SLSPR SALARIES",
+        "accountNumber": "3260",
+        "active": true,
+        "id": "8216_3260",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4590",
+        "accountName": "SLS RTL DART",
+        "accountNumber": "4590",
+        "active": true,
+        "id": "8216_4590",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2171",
+        "accountName": "ACCRU-UTILITIES",
+        "accountNumber": "2171",
+        "active": true,
+        "id": "8216_2171",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_1190A",
+        "accountName": "ALLY RESERVES",
+        "accountNumber": "1190A",
+        "active": true,
+        "id": "8216_1190A",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1190B",
+        "accountName": "BETHPAGE FCU RESERVES",
+        "accountNumber": "1190B",
+        "active": true,
+        "id": "8216_1190B",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1190E",
+        "accountName": "TEACHERS FCU RESERVES",
+        "accountNumber": "1190E",
+        "active": true,
+        "id": "8216_1190E",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4347",
+        "accountName": "C/S RTL WAGONEER INCENT",
+        "accountNumber": "4347",
+        "active": true,
+        "id": "8216_4347",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_1190F",
+        "accountName": "FIFTH THIRD RESERVES",
+        "accountNumber": "1190F",
+        "active": true,
+        "id": "8216_1190F",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4346",
+        "accountName": "C/S LSE WAGONEER",
+        "accountNumber": "4346",
+        "active": true,
+        "id": "8216_4346",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_1190C",
+        "accountName": "CAPITAL ONE RESERVES",
+        "accountNumber": "1190C",
+        "active": true,
+        "id": "8216_1190C",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4345",
+        "accountName": "C/S RTL WAGONEER",
+        "accountNumber": "4345",
+        "active": true,
+        "id": "8216_4345",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_1190D",
+        "accountName": "ASSOCIATED BANK RESERVES",
+        "accountNumber": "1190D",
+        "active": true,
+        "id": "8216_1190D",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4366",
+        "accountName": "C/S LSE RAM PROMASTER CITY",
+        "accountNumber": "4366",
+        "active": true,
+        "id": "8216_4366",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4123",
+        "accountName": "SLS LSE TBD 2",
+        "accountNumber": "4123",
+        "active": true,
+        "id": "8216_4123",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4365",
+        "accountName": "C/S RTL RAM PROMASTER CITY",
+        "accountNumber": "4365",
+        "active": true,
+        "id": "8216_4365",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4121",
+        "accountName": "DIS RTL TBD 2",
+        "accountNumber": "4121",
+        "active": true,
+        "id": "8216_4121",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4363",
+        "accountName": "SLS LSE RAM PROMASTER CITY",
+        "accountNumber": "4363",
+        "active": true,
+        "id": "8216_4363",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4120",
+        "accountName": "SLS RTL TBD 2",
+        "accountNumber": "4120",
+        "active": true,
+        "id": "8216_4120",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3030",
+        "accountName": "NEW-INV MAINT",
+        "accountNumber": "3030",
+        "active": true,
+        "id": "8216_3030",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4361",
+        "accountName": "DIS RTL RAM PROMASTER CITY",
+        "accountNumber": "4361",
+        "active": true,
+        "id": "8216_4361",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4360",
+        "accountName": "SLS RTL RAM PROMASTER CITY",
+        "accountNumber": "4360",
+        "active": true,
+        "id": "8216_4360",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3270",
+        "accountName": "USD SALES MGRS SALARIES",
+        "accountNumber": "3270",
+        "active": true,
+        "id": "8216_3270",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4357",
+        "accountName": "C/S RTL DURANGO INCENT",
+        "accountNumber": "4357",
+        "active": true,
+        "id": "8216_4357",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4356",
+        "accountName": "C/S LSE DURANGO",
+        "accountNumber": "4356",
+        "active": true,
+        "id": "8216_4356",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3280",
+        "accountName": "USD-OTHER SALARIES",
+        "accountNumber": "3280",
+        "active": true,
+        "id": "8216_3280",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2022RO",
+        "accountName": "OPEN RO WE OWE",
+        "accountNumber": "2022RO",
+        "active": true,
+        "id": "8216_2022RO",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4377",
+        "accountName": "C/S RTL RAM 1500 INCENT",
+        "accountNumber": "4377",
+        "active": true,
+        "id": "8216_4377",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4376",
+        "accountName": "C/S LSE RAM 1500",
+        "accountNumber": "4376",
+        "active": true,
+        "id": "8216_4376",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4375",
+        "accountName": "C/S RTL RAM 1500",
+        "accountNumber": "4375",
+        "active": true,
+        "id": "8216_4375",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4373",
+        "accountName": "SLS LSE RAM 1500",
+        "accountNumber": "4373",
+        "active": true,
+        "id": "8216_4373",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4371",
+        "accountName": "DIS RTL RAM 1500",
+        "accountNumber": "4371",
+        "active": true,
+        "id": "8216_4371",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3040",
+        "accountName": "NEW-POLICY EXPENSE",
+        "accountNumber": "3040",
+        "active": true,
+        "id": "8216_3040",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4370",
+        "accountName": "SLS RTL RAM 1500",
+        "accountNumber": "4370",
+        "active": true,
+        "id": "8216_4370",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4126",
+        "accountName": "C/S LSE TBD 2",
+        "accountNumber": "4126",
+        "active": true,
+        "id": "8216_4126",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4125",
+        "accountName": "C/S RTL TBD 2",
+        "accountNumber": "4125",
+        "active": true,
+        "id": "8216_4125",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4367",
+        "accountName": "C/S RTL RAM PRMSTR CITY INCENT",
+        "accountNumber": "4367",
+        "active": true,
+        "id": "8216_4367",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4380",
+        "accountName": "SLS RTL GR CHEROKEE",
+        "accountNumber": "4380",
+        "active": true,
+        "id": "8216_4380",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3290",
+        "accountName": "USD ADVERTISING-PRINT TV OTH",
+        "accountNumber": "3290",
+        "active": true,
+        "id": "8216_3290",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4387",
+        "accountName": "C/S RTL GRAND CHEROKEE INCENT",
+        "accountNumber": "4387",
+        "active": true,
+        "id": "8216_4387",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4386",
+        "accountName": "C/S LSE GR CHEROKEE",
+        "accountNumber": "4386",
+        "active": true,
+        "id": "8216_4386",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4385",
+        "accountName": "C/S RTL GR CHEROKEE",
+        "accountNumber": "4385",
+        "active": true,
+        "id": "8216_4385",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4383",
+        "accountName": "SLS LSE GR CHEROKEE",
+        "accountNumber": "4383",
+        "active": true,
+        "id": "8216_4383",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4381",
+        "accountName": "DIS RTL GR CHEROKEE",
+        "accountNumber": "4381",
+        "active": true,
+        "id": "8216_4381",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4391",
+        "accountName": "DIS NEW OTH NEW TRK CDJR",
+        "accountNumber": "4391",
+        "active": true,
+        "id": "8216_4391",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3060",
+        "accountName": "NEW-SLSPR SALARIES",
+        "accountNumber": "3060",
+        "active": true,
+        "id": "8216_3060",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4390",
+        "accountName": "SLS NEW OTH NEW TRK CDJR",
+        "accountNumber": "4390",
+        "active": true,
+        "id": "8216_4390",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4157",
+        "accountName": "C/S RTL HORNET INCENT",
+        "accountNumber": "4157",
+        "active": true,
+        "id": "8216_4157",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4156",
+        "accountName": "C/S LSE HORNET",
+        "accountNumber": "4156",
+        "active": true,
+        "id": "8216_4156",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4155",
+        "accountName": "C/S RTL HORNET",
+        "accountNumber": "4155",
+        "active": true,
+        "id": "8216_4155",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4396",
+        "accountName": "C/S LSE OTH NEW TRK CDJR",
+        "accountNumber": "4396",
+        "active": true,
+        "id": "8216_4396",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4153",
+        "accountName": "SLS LSE HORNET",
+        "accountNumber": "4153",
+        "active": true,
+        "id": "8216_4153",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4395",
+        "accountName": "C/S NEW OTH NEW TRK CDJR",
+        "accountNumber": "4395",
+        "active": true,
+        "id": "8216_4395",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4393",
+        "accountName": "SLS LSE OTH NEW TRK CDJR",
+        "accountNumber": "4393",
+        "active": true,
+        "id": "8216_4393",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4150",
+        "accountName": "SLS RTL HORNET",
+        "accountNumber": "4150",
+        "active": true,
+        "id": "8216_4150",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3070",
+        "accountName": "NEW SALES MGRS SALARIES",
+        "accountNumber": "3070",
+        "active": true,
+        "id": "8216_3070",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_6100",
+        "accountName": "LIFO ADJUSTMENT",
+        "accountNumber": "6100",
+        "active": true,
+        "id": "8216_6100",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8216_8216_3882",
+        "accountName": "USD-INTEREST (OTHER)",
+        "accountNumber": "3882",
+        "active": true,
+        "id": "8216_3882",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2550",
+        "accountName": "NOTES PAY-DRIVER ED VEH",
+        "accountNumber": "2550",
+        "active": true,
+        "id": "8216_2550",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3881",
+        "accountName": "NEW-INTEREST (OTHER)",
+        "accountNumber": "3881",
+        "active": true,
+        "id": "8216_3881",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3880",
+        "accountName": "INTEREST (OTHER)",
+        "accountNumber": "3880",
+        "active": true,
+        "id": "8216_3880",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_3635",
+        "accountName": "PRT-EMPLOYEE BENEFITS",
+        "accountNumber": "3635",
+        "active": true,
+        "id": "8216_3635",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1456",
+        "accountName": "PREPAID-OTHER",
+        "accountNumber": "1456",
+        "active": true,
+        "id": "8216_1456",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3634",
+        "accountName": "BDY-EMPLOYEE BENEFITS",
+        "accountNumber": "3634",
+        "active": true,
+        "id": "8216_3634",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1454",
+        "accountName": "PREPAID-RENT",
+        "accountNumber": "1454",
+        "active": true,
+        "id": "8216_1454",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3633",
+        "accountName": "MEC-EMPLOYEE BENEFITS",
+        "accountNumber": "3633",
+        "active": true,
+        "id": "8216_3633",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3875",
+        "accountName": "PRT-MAINT & REPAIRS",
+        "accountNumber": "3875",
+        "active": true,
+        "id": "8216_3875",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1455",
+        "accountName": "PREPAID-TAX & LIC",
+        "accountNumber": "1455",
+        "active": true,
+        "id": "8216_1455",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3632",
+        "accountName": "USD-EMPLOYEE BENEFITS",
+        "accountNumber": "3632",
+        "active": true,
+        "id": "8216_3632",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3874",
+        "accountName": "BDY-MAINT & REPAIRS",
+        "accountNumber": "3874",
+        "active": true,
+        "id": "8216_3874",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_6090G",
+        "accountName": "GWC INCENTIVE",
+        "accountNumber": "6090G",
+        "active": true,
+        "id": "8216_6090G",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8216_8216_8090",
+        "accountName": "L&R-GAIN/LOSS ON L&R VEH",
+        "accountNumber": "8090",
+        "active": true,
+        "id": "8216_8090",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8216_8216_1452",
+        "accountName": "PREPAID-INSURANCE",
+        "accountNumber": "1452",
+        "active": true,
+        "id": "8216_1452",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2300",
+        "accountName": "NOTES PAY-OTHER INVENTORY",
+        "accountNumber": "2300",
+        "active": true,
+        "id": "8216_2300",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3631",
+        "accountName": "NEW-EMPLOYEE BENEFITS",
+        "accountNumber": "3631",
+        "active": true,
+        "id": "8216_3631",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3873",
+        "accountName": "MEC-MAINT & REPAIRS",
+        "accountNumber": "3873",
+        "active": true,
+        "id": "8216_3873",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1453",
+        "accountName": "PREPAID-INTEREST",
+        "accountNumber": "1453",
+        "active": true,
+        "id": "8216_1453",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3630",
+        "accountName": "EMPLOYEE BENEFITS",
+        "accountNumber": "3630",
+        "active": true,
+        "id": "8216_3630",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_3872",
+        "accountName": "USD-MAINT & REPAIRS",
+        "accountNumber": "3872",
+        "active": true,
+        "id": "8216_3872",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4740",
+        "accountName": "SLS USED TRUCK WHSLE",
+        "accountNumber": "4740",
+        "active": true,
+        "id": "8216_4740",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3651",
+        "accountName": "NEW-PAYROLL TAXES",
+        "accountNumber": "3651",
+        "active": true,
+        "id": "8216_3651",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3893",
+        "accountName": "MEC-GENERAL INSURANCE",
+        "accountNumber": "3893",
+        "active": true,
+        "id": "8216_3893",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1230",
+        "accountName": "INV-NEW TRUCKS",
+        "accountNumber": "1230",
+        "active": true,
+        "id": "8216_1230",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3650",
+        "accountName": "PAYROLL TAXES",
+        "accountNumber": "3650",
+        "active": true,
+        "id": "8216_3650",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_3892",
+        "accountName": "USD-GENERAL INSURANCE",
+        "accountNumber": "3892",
+        "active": true,
+        "id": "8216_3892",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1231",
+        "accountName": "NEW VEHICLE PACK",
+        "accountNumber": "1231",
+        "active": true,
+        "id": "8216_1231",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2560",
+        "accountName": "NOTES PAY-L & R VEH",
+        "accountNumber": "2560",
+        "active": true,
+        "id": "8216_2560",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3891",
+        "accountName": "NEW-GENERAL INSURANCE",
+        "accountNumber": "3891",
+        "active": true,
+        "id": "8216_3891",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3890",
+        "accountName": "GENERAL INSURANCE",
+        "accountNumber": "3890",
+        "active": true,
+        "id": "8216_3890",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_4735",
+        "accountName": "C/S USED CARS WHSLE",
+        "accountNumber": "4735",
+        "active": true,
+        "id": "8216_4735",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3402",
+        "accountName": "B&P SALARIES",
+        "accountNumber": "3402",
+        "active": true,
+        "id": "8216_3402",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3401",
+        "accountName": "MECH-SALARIES",
+        "accountNumber": "3401",
+        "active": true,
+        "id": "8216_3401",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3885",
+        "accountName": "PRT-INTEREST (OTHER)",
+        "accountNumber": "3885",
+        "active": true,
+        "id": "8216_3885",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4731",
+        "accountName": "DIS USED CARS WHLSE",
+        "accountNumber": "4731",
+        "active": true,
+        "id": "8216_4731",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3884",
+        "accountName": "BDY-INTEREST (OTHER)",
+        "accountNumber": "3884",
+        "active": true,
+        "id": "8216_3884",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3883",
+        "accountName": "MEC-INTEREST (OTHER)",
+        "accountNumber": "3883",
+        "active": true,
+        "id": "8216_3883",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4730",
+        "accountName": "SLS USED CARS WHLSE",
+        "accountNumber": "4730",
+        "active": true,
+        "id": "8216_4730",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5820",
+        "accountName": "SLS P&A B&P WARRANTY",
+        "accountNumber": "5820",
+        "active": true,
+        "id": "8216_5820",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5825",
+        "accountName": "C/S P&A B&P WARRANTY",
+        "accountNumber": "5825",
+        "active": true,
+        "id": "8216_5825",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4751",
+        "accountName": "DIS USED CARS RTL (CPOV)",
+        "accountNumber": "4751",
+        "active": true,
+        "id": "8216_4751",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4750",
+        "accountName": "SLS USED CARS RTL (CPOV)",
+        "accountNumber": "4750",
+        "active": true,
+        "id": "8216_4750",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_1240",
+        "accountName": "INV-RECREATIONAL VEH",
+        "accountNumber": "1240",
+        "active": true,
+        "id": "8216_1240",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1300X",
+        "accountName": "SEC 263A CAP COSTS",
+        "accountNumber": "1300X",
+        "active": true,
+        "id": "8216_1300X",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4505",
+        "accountName": "C/S N/V NON AUTO & OTHER",
+        "accountNumber": "4505",
+        "active": true,
+        "id": "8216_4505",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_1236",
+        "accountName": "INV-OTH NEW TRUCKS-AR/F",
+        "accountNumber": "1236",
+        "active": true,
+        "id": "8216_1236",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4745",
+        "accountName": "C/S USED TRUCK WHSLE",
+        "accountNumber": "4745",
+        "active": true,
+        "id": "8216_4745",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3655",
+        "accountName": "PRT-PAYROLL TAXES",
+        "accountNumber": "3655",
+        "active": true,
+        "id": "8216_3655",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1235",
+        "accountName": "INV-OTH NEW TRUCKS-CDJR",
+        "accountNumber": "1235",
+        "active": true,
+        "id": "8216_1235",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3412",
+        "accountName": "B&P-VACATION & T/O PAY",
+        "accountNumber": "3412",
+        "active": true,
+        "id": "8216_3412",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3654",
+        "accountName": "BDY-PAYROLL TAXES",
+        "accountNumber": "3654",
+        "active": true,
+        "id": "8216_3654",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4501",
+        "accountName": "DIS N/V NON AUTO & OTHER",
+        "accountNumber": "4501",
+        "active": true,
+        "id": "8216_4501",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4500",
+        "accountName": "SLS N/V NON AUTO & OTHER",
+        "accountNumber": "4500",
+        "active": true,
+        "id": "8216_4500",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3411",
+        "accountName": "MECH-VACATION & T/O PAY",
+        "accountNumber": "3411",
+        "active": true,
+        "id": "8216_3411",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3653",
+        "accountName": "MEC-PAYROLL TAXES",
+        "accountNumber": "3653",
+        "active": true,
+        "id": "8216_3653",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3895",
+        "accountName": "PRT-GENERAL INSURANCE",
+        "accountNumber": "3895",
+        "active": true,
+        "id": "8216_3895",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3652",
+        "accountName": "USD-PAYROLL TAXES",
+        "accountNumber": "3652",
+        "active": true,
+        "id": "8216_3652",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3894",
+        "accountName": "BDY-GENERAL INSURANCE",
+        "accountNumber": "3894",
+        "active": true,
+        "id": "8216_3894",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4741",
+        "accountName": "DIS USED TRUCK WHSLE",
+        "accountNumber": "4741",
+        "active": true,
+        "id": "8216_4741",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5830",
+        "accountName": "SLS P&A INTERNAL B & P",
+        "accountNumber": "5830",
+        "active": true,
+        "id": "8216_5830",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5835",
+        "accountName": "C/S P&A INTERNAL B & P",
+        "accountNumber": "5835",
+        "active": true,
+        "id": "8216_5835",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4520",
+        "accountName": "SLS RTL RAM CHS CAB 4500",
+        "accountNumber": "4520",
+        "active": true,
+        "id": "8216_4520",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3431",
+        "accountName": "MECH-ADVERTISING",
+        "accountNumber": "3431",
+        "active": true,
+        "id": "8216_3431",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3673",
+        "accountName": "MEC-ADV GEN & INSTITUT",
+        "accountNumber": "3673",
+        "active": true,
+        "id": "8216_3673",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1010",
+        "accountName": "PETTY CASH",
+        "accountNumber": "1010",
+        "active": true,
+        "id": "8216_1010",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1252",
+        "accountName": "INV-OTHER NEW CARS-COMP",
+        "accountNumber": "1252",
+        "active": true,
+        "id": "8216_1252",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3672",
+        "accountName": "USD-ADV GEN & INSTITUT",
+        "accountNumber": "3672",
+        "active": true,
+        "id": "8216_3672",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4761",
+        "accountName": "DIS USED TRUCKS RTL (CPOV)",
+        "accountNumber": "4761",
+        "active": true,
+        "id": "8216_4761",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_1253",
+        "accountName": "INV-OTHER NEW TRUCKS-COMP",
+        "accountNumber": "1253",
+        "active": true,
+        "id": "8216_1253",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4760",
+        "accountName": "SLS USED TRUCKS RTL (CPOV)",
+        "accountNumber": "4760",
+        "active": true,
+        "id": "8216_4760",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3671",
+        "accountName": "NEW-ADV GEN & INSTITUT",
+        "accountNumber": "3671",
+        "active": true,
+        "id": "8216_3671",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3670",
+        "accountName": "ADVERTISE GEN & INSTITUT",
+        "accountNumber": "3670",
+        "active": true,
+        "id": "8216_3670",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_2580",
+        "accountName": "NOTES PAY-CO & SER VEH",
+        "accountNumber": "2580",
+        "active": true,
+        "id": "8216_2580",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4517",
+        "accountName": "C/S RTL JOURNEY INCENT",
+        "accountNumber": "4517",
+        "active": true,
+        "id": "8216_4517",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4516",
+        "accountName": "C/S LSE JOURNEY",
+        "accountNumber": "4516",
+        "active": true,
+        "id": "8216_4516",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4515",
+        "accountName": "C/S RTL JOURNEY",
+        "accountNumber": "4515",
+        "active": true,
+        "id": "8216_4515",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4755",
+        "accountName": "C/S USED CARS RTL (CPOV)",
+        "accountNumber": "4755",
+        "active": true,
+        "id": "8216_4755",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4513",
+        "accountName": "SLS LSE JOURNEY",
+        "accountNumber": "4513",
+        "active": true,
+        "id": "8216_4513",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4754",
+        "accountName": "REC USED CARS RTL (CPOV)",
+        "accountNumber": "4754",
+        "active": true,
+        "id": "8216_4754",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4511",
+        "accountName": "DIS RTL JOURNEY",
+        "accountNumber": "4511",
+        "active": true,
+        "id": "8216_4511",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3422",
+        "accountName": "B&P-PERSONNEL TRAINING",
+        "accountNumber": "3422",
+        "active": true,
+        "id": "8216_3422",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3421",
+        "accountName": "MECH-PERSONNEL TRAINING",
+        "accountNumber": "3421",
+        "active": true,
+        "id": "8216_3421",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4510",
+        "accountName": "SLS RTL JOURNEY",
+        "accountNumber": "4510",
+        "active": true,
+        "id": "8216_4510",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5600",
+        "accountName": "SLS B&P CUST LABOR",
+        "accountNumber": "5600",
+        "active": true,
+        "id": "8216_5600",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5605",
+        "accountName": "C/S B&P CUST LABOR",
+        "accountNumber": "5605",
+        "active": true,
+        "id": "8216_5605",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5620",
+        "accountName": "SLS B&P WARRANTY LABOR",
+        "accountNumber": "5620",
+        "active": true,
+        "id": "8216_5620",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4531",
+        "accountName": "DIS RTL RAM CHS CAB 5500",
+        "accountNumber": "4531",
+        "active": true,
+        "id": "8216_4531",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3442",
+        "accountName": "B&P-SUPPLY TOOL & LNDRY",
+        "accountNumber": "3442",
+        "active": true,
+        "id": "8216_3442",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3684",
+        "accountName": "BDY-STATSUPPLY & POST",
+        "accountNumber": "3684",
+        "active": true,
+        "id": "8216_3684",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1021",
+        "accountName": "CREDIT CARD DEPOSITS",
+        "accountNumber": "1021",
+        "active": true,
+        "id": "8216_1021",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3441",
+        "accountName": "MECH-SUPPLY TOOL & LNDRY",
+        "accountNumber": "3441",
+        "active": true,
+        "id": "8216_3441",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3683",
+        "accountName": "MEC-STATSUPPLY & POST",
+        "accountNumber": "3683",
+        "active": true,
+        "id": "8216_3683",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4530",
+        "accountName": "SLS RTL RAM CHS CAB 5500",
+        "accountNumber": "4530",
+        "active": true,
+        "id": "8216_4530",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_1022",
+        "accountName": "CHECK DEPOSITS",
+        "accountNumber": "1022",
+        "active": true,
+        "id": "8216_1022",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3682",
+        "accountName": "USD-STATSUPPLY & POST",
+        "accountNumber": "3682",
+        "active": true,
+        "id": "8216_3682",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3681",
+        "accountName": "NEW-STATSUPPLY & POST",
+        "accountNumber": "3681",
+        "active": true,
+        "id": "8216_3681",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1020",
+        "accountName": "SALES -UNDEP CSH",
+        "accountNumber": "1020",
+        "active": true,
+        "id": "8216_1020",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3680",
+        "accountName": "STATSUPPLY & POSTAGE",
+        "accountNumber": "3680",
+        "active": true,
+        "id": "8216_3680",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_1260",
+        "accountName": "INV-DEMONSTRATORS",
+        "accountNumber": "1260",
+        "active": true,
+        "id": "8216_1260",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4527",
+        "accountName": "C/S RTL RAM CHS CAB 4500 INCEN",
+        "accountNumber": "4527",
+        "active": true,
+        "id": "8216_4527",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_2105",
+        "accountName": "SVC ADV & TECH BACKFLAG",
+        "accountNumber": "2105",
+        "active": true,
+        "id": "8216_2105",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4526",
+        "accountName": "C/S LSE RAM CHS CAB 4500",
+        "accountNumber": "4526",
+        "active": true,
+        "id": "8216_4526",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4767",
+        "accountName": "USD CAR INV WRITEDOWN",
+        "accountNumber": "4767",
+        "active": true,
+        "id": "8216_4767",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_2106",
+        "accountName": "ACCRUED EXPENSES",
+        "accountNumber": "2106",
+        "active": true,
+        "id": "8216_2106",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4525",
+        "accountName": "C/S RTL RAM CHS CAB 4500",
+        "accountNumber": "4525",
+        "active": true,
+        "id": "8216_4525",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_2103",
+        "accountName": "SALES COMM PYBL",
+        "accountNumber": "2103",
+        "active": true,
+        "id": "8216_2103",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4765",
+        "accountName": "C/S USED TRUCKS RTL (CPOV)",
+        "accountNumber": "4765",
+        "active": true,
+        "id": "8216_4765",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_2104",
+        "accountName": "ACCRUED TECH PAYROLL",
+        "accountNumber": "2104",
+        "active": true,
+        "id": "8216_2104",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4523",
+        "accountName": "SLS LSE RAM CHS CAB 4500",
+        "accountNumber": "4523",
+        "active": true,
+        "id": "8216_4523",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4764",
+        "accountName": "REC USED TRUCKS RTL (CPOV)",
+        "accountNumber": "4764",
+        "active": true,
+        "id": "8216_4764",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_2101",
+        "accountName": "ACCRU BONUS PAYROLL",
+        "accountNumber": "2101",
+        "active": true,
+        "id": "8216_2101",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3675",
+        "accountName": "PRT-ADV GEN & INSTITUT",
+        "accountNumber": "3675",
+        "active": true,
+        "id": "8216_3675",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3432",
+        "accountName": "B&P-ADVERTISING",
+        "accountNumber": "3432",
+        "active": true,
+        "id": "8216_3432",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3674",
+        "accountName": "BDY-ADV GEN & INSTITUT",
+        "accountNumber": "3674",
+        "active": true,
+        "id": "8216_3674",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2102",
+        "accountName": "ACCRU-VAC & T/O PAY",
+        "accountNumber": "2102",
+        "active": true,
+        "id": "8216_2102",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4521",
+        "accountName": "DIS RTL RAM CHS CAB 4500",
+        "accountNumber": "4521",
+        "active": true,
+        "id": "8216_4521",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5853",
+        "accountName": "P&A PURCHASE DISCOUNTS",
+        "accountNumber": "5853",
+        "active": true,
+        "id": "8216_5853",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5630",
+        "accountName": "SLS B&P INTERNAL LABOR",
+        "accountNumber": "5630",
+        "active": true,
+        "id": "8216_5630",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5873",
+        "accountName": "P&A INVENTORY ADJ",
+        "accountNumber": "5873",
+        "active": true,
+        "id": "8216_5873",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4300",
+        "accountName": "SLS RTL CHEROKEE",
+        "accountNumber": "4300",
+        "active": true,
+        "id": "8216_4300",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_1032",
+        "accountName": "CASH IN BANK - ZELLE",
+        "accountNumber": "1032",
+        "active": true,
+        "id": "8216_1032",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3210",
+        "accountName": "USD SALESPERSONS COMMISSIONS",
+        "accountNumber": "3210",
+        "active": true,
+        "id": "8216_3210",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3452",
+        "accountName": "B&P-VEHICLE EXPENSE",
+        "accountNumber": "3452",
+        "active": true,
+        "id": "8216_3452",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4783",
+        "accountName": "CUSTOMER REPO REFUND",
+        "accountNumber": "4783",
+        "active": true,
+        "id": "8216_4783",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_1033",
+        "accountName": "CASH IN BANK-TD PAYROLL",
+        "accountNumber": "1033",
+        "active": true,
+        "id": "8216_1033",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3451",
+        "accountName": "MECH-VEHICLE EXPENSE",
+        "accountNumber": "3451",
+        "active": true,
+        "id": "8216_3451",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1030",
+        "accountName": "CASH IN BANK - WELLS",
+        "accountNumber": "1030",
+        "active": true,
+        "id": "8216_1030",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2120",
+        "accountName": "ACCRU-INTEREST",
+        "accountNumber": "2120",
+        "active": true,
+        "id": "8216_2120",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_1031",
+        "accountName": "CASH IN BANK- DMV",
+        "accountNumber": "1031",
+        "active": true,
+        "id": "8216_1031",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1270",
+        "accountName": "INV-USED CARS",
+        "accountNumber": "1270",
+        "active": true,
+        "id": "8216_1270",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1271",
+        "accountName": "USED CAR NOSH",
+        "accountNumber": "1271",
+        "active": true,
+        "id": "8216_1271",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4537",
+        "accountName": "C/S RTL RAM CHS CAB 5500 INCEN",
+        "accountNumber": "4537",
+        "active": true,
+        "id": "8216_4537",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3689",
+        "accountName": "STATSUPPLY & POSTAGE 2",
+        "accountNumber": "3689",
+        "active": true,
+        "id": "8216_3689",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_4536",
+        "accountName": "C/S LSE RAM CHS CAB 5500",
+        "accountNumber": "4536",
+        "active": true,
+        "id": "8216_4536",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4777",
+        "accountName": "USD TRK INV WRITEDOWN",
+        "accountNumber": "4777",
+        "active": true,
+        "id": "8216_4777",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4535",
+        "accountName": "C/S RTL RAM CHS CAB 5500",
+        "accountNumber": "4535",
+        "active": true,
+        "id": "8216_4535",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_1023",
+        "accountName": "SUNBIT",
+        "accountNumber": "1023",
+        "active": true,
+        "id": "8216_1023",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4533",
+        "accountName": "SLS LSE RAM CHS CAB 5500",
+        "accountNumber": "4533",
+        "active": true,
+        "id": "8216_4533",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3685",
+        "accountName": "PRT-STATSUPPLY & POST",
+        "accountNumber": "3685",
+        "active": true,
+        "id": "8216_3685",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_5863",
+        "accountName": "P&A WHOLESALE ALLOW",
+        "accountNumber": "5863",
+        "active": true,
+        "id": "8216_5863",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5625",
+        "accountName": "C/S B&P WARRANTY LABOR",
+        "accountNumber": "5625",
+        "active": true,
+        "id": "8216_5625",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5640",
+        "accountName": "SLS B&P SUBLET WORK",
+        "accountNumber": "5640",
+        "active": true,
+        "id": "8216_5640",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4795",
+        "accountName": "C/S USED NON AUTO",
+        "accountNumber": "4795",
+        "active": true,
+        "id": "8216_4795",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4311",
+        "accountName": "DIS RTL WRANGLER 4DR",
+        "accountNumber": "4311",
+        "active": true,
+        "id": "8216_4311",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4553",
+        "accountName": "NEW REPO LOSSES",
+        "accountNumber": "4553",
+        "active": true,
+        "id": "8216_4553",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4310",
+        "accountName": "SLS RTL WRANGLER 4DR",
+        "accountNumber": "4310",
+        "active": true,
+        "id": "8216_4310",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2130",
+        "accountName": "ACCRU-INSURANCE",
+        "accountNumber": "2130",
+        "active": true,
+        "id": "8216_2130",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3220",
+        "accountName": "USD SALES MGRS COMMISSIONS",
+        "accountNumber": "3220",
+        "active": true,
+        "id": "8216_3220",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3462",
+        "accountName": "B&P-POLICY ADJUSTMENTS",
+        "accountNumber": "3462",
+        "active": true,
+        "id": "8216_3462",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3461",
+        "accountName": "MECH-POLICY ADJUSTMENTS",
+        "accountNumber": "3461",
+        "active": true,
+        "id": "8216_3461",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4791",
+        "accountName": "DIS USED NON AUTO",
+        "accountNumber": "4791",
+        "active": true,
+        "id": "8216_4791",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_1040",
+        "accountName": "PREPAID FP - WELLS",
+        "accountNumber": "1040",
+        "active": true,
+        "id": "8216_1040",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4790",
+        "accountName": "SLS USED NON AUTO",
+        "accountNumber": "4790",
+        "active": true,
+        "id": "8216_4790",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_1280",
+        "accountName": "INV-USED TRUCKS",
+        "accountNumber": "1280",
+        "active": true,
+        "id": "8216_1280",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4307",
+        "accountName": "C/S RTL CHEROKEE INCENT",
+        "accountNumber": "4307",
+        "active": true,
+        "id": "8216_4307",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4306",
+        "accountName": "C/S LSE CHEROKEE",
+        "accountNumber": "4306",
+        "active": true,
+        "id": "8216_4306",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4305",
+        "accountName": "C/S RTL CHEROKEE",
+        "accountNumber": "4305",
+        "active": true,
+        "id": "8216_4305",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_1037",
+        "accountName": "YEAR END BANK REC ADJ",
+        "accountNumber": "1037",
+        "active": true,
+        "id": "8216_1037",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4787",
+        "accountName": "USD LSE INV WRITEDOWN",
+        "accountNumber": "4787",
+        "active": true,
+        "id": "8216_4787",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4303",
+        "accountName": "SLS LSE CHEROKEE",
+        "accountNumber": "4303",
+        "active": true,
+        "id": "8216_4303",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4301",
+        "accountName": "DIS RTL CHEROKEE",
+        "accountNumber": "4301",
+        "active": true,
+        "id": "8216_4301",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4543",
+        "accountName": "NEW VOLUME INCENTIVES",
+        "accountNumber": "4543",
+        "active": true,
+        "id": "8216_4543",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5635",
+        "accountName": "C/S B&P INTERNAL LABOR",
+        "accountNumber": "5635",
+        "active": true,
+        "id": "8216_5635",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_5650",
+        "accountName": "SLS B&P SUBLET WARR",
+        "accountNumber": "5650",
+        "active": true,
+        "id": "8216_5650",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2143",
+        "accountName": "ACCRU-FED UNEMPLOYMENT",
+        "accountNumber": "2143",
+        "active": true,
+        "id": "8216_2143",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_2144",
+        "accountName": "ACCRU-STATE INCOME TAX",
+        "accountNumber": "2144",
+        "active": true,
+        "id": "8216_2144",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4321",
+        "accountName": "DIS RTL WRANGLER",
+        "accountNumber": "4321",
+        "active": true,
+        "id": "8216_4321",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2141",
+        "accountName": "ACCRU-FICA WITHHELD",
+        "accountNumber": "2141",
+        "active": true,
+        "id": "8216_2141",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_4320",
+        "accountName": "SLS RTL WRANGLER",
+        "accountNumber": "4320",
+        "active": true,
+        "id": "8216_4320",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3230",
+        "accountName": "USD-INV MAINT",
+        "accountNumber": "3230",
+        "active": true,
+        "id": "8216_3230",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2142",
+        "accountName": "ACCRU-FWT",
+        "accountNumber": "2142",
+        "active": true,
+        "id": "8216_2142",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_1290",
+        "accountName": "INV-CPOV CAR",
+        "accountNumber": "1290",
+        "active": true,
+        "id": "8216_1290",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1291",
+        "accountName": "INV-CPOV TRUCK",
+        "accountNumber": "1291",
+        "active": true,
+        "id": "8216_1291",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_4317",
+        "accountName": "C/S RTL WRANGLER 4DR INCENT",
+        "accountNumber": "4317",
+        "active": true,
+        "id": "8216_4317",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4316",
+        "accountName": "C/S LSE WRANGLER 4DR",
+        "accountNumber": "4316",
+        "active": true,
+        "id": "8216_4316",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4315",
+        "accountName": "C/S RTL WRANGLER 4DR",
+        "accountNumber": "4315",
+        "active": true,
+        "id": "8216_4315",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4313",
+        "accountName": "SLS LSE WRANGLER 4DR",
+        "accountNumber": "4313",
+        "active": true,
+        "id": "8216_4313",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_5645",
+        "accountName": "C/S B&P SUBLET WORK",
+        "accountNumber": "5645",
+        "active": true,
+        "id": "8216_5645",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_7040",
+        "accountName": "BONUSES",
+        "accountNumber": "7040",
+        "active": true,
+        "id": "8216_7040",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_9220",
+        "accountName": "L&R-MAINT & REPAIRS",
+        "accountNumber": "9220",
+        "active": true,
+        "id": "8216_9220",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3912",
+        "accountName": "USD-GENERAL DEPR",
+        "accountNumber": "3912",
+        "active": true,
+        "id": "8216_3912",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3911",
+        "accountName": "NEW-GENERAL DEPR",
+        "accountNumber": "3911",
+        "active": true,
+        "id": "8216_3911",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3910",
+        "accountName": "GENERAL DEPRECIATION",
+        "accountNumber": "3910",
+        "active": true,
+        "id": "8216_3910",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_3915",
+        "accountName": "PRT-GENERAL DEPR",
+        "accountNumber": "3915",
+        "active": true,
+        "id": "8216_3915",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3914",
+        "accountName": "BDY-GENERAL DEPR",
+        "accountNumber": "3914",
+        "active": true,
+        "id": "8216_3914",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3913",
+        "accountName": "MEC-GENERAL DEPR",
+        "accountNumber": "3913",
+        "active": true,
+        "id": "8216_3913",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_9470",
+        "accountName": "L&R-PICKUP & DELIVERY",
+        "accountNumber": "9470",
+        "active": true,
+        "id": "8216_9470",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3923",
+        "accountName": "MEC-GENERAL MAINT REPAIR",
+        "accountNumber": "3923",
+        "active": true,
+        "id": "8216_3923",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3922",
+        "accountName": "USD-GENERAL MAINT REPAIR",
+        "accountNumber": "3922",
+        "active": true,
+        "id": "8216_3922",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3921",
+        "accountName": "NEW-GENERAL MAINT REPAIR",
+        "accountNumber": "3921",
+        "active": true,
+        "id": "8216_3921",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3920",
+        "accountName": "GENERAL MAINT & REPAIR",
+        "accountNumber": "3920",
+        "active": true,
+        "id": "8216_3920",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_3925",
+        "accountName": "PRT-GENERAL MAINT REPAIR",
+        "accountNumber": "3925",
+        "active": true,
+        "id": "8216_3925",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3924",
+        "accountName": "BDY-GENERAL MAINT REPAIR",
+        "accountNumber": "3924",
+        "active": true,
+        "id": "8216_3924",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3934",
+        "accountName": "BDY-GENERAL EQUIP RENTAL",
+        "accountNumber": "3934",
+        "active": true,
+        "id": "8216_3934",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3933",
+        "accountName": "MEC-GENERAL EQUIP RENTAL",
+        "accountNumber": "3933",
+        "active": true,
+        "id": "8216_3933",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3932",
+        "accountName": "USD-GENERAL EQUIP RENTAL",
+        "accountNumber": "3932",
+        "active": true,
+        "id": "8216_3932",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2600",
+        "accountName": "NOTES PAY-CAPITAL LOANS",
+        "accountNumber": "2600",
+        "active": true,
+        "id": "8216_2600",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3931",
+        "accountName": "NEW-GENERAL EQUIP RENTAL",
+        "accountNumber": "3931",
+        "active": true,
+        "id": "8216_3931",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3930",
+        "accountName": "GENERAL EQUIP RENTAL",
+        "accountNumber": "3930",
+        "active": true,
+        "id": "8216_3930",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_1510",
+        "accountName": "OFFICER & EMPL ACCTS",
+        "accountNumber": "1510",
+        "active": true,
+        "id": "8216_1510",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3935",
+        "accountName": "PRT-GENERAL EQUIP RENTAL",
+        "accountNumber": "3935",
+        "active": true,
+        "id": "8216_3935",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_9490",
+        "accountName": "L&R-ADVERTISE & PROMO",
+        "accountNumber": "9490",
+        "active": true,
+        "id": "8216_9490",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3703",
+        "accountName": "MEC-LEGALAUDIT & COLLECT",
+        "accountNumber": "3703",
+        "active": true,
+        "id": "8216_3703",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3702",
+        "accountName": "USD-LEGALAUDIT & COLLECT",
+        "accountNumber": "3702",
+        "active": true,
+        "id": "8216_3702",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3701",
+        "accountName": "NEW-LEGALAUDIT & COLLECT",
+        "accountNumber": "3701",
+        "active": true,
+        "id": "8216_3701",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3700",
+        "accountName": "LEGAL AUDIT & COLLECTION",
+        "accountNumber": "3700",
+        "active": true,
+        "id": "8216_3700",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_1520",
+        "accountName": "DUE FROM F&I -DEFERRED",
+        "accountNumber": "1520",
+        "active": true,
+        "id": "8216_1520",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2850",
+        "accountName": "WITHDRAWALS",
+        "accountNumber": "2850",
+        "active": true,
+        "id": "8216_2850",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8216_8216_3705",
+        "accountName": "PRT-LEGALAUDIT & COLLECT",
+        "accountNumber": "3705",
+        "active": true,
+        "id": "8216_3705",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3704",
+        "accountName": "BDY-LEGALAUDIT & COLLECT",
+        "accountNumber": "3704",
+        "active": true,
+        "id": "8216_3704",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_7080",
+        "accountName": "LOSS ON CAPITAL ASSETS",
+        "accountNumber": "7080",
+        "active": true,
+        "id": "8216_7080",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4803",
+        "accountName": "USD REPO LOSSES",
+        "accountNumber": "4803",
+        "active": true,
+        "id": "8216_4803",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3714",
+        "accountName": "BDY-OTHER OUTSIDE SERVICE",
+        "accountNumber": "3714",
+        "active": true,
+        "id": "8216_3714",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3713",
+        "accountName": "MEC-OTHER OUTSIDE SERVICE",
+        "accountNumber": "3713",
+        "active": true,
+        "id": "8216_3713",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3955",
+        "accountName": "PRT-HEATLIGHTPWRWATER",
+        "accountNumber": "3955",
+        "active": true,
+        "id": "8216_3955",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3712",
+        "accountName": "USD-OTHER OUTSIDE SERVICE",
+        "accountNumber": "3712",
+        "active": true,
+        "id": "8216_3712",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3954",
+        "accountName": "BDY-HEATLIGHTPWRWATER",
+        "accountNumber": "3954",
+        "active": true,
+        "id": "8216_3954",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3711",
+        "accountName": "NEW-OTHER OUTSIDE SERVICE",
+        "accountNumber": "3711",
+        "active": true,
+        "id": "8216_3711",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3953",
+        "accountName": "MEC-HEATLIGHTPWRWATER",
+        "accountNumber": "3953",
+        "active": true,
+        "id": "8216_3953",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3710",
+        "accountName": "OTHER OUTSIDE SERVICE",
+        "accountNumber": "3710",
+        "active": true,
+        "id": "8216_3710",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_3952",
+        "accountName": "USD-HEATLIGHTPWRWATER",
+        "accountNumber": "3952",
+        "active": true,
+        "id": "8216_3952",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2620",
+        "accountName": "SUBORDINATED NOTES",
+        "accountNumber": "2620",
+        "active": true,
+        "id": "8216_2620",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3951",
+        "accountName": "NEW-HEATLIGHTPWRWATER",
+        "accountNumber": "3951",
+        "active": true,
+        "id": "8216_3951",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3950",
+        "accountName": "HEATLIGHTPOWER & WATER",
+        "accountNumber": "3950",
+        "active": true,
+        "id": "8216_3950",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_1530",
+        "accountName": "DEPOSITS ON CONTRACTS",
+        "accountNumber": "1530",
+        "active": true,
+        "id": "8216_1530",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3715",
+        "accountName": "PRT-OTHER OUTSIDE SERVICE",
+        "accountNumber": "3715",
+        "active": true,
+        "id": "8216_3715",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_9270",
+        "accountName": "L&R-LICTITLE & TAX",
+        "accountNumber": "9270",
+        "active": true,
+        "id": "8216_9270",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_7091",
+        "accountName": "PTET NYS",
+        "accountNumber": "7091",
+        "active": true,
+        "id": "8216_7091",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_7090",
+        "accountName": "MISC DEDUCTIONS",
+        "accountNumber": "7090",
+        "active": true,
+        "id": "8216_7090",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3725",
+        "accountName": "PRT-COMPANY CAR EXPENSE",
+        "accountNumber": "3725",
+        "active": true,
+        "id": "8216_3725",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_5905",
+        "accountName": "C/S TIRES & TUBES",
+        "accountNumber": "5905",
+        "active": true,
+        "id": "8216_5905",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3724",
+        "accountName": "BDY-COMPANY CAR EXPENSE",
+        "accountNumber": "3724",
+        "active": true,
+        "id": "8216_3724",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4813",
+        "accountName": "USD FINANCE & INSURANCE",
+        "accountNumber": "4813",
+        "active": true,
+        "id": "8216_4813",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3723",
+        "accountName": "MEC-COMPANY CAR EXPENSE",
+        "accountNumber": "3723",
+        "active": true,
+        "id": "8216_3723",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3965",
+        "accountName": "PRT-TELEPHONE",
+        "accountNumber": "3965",
+        "active": true,
+        "id": "8216_3965",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3722",
+        "accountName": "USD-COMPANY CAR EXPENSE",
+        "accountNumber": "3722",
+        "active": true,
+        "id": "8216_3722",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3964",
+        "accountName": "BDY-TELEPHONE",
+        "accountNumber": "3964",
+        "active": true,
+        "id": "8216_3964",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1300",
+        "accountName": "INV-PARTS & ACCESS-DC",
+        "accountNumber": "1300",
+        "active": true,
+        "id": "8216_1300",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3721",
+        "accountName": "NEW-COMPANY CAR EXPENSE",
+        "accountNumber": "3721",
+        "active": true,
+        "id": "8216_3721",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3963",
+        "accountName": "MEC-TELEPHONE",
+        "accountNumber": "3963",
+        "active": true,
+        "id": "8216_3963",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3720",
+        "accountName": "COMPANY CAR EXPENSE",
+        "accountNumber": "3720",
+        "active": true,
+        "id": "8216_3720",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_3962",
+        "accountName": "USD-TELEPHONE",
+        "accountNumber": "3962",
+        "active": true,
+        "id": "8216_3962",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1540",
+        "accountName": "CASH VALUE-LIFE INS",
+        "accountNumber": "1540",
+        "active": true,
+        "id": "8216_1540",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_2630",
+        "accountName": "MORTGAGES PAYABLE",
+        "accountNumber": "2630",
+        "active": true,
+        "id": "8216_2630",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3961",
+        "accountName": "NEW-TELEPHONE",
+        "accountNumber": "3961",
+        "active": true,
+        "id": "8216_3961",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3960",
+        "accountName": "TELEPHONE",
+        "accountNumber": "3960",
+        "active": true,
+        "id": "8216_3960",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_5900",
+        "accountName": "SLS TIRES & TUBES",
+        "accountNumber": "5900",
+        "active": true,
+        "id": "8216_5900",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2650",
+        "accountName": "2651",
+        "accountNumber": "2650",
+        "active": true,
+        "id": "8216_2650",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_1561",
+        "accountName": "LEASE & RENTAL VEH",
+        "accountNumber": "1561",
+        "active": true,
+        "id": "8216_1561",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_9280",
+        "accountName": "L&R-DEPRECIATION",
+        "accountNumber": "9280",
+        "active": true,
+        "id": "8216_9280",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_5915",
+        "accountName": "C/S MOPAR EXPRESS LANE CP PRT",
+        "accountNumber": "5915",
+        "active": true,
+        "id": "8216_5915",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4825",
+        "accountName": "C/S U/V SERV CONTRACTS",
+        "accountNumber": "4825",
+        "active": true,
+        "id": "8216_4825",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3735",
+        "accountName": "PRT-DUESPBLC & CONTRIB",
+        "accountNumber": "3735",
+        "active": true,
+        "id": "8216_3735",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3734",
+        "accountName": "BDY-DUESPBLC & CONTRIB",
+        "accountNumber": "3734",
+        "active": true,
+        "id": "8216_3734",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3733",
+        "accountName": "MEC-DUESPBLC & CONTRIB",
+        "accountNumber": "3733",
+        "active": true,
+        "id": "8216_3733",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4821",
+        "accountName": "DIS U/V SERV CONTRACTS",
+        "accountNumber": "4821",
+        "active": true,
+        "id": "8216_4821",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3732",
+        "accountName": "USD-DUESPBLC & CONTRIB",
+        "accountNumber": "3732",
+        "active": true,
+        "id": "8216_3732",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2400",
+        "accountName": "SECURITY DEPOSIT- L&R",
+        "accountNumber": "2400",
+        "active": true,
+        "id": "8216_2400",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3731",
+        "accountName": "NEW-DUESPBLC & CONTRIB",
+        "accountNumber": "3731",
+        "active": true,
+        "id": "8216_3731",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4820",
+        "accountName": "SLS U/V SERV CONTRACTS",
+        "accountNumber": "4820",
+        "active": true,
+        "id": "8216_4820",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_1551",
+        "accountName": "DRIVER EDUCATION VEHICLE",
+        "accountNumber": "1551",
+        "active": true,
+        "id": "8216_1551",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3730",
+        "accountName": "DUES PUBLC & CONTRIBUT",
+        "accountNumber": "3730",
+        "active": true,
+        "id": "8216_3730",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_1310",
+        "accountName": "INV-PRTS & ACCESS-OTH MFG",
+        "accountNumber": "1310",
+        "active": true,
+        "id": "8216_1310",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1552",
+        "accountName": "ALLOW-DRIVER ED VEH",
+        "accountNumber": "1552",
+        "active": true,
+        "id": "8216_1552",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_5910",
+        "accountName": "SLS MOPAR EXPRESS LANE CP PRT",
+        "accountNumber": "5910",
+        "active": true,
+        "id": "8216_5910",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_1571",
+        "accountName": "DUE FROM NR AUTOMOTIVE",
+        "accountNumber": "1571",
+        "active": true,
+        "id": "8216_1571",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1330",
+        "accountName": "INV-TIRES & TUBES",
+        "accountNumber": "1330",
+        "active": true,
+        "id": "8216_1330",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1572",
+        "accountName": "DUE FROM L&S MOTORS",
+        "accountNumber": "1572",
+        "active": true,
+        "id": "8216_1572",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3990",
+        "accountName": "OWNER & OFFICER SALARY",
+        "accountNumber": "3990",
+        "active": true,
+        "id": "8216_3990",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_9290",
+        "accountName": "L&R-INSURANCE",
+        "accountNumber": "9290",
+        "active": true,
+        "id": "8216_9290",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1570",
+        "accountName": "OTHER ASSETS & INVEST",
+        "accountNumber": "1570",
+        "active": true,
+        "id": "8216_1570",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3745",
+        "accountName": "PRT-DATA PROCESSING",
+        "accountNumber": "3745",
+        "active": true,
+        "id": "8216_3745",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3744",
+        "accountName": "BDY-DATA PROCESSING",
+        "accountNumber": "3744",
+        "active": true,
+        "id": "8216_3744",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4833",
+        "accountName": "CPOV FINANCE CONTRACT RESERVES",
+        "accountNumber": "4833",
+        "active": true,
+        "id": "8216_4833",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3743",
+        "accountName": "MEC-DATA PROCESSING",
+        "accountNumber": "3743",
+        "active": true,
+        "id": "8216_3743",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3500",
+        "accountName": "PRT-SALWGS & INCENT",
+        "accountNumber": "3500",
+        "active": true,
+        "id": "8216_3500",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3742",
+        "accountName": "USD-DATA PROCESSING",
+        "accountNumber": "3742",
+        "active": true,
+        "id": "8216_3742",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1320",
+        "accountName": "INV ADJ-P & A",
+        "accountNumber": "1320",
+        "active": true,
+        "id": "8216_1320",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1562",
+        "accountName": "DEPR-LEASE & RENTAL VEH",
+        "accountNumber": "1562",
+        "active": true,
+        "id": "8216_1562",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_3741",
+        "accountName": "NEW-DATA PROCESSING",
+        "accountNumber": "3741",
+        "active": true,
+        "id": "8216_3741",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2651",
+        "accountName": "INTERCO HUNTINGTON HONDA",
+        "accountNumber": "2651",
+        "active": true,
+        "id": "8216_2651",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_3740",
+        "accountName": "DATA PROCESSING",
+        "accountNumber": "3740",
+        "active": true,
+        "id": "8216_3740",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_5920",
+        "accountName": "SLS MOPAR EXPRESS LANE SC PRT",
+        "accountNumber": "5920",
+        "active": true,
+        "id": "8216_5920",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_2022BD",
+        "accountName": "WE OWE BIRDDOG",
+        "accountNumber": "2022BD",
+        "active": true,
+        "id": "8216_2022BD",
+        "accountTypeId": "LIABILITY"
+      },
+      {
+        "key": "8216_8216_5925",
+        "accountName": "C/S MOPAR EXPRESS LANE SC PRT",
+        "accountNumber": "5925",
+        "active": true,
+        "id": "8216_5925",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_3080",
+        "accountName": "NEW-OTHER SALARIES",
+        "accountNumber": "3080",
+        "active": true,
+        "id": "8216_3080",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_4181",
+        "accountName": "DIS NEW OTH NEW TRK AR/F",
+        "accountNumber": "4181",
+        "active": true,
+        "id": "8216_4181",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_4180",
+        "accountName": "SLS NEW OTH NEW TRK AR/F",
+        "accountNumber": "4180",
+        "active": true,
+        "id": "8216_4180",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_3091",
+        "accountName": "NEW-ADVERTISING CREDITS",
+        "accountNumber": "3091",
+        "active": true,
+        "id": "8216_3091",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3090",
+        "accountName": "NEW ADVERTISING-PRINT TV OTH",
+        "accountNumber": "3090",
+        "active": true,
+        "id": "8216_3090",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3099",
+        "accountName": "ADVERTISING PRINT TV OTHER",
+        "accountNumber": "3099",
+        "active": true,
+        "id": "8216_3099",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_3098",
+        "accountName": "ADVERTISING INTERNET ONLY",
+        "accountNumber": "3098",
+        "active": true,
+        "id": "8216_3098",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_4186",
+        "accountName": "C/S LSE OTH NEW TRK AR/F",
+        "accountNumber": "4186",
+        "active": true,
+        "id": "8216_4186",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4185",
+        "accountName": "C/S NEW OTH NEW TRK AR/F",
+        "accountNumber": "4185",
+        "active": true,
+        "id": "8216_4185",
+        "accountTypeId": "COST_OF_SALE"
+      },
+      {
+        "key": "8216_8216_4183",
+        "accountName": "SLS LSE OTH NEW TRK AR/F",
+        "accountNumber": "4183",
+        "active": true,
+        "id": "8216_4183",
+        "accountTypeId": "SALE"
+      },
+      {
+        "key": "8216_8216_9400",
+        "accountName": "L&R-SALWGS & COMM",
+        "accountNumber": "9400",
+        "active": true,
+        "id": "8216_9400",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_6150",
+        "accountName": "NET L&R INCOME",
+        "accountNumber": "6150",
+        "active": true,
+        "id": "8216_6150",
+        "accountTypeId": "NON_OPERATING_INCOME"
+      },
+      {
+        "key": "8216_8216_7010",
+        "accountName": "CASH DISCOUNT ALLOWED",
+        "accountNumber": "7010",
+        "active": true,
+        "id": "8216_7010",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_1190W",
+        "accountName": "WELLS FARGO RESERVES",
+        "accountNumber": "1190W",
+        "active": true,
+        "id": "8216_1190W",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_9200",
+        "accountName": "L&R-GASOLINE",
+        "accountNumber": "9200",
+        "active": true,
+        "id": "8216_9200",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_2800",
+        "accountName": "INVEST-PROP PART OR MEMBR",
+        "accountNumber": "2800",
+        "active": true,
+        "id": "8216_2800",
+        "accountTypeId": "EQUITY"
+      },
+      {
+        "key": "8216_8216_1170A",
+        "accountName": "SERVICE & PARTS INTERIM",
+        "accountNumber": "1170A",
+        "active": true,
+        "id": "8216_1170A",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_1170H",
+        "accountName": "Parts/Service Holding",
+        "accountNumber": "1170H",
+        "active": true,
+        "id": "8216_1170H",
+        "accountTypeId": "ASSET"
+      },
+      {
+        "key": "8216_8216_9450",
+        "accountName": "L&R-COMPANY CAR",
+        "accountNumber": "9450",
+        "active": true,
+        "id": "8216_9450",
+        "accountTypeId": "NON_OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3901",
+        "accountName": "NEW-TAXES & LICENSES",
+        "accountNumber": "3901",
+        "active": true,
+        "id": "8216_3901",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3900",
+        "accountName": "TAXES & LICENSES",
+        "accountNumber": "3900",
+        "active": true,
+        "id": "8216_3900",
+        "accountTypeId": "EXPENSE_ALLOCATION"
+      },
+      {
+        "key": "8216_8216_3905",
+        "accountName": "PRT-TAXES & LICENSES",
+        "accountNumber": "3905",
+        "active": true,
+        "id": "8216_3905",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3904",
+        "accountName": "BDY-TAXES & LICENSES",
+        "accountNumber": "3904",
+        "active": true,
+        "id": "8216_3904",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3903",
+        "accountName": "MEC-TAXES & LICENSES",
+        "accountNumber": "3903",
+        "active": true,
+        "id": "8216_3903",
+        "accountTypeId": "OPERATING_EXPENSE"
+      },
+      {
+        "key": "8216_8216_3902",
+        "accountName": "USD-TAXES & LICENSES",
+        "accountNumber": "3902",
+        "active": true,
+        "id": "8216_3902",
+        "accountTypeId": "OPERATING_EXPENSE"
+      }
+    ],
+    "costCenterSetup": [
+      {
+        "key": "8216_6ab0f0356280fff6afffe7a2",
+        "customFieldKey": "REPAIR_ORDER_WARRANTY",
+        "options": [
+          {
+            "id": "6ae86ba65671224558f191ae",
+            "name": "Warranty Receivable"
+          },
+          {
+            "id": "6ae86ba65671224558f191af",
+            "name": "PDI"
+          }
+        ]
+      },
+      {
+        "key": "8216_6ab0f0356280fff6afffe799",
+        "customFieldKey": "REPAIR_ORDER_INTERNAL",
+        "options": [
+          {
+            "id": "6ae86ba712a0f50e117c3833",
+            "name": "Vehicle Inventory -INVV"
+          },
+          {
+            "id": "6ae86ba712a0f50e117c3834",
+            "name": "PDI"
+          },
+          {
+            "id": "6ae86ba712a0f50e117c3835",
+            "name": "New Car Policy"
+          },
+          {
+            "id": "6ae86ba712a0f50e117c3836",
+            "name": "Used Car Policy"
+          },
+          {
+            "id": "6ae86ba712a0f50e117c3837",
+            "name": "Service Dept Policy"
+          },
+          {
+            "id": "6ae86ba712a0f50e117c3838",
+            "name": "Parts Dept Policy"
+          },
+          {
+            "id": "6ae86ba712a0f50e117c3839",
+            "name": "We Owe / Due Bill"
+          },
+          {
+            "id": "6ae86ba712a0f50e117c383a",
+            "name": "Company Vehicle Service Dept"
+          },
+          {
+            "id": "6ae86ba712a0f50e117c383b",
+            "name": "Company Vehicle Parts Dept"
+          }
+        ]
+      },
+      {
+        "key": "8216_6ab0f0356280fff6afffe79d",
+        "customFieldKey": "REPAIR_ORDER_CP_IW_SPLIT",
+        "options": [
+          {
+            "id": "6ae86ba75671224558f191b0",
+            "name": "Service Contracts"
+          }
+        ]
+      },
+      {
+        "key": "8216_6ab0f0356280fff6afffe79f",
+        "customFieldKey": "DEPARTMENT",
+        "options": [
+          {
+            "id": "6af2473c1c1145fad7857965",
+            "name": "Parts"
+          },
+          {
+            "id": "8216_department_08",
+            "name": "08"
+          },
+          {
+            "id": "8216_department_10",
+            "name": "New Vehicle"
+          },
+          {
+            "id": "8216_department_01",
+            "name": "New Vehicle"
+          },
+          {
+            "id": "8216_department_02",
+            "name": "Used Vehicle"
+          },
+          {
+            "id": "6ae8673c5671224558f191ab",
+            "name": "Service"
+          },
+          {
+            "id": "8216_department_03",
+            "name": "Lease & Rental"
+          }
+        ]
+      },
+      {
+        "key": "8216_6ab0f0356280fff6afffe79e",
+        "customFieldKey": "PARTS_SALES_ORDER_INTERNAL",
+        "options": [
+          {
+            "id": "NEW_CAR_INVENTORY",
+            "name": "New Car Inventory"
+          },
+          {
+            "id": "NEW_TRUCK_INVENTORY",
+            "name": "New Truck Inventory"
+          },
+          {
+            "id": "USED_CAR_INVENTORY",
+            "name": "Used Car Inventory"
+          },
+          {
+            "id": "USED_TRUCK_INVENTORY",
+            "name": "Used Truck Inventory"
+          },
+          {
+            "id": "INTERNAL_DUE_BILL",
+            "name": "Internal Due Bill"
+          },
+          {
+            "id": "SHOP_SUPPLIES",
+            "name": "Shop Supplies"
+          },
+          {
+            "id": "SERVICE_POLICY",
+            "name": "Service Policy"
+          },
+          {
+            "id": "INTERNAL_POLICY_PARTS",
+            "name": "Internal Policy Parts"
+          },
+          {
+            "id": "INTERNAL_INTER_FRANCHISE",
+            "name": "Internal Inter Franchise"
+          },
+          {
+            "id": "6ae86ba75671224558f191b1",
+            "name": "Vehicle Inventory - INVV"
+          },
+          {
+            "id": "OTHER_SUPPLIES",
+            "name": "Other Supplies"
+          }
+        ]
+      }
+    ],
+    "journals": [
+      {
+        "key": "8216_8216_SC",
+        "id": "8216_SC",
+        "journalName": "SC",
+        "journalNumber": "SC"
+      },
+      {
+        "key": "8216_8216_70",
+        "id": "8216_70",
+        "journalName": "VEHICLE PURCHASES",
+        "journalNumber": "70"
+      },
+      {
+        "key": "8216_8216_92",
+        "id": "8216_92",
+        "journalName": "YTD ADJUSTMENTS",
+        "journalNumber": "92"
+      },
+      {
+        "key": "8216_8216_93",
+        "id": "8216_93",
+        "journalName": "SET UP HISTORY",
+        "journalNumber": "93"
+      },
+      {
+        "key": "8216_8216_94",
+        "id": "8216_94",
+        "journalName": "SET UP SCHEDULES",
+        "journalNumber": "94"
+      },
+      {
+        "key": "8216_8216_73",
+        "id": "8216_73",
+        "journalName": "USED VEHICLE PURCHASES",
+        "journalNumber": "73"
+      },
+      {
+        "key": "8216_8216_95",
+        "id": "8216_95",
+        "journalName": "SET UP GENERAL LEDGER",
+        "journalNumber": "95"
+      },
+      {
+        "key": "8216_8216_30",
+        "id": "8216_30",
+        "journalName": "SERVICE SALES CASH",
+        "journalNumber": "30"
+      },
+      {
+        "key": "8216_8216_31",
+        "id": "8216_31",
+        "journalName": "SERVICE SALES CHARGE",
+        "journalNumber": "31"
+      },
+      {
+        "key": "8216_8216_75",
+        "id": "8216_75",
+        "journalName": "GENERAL PURCHASES",
+        "journalNumber": "75"
+      },
+      {
+        "key": "8216_8216_10",
+        "id": "8216_10",
+        "journalName": "N/C SALES JOURNAL",
+        "journalNumber": "10"
+      },
+      {
+        "key": "8216_8216_32",
+        "id": "8216_32",
+        "journalName": "PARTS SALES CASH",
+        "journalNumber": "32"
+      },
+      {
+        "key": "8216_8216_88",
+        "id": "8216_88",
+        "journalName": "STATISTICAL DATA",
+        "journalNumber": "88"
+      },
+      {
+        "key": "8216_8216_23",
+        "id": "8216_23",
+        "journalName": "U/C JERR SALES JOURNAL",
+        "journalNumber": "23"
+      },
+      {
+        "key": "8216_8216_25",
+        "id": "8216_25",
+        "journalName": "USED CAR WHOLESALE",
+        "journalNumber": "25"
+      },
+      {
+        "key": "8216_8216_47",
+        "id": "8216_47",
+        "journalName": "INTERFACE TECH PAYROLL",
+        "journalNumber": "47"
+      },
+      {
+        "key": "8216_8216_80",
+        "id": "8216_80",
+        "journalName": "GENERAL JOURNAL ENTRIES",
+        "journalNumber": "80"
+      },
+      {
+        "key": "8216_8216_81",
+        "id": "8216_81",
+        "journalName": "RECURRING ENTRIES",
+        "journalNumber": "81"
+      },
+      {
+        "key": "8216_8216_60",
+        "id": "8216_60",
+        "journalName": "CASH DISBURSEMENTS",
+        "journalNumber": "60"
+      },
+      {
+        "key": "8216_8216_82",
+        "id": "8216_82",
+        "journalName": "13TH MONTH JOURNAL ENTRY",
+        "journalNumber": "82"
+      },
+      {
+        "key": "8216_8216_40",
+        "id": "8216_40",
+        "journalName": "PAYROLL",
+        "journalNumber": "40"
+      },
+      {
+        "key": "8216_8216_FC",
+        "id": "8216_FC",
+        "journalName": "FINANCE CHARGE",
+        "journalNumber": "FC"
+      },
+      {
+        "key": "8216_8216_20",
+        "id": "8216_20",
+        "journalName": "USED VEHICLE SALES",
+        "journalNumber": "20"
+      },
+      {
+        "key": "8216_8216_21",
+        "id": "8216_21",
+        "journalName": "USED CAR LEASE JOURNAL",
+        "journalNumber": "21"
+      },
+      {
+        "key": "8216_8216_11",
+        "id": "8216_11",
+        "journalName": "NEW CAR LEASE JOURNAL",
+        "journalNumber": "11"
+      },
+      {
+        "key": "8216_8216_33",
+        "id": "8216_33",
+        "journalName": "PARTS SALES CHARGE",
+        "journalNumber": "33"
+      },
+      {
+        "key": "8216_8216_34",
+        "id": "8216_34",
+        "journalName": "INTERNAL SALES",
+        "journalNumber": "34"
+      },
+      {
+        "key": "8216_8216_56",
+        "id": "8216_56",
+        "journalName": "CASH RECEIPTS (BALANCE FWD)",
+        "journalNumber": "56"
+      },
+      {
+        "key": "8216_8216_13",
+        "id": "8216_13",
+        "journalName": "N/C JERR SALES JOURNAL",
+        "journalNumber": "13"
+      },
+      {
+        "key": "8216_8216_35",
+        "id": "8216_35",
+        "journalName": "WARRANTY SALES",
+        "journalNumber": "35"
+      },
+      {
+        "key": "8216_8216_57",
+        "id": "8216_57",
+        "journalName": "CASH RECEIPTS (OPEN-ITEM)",
+        "journalNumber": "57"
+      },
+      {
+        "key": "8216_8216_58",
+        "id": "8216_58",
+        "journalName": "WARRANTY CREDITS",
+        "journalNumber": "58"
+      },
+      {
+        "key": "8216_8216_15",
+        "id": "8216_15",
+        "journalName": "DEALER TRADES",
+        "journalNumber": "15"
+      }
+    ]
+  }
+}

@@ -4,21 +4,17 @@ import {
   getStores,
   saveStores,
   getStoredStatusVault,
-  bulkUpdateStatusVault,
   type StoreRecord,
 } from "./storesDb";
 import { fetchStoreOnboardingStatuses } from "./storeOnboardingStatusApi";
 import {
   pullStatusUpdatesFromGraph,
-  patchSingleStoreAssigneeInGraph,
   syncProdDealersToGraph,
 } from "./storesGraphSync";
-import { fetchSetupDataForStore, isSetupDataComplete } from "./storeSetupDataService";
-import {
-  loadAssigneeConfig,
-  reconcileAssignments,
-  runAutoAssign,
-} from "./assigneeService";
+import { acctsReady, daysToGoLive, fixedOpsPrerequisiteDone } from "./storeAssessment";
+import { fetchSetupWithMapFallback } from "./storeSetupWithFallback";
+import { persistStatusVault, runAssigneeAutomation, patchAssigneesInGraph } from "./storesSyncCore";
+import { refreshVariableReadiness, notifyReadyToConfigure, RECHECK_INTERVAL_MS } from "./storeReadiness";
 import { batchFetchRealTapStatuses } from "./tapTasksApi";
 import {
   runSlackAlerts,
@@ -26,11 +22,16 @@ import {
   shouldSendScheduledReports,
   dispatchAllThreeReports,
 } from "./slackAlertsService";
-import { getSlackSession, sendSlackMessage } from "./storeSlackHelper";
+import { getSlackSession, sendSlackChannelMessage } from "./storeSlackHelper";
+import { dedupeStoreList } from "./storeDedupe";
+
+// Same channel as the other Stores notices (readiness, new assignments, reports).
+const STORES_ALERT_CHANNEL_ID = "C0C5QBWEM8X";
 import type { ExtendedStoreRecord } from "../pages/Stores";
 
 export type BotPhase =
   | "idle"
+  | "enriching_readiness"
   | "token_check"
   | "ingesting_stores"
   | "enriching_statuses"
@@ -50,6 +51,8 @@ export interface BotState {
   nextRunTimestamp: string | null;
   error: string | null;
   isLeader: boolean;
+  /** Short, timestamped lines describing background setup / MAP fetches. */
+  logs: string[];
 }
 
 const BOT_CONFIG_KEY = "arc-stores-bot-config";
@@ -272,6 +275,7 @@ class StoresBotRunner {
     nextRunTimestamp: null,
     error: null,
     isLeader: false,
+    logs: [],
   };
 
   constructor() {
@@ -363,6 +367,12 @@ class StoresBotRunner {
   private notify() {
     const current = this.getState();
     this.listeners.forEach((l) => l(current));
+  }
+
+  private log(line: string) {
+    const stamp = new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    this.state.logs = [`${stamp}  ${line}`, ...this.state.logs].slice(0, 40);
+    this.notify();
   }
 
   private updateStatus(phase: BotPhase, statusText: string, error: string | null = null) {
@@ -464,7 +474,8 @@ class StoresBotRunner {
 
       // Phase 1: Ingest T-90 Stores and establish active vs. historical partition
       this.updateStatus("ingesting_stores", "Auto-refreshing store records...");
-      const rawStores = await fetchStores(90);
+      // Same duplicate rule as the Stores page: one row per tekion_id, more products wins, then more data.
+      const rawStores = dedupeStoreList(await fetchStores(90));
       const allStoredRecords = await getStores();
       const existingMap = new Map(allStoredRecords.map((s) => [s.tekion_id, s]));
       const vault = getStoredStatusVault();
@@ -485,7 +496,11 @@ class StoresBotRunner {
                 fixed_ops_status: override?.fixed_ops_status || existing?.fixed_ops_status || "TO DO",
                 variable_ops_status: override?.variable_ops_status || existing?.variable_ops_status || "TO DO",
                 testing_status: override?.testing_status || existing?.testing_status || "TO DO",
-                not_worked: override?.not_worked || existing?.not_worked || store.not_worked,
+                // The status vault is the saved source for Not Worked, so an explicit blank (cleared) value must win.
+                not_worked:
+                  override?.not_worked !== undefined
+                    ? override.not_worked
+                    : existing?.not_worked || store.not_worked,
                 custom_assignee:
                   override?.custom_assignee || existing?.custom_assignee || (store as any).custom_assignee,
                 custom_variable_assignee:
@@ -598,18 +613,22 @@ class StoresBotRunner {
         this.updateStatus("enriching_setup", "Scanning for missing setup data in T-90 scope...");
 
         const missingSetup = activeT90Records.filter((r) => {
-          if (isSetupDataComplete(r)) return false;
+          // Variable Ops data rule: today to 90 days, Fixed Ops prerequisite done, ACCTS above 50 = done.
+          const days = daysToGoLive(r);
+          if (days === null || days < 0 || days > 90) return false;
+          if (!fixedOpsPrerequisiteDone(r)) return false;
+          if (String(r.variable_ops_status ?? "").trim().toLowerCase() === "completed") return false; // Variable Ops done
+          if (acctsReady(r)) return false;
 
-          const lastErrorAt = (r as any).setup_data_error_at;
-          if (lastErrorAt && isSameLocalDay(lastErrorAt)) {
-            return false;
-          }
+          // Incomplete or failed setup data is re-checked at most every 4 hours (failures also stamp coa_checked_at).
+          if (r.coa_checked_at && Date.now() - Date.parse(r.coa_checked_at) < RECHECK_INTERVAL_MS) return false;
 
           return true;
         });
 
         let setupFetched = 0;
-        const failedSetupDealers: Array<{ dealerId: string; dbaName: string; error: string }> = [];
+        const failedSetupDealers: Array<{ dealerId: string; dbaName: string; error: string; mapResult: string }> = [];
+        const incompleteSetupDealers: Array<{ dealerId: string; dbaName: string; missing: string[]; mapResult: string }> = [];
 
         for (let i = 0; i < missingSetup.length; i += SETUP_CONCURRENCY) {
           if (!this.state.enabled) break;
@@ -624,22 +643,42 @@ class StoresBotRunner {
 
           await Promise.all(
             chunk.map(async (record) => {
-              try {
-                const setup = await fetchSetupDataForStore(record, { force: true });
-                record.setup_data = setup;
-                record.setup_data_fetched_at = setup.fetchedAt;
-                record.setup_data_error = "";
-                (record as any).setup_data_error_at = undefined;
-                setupFetched++;
-              } catch (err) {
-                const errorMsg = err instanceof Error ? err.message : "Setup error";
-                record.setup_data_error = errorMsg;
-                (record as any).setup_data_error_at = nowIso;
+              // Same path as the Stores buttons: fetch, then MAP fallback when setup is missing or incomplete.
+              const outcome = await fetchSetupWithMapFallback(record);
+              const dealerLabel = `#${record.dealer_id} ${record.dba_name || ""}`.trim();
+
+              if (outcome.setupData) {
+                record.setup_data = outcome.setupData;
+                record.setup_data_fetched_at = outcome.setupData.fetchedAt;
+              }
+              if (outcome.preprodValidation) record.preprod_validation = outcome.preprodValidation;
+              record.setup_data_error = outcome.errorNote;
+              (record as any).setup_data_error_at = outcome.errorNote ? nowIso : undefined;
+              record.coa_checked_at = nowIso;
+
+              if (outcome.setupError) {
+                this.log(`Setup data: ${dealerLabel} failed (${outcome.setupError.slice(0, 60)})`);
                 failedSetupDealers.push({
                   dealerId: record.dealer_id,
                   dbaName: record.dba_name || "Unknown Dealer",
-                  error: errorMsg,
+                  error: outcome.setupError,
+                  mapResult: outcome.preprodValidation
+                    ? outcome.preprodValidation.isValidTenant ? "MAP verified" : `MAP invalid: ${outcome.preprodValidation.validationError}`
+                    : outcome.mapError || "MAP not run",
                 });
+              } else if (!outcome.complete) {
+                this.log(`Setup data: ${dealerLabel} ACCTS ${outcome.accts}, still below 50`);
+                incompleteSetupDealers.push({
+                  dealerId: record.dealer_id,
+                  dbaName: record.dba_name || "Unknown Dealer",
+                  missing: [`ACCTS ${outcome.accts} (needs >50)`],
+                  mapResult: outcome.preprodValidation
+                    ? outcome.preprodValidation.isValidTenant ? "MAP verified" : `MAP invalid: ${outcome.preprodValidation.validationError}`
+                    : outcome.mapError || "MAP not run",
+                });
+              } else {
+                this.log(`Setup data: ${dealerLabel} complete, COA count ${outcome.setupData?.coaAccessibleDealerCount ?? 0}`);
+                setupFetched++;
               }
             })
           );
@@ -663,7 +702,7 @@ class StoresBotRunner {
         }
 
         // AI Error Root-Cause & Action Recommendation for active setup failures
-        if (failedSetupDealers.length > 0) {
+        if (failedSetupDealers.length > 0 || incompleteSetupDealers.length > 0) {
           this.updateStatus("ai_reasoning", "TGPT analyzing setup errors & drafting solution...");
 
           const aiPrompt = `Here is a list of Tekion DMS setup fetch errors for preprod stores:\n${JSON.stringify(
@@ -672,39 +711,41 @@ class StoresBotRunner {
             2
           )}\n\nGive 2 concise bullet points: 1) The exact root cause for these failures. 2) The exact operational action the ARC engineer should take. Format cleanly for Slack.`;
 
-          const aiDiagnosis = await queryStoresAi(
-            aiPrompt,
-            "You are a Tekion DMS Data Architect. Be concise, precise, and practical."
-          );
+          const aiDiagnosis = failedSetupDealers.length > 0
+            ? await queryStoresAi(aiPrompt, "You are a Tekion DMS Data Architect. Be concise, precise, and practical.")
+            : "";
 
           try {
             const slack = getSlackSession();
-            const targetUserId =
-              (slack as any)?.slackUserId ||
-              localStorage.getItem("slack_user_id") ||
-              localStorage.getItem("current_user_slack_id") ||
-              "";
-
-            if (slack.slackToken && slack.slackDCookie && targetUserId) {
-              const lines = failedSetupDealers.map(
-                (f) => `*Dealer #${f.dealerId}* (${f.dbaName}): \`${f.error}\``
+            if (slack.slackToken) {
+              const failLines = failedSetupDealers.map(
+                (f) => `*Dealer #${f.dealerId}* (${f.dbaName}): \`${f.error}\` · ${f.mapResult}`
+              );
+              const incompleteLines = incompleteSetupDealers.map(
+                (f) => `*Dealer #${f.dealerId}* (${f.dbaName}): missing ${f.missing.join(", ")} · ${f.mapResult}`
               );
 
-              const alertSections = [
-                `⚠️ *Setup Data Fetch Daily Failure Alert*`,
-                `Encountered errors for *${failedSetupDealers.length}* dealer(s) (will retry tomorrow):`,
-                "",
-                ...lines,
-              ];
+              const alertSections: string[] = [`⚠️ *Setup Data Alert*`];
+              if (failedSetupDealers.length > 0) {
+                alertSections.push(
+                  `*Fetch failed* for ${failedSetupDealers.length} dealer(s) (will retry in 4 hours):`,
+                  ...failLines
+                );
+              }
+              if (incompleteSetupDealers.length > 0) {
+                alertSections.push(
+                  "",
+                  `*Setup incomplete* for ${incompleteSetupDealers.length} dealer(s) (will retry in 4 hours):`,
+                  ...incompleteLines
+                );
+              }
 
               if (aiDiagnosis) {
                 alertSections.push("", `🧠 *TGPT AI Diagnostic & Solution:*`, aiDiagnosis);
               }
 
-              await sendSlackMessage({
-                userId: targetUserId,
-                email: "tlreddy@tekion.com",
-                fullName: "Admin",
+              await sendSlackChannelMessage({
+                channelId: STORES_ALERT_CHANNEL_ID,
                 text: alertSections.join("\n"),
               });
             }
@@ -716,25 +757,37 @@ class StoresBotRunner {
         console.warn("[StoresBot] Setup enrichment warning:", setupPhaseErr);
       }
 
+      // Phase 4b: Variable Ops readiness (COA + ACCTS counts, 4-hour re-check when a count is 0)
+      try {
+        this.updateStatus("enriching_readiness", "Checking Variable Ops readiness data...");
+        const readiness = await refreshVariableReadiness(activeT90Records, {
+          onLog: (line) => this.log(line),
+        });
+        activeT90Records = readiness.stores as ExtendedStoreRecord[];
+        await saveStores([...activeT90Records, ...historicalRecords]);
+        if (readiness.newlyReady.length > 0) {
+          await notifyReadyToConfigure(readiness.newlyReady);
+        }
+      } catch (readinessErr) {
+        console.warn("[StoresBot] Readiness phase warning:", readinessErr);
+        this.log(`Readiness check failed: ${readinessErr instanceof Error ? readinessErr.message : "unknown error"}`);
+      }
+
       // Phase 5: Auto-Reconcile & Auto-Assign (Active T-90 Only)
       try {
         this.updateStatus("reconciling_assignees", "Running auto-assign bot rules on T-90 stores...");
-        reconcileAssignments(activeT90Records);
-        const assignConfig = loadAssigneeConfig();
-        if (assignConfig.autoAssignEnabled) {
-          const { updated } = runAutoAssign(activeT90Records, assignConfig);
+        const automation = runAssigneeAutomation(activeT90Records);
+        if (automation) {
+          const { updated } = automation;
           if (updated.length > 0) {
+            this.log(`Assigned ${updated.length} store${updated.length === 1 ? "" : "s"} to team members`);
             const updatedMap = new Map(updated.map((u) => [u.tekion_id, u as ExtendedStoreRecord]));
             activeT90Records = activeT90Records.map((r) => {
               const u = updatedMap.get(r.tekion_id);
               return u && !r.custom_assignee ? { ...r, custom_assignee: u.custom_assignee } : r;
             });
             await saveStores([...activeT90Records, ...historicalRecords]);
-            for (const u of updated) {
-              try {
-                await patchSingleStoreAssigneeInGraph(u.tekion_id, String((u as ExtendedStoreRecord).custom_assignee));
-              } catch {}
-            }
+            await patchAssigneesInGraph(updated);
           }
         }
       } catch (assignErr) {
@@ -764,17 +817,7 @@ class StoresBotRunner {
           });
           const allMerged = [...activeT90Records, ...historicalRecords];
           await saveStores(allMerged);
-          bulkUpdateStatusVault(
-            allMerged.map((s) => ({
-              tekionId: s.tekion_id,
-              fixed_ops_status: s.fixed_ops_status,
-              variable_ops_status: s.variable_ops_status,
-              testing_status: s.testing_status,
-              not_worked: s.not_worked,
-              custom_assignee: s.custom_assignee,
-              custom_variable_assignee: s.custom_variable_assignee,
-            }))
-          );
+          persistStatusVault(allMerged);
         }
         await syncProdDealersToGraph([...activeT90Records, ...historicalRecords]);
       } catch (excelErr) {

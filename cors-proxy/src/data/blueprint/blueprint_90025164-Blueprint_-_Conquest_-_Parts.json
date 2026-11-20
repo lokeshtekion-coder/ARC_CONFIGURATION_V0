@@ -1,0 +1,4298 @@
+{
+  "key": "90025164-Blueprint_-_Conquest_-_Parts",
+  "tekionId": "90025164",
+  "dealerId": "8216",
+  "dealerName": "South Shore Chrysler Dodge Jeep Ram",
+  "formName": "Blueprint - Conquest - Parts",
+  "formId": "93ec043e-58fc-4627-a019-b190dd3ad5e8",
+  "releaseId": "f6e2d969-4091-4921-a906-b62a01a65fcd",
+  "status": "COMPLETED",
+  "decodedResponse": {
+    "decodedSections": [
+      {
+        "sectionId": "b4015665-754e-444c-a735-eaa7888bad06",
+        "sectionName": null,
+        "sectionOrder": 0,
+        "sectionType": "WELCOME",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "b4015665-754e-444c-a735-eaa7888bad06",
+            "sectionName": null,
+            "sectionOrder": 0,
+            "sectionType": "WELCOME",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "da0cce6b-0382-4db9-8231-9df6c8790a26",
+            "fieldName": null,
+            "title": null,
+            "type": "LOGO",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "b4015665-754e-444c-a735-eaa7888bad06",
+            "sectionName": null,
+            "sectionOrder": 0,
+            "sectionType": "WELCOME",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "0629163e-8947-4cdd-9ac1-3a18701c8e73",
+            "fieldName": null,
+            "title": "To begin, click Next.\n\nIf you are unable to finish in one sitting, feel free to save your work and revisit later through your onboarding link. You will generate a temporary link through the link in your original onboarding email. \n\nIf you have any questions, feel free to reach out to your Tekion Implementation Manager.\n",
+            "type": "PARAGRAPH",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "7309ed5b-7acb-456e-99ba-10dde0fc918f",
+        "sectionName": "Ordering, Shipping and Receiving",
+        "sectionOrder": 3,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "7309ed5b-7acb-456e-99ba-10dde0fc918f",
+            "sectionName": "Ordering, Shipping and Receiving",
+            "sectionOrder": 3,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "b4402e29-73d8-469a-9735-8d713518fad3",
+            "fieldName": null,
+            "title": "If you currently use or want to begin using ABC sourcing (also known as part movement by source), please upload documentation of your desired settings. These can be screenshots of your existing system settings or an excel document with your desired settings. ",
+            "type": "FILE_UPLOAD",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "06f4b8b5-d9ee-4100-befc-f67b89a06c3e",
+                  "operator": "IS",
+                  "value": "cd4036d6-fa2f-43da-bb87-0016107145e2"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "7309ed5b-7acb-456e-99ba-10dde0fc918f",
+            "sectionName": "Ordering, Shipping and Receiving",
+            "sectionOrder": 3,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "1ba759a5-34f3-42f7-ac54-371c8e7c6a41",
+            "fieldName": null,
+            "title": "For what Dealer code(s) (OEM ID#) do you submit factory parts orders?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "60976",
+            "decodedValue": "60976",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "9fe52b4b-d20a-4332-bdcc-f4dbf92ab87f",
+        "sectionName": "Tekion Blueprint Submission",
+        "sectionOrder": 5,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "9fe52b4b-d20a-4332-bdcc-f4dbf92ab87f",
+            "sectionName": "Tekion Blueprint Submission",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600336",
+            "fieldName": null,
+            "title": "This is the final step. Once you begin uploading these documents, you will not be able to Save and Resume Later.\n\nPlease upload as many as possible, but if you are unable to upload them all then please either e-mail them to Implementations@Tekion.com or save them to provide to the Implementation Manager during the Strategy and Process visit.\n\nThank you!",
+            "type": "PARAGRAPH",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "9fe52b4b-d20a-4332-bdcc-f4dbf92ab87f",
+            "sectionName": "Tekion Blueprint Submission",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "ae1e9cfc-d2cd-4153-834d-cf2ea73eb1a4",
+            "fieldName": null,
+            "title": "Please upload Stock Order Criteria (if not on automatic replenishment)",
+            "type": "FILE_UPLOAD",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "sectionName": "General Department Information",
+        "sectionOrder": 2,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "27207772-12c3-4a62-888e-684352aa3b68",
+            "fieldName": null,
+            "title": "Do you use a pricing matrix?",
+            "type": "SINGLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "cd4036d6-fa2f-43da-bb87-0016107145e2",
+            "decodedValue": "Yes",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "e0e0cb7f-5cb4-461f-a48e-80bc7bf48504",
+            "fieldName": null,
+            "title": "If yes, please upload pricing matrix(s) here",
+            "type": "FILE_UPLOAD",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ANY",
+              "rules": [
+                {
+                  "fieldId": "27207772-12c3-4a62-888e-684352aa3b68",
+                  "operator": "IS",
+                  "value": "cd4036d6-fa2f-43da-bb87-0016107145e2"
+                },
+                {
+                  "fieldId": "27207772-12c3-4a62-888e-684352aa3b68",
+                  "operator": "IS",
+                  "value": "b7d5a50a-0b01-4f4b-9697-675dfb8b34e2"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": [
+              {
+                "mediaId": "d86a95df-dfa2-4c68-aadf-e36fc11e1278",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1793123235756,
+                  "mimeType": "image/png",
+                  "mediaCategory": "IMAGE",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/d86a95df-dfa2-4c68-aadf-e36fc11e1278/price matrix.png",
+                  "contentType": "image/png",
+                  "filename": "price matrix.png",
+                  "mediaSize": 30437
+                }
+              }
+            ],
+            "decodedValue": [
+              {
+                "mediaId": "d86a95df-dfa2-4c68-aadf-e36fc11e1278",
+                "uploadStatus": "COMPLETED",
+                "filename": "price matrix.png",
+                "mimeType": "image/png",
+                "mediaCategory": "IMAGE",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/d86a95df-dfa2-4c68-aadf-e36fc11e1278/price matrix.png",
+                "mediaSize": 30437,
+                "createdTime": 1793123235756
+              }
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600242",
+            "fieldName": null,
+            "title": "Please list all makes for which you run a factory master / price tape:",
+            "type": "LONG_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 4,
+            "rawValue": "STEALLANTIS",
+            "decodedValue": "STEALLANTIS",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600247",
+            "fieldName": null,
+            "title": "Do you charge a restocking fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 10,
+            "rawValue": [
+              "Yes, always"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600248",
+            "fieldName": null,
+            "title": "If yes, what amount is your restocking fee?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ANY",
+              "rules": [
+                {
+                  "fieldId": "103600247",
+                  "operator": "IS",
+                  "value": "Yes, always"
+                }
+              ]
+            },
+            "fieldOrder": 11,
+            "rawValue": "20%",
+            "decodedValue": "20%",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 7,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600251",
+            "fieldName": null,
+            "title": "Do you store parts anywhere other then your main parts department area? Ex. offsite warehouse ",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 14,
+            "rawValue": [
+              "No"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 8,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600252",
+            "fieldName": null,
+            "title": "Please describe all the areas/locations parts are stored:",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ANY",
+              "rules": [
+                {
+                  "fieldId": "103600251",
+                  "operator": "IS",
+                  "value": "Yes"
+                }
+              ]
+            },
+            "fieldOrder": 15,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 10,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "9c632165-eefc-4636-aa2b-470716827d60",
+            "fieldName": null,
+            "title": "If Yes, Do you use Cash on Delivery and who receives the payment?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "0472187f-bfc9-4cdd-ae21-9e7246f1dc31",
+                  "operator": "IS",
+                  "value": "cd4036d6-fa2f-43da-bb87-0016107145e2"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "GIVEN TO PARTS DEPT THEN GIVING TO CASHIER",
+            "decodedValue": "GIVEN TO PARTS DEPT THEN GIVING TO CASHIER",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 11,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "f02d7eb7-f6c9-4c0b-a208-f014ba94d6fd",
+            "fieldName": null,
+            "title": "What is your default price code for Customer Pay Repair Orders?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "10  COST+125%",
+            "decodedValue": "10  COST+125%",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 12,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "edbe16b7-d201-470f-8797-3b79cec39b78",
+            "fieldName": null,
+            "title": "What is your default price code for Warranty Repair Orders?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "9         COST+110.36%",
+            "decodedValue": "9         COST+110.36%",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 13,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "75fa788c-3810-49db-8323-df71e160d0d3",
+            "fieldName": null,
+            "title": "What is your default price code for Internal Repair Orders?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "7     COST+10%",
+            "decodedValue": "7     COST+10%",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 14,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "e5032349-dd76-4029-b788-f2ab26c193dd",
+            "fieldName": null,
+            "title": "What is your default price code for Wholesale Parts Invoices?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "20   List -20%                   25   list -25%",
+            "decodedValue": "20   List -20%                   25   list -25%",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 15,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "8335ca7b-fa7b-4759-8da1-e4b25eae1d8e",
+            "fieldName": null,
+            "title": "What is your default price code for Retail Parts Invoices?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "6     list",
+            "decodedValue": "6     list",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 16,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "c1f3a64d-9ac6-4a5d-b6c3-5e2b502062bc",
+            "fieldName": null,
+            "title": "What is your default price code for Internal Parts Invoices?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "7   cost+10%",
+            "decodedValue": "7   cost+10%",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "sectionName": "Fees/Coupons",
+        "sectionOrder": 4,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600273",
+            "fieldName": null,
+            "title": "Please provide all of the fees that are charged by the parts department on either parts invoices or repair orders. If you charge some fees as part numbers, please also include them here.\n\nExamples: tire tax, hazardous waste fee, key cut fee, disposal fee, etc",
+            "type": "PARAGRAPH",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "40252cc1-ee80-4f8d-919b-6adf9873e1bf",
+            "fieldName": null,
+            "title": "Do you charge a Tire Tax fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "10b382dd-a012-4946-a4dc-4f7adce4882c"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600279",
+            "fieldName": null,
+            "title": "G/L Account # for Tire Tax",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "40252cc1-ee80-4f8d-919b-6adf9873e1bf",
+                  "operator": "IS",
+                  "value": "10b382dd-a012-4946-a4dc-4f7adce4882c"
+                }
+              ]
+            },
+            "fieldOrder": 7,
+            "rawValue": "2017",
+            "decodedValue": "2017",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600280",
+            "fieldName": null,
+            "title": "Value (% or flat amount) for Tire Tax",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "40252cc1-ee80-4f8d-919b-6adf9873e1bf",
+                  "operator": "IS",
+                  "value": "10b382dd-a012-4946-a4dc-4f7adce4882c"
+                }
+              ]
+            },
+            "fieldOrder": 8,
+            "rawValue": "$2.50",
+            "decodedValue": "$2.50",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600281",
+            "fieldName": null,
+            "title": "Min. / Max. charge for Tire Tax",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "40252cc1-ee80-4f8d-919b-6adf9873e1bf",
+                  "operator": "IS",
+                  "value": "10b382dd-a012-4946-a4dc-4f7adce4882c"
+                }
+              ]
+            },
+            "fieldOrder": 9,
+            "rawValue": "$2.50",
+            "decodedValue": "$2.50",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "7a3e1565-986e-473a-8e41-631f22aca128",
+            "fieldName": null,
+            "title": "Is Tire Tax taxable?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "40252cc1-ee80-4f8d-919b-6adf9873e1bf",
+                  "operator": "IS",
+                  "value": "10b382dd-a012-4946-a4dc-4f7adce4882c"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": [
+              "50039a1e-5165-43b8-b44d-14f20bb36fba"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 6,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "f21cad19-1ebe-4387-80a7-714dd4b9a1c0",
+            "fieldName": null,
+            "title": "Do you charge a Key Cut fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "50039a1e-5165-43b8-b44d-14f20bb36fba"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 7,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "da7ae3f1-a785-40da-a5ce-96b83d9f043e",
+            "fieldName": null,
+            "title": "G/L Account # for Key Cut fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "f21cad19-1ebe-4387-80a7-714dd4b9a1c0",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "5730",
+            "decodedValue": "5730",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 8,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "4cbe20b8-dab8-47c5-9753-5bf4c18ceb0c",
+            "fieldName": null,
+            "title": "Value (% or flat amount) for Key Cut Fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "f21cad19-1ebe-4387-80a7-714dd4b9a1c0",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "$40.00",
+            "decodedValue": "$40.00",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 9,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "3a9d77cf-7f82-4faa-8557-2a542088bcfd",
+            "fieldName": null,
+            "title": "Min. / Max. charge for Key Cut Fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "f21cad19-1ebe-4387-80a7-714dd4b9a1c0",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "$40.00",
+            "decodedValue": "$40.00",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 10,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "985fadcd-3117-4da0-a765-1e38e46592c2",
+            "fieldName": null,
+            "title": "Is Key Cut fee taxable?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "f21cad19-1ebe-4387-80a7-714dd4b9a1c0",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": [
+              "115f3083-7aa1-4b5f-876a-d94cba733b47"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 11,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "5319fbf5-95aa-4e60-96ca-1682b9b454a0",
+            "fieldName": null,
+            "title": "Do you charge a Tire Disposal fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "2f5cb517-f7a4-4882-b4a5-41d7b2307522"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 12,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "70f70041-3d87-4229-81a7-b5cbac49ae92",
+            "fieldName": null,
+            "title": "G/L Account # for Tire Disposal fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "5319fbf5-95aa-4e60-96ca-1682b9b454a0",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 13,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "65edce1f-4f6f-4504-ba2a-81618bc1d3c3",
+            "fieldName": null,
+            "title": "Value (% or flat amount) for Tire Disposal fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "5319fbf5-95aa-4e60-96ca-1682b9b454a0",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 14,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "dd2f4715-ee2a-45f7-95a7-0b8e419dea55",
+            "fieldName": null,
+            "title": "Min. / Max. charge for Tire Disposal fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "5319fbf5-95aa-4e60-96ca-1682b9b454a0",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 15,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "36b711c1-df1d-4be2-8be4-b8f4d470fd7a",
+            "fieldName": null,
+            "title": "Is Tire Disposal fee taxable?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "5319fbf5-95aa-4e60-96ca-1682b9b454a0",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 16,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "e2184afe-49d8-4ba3-b8cd-fcd583420102",
+            "fieldName": null,
+            "title": "Do you charge a Battery Disposal fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "90103293-b7fe-486d-ad2b-63fe492cd442"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 17,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "0ed9f162-516f-4fbe-bf99-f27a17f79fee",
+            "fieldName": null,
+            "title": "G/L Account # for Battery Disposal fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "e2184afe-49d8-4ba3-b8cd-fcd583420102",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 18,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "e3698438-4270-41bd-a48c-b71ffe2ac43b",
+            "fieldName": null,
+            "title": "Value (% or flat amount) for Battery Disposal fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "e2184afe-49d8-4ba3-b8cd-fcd583420102",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 19,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "385c2729-763c-4061-bdbe-7545cde45ea1",
+            "fieldName": null,
+            "title": "Min. / Max. charge for Battery Disposal fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "e2184afe-49d8-4ba3-b8cd-fcd583420102",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 20,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "e724768c-5942-4d84-a9c3-21c6d7c687c7",
+            "fieldName": null,
+            "title": "Is Battery Disposal fee taxable?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "e2184afe-49d8-4ba3-b8cd-fcd583420102",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 21,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "96497676-cf40-4dac-927d-509ea8f89026",
+            "fieldName": null,
+            "title": "Do you charge a Wheel Weight fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "50039a1e-5165-43b8-b44d-14f20bb36fba"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 22,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "d86e2f15-09e8-4e4e-8333-127fb548f3b5",
+            "fieldName": null,
+            "title": "G/L Account # for Wheel Weight fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "96497676-cf40-4dac-927d-509ea8f89026",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "2017",
+            "decodedValue": "2017",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 23,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "27240777-eecd-4e63-a0de-acf289aa64ab",
+            "fieldName": null,
+            "title": "Value (% or flat amount) for Wheel Weight fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "96497676-cf40-4dac-927d-509ea8f89026",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "$1.25",
+            "decodedValue": "$1.25",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 24,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "34294de9-4387-4cd7-8adb-74ffba663a9e",
+            "fieldName": null,
+            "title": "Min. / Max. charge for Wheel Weight fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "96497676-cf40-4dac-927d-509ea8f89026",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "$1.25",
+            "decodedValue": "$1.25",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 25,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "ff7de828-4ac2-43b3-b56c-f984055288a8",
+            "fieldName": null,
+            "title": "Is Wheel Weight fee taxable?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "96497676-cf40-4dac-927d-509ea8f89026",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": [
+              "50039a1e-5165-43b8-b44d-14f20bb36fba"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 26,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "78278ab2-63cf-47a6-88ba-b90b87953b4f",
+            "fieldName": null,
+            "title": "Do you charge a Freight fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "4bac0908-0e0f-4430-8808-1c135ba5b0d6"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 27,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "e6d687d1-0a11-4740-aaf1-69e144f91e13",
+            "fieldName": null,
+            "title": "G/L Account # for Freight fee ",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "78278ab2-63cf-47a6-88ba-b90b87953b4f",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 28,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "a9a376d0-f5fe-4e14-9167-f0415b0125ef",
+            "fieldName": null,
+            "title": "Value (% or flat amount) for Freight fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "78278ab2-63cf-47a6-88ba-b90b87953b4f",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 29,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "c166f73b-de93-4768-8818-6d22b347b0bb",
+            "fieldName": null,
+            "title": "Min. / Max. charge for Freight fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "78278ab2-63cf-47a6-88ba-b90b87953b4f",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 30,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "df69a547-48ce-41fa-805c-126ee63e4f45",
+            "fieldName": null,
+            "title": "Is Freight fee taxable?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "78278ab2-63cf-47a6-88ba-b90b87953b4f",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 31,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "4ead6b67-c12e-48d2-8ffc-a209ad339c03",
+            "fieldName": null,
+            "title": "If applicable, please provide the details for all additional fees or other information here:",
+            "type": "LONG_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "NONE",
+            "decodedValue": "NONE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 32,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "7042a2af-e232-456d-82ea-6956850617ca",
+            "fieldName": null,
+            "title": "Do you have any parts coupons/discounts?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "a605dc7f-4652-4bff-87bf-e05a1d9e6113"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 33,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "31102f93-f31f-490a-8979-d8bfc1152091",
+            "fieldName": null,
+            "title": "If yes, please provide the details for all additional discounts or other information here:",
+            "type": "LONG_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "7042a2af-e232-456d-82ea-6956850617ca",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "09e322bf-b51e-46a7-a6e1-f7698d0202fe",
+        "sectionName": null,
+        "sectionOrder": 999,
+        "sectionType": "SUBMISSION",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "09e322bf-b51e-46a7-a6e1-f7698d0202fe",
+            "sectionName": null,
+            "sectionOrder": 999,
+            "sectionType": "SUBMISSION",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "e1b38e95-a0a2-46bf-b16c-e6095395cd93",
+            "fieldName": null,
+            "title": null,
+            "type": "LOGO",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 1,
+            "hasUserValue": false,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "09e322bf-b51e-46a7-a6e1-f7698d0202fe",
+            "sectionName": null,
+            "sectionOrder": 999,
+            "sectionType": "SUBMISSION",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "d51b6e47-e08b-4d3d-ba85-2ef7f5121630",
+            "fieldName": null,
+            "title": null,
+            "type": "PARAGRAPH",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 2,
+            "hasUserValue": false,
+            "subsectionName": null
+          }
+        ]
+      }
+    ],
+    "allFields": [
+      {
+        "sectionName": null,
+        "subsectionName": null,
+        "sectionId": "b4015665-754e-444c-a735-eaa7888bad06",
+        "fieldId": "da0cce6b-0382-4db9-8231-9df6c8790a26",
+        "title": null,
+        "type": "LOGO",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": null,
+        "subsectionName": null,
+        "sectionId": "b4015665-754e-444c-a735-eaa7888bad06",
+        "fieldId": "0629163e-8947-4cdd-9ac1-3a18701c8e73",
+        "title": "To begin, click Next.\n\nIf you are unable to finish in one sitting, feel free to save your work and revisit later through your onboarding link. You will generate a temporary link through the link in your original onboarding email. \n\nIf you have any questions, feel free to reach out to your Tekion Implementation Manager.\n",
+        "type": "PARAGRAPH",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Ordering, Shipping and Receiving",
+        "subsectionName": null,
+        "sectionId": "7309ed5b-7acb-456e-99ba-10dde0fc918f",
+        "fieldId": "b4402e29-73d8-469a-9735-8d713518fad3",
+        "title": "If you currently use or want to begin using ABC sourcing (also known as part movement by source), please upload documentation of your desired settings. These can be screenshots of your existing system settings or an excel document with your desired settings. ",
+        "type": "FILE_UPLOAD",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Ordering, Shipping and Receiving",
+        "subsectionName": null,
+        "sectionId": "7309ed5b-7acb-456e-99ba-10dde0fc918f",
+        "fieldId": "1ba759a5-34f3-42f7-ac54-371c8e7c6a41",
+        "title": "For what Dealer code(s) (OEM ID#) do you submit factory parts orders?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "60976",
+        "decodedValue": "60976",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Tekion Blueprint Submission",
+        "subsectionName": null,
+        "sectionId": "9fe52b4b-d20a-4332-bdcc-f4dbf92ab87f",
+        "fieldId": "103600336",
+        "title": "This is the final step. Once you begin uploading these documents, you will not be able to Save and Resume Later.\n\nPlease upload as many as possible, but if you are unable to upload them all then please either e-mail them to Implementations@Tekion.com or save them to provide to the Implementation Manager during the Strategy and Process visit.\n\nThank you!",
+        "type": "PARAGRAPH",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Tekion Blueprint Submission",
+        "subsectionName": null,
+        "sectionId": "9fe52b4b-d20a-4332-bdcc-f4dbf92ab87f",
+        "fieldId": "ae1e9cfc-d2cd-4153-834d-cf2ea73eb1a4",
+        "title": "Please upload Stock Order Criteria (if not on automatic replenishment)",
+        "type": "FILE_UPLOAD",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "27207772-12c3-4a62-888e-684352aa3b68",
+        "title": "Do you use a pricing matrix?",
+        "type": "SINGLE_CHOICE",
+        "required": true,
+        "rawValue": "cd4036d6-fa2f-43da-bb87-0016107145e2",
+        "decodedValue": "Yes",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "e0e0cb7f-5cb4-461f-a48e-80bc7bf48504",
+        "title": "If yes, please upload pricing matrix(s) here",
+        "type": "FILE_UPLOAD",
+        "required": true,
+        "rawValue": [
+          {
+            "mediaId": "d86a95df-dfa2-4c68-aadf-e36fc11e1278",
+            "uploadStatus": "COMPLETED",
+            "normal": {
+              "createdTime": 1793123235756,
+              "mimeType": "image/png",
+              "mediaCategory": "IMAGE",
+              "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/d86a95df-dfa2-4c68-aadf-e36fc11e1278/price matrix.png",
+              "contentType": "image/png",
+              "filename": "price matrix.png",
+              "mediaSize": 30437
+            }
+          }
+        ],
+        "decodedValue": [
+          {
+            "mediaId": "d86a95df-dfa2-4c68-aadf-e36fc11e1278",
+            "uploadStatus": "COMPLETED",
+            "filename": "price matrix.png",
+            "mimeType": "image/png",
+            "mediaCategory": "IMAGE",
+            "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/d86a95df-dfa2-4c68-aadf-e36fc11e1278/price matrix.png",
+            "mediaSize": 30437,
+            "createdTime": 1793123235756
+          }
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "103600242",
+        "title": "Please list all makes for which you run a factory master / price tape:",
+        "type": "LONG_TEXT",
+        "required": true,
+        "rawValue": "STEALLANTIS",
+        "decodedValue": "STEALLANTIS",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "103600247",
+        "title": "Do you charge a restocking fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "Yes, always"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "103600248",
+        "title": "If yes, what amount is your restocking fee?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "20%",
+        "decodedValue": "20%",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "103600251",
+        "title": "Do you store parts anywhere other then your main parts department area? Ex. offsite warehouse ",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "No"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "103600252",
+        "title": "Please describe all the areas/locations parts are stored:",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "9c632165-eefc-4636-aa2b-470716827d60",
+        "title": "If Yes, Do you use Cash on Delivery and who receives the payment?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "GIVEN TO PARTS DEPT THEN GIVING TO CASHIER",
+        "decodedValue": "GIVEN TO PARTS DEPT THEN GIVING TO CASHIER",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "f02d7eb7-f6c9-4c0b-a208-f014ba94d6fd",
+        "title": "What is your default price code for Customer Pay Repair Orders?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "10  COST+125%",
+        "decodedValue": "10  COST+125%",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "edbe16b7-d201-470f-8797-3b79cec39b78",
+        "title": "What is your default price code for Warranty Repair Orders?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "9         COST+110.36%",
+        "decodedValue": "9         COST+110.36%",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "75fa788c-3810-49db-8323-df71e160d0d3",
+        "title": "What is your default price code for Internal Repair Orders?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7     COST+10%",
+        "decodedValue": "7     COST+10%",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "e5032349-dd76-4029-b788-f2ab26c193dd",
+        "title": "What is your default price code for Wholesale Parts Invoices?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "20   List -20%                   25   list -25%",
+        "decodedValue": "20   List -20%                   25   list -25%",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "8335ca7b-fa7b-4759-8da1-e4b25eae1d8e",
+        "title": "What is your default price code for Retail Parts Invoices?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "6     list",
+        "decodedValue": "6     list",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "c1f3a64d-9ac6-4a5d-b6c3-5e2b502062bc",
+        "title": "What is your default price code for Internal Parts Invoices?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7   cost+10%",
+        "decodedValue": "7   cost+10%",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "103600273",
+        "title": "Please provide all of the fees that are charged by the parts department on either parts invoices or repair orders. If you charge some fees as part numbers, please also include them here.\n\nExamples: tire tax, hazardous waste fee, key cut fee, disposal fee, etc",
+        "type": "PARAGRAPH",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "40252cc1-ee80-4f8d-919b-6adf9873e1bf",
+        "title": "Do you charge a Tire Tax fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "10b382dd-a012-4946-a4dc-4f7adce4882c"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "103600279",
+        "title": "G/L Account # for Tire Tax",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "2017",
+        "decodedValue": "2017",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "103600280",
+        "title": "Value (% or flat amount) for Tire Tax",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$2.50",
+        "decodedValue": "$2.50",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "103600281",
+        "title": "Min. / Max. charge for Tire Tax",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$2.50",
+        "decodedValue": "$2.50",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "7a3e1565-986e-473a-8e41-631f22aca128",
+        "title": "Is Tire Tax taxable?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "50039a1e-5165-43b8-b44d-14f20bb36fba"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "f21cad19-1ebe-4387-80a7-714dd4b9a1c0",
+        "title": "Do you charge a Key Cut fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "50039a1e-5165-43b8-b44d-14f20bb36fba"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "da7ae3f1-a785-40da-a5ce-96b83d9f043e",
+        "title": "G/L Account # for Key Cut fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "5730",
+        "decodedValue": "5730",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "4cbe20b8-dab8-47c5-9753-5bf4c18ceb0c",
+        "title": "Value (% or flat amount) for Key Cut Fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$40.00",
+        "decodedValue": "$40.00",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "3a9d77cf-7f82-4faa-8557-2a542088bcfd",
+        "title": "Min. / Max. charge for Key Cut Fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$40.00",
+        "decodedValue": "$40.00",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "985fadcd-3117-4da0-a765-1e38e46592c2",
+        "title": "Is Key Cut fee taxable?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "115f3083-7aa1-4b5f-876a-d94cba733b47"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "5319fbf5-95aa-4e60-96ca-1682b9b454a0",
+        "title": "Do you charge a Tire Disposal fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "2f5cb517-f7a4-4882-b4a5-41d7b2307522"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "70f70041-3d87-4229-81a7-b5cbac49ae92",
+        "title": "G/L Account # for Tire Disposal fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "65edce1f-4f6f-4504-ba2a-81618bc1d3c3",
+        "title": "Value (% or flat amount) for Tire Disposal fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "dd2f4715-ee2a-45f7-95a7-0b8e419dea55",
+        "title": "Min. / Max. charge for Tire Disposal fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "36b711c1-df1d-4be2-8be4-b8f4d470fd7a",
+        "title": "Is Tire Disposal fee taxable?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "e2184afe-49d8-4ba3-b8cd-fcd583420102",
+        "title": "Do you charge a Battery Disposal fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "90103293-b7fe-486d-ad2b-63fe492cd442"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "0ed9f162-516f-4fbe-bf99-f27a17f79fee",
+        "title": "G/L Account # for Battery Disposal fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "e3698438-4270-41bd-a48c-b71ffe2ac43b",
+        "title": "Value (% or flat amount) for Battery Disposal fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "385c2729-763c-4061-bdbe-7545cde45ea1",
+        "title": "Min. / Max. charge for Battery Disposal fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "e724768c-5942-4d84-a9c3-21c6d7c687c7",
+        "title": "Is Battery Disposal fee taxable?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "96497676-cf40-4dac-927d-509ea8f89026",
+        "title": "Do you charge a Wheel Weight fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "50039a1e-5165-43b8-b44d-14f20bb36fba"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "d86e2f15-09e8-4e4e-8333-127fb548f3b5",
+        "title": "G/L Account # for Wheel Weight fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "2017",
+        "decodedValue": "2017",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "27240777-eecd-4e63-a0de-acf289aa64ab",
+        "title": "Value (% or flat amount) for Wheel Weight fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$1.25",
+        "decodedValue": "$1.25",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "34294de9-4387-4cd7-8adb-74ffba663a9e",
+        "title": "Min. / Max. charge for Wheel Weight fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$1.25",
+        "decodedValue": "$1.25",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "ff7de828-4ac2-43b3-b56c-f984055288a8",
+        "title": "Is Wheel Weight fee taxable?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "50039a1e-5165-43b8-b44d-14f20bb36fba"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "78278ab2-63cf-47a6-88ba-b90b87953b4f",
+        "title": "Do you charge a Freight fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "4bac0908-0e0f-4430-8808-1c135ba5b0d6"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "e6d687d1-0a11-4740-aaf1-69e144f91e13",
+        "title": "G/L Account # for Freight fee ",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "a9a376d0-f5fe-4e14-9167-f0415b0125ef",
+        "title": "Value (% or flat amount) for Freight fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "c166f73b-de93-4768-8818-6d22b347b0bb",
+        "title": "Min. / Max. charge for Freight fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "df69a547-48ce-41fa-805c-126ee63e4f45",
+        "title": "Is Freight fee taxable?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "4ead6b67-c12e-48d2-8ffc-a209ad339c03",
+        "title": "If applicable, please provide the details for all additional fees or other information here:",
+        "type": "LONG_TEXT",
+        "required": true,
+        "rawValue": "NONE",
+        "decodedValue": "NONE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "7042a2af-e232-456d-82ea-6956850617ca",
+        "title": "Do you have any parts coupons/discounts?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "a605dc7f-4652-4bff-87bf-e05a1d9e6113"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "31102f93-f31f-490a-8979-d8bfc1152091",
+        "title": "If yes, please provide the details for all additional discounts or other information here:",
+        "type": "LONG_TEXT",
+        "required": true,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": null,
+        "subsectionName": null,
+        "sectionId": "09e322bf-b51e-46a7-a6e1-f7698d0202fe",
+        "fieldId": "e1b38e95-a0a2-46bf-b16c-e6095395cd93",
+        "title": null,
+        "type": "LOGO",
+        "required": false,
+        "hasUserValue": false
+      },
+      {
+        "sectionName": null,
+        "subsectionName": null,
+        "sectionId": "09e322bf-b51e-46a7-a6e1-f7698d0202fe",
+        "fieldId": "d51b6e47-e08b-4d3d-ba85-2ef7f5121630",
+        "title": null,
+        "type": "PARAGRAPH",
+        "required": false,
+        "hasUserValue": false
+      }
+    ],
+    "populatedSections": [
+      {
+        "sectionId": "248786ab-1439-4782-91f2-49068782eaf8",
+        "sectionName": "Submitter Information",
+        "sectionOrder": 6,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "248786ab-1439-4782-91f2-49068782eaf8",
+            "sectionName": "Submitter Information",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "01e54a7d-ed57-493f-8e0d-c8eef47a6bd1",
+            "fieldName": null,
+            "title": "Name of Submitter",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 1,
+            "rawValue": "KENNYK",
+            "decodedValue": "KENNYK",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "248786ab-1439-4782-91f2-49068782eaf8",
+            "sectionName": "Submitter Information",
+            "sectionOrder": 6,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "ab007b57-b9fa-4278-9f53-94b8ae53599d",
+            "fieldName": null,
+            "title": "By signing below, the Parts Champion confirms completion and accuracy of information for Setup configuration.",
+            "type": "SIGNATURE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "data:image/png;base64,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",
+            "decodedValue": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABGoAAACCCAYAAAAe7y76AAAQAElEQVR4AeydC7y91ZyHd64hoUiRpESpdC+JPi4ldykVk3uJUDOU+6XMRC6ZhuQuSuOWSogQI2Z0lUqlSAnd03UqMjHf53TW8e5z9jlnn3P2fve7937+n993r/Wud73vWut519n/d/32etd7l5b/JCABCUhAAhKQgAQkIAEJSEACEhh1ArZvSAjoqBmSC2U1JSABCUhAAhKQgAQkIAEJNJOAtZKABHpJQEdNL2l6LglIQAISkIAEJCABCUigdwQ8kwQkIIExJKCjZnQv+uVp2t8nlUCTgAQkIAEJSEACEigEDCUgAQlIQAJNJaCjpqlXZmn1ui2HrxJpEpCABCQgAQnUS8DSJCABCUhAAhKQwJII6KhZEr5GHnxHarVsVOyeJWIoAQlIQALDTMC6S0ACEpCABCQgAQmMAwEdNaNzlZdJU3jUqVxT4qTdnnRNAhKQwOwE3CMBCUhAAhKQgAQkIAEJNIZAGdQ3pkJWZNEE/lY58q+Je20DQRssAUuXgAQkIAEJSEACEpCABCQggYURcDC/MF5Nzc3smVK3qxK5RzTKZtskIAEJSEACEpCABCQgAQlIQAIjSUBHTdtlHcqNqpPmrLRg5UiTgAQkIAEJSEACEpCABCQgAQlIYFYCzd2ho6a516abmk130mzUzUHmkYAEJCABCUhAAhKQgAQkIIE+EfC0ElgiAR01SwQ4wMOrTppzUw+dNIGgSUACEpCABCQgAQlIYFQJ2C4JSGA8COioGc7rXHXSnJcmrB9pEpCABCQgAQlIQAISWAwBj5GABCQggQYR0FHToIvRZVWmO2nW6/I4s0lAAhKQgAQkIIGaCVicBCQgAQlIQAILJaCjZqHEBpu/6qQ5P1XRSRMImgQkIAEJjCEBmywBCUhAAhKQgARGlICOmuG5sFUnzQWp9rqRJgEJSEACPSbg6SQgAQlIQAISkIAEJDBIAjpqBkm/+7KnO2nW6f5Qc0pAAg0hYDUkIAEJSEACEpCABCQgAQnMS0BHzbyIBp5BJ83AL0HTK2D9JCABCUhAAhKQgAQkIAEJSGBUCOioafaVrDppLkxV651JkwI1CUhAAhKQgAQkIAEJSEACEpCABOojMBBHTX3NG+qSqk6aX6cla0eaBCQgAQlIQAISkIAEJCABCUhgaAhY0YUT0FGzcGZ1HDHdSfPoOgq1DAlIQAISkIAEJCABCUhAAkNCwGpKYGQJ6Khp3qWtOmkuS/V00gSCJgEJSEACEpCABCQggXoIWIoEJCCBwRLQUTNY/tNLrzpprs3OVSNNAhKQgAQkIAEJSGAUCNgGCUhAAhKQQBcEdNR0AammLFUnzQ0p80GRJgEJSEACEpCABOYlYAYJSEACEpCABEaHgI6aZlzLqpPmz6nSAyJNAhKQgAQkMGgCli8BCUhAAhKQgAQkUDMBHTU1A+9QXNVJc0f23yvSJCABCYw4AZsnAQlIQAISkIAEJCABCXQioKOmE5X60nDMlNL+lsjdIk0CElgKAY+VgAQkIAEJSEACEpCABCQwxAR01Azu4v1fiq7yv2u2tQYTsGoSkIAEJCABCUhAAhKQgAQkIIF+E6g6Cvpdluf/BwHWoSmOGVKX4UNJQAISkIAEJCABCUhAAhKQgAQkMLIEumqYjpquMPU004052z2jYjppCglDCUhAAhKQgAQkIAEJSEACElgEAQ8ZJQI6auq9mpenuOWjYjppCglDCUhAAhKQgAQkIAEJSKB5BKyRBCRQOwEdNfUhPz9FrRIV00lTSBhKQAISkIAEJCABCYwdARssAQlIQAKdCeio6cyl16k/zAnXiYrppCkkDCUgAQlIQAISkEBvCXg2CUhAAhKQwFAT0FHT/8t3aIp4SlRMJ00h0X14bLJeH/GmrL8lRH9PqFqthTCAYbBpEpCABCSwOAIeJQEJSEACEpCABPpPQEdNfxnvmtO/Niqmk+ZOEhskODO6NcLpUjSb02H75Lt/xJuyYIiyqUlAAhIYEQI2QwISkIAEJCABCUhAApMEdNRMguhD8PCc88io2O4lMqLh29KuS6Pbo+J4IezkfDkreTaK7hXhdCnKZtdWPS8zbVio+V9zdDmXYas1ncEDWv4bOwI2WAISkIAEJCABCUhAAhIYLgI6avpzvVbOaX8XFftyIp+Lhs2+lgr/KcIRgtMFVR0k1fj7km+16O5R1UGQza6ter6/5KgLImbTVM9X4vTdIsp8aPLuF2n1ELAUCUhAAhKQgAQkIAEJSEACEugDAQa6fTjtWJ+SWQtXVAicnfg/RcNgp6aSVWfMTtleIVrKI0dV58v/5lwnR8XZMj28S6vVok+iZZOPBZiPS6hJQAISkIAEJCABCUhAAhKQgATGggAD4rFoaKueVt47xVwXFft9IhtGTbayTgwOlc1TUZwnCeY08qI7kosFapl5w3GdRB8rum/yPz7SJCABCUhAAhKQgAQkIAEJSEAC/SEw5GdlAD3kTWhM9Zl1ckulNlclzjo1CRpn1VkzZZ2YaiVxwlyThE6OF9LoN+huycOMm10SahKQgAQkIAEJSEACEpCABEaagI2TQB0EGGzXUc44lME6LqWdNyTCOjUJGmHTH2nC2TK9YjhnDksi++gXKyWuSUACEpCABCQgAQlIQAL9J2AJEpCABKYIMCCf2jCyKAIsYIuToxzMOiysU1O2BxV280gTM2twzCD6wm6DqqzlSkACEpCABCQgAQn0g4DnlIAEJCCBYSPA4HzY6tyk+l6byuwfFTskEdZhSTAQw/GC0wjN9kgTjiQcM4jHtQZSUQuVgAQkIAEJSGDICVh9CUhAAhKQgAT6QkBHzeKx4hRZcfJwHCM4Pvae3K4r6PaRptNTIerH9R6kIynV0CQgAQlIYBEEzsgx/L/D/zd/TnykzcZJQAISkIAEJCCBcSbAwH2c27/YtnOjjOOD41mbpk6O3TzSRP3WTeWoI3XjbU7Z1CQgAQmMNYFha/xnU+HbI77TN0nId3qC1t35UBKQgAQkIAEJSEACo0mAQfxotqw/rdo+p+WGOcGE8SruOm6Yy6+olN3pkSYq89d8cBOPuK7nZ1uTgARqIWAhElgygZflDL+JimOG73vWDav+H0Pa2cnjY6uBoElAAhKQgAQkIIFRJcCAflTb1ut2XZoTHhsV+1ki5dGnRHtq3T7SdFlKxTGD7pG4NmoEbI8EJDCKBF6bRv0uqjplvpDtR0ZVx0w2p+z4xPg/e8OEmgQkIAEJSEACEpDACBPgpm+Em9ezpvF402qVs70o8a2iXhqL/JaZMzyqhPNl+vn5NfV9SWQf127VxBdlHiQBCUhAArUQeE9K+WPE/yN8h6NDs/3wqJNThv23ZV/VPpeNZ0eaBCQgAQlIQAISkMAYEGCw38tmjuK5uGku08yJ4yT5So8aWr1xv0/OybkTtNkd2SIdcb3ekW1NAhKQgASaR+CgVOnyqPrd/u5sPzQq/48kOmX8n3Jztk6IVon4nt8g4T2jYm9PZPdIk4AEJCABCUhAAk0jYH36RICBf59OPfSnXSEt4CY6wYTxlo2l8mJqe5k1w7lnu3G/ISVyw47ulrgmAQlIQALNIcCjpp9Kda6Oqk6ZfbKNw6XTdzvf/Xy3H5M8PDbL9zv/pyyf7WdEV0bbRKxBQ3qiLdatOZCIkoAEJCABCYwXAVsrgfEmUG4Gx5vCzNafk6Q/RcVYn4ZFfMv2QsKLk5kbdBwz3HRzc56kNmPf95PCPq7JAxLXJCABCUhg8ARwynwx1bg2YoYj39d/SXyP6EHRbE4ZFpv/UvbfN+K7nXx8t++YbfYlaLOXZusHEXkpY9vEj4g0CUhAAhLoJQHPJQEJSGAICOAUGIJq1lrFW1Pa+lExbpRXLxtdhtX1Zh6RY7jxTtBm/ApLOuI6bNe21w0J9I5AcRQy+KtLlNmtGPzy1jIGv/ztXJ+ms1D2uQlxYB6ScI1Ik0AdBI5OIfRB+iV/L/TLFyeNWTB8VyfaZvTza5Ly+Yjvc4RThvy7Jo0+nWBO2z97D48wzrdZIidGmgQkMEQErKoEJCABCUigVwQ63XT26tzDeB6cJ9WZM8umEcyCSTCnsb4Mx3JTj9jmZr16EOmsRUA66rSIZDW/cQn0igD9rVfn6vY8lNmt+B7iET9mLvC3c/8U8pBo3YhZBa9P+NuIv6Fe6pKcUxtvAt9L82+MilOG/rVDtumD9MtE24x8VyTlY1Hp3zhlVsr2K6PF2Gdy0H4RhsNyzUR+HmkSKAQMJSABCUhAAhIYMwKdbkTHDMFUc7lB54abBG7GuQnnl1S2O+nIJPLLJ8fxi2k5NslTxr5fZItzwZq1CLKpSaBWAvS/n6VE+iNKtGsjP07IotLnSZ9LXRcwwIynDbBsi66PwMEpCkcf64xN779Pyz6+l/l+TrTN+H+AtzWxRgx/QwiHIk7EvdpyLn6DV26XhYJvyWlwVvLa7kTrMMuQgAQkIAEJSEACEmgigU43p02sZz/rxBucGHCWMvh1lZvxsl0N/5CNcqPPlHZu3JPUZuxnmjz74Ltx2143xpEA/atoUO3fKgXTHxF9E30zafPVi3z8PRSR/6gcx3nmEsfVpW+nPjiSqFuiXRl/p7t0ldNMCydQ/xG8De9XKZZHV7m29IWif0k6j87xJiX6ZDZnGP2HtcjelT3kQfT5h2Wbty4l6Ll9Omd8ZoSx/s1yRJQEJCABCUhAAhKQgAQYaI0zBX65rA7WzggMprxzY39T4tNv+FdNGjfwCdqMmTekI2bW/GfbXjfGkQCPtvGLPH2o2v7nVzcGHH9eyuc7ANF30X8kjXozyE10htG/d04q+xHtuy3bL4r6baekAAbUlEnZRc9OOoNq6p/orEZ+jqX+tGPWjO5oJIEXpFa8EYkZjFxHrmfRAdm3dsSjq3P1A/o2x7NgPG9aIi/i75W1yDhPTtN3Wy8llJk0zPZhUeIkaRKQgAQkIAEJSEACEmi1GKCNKwdu1h9eaTw3/Jtmm5Cp8uVNHUmaYeT5fVKXmRRr2SSqDSmBXlW76kS4PSfl74s+kuiUHTsVa2bkDakWTo9Sd+rP43v0+eyaYeyn//N2G/IgBtHVt6bNOGieBAbRnANxvqItchwOFspMtKOVvKz1sU5ykLeINnE8M4KyS2sggS1TJx5JY2Yjf0/lehJy3R6b/axjxDVNtKORF+fh+dn7poi8RfRtvts3SPoJ0aDspBRMnS5M+MhIk4AEJCABCUhAAhKQwBQBBi5TGyMe+WXax41/Gfxxs5+kKeOmeWpjWoQb/6uTRh4Et6qTJ7s6mWljQACHQOlTOAHoH52aTR+abV+n/E1K4/E9+jz1L7ohFaRNCWYYeVZIKvuLYIQDJslTxpt1SEclHyFvXeMcaCrztAj5EOuOkK+IeiLW+rhg2jFuNocAi/jyncp3MtexiLWUeOMR68bw9zRbjcnPtWc2yoeSqVx/Qq7/vZPGYtQHJWya4SDi74OZmI9vWuWsjwQkKyxPHgAAEABJREFUIAEJSEACEpDAYgn07jhuaHt3tmaciRkLzGaYPvhjqjk3/tzIz1ZTbv5Z44BHn8hXBKcHz3aQ6WNH4Li0uPQvfqGnnySpzehL1QTykDYq4hFB2lRt41xx8uKAqba/nIN9sx1b8jMDjnxF/E0iHnWZ7VjTB0vg6yn+yghnZrmOJWQRXx734Ts5WToaefkuZ20w3oxUrj1hufbMRnlzx6ObmfjqVGu7CNspH9dFmgQkIAEJSEACEpibgHvHjgA3u8Pa6H1Tcd6SUQbM3NSj7ZPOegPczCc6q5GXATf5iuDBTJuPzHqUO8aZAOtb0G+eGwj0mQRTRjozBEhH9KWpnUa6JgBH+BXBEfG4StcnMWNtBFgQl8dAmR0y/bt4x9QCBzfOzERnNWbV4NA5OjnKdSfkurMA8GpJ3yMadmMW5qGTjTgi4bciTQISkIAEJDBQAhYuAQk0kwA3ws2sWedaMRhgIIeY7s70dm7oO+dutcjH4IEBdjXPbtmg7Th1EtUkMCsBZgPQh+hL9JnpGdlHH2Qfg9LqftJVq1UYrNVqtZixBstEOxp52V8EX9bx6JjZxFoIHJhSLopY94XrUa4N4auSzpuReNSMa5fNjsZ3MLNHvpu9LPpL3iIc66skncWCE4ysnZ6WMYPo8oQvizQJSEACo0zAtklAAhKQwBIIMLhcwuF9P5QFSasDAwYDsxXKoKE6o4FBwEbJTMjNcaItBt1sH8aGksAsBFjos/Q7ZgPQZ6pZ6WsMLEkvfau633hnAgz2mbHG9w7s0HuTlUE8TBOdYeR5VFLZj7gu5HfWW6D00PbOuc6LOs1SfGvS14xYNJrrkWhH47qwCDDrzLD2CnmL+DtaMUfxOupxdLwxW4hHvZg9xKL1QaFJQAKLI+BREpCABCQggdEnwICpSa3k1asMxBiQIRZc5EZ/eh3J8/Eksq+ItlRnNLBWzVmTeRK0cOLM5eghjxpfAjgQ6Ff0u62DgX6VYMpIZ60M0ulrPKoxtdPIogm8M0cyiIcpbBEOA3hn1wxjP3lxLJAHcd1wwjZx4dgZDWhIAqyqMxRxfD0mdetmliLrBZ2ZvKyxwvUo4jqy7tBW2XdypN1JYJcEO0TYi/NxRaQ1kYB1koAEJCABCUhAAg0hwIBnkFU5IIXzCyODLcSrV7npT3Kbse+ypLAPMYvhddmezbgRrj7WxFoAVSfObMeZPn4EGODTvxh80remE2CWAOn8rbBWxvT9bveeAAt/wxvuiAWDmenBdepUGnlwEuyTneRBxXlzcNK0Vuv5gXBTBBsEq9kc1+znMSfemoUjDb5FXBfWC9ok52Kx4ATaHAQemH1fjDDWRPsqESUBCUhAAhKQgAQkIIG5CHDTPdf+Xu/bPCdkwMUgisHAO7KN0yXBDONtH9XBwaozcnRO4LiVJ3dRxtqJs/hrAk0CreeEQel/9A8G+ElqM9JL3+u0vy2zG30nwGuYl0spfF+V64Kjlr91rlV2zTDyce14gxt5ENcdxzCz8WYcMIQJ81X5d8lAm2n7MYnjYEnQZuy7NCnwKoIzM2vWSTqPpiXQFkngjBzHGjzM6Kz+eJBkTQISkIAEJCABCUhAAp0JcEPeeU9vUrlBZQHJMlg4NadlAMCAINE2Y8BwfFLYh3jbRza7tpcnJ+egzERbDO5o3ziuh0D71T8IMGum9MFvJpn+laDN6Du/Sgr76DeJjqsNRbtxtvAdwbXimiG+A8rjPJ0aQR4cw3tmJ9cb0S9w3nwyacNuP0wDaAvtQrxliDYnuc1YRwaHJfvgt3rbXjd6ReBzORHXgD7GjxTZ1CQgAQlIQAISkIAEJDA/AW7S58+1sBw8dsSNKQMFfvF+QA5nQJCgzdjPmjRPTOpPo5ujZ0Sko0S7tv9Jzs9HxS5OhMclEmiNIVBfRU5LUaUP0peYWTFbH2Rgzz7+FlijI4dqQ0rg8NSbBW+5llxT9NKkcY3pB4nOMPLgvHl19pAH0XdweByZtCbbfqkcjyhRZ/SUbNOWBG3G9/CHk0JbEevIfDvbWv8IbJtTvzLC9soHs5YSaBKQgAQkIAEJSEACEpifAAOa+XIxA4FBQLfisSMGA/OdlzwbJBNOGpw1yyderc985bF2yA055vaIN4wkmDAWxeQNJRMbfowNAfoDA2z6zWZpNf0rQZuxjzw8AsJ++hsD+7ZMbowUgS+mNVxjrjXXHO2YNGbc0R8SnWHkweGxa/aQB9FvcN58OWmDsiel4Gsj6oP2T5y2JWgz6oqzknYgZh7t25bDjX4SwBHGumiU8V/5YPZXAk0CEpCABCQgAQlIoBcExuEcDF6GtZ3U/X6pfHnUKdEWg5fdE+FtT69KqI0ugeojdVx3+gOD0uktZt/1SWQfeRiAs3BwkrQxJcB6Lcy4oz/QLxCL7ZbZKZ2wkIe+88LspE8hHCI4b/q1qC4Dfh7HwwlJeQz6V0z5nezyJD46KvXcInFtMASY4YlzjMWbtxlMFSxVAhKQgAQkIIFFEPAQCTSGAAOV+SrDQrzc/DdFOGB4ZIqBy/S6U8f7JJGZOp9OSB4GUzz6wONQH0yaNrwEGLByPbmucz1SRx76AqKPrzC8TbbmNRH4Rsph/Sz6C/0GbZe0WyP6W4IZRh6cN8zQIQ+i7+G8OXpG7u4ScCKxphLnwsHIYujUafrROBt3SyJ1QA9N/NeRNlgC70/xPEJJP2CmKGGSNAlIQAISGG8Ctl4CEpDAwgh0GgAs7Az15/5siuQNUAxOEm3xqyW/HvNrM4tkTr8xJt89kvER0ZsiBkCIwdCV2eZ1qTh3EtUaRoDHU7ieXC9Ef+V6Tq8m+36eRPaRh8FzNjUJLInA93M03w30KfoWYoYEb66jz2X3DCMP/W+H7CEPog/jZOQxzyS3GWvjlPORl5k9rKnUlikbfF/x3cf5EY/vHZZ0rTkEnpCqvDnC3pKPcyJNAhKQQH8JeHYJSEACEhhJAgxAhq1hrEtTpv/z+AuPP7EeAwtp8qgAgyQGMggnDM4YfuGe3k4GQw9O4s4Rv04zkOIXaX5FT5I2AAI8esKglgEr4vEBruP0qrCPa8o+RD/edHomtyXQBwK8WWm5nJc+R98rwmFMv8yuGUYe8jOQJ09VvG2KmTzTD+Lv4PwkcizC2cxswiRpDSVwQurFteLthgclrklgqAlYeQlIQAISkIAEBkeAwcPgSl94yQyGcMxwJA6Y4rBhu5NYT2KV7GAdG26g0QeyfUnEm1AYMCU6YbBYKzFuthkkXZ34uyOtfwSmz5hhYVSuUacSuVYvyQ72c624ptnUJNAIAnwv0S/pn4jvJhzJ9NtuK3hNMrIwOsfjcF4329pwEGBdNGZf4fR/3HBUeWC1tGAJSEACEpCABCQggXkIMLCYJ0tjdnMDzHR/KsSrTnHAEF+o3poD1oiYrUH7GRS9K9s4ZsqgirQHJe09EWk3J/xKpC2NAGsF4QSDKeIawLrTWdmPI4f9iGvV9Ncld2qHaeNJACcNzhr6Lf23G60UVCdH2qIIDOQgHsPlsUvWReO77ekDqYWFSkACEpCABCQgAQmMFAEGEcPQIB6J4ddK6nphPlaPemkH5GQ8BgUPXoFb3rSS5AnjUYddEsN5gLOBt3qsl21tbgKsq8HgBW6IxzcYsHY6iv081sZ+xLXgzTyd8pomgfoIWJIEOhNgsWBm0myc3edF/ADA/w2JahKQgAQkIAEJSEACElg8AQbDiz+6niOZVcEjMZR2Zj54C0qCvtlJOTNv7WANGxwGP8g2dUgwYTgbeDzhl9liXZuLEu4Zaa0W68ZUHTOFYSc2OGaYGQVjRF/kTU6d8o5kmo2SgASGlsDeqfmPImZN8aauzRLn+yyBJgEJSEACEpCABCQggaURYHC8tDP092hmr/B4DKUwvXwTIjXraSmPmR04E1j4k1kfSZow+K2Z2McjHBQ8PkWebA7MBlUwjhfW1YBTpzqwn1+b2Y9g1+uZUZ3KNU0CEpBALwnwCOZHckIc0TxKu2PizPpMoElAAhKQgAQkIAEJSGDpBBgsd3mWWrOxUCxOGmavUPAZ+WjCW32YOcOsDxwN/5w68QsqDppEW6Sxrs2rs4FTgjV1Tkz8gdE4Ggz2TcPhguhrvPUmSZoEJCCBoSPAejT8X7Rrao7DHic+i9NnU5OABCQgAQlIQAKjRsD2DJIAg+dBlt+p7J2TyKNGxUnDgr5MK09yo+yjqQ0zQphFsmXiv4hYkyXBhLGmzlMT400uvGGKNQxekO1RNZwxVdG3PjyqjbVdEpDAWBEo69Ewq5Pv8g3Teh6LTaBJQAISkIAEJLAgAmaWgATmJcBget5MNWb4RMr6alTqtULi+0dNt1NSQRaUxLmEs+I72b4lKsYMIda9OSoJrGtzWcIDI00CEpCABJpNwPVomn19rJ0EJCCBKQJGJCABCYwKgeIQaUJ7fpJKvCbCeGwGh8f1bAyhnpU686Yo2nBo4tdGtClBC+YPSYS1DXhs6sbEj400CUhAAhJoDgHWR/tKqsN6NHxvvy1x16MJBE0CY0jAJktAAhKQgARqJcDNZ60FzlIYa70wtZzdvDmoKfWiPkvV63MC1q6hTa9L/JKIWTUJJta1WT6R7SMcOTzydXriW0eaBCQgAQkMhgDr0ZyaoneJWI9m24TvjzQJ9JiAp5OABCQgAQlIQAIzCeA8mJlabwrOidUmi+SGmMeEJjdHLuDtUGukVbwthHV3eJMV69ckacL4BZdFk0/KFo9O8Zak5yauSUACEpBAPQT40eCsFLVBVNaj4VXc2Rwis6oSkIAEJCABCUhAAkNLYJCOmpVDjUd/cE4k2jo/H7xRKcFYGG8PwSlD+3lE6ltpNW+KSjBh987n46PjIt6AdXbC8mhYopoEJCCB+gmMeIl7pX04ZVZMeEyEQ50Zn4lqEpCABCQgAQlIQAISqIfAIB01V6SJOCgStL7QarXWjcbZmDlz3wCACQsoX5Q4j4ElaLFI8WMTYbFl3izFPvIkSZPASBCwERIYJAEc5qxHw9v8+H/R9WgGeTUsWwISkIAEJCABCYw5AW5IB4GA9VhKudsl8opI+wcBXkm+VjZ5DIx1bX6ZeHlEisem1sz2fhFr3fAGKRYszqY2k4ApEpCABOYk4Ho0c+JxpwQkIAEJSEACEpBA3QQG4agps0RoK7NEvk9k6FRfhVnXBk784rtTij0lui3CuH68Qeq12eAxsmsS8qvwgxNqEpCABCQwNwHXo5mbj3slIAEJSEACEpCABCBQsxjo11nkrSnsrhH21nwwUySB1iWBryfflhHr1zwu4YnRzRHGI1MPTIS3lFyZ8Mboe9EWkSYBCUhAAu0EXI+mnYdbEpCABCQgAQkMgIBFSqATgTodNVelAveKsGPz8YFIWzyBU3PottHyEQszH53wuqg8Vkb607LNDBwcZCcnvkOkSUACEhhnAsxOZOZhWY/m7YGxY1RmKiaqSUACEpCABIaegA2QgELp+ocAAAl8SURBVASGmEBdjppzw2ilCCOuwwASvRNOsBfkdLyphGt6WOLMquFxqERbOMiYgYMzhzdIMZOJX5PZpyQgAQmMC4FO69EcOC6Nt50SkIAEekPAs0hAAhKQQL8JMKjvdxnHp4DyRiccCutnW+svgd1y+lUiHjNj5hKvl2Xh4SRNvEFqvUT4NZk3SP028QMiTQISkMAoE3A9mlG+urZtNAjYCglIQAISkIAEJgj021HzwZTyzAi7JR88opNAq5EAawGtnvJ4W9QbE14Y4aBJ0CJtjUTeEeHIuTzhpyJNAhKQwCgReH0a86OIWYfHJNwswoGdQBsHArZRAhKQgAQkIAEJDBOBfjpqtg+IN0UYb3pajogaKIGDU/ra0T2iF0VnRjwKlaBFX2AWzh7Z4JGpPyU8KnpYpElAAhIYRgJ81x2Rih8S8R3X6/VoclpNAhKQgAQkIAEJSEACvSXAjWtvz3jn2Rjws2AwWyxuyxopxFVzCLCY5iapzrLRVtFJEYsOJ2jxBqkVEmHdm98nvCn6QfSESJOABPpOwAJ6QID/h36W87wk4juM2Z2uRxMYmgQkIAEJSEACEpBAswn0w1Hz9DSZR2gSTNia+WRGTQKtoQQYzDwpdbtPxAyabybk9d4JJuy++dwm+mnEm1F44xQzcrKpDRUBKyuB8SDA4ulnp6k4o3ncc+PEvxdpEpCABCQgAQlIQAISaDyBXjtq3pAWfzfCeHyGmRmXsKGGhsAfU9PnRfeP7h4dHl0TMTMqQYsZOJsn8qWIx6bOS7hPpElAAhJoAgHWo/lJKvKg6NsRzhoWTU9Uk4AEJCABCUhAAhKQQPMJ9NJR8/E0998jjFkXvHGI+FLksYMlwEyol6cKK0X0lYMS4sjBCZfoxBukHpMI6eTFKccC0knSJCABCdRKoLoeDf//sEj6c1IDFrJPoElAAhKQgAQkIAEJNJyA1ZskwOB7MrqkgLdo7Dl5Bhahvfdk3GC0CLA4NI9GMQh6c5r2mwgHTYIWabxdijy8QeqKJH420iQgAQnUQeC4FMJ6NDcnfFb0vkiTgAQkIAEJSEACrVZLCBIYLgK9cNQwtfz5k81mevkDJ+MGo03gQ2neoyIej2JwdFbit0cY/WrlRHaLcNqwVsT+ifOLdwJNAhKQQM8J8KjTBTnrRtEJkSYBCUhAAhLoPwFLkIAEJNAHAgyol3Ja3gTEL5ec47R8PDLSxo/AkWkyg6N7JnxyVBYdTrRFH3tsIvtFPIJwbsIDouUjTQISkECvCGyaE60T8YNBAk0CEpDAcBOw9hKQgAQkML4EGEQvtvVfzYG8CShBi7cEbUFEjT2BH4fA1hGPv+G4OzTxiyPWtblbwnUj1o64LuGvIta0cRZWQGgSkIAEJCCBGghYhAQkIAEJSEACDSewFEfNlpNt+0RC3hKUQJNAGwF+2eYNLGsmddXo4Ih1bXgcijVt1s42a9pcmZBX6LIY9SqJaxKQgAQkMHQErLAEJCABCUhAAhKQQC8ILMVRwyCcOnyNDyWBeQiwuPAbk4d1bVZIyEwaZtSwGDFOG9LfkHTeKnVRwo9GD480CUhg3AnYfglIQAISkIAEJCABCYwRgaU4ak4PJ3R5Qk0CCyFwUzK/JeLV3ssmZM0a1q7BaUOfZAbOXknnkSnErC0cOUnSJNA7Ap5JAhKQgAQkIAEJSEACEpBA0wgwKF5snXg98+Y5+NeRJoHFEuAxqHfl4PUj3iD1zoS8JYo3SNE/H5Ht10S8zeXShJ+J1ouabNZNAhKQgAQkIAEJSEACEpCABCSwKAIMhBd1oAcNgsBYlPnetHLDiDdI7ZPw59FfomWi1aLdo3OiP0SHRbxtKoEmAQlIQAISkIAEJCABCUhAAhIYfgJ3OmqGvx22YDQJsLjwpmkaj0ftmfDU6M8RThsWJ35F4mdGl0VHRL55LBA0CUhAAhKQgAQkIAEJSEACsxJwR+MJ6Khp/CWygpMEPpnwcdG9opdHP41ujbCH5OMl0SkRixZ/OeHWkSYBCUhAAhKQgAQkIAEJ1ETAYiQggd4Q0FHTG46epV4Ch6c4HDH3Sbhz9MPolghbOR8vjE6Krop4K9lTE2oSkIAEJCABCUhAAsNJwFpLQAISGCsCOmrG6nKPZGOPSqu2iZaLnh19J+KtUglaK+Vjp+jEiEWvX5dw9UiTgAQkIAEJSEACrVZLCBKQgAQkIIHmEdBR07xrYo0WT+D4HPqs6H7Rk6Njo+sjbK18fCzCYfONhHtErHOTQJOABCQgAQn0mICnk4AEJCABCUhAAoskoKNmkeA8rPEEfpwa7hCtED062jficai7J3xe9KkIp83XE7Io8YMTahKQgAQaT8AKSkACEpCABCQgAQmMNgEdNaN9fW3dnQRwyHw40SdFG0f/Fp0VsTDxjgl5zTd5WISYRYlXTJomgXEjYHslIAEJSEACEpCABCQggQYQ0FHTgItgFWol8IuU9u5oo4jXefMK8IsTXz5iEWJe831O4jh1EmhLJ+AZJCABCUhAAhKQgAQkIAEJSKBbAjpquiVlvuYRWHqNTssp9onWjJ4YHRJdHT0kui7SJCABCUhAAhKQgAQkIAEJSEACtRLQUdMBt0ljSeC/0+q9I9aqWSYhs2oSaBKQgAQkIAEJSEACEpCABCQwqgSa2C4dNU28KtZJAhKQgAQkIAEJSEACEpCABIaZgHWXwKIJ6KhZNDoPlIAEJCABCUhAAhKQgAQkUDcBy5OABEadgI6aUb/Ctk8CEpCABCQgAQlIQALdEDCPBCQgAQk0goCOmkZcBishAQlIQAISkIAERpeALZOABCQgAQlIoHsCOmq6Z2VOCUhAAhKQgASaRcDaSEACEpCABCQggZEjoKNm5C6pDZKABCQggaUT8AwSkIAEJCABCUhAAhIYDAEdNYPhbqkSkMC4ErDdEpCABCQgAQlIQAISkIAE5iCgo2YOOO6SwDARsK4SkIAEJCABCUhAAhKQgAQkMPwEdNQM/zXsdws8vwQkIAEJSEACEpCABCQgAQlIQAI1ERigo6amFlqMBCQgAQlIQAISkIAEJCABCUhAAgMkYNELIaCjZiG0zCsBCUhAAhKQgAQkIAEJSEACzSFgTSQwggR01IzgRbVJEpCABCQgAQlIQAISkMDSCHi0BCQggUER0FEzKPKWKwEJSEACEpCABCQwjgRsswQkIAEJSGBOAjpq5sTjTglIQAISkIAEJDAsBKynBCQgAQlIQAKjQOD/AQAA//8V7yOKAAAABklEQVQDALoVKV9h0neFAAAAAElFTkSuQmCC",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "7309ed5b-7acb-456e-99ba-10dde0fc918f",
+        "sectionName": "Ordering, Shipping and Receiving",
+        "sectionOrder": 3,
+        "sectionType": "MAIN",
+        "logic": null,
+        "fields": [
+          {
+            "sectionId": "7309ed5b-7acb-456e-99ba-10dde0fc918f",
+            "sectionName": "Ordering, Shipping and Receiving",
+            "sectionOrder": 3,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "fe765963-0a2d-4c0a-abfb-11894c1866d5",
+            "fieldName": null,
+            "title": "Do you place stock orders?",
+            "type": "SINGLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "7ad001ab-39d6-44e8-ac43-aa5b281b2035",
+            "decodedValue": "Most of my stock orders are made by the manufacturer (GM RIM, Chrysler ARO, etc)",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "7309ed5b-7acb-456e-99ba-10dde0fc918f",
+            "sectionName": "Ordering, Shipping and Receiving",
+            "sectionOrder": 3,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "06f4b8b5-d9ee-4100-befc-f67b89a06c3e",
+            "fieldName": null,
+            "title": "Do you use ABC Sourcing / parts movement by sales?",
+            "type": "SINGLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "3a48482b-156e-4340-9a6e-7b2791ae5f7d",
+            "decodedValue": "No",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "7309ed5b-7acb-456e-99ba-10dde0fc918f",
+            "sectionName": "Ordering, Shipping and Receiving",
+            "sectionOrder": 3,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "1ba759a5-34f3-42f7-ac54-371c8e7c6a41",
+            "fieldName": null,
+            "title": "For what Dealer code(s) (OEM ID#) do you submit factory parts orders?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "60976",
+            "decodedValue": "60976",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "7309ed5b-7acb-456e-99ba-10dde0fc918f",
+            "sectionName": "Ordering, Shipping and Receiving",
+            "sectionOrder": 3,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "126586076",
+            "fieldName": null,
+            "title": "Do you currently receive by OEM shipment number?",
+            "type": "SINGLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": "We have to log into the OEM website",
+            "decodedValue": "Yes",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "9fe52b4b-d20a-4332-bdcc-f4dbf92ab87f",
+        "sectionName": "Tekion Blueprint Submission",
+        "sectionOrder": 5,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "9fe52b4b-d20a-4332-bdcc-f4dbf92ab87f",
+            "sectionName": "Tekion Blueprint Submission",
+            "sectionOrder": 5,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600337",
+            "fieldName": null,
+            "title": "Please upload 10 Parts ticket examples with audit copies (Customer & Internal)",
+            "type": "FILE_UPLOAD",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 2,
+            "rawValue": [
+              {
+                "mediaId": "18683bef-95d9-44da-804c-8464312b1935",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1793219758605,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/18683bef-95d9-44da-804c-8464312b1935/1.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "1.pdf",
+                  "mediaSize": 71801
+                }
+              },
+              {
+                "mediaId": "33dde2d8-ec11-4d12-9d1b-effcd2a894d9",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1793219763964,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/33dde2d8-ec11-4d12-9d1b-effcd2a894d9/2.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "2.pdf",
+                  "mediaSize": 71592
+                }
+              },
+              {
+                "mediaId": "17038267-01f3-4f95-87a3-cf54b63632d2",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1793219768375,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/17038267-01f3-4f95-87a3-cf54b63632d2/3.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "3.pdf",
+                  "mediaSize": 71798
+                }
+              },
+              {
+                "mediaId": "c9db55be-1d66-4299-b84e-81d867a3fdd6",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1793219772837,
+                  "mimeType": "application/pdf",
+                  "mediaCategory": "PDF",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/c9db55be-1d66-4299-b84e-81d867a3fdd6/4.pdf",
+                  "contentType": "application/pdf",
+                  "filename": "4.pdf",
+                  "mediaSize": 71588
+                }
+              }
+            ],
+            "decodedValue": [
+              {
+                "mediaId": "18683bef-95d9-44da-804c-8464312b1935",
+                "uploadStatus": "COMPLETED",
+                "filename": "1.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/18683bef-95d9-44da-804c-8464312b1935/1.pdf",
+                "mediaSize": 71801,
+                "createdTime": 1793219758605
+              },
+              {
+                "mediaId": "33dde2d8-ec11-4d12-9d1b-effcd2a894d9",
+                "uploadStatus": "COMPLETED",
+                "filename": "2.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/33dde2d8-ec11-4d12-9d1b-effcd2a894d9/2.pdf",
+                "mediaSize": 71592,
+                "createdTime": 1793219763964
+              },
+              {
+                "mediaId": "17038267-01f3-4f95-87a3-cf54b63632d2",
+                "uploadStatus": "COMPLETED",
+                "filename": "3.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/17038267-01f3-4f95-87a3-cf54b63632d2/3.pdf",
+                "mediaSize": 71798,
+                "createdTime": 1793219768375
+              },
+              {
+                "mediaId": "c9db55be-1d66-4299-b84e-81d867a3fdd6",
+                "uploadStatus": "COMPLETED",
+                "filename": "4.pdf",
+                "mimeType": "application/pdf",
+                "mediaCategory": "PDF",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/c9db55be-1d66-4299-b84e-81d867a3fdd6/4.pdf",
+                "mediaSize": 71588,
+                "createdTime": 1793219772837
+              }
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "sectionName": "General Department Information",
+        "sectionOrder": 2,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 0,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "27207772-12c3-4a62-888e-684352aa3b68",
+            "fieldName": null,
+            "title": "Do you use a pricing matrix?",
+            "type": "SINGLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "cd4036d6-fa2f-43da-bb87-0016107145e2",
+            "decodedValue": "Yes",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "e0e0cb7f-5cb4-461f-a48e-80bc7bf48504",
+            "fieldName": null,
+            "title": "If yes, please upload pricing matrix(s) here",
+            "type": "FILE_UPLOAD",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ANY",
+              "rules": [
+                {
+                  "fieldId": "27207772-12c3-4a62-888e-684352aa3b68",
+                  "operator": "IS",
+                  "value": "cd4036d6-fa2f-43da-bb87-0016107145e2"
+                },
+                {
+                  "fieldId": "27207772-12c3-4a62-888e-684352aa3b68",
+                  "operator": "IS",
+                  "value": "b7d5a50a-0b01-4f4b-9697-675dfb8b34e2"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": [
+              {
+                "mediaId": "d86a95df-dfa2-4c68-aadf-e36fc11e1278",
+                "uploadStatus": "COMPLETED",
+                "normal": {
+                  "createdTime": 1793123235756,
+                  "mimeType": "image/png",
+                  "mediaCategory": "IMAGE",
+                  "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/d86a95df-dfa2-4c68-aadf-e36fc11e1278/price matrix.png",
+                  "contentType": "image/png",
+                  "filename": "price matrix.png",
+                  "mediaSize": 30437
+                }
+              }
+            ],
+            "decodedValue": [
+              {
+                "mediaId": "d86a95df-dfa2-4c68-aadf-e36fc11e1278",
+                "uploadStatus": "COMPLETED",
+                "filename": "price matrix.png",
+                "mimeType": "image/png",
+                "mediaCategory": "IMAGE",
+                "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/d86a95df-dfa2-4c68-aadf-e36fc11e1278/price matrix.png",
+                "mediaSize": 30437,
+                "createdTime": 1793123235756
+              }
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600242",
+            "fieldName": null,
+            "title": "Please list all makes for which you run a factory master / price tape:",
+            "type": "LONG_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 4,
+            "rawValue": "STEALLANTIS",
+            "decodedValue": "STEALLANTIS",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600247",
+            "fieldName": null,
+            "title": "Do you charge a restocking fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": []
+            },
+            "fieldOrder": 10,
+            "rawValue": [
+              "Yes, always"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600248",
+            "fieldName": null,
+            "title": "If yes, what amount is your restocking fee?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ANY",
+              "rules": [
+                {
+                  "fieldId": "103600247",
+                  "operator": "IS",
+                  "value": "Yes, always"
+                }
+              ]
+            },
+            "fieldOrder": 11,
+            "rawValue": "20%",
+            "decodedValue": "20%",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600249",
+            "fieldName": null,
+            "title": "Do you sell parts online?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 12,
+            "rawValue": [
+              "Yes"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 6,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600250",
+            "fieldName": null,
+            "title": "Please describe where online you sell parts:",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ANY",
+              "rules": [
+                {
+                  "fieldId": "103600249",
+                  "operator": "IS",
+                  "value": "Yes"
+                },
+                {
+                  "fieldId": "103600249",
+                  "operator": "IS",
+                  "value": "No, but we hope to soon"
+                }
+              ]
+            },
+            "fieldOrder": 13,
+            "rawValue": "REVOLUTION",
+            "decodedValue": "REVOLUTION",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 7,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600251",
+            "fieldName": null,
+            "title": "Do you store parts anywhere other then your main parts department area? Ex. offsite warehouse ",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 14,
+            "rawValue": [
+              "No"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 9,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "0472187f-bfc9-4cdd-ae21-9e7246f1dc31",
+            "fieldName": null,
+            "title": "Can parts drivers accept payments?",
+            "type": "SINGLE_CHOICE",
+            "required": false,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "cd4036d6-fa2f-43da-bb87-0016107145e2",
+            "decodedValue": "Yes",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 10,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "9c632165-eefc-4636-aa2b-470716827d60",
+            "fieldName": null,
+            "title": "If Yes, Do you use Cash on Delivery and who receives the payment?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "0472187f-bfc9-4cdd-ae21-9e7246f1dc31",
+                  "operator": "IS",
+                  "value": "cd4036d6-fa2f-43da-bb87-0016107145e2"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "GIVEN TO PARTS DEPT THEN GIVING TO CASHIER",
+            "decodedValue": "GIVEN TO PARTS DEPT THEN GIVING TO CASHIER",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 11,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "f02d7eb7-f6c9-4c0b-a208-f014ba94d6fd",
+            "fieldName": null,
+            "title": "What is your default price code for Customer Pay Repair Orders?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "10  COST+125%",
+            "decodedValue": "10  COST+125%",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 12,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "edbe16b7-d201-470f-8797-3b79cec39b78",
+            "fieldName": null,
+            "title": "What is your default price code for Warranty Repair Orders?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "9         COST+110.36%",
+            "decodedValue": "9         COST+110.36%",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 13,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "75fa788c-3810-49db-8323-df71e160d0d3",
+            "fieldName": null,
+            "title": "What is your default price code for Internal Repair Orders?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "7     COST+10%",
+            "decodedValue": "7     COST+10%",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 14,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "e5032349-dd76-4029-b788-f2ab26c193dd",
+            "fieldName": null,
+            "title": "What is your default price code for Wholesale Parts Invoices?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "20   List -20%                   25   list -25%",
+            "decodedValue": "20   List -20%                   25   list -25%",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 15,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "8335ca7b-fa7b-4759-8da1-e4b25eae1d8e",
+            "fieldName": null,
+            "title": "What is your default price code for Retail Parts Invoices?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "6     list",
+            "decodedValue": "6     list",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+            "sectionName": "General Department Information",
+            "sectionOrder": 2,
+            "sectionType": "MAIN",
+            "rowIndex": 16,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "c1f3a64d-9ac6-4a5d-b6c3-5e2b502062bc",
+            "fieldName": null,
+            "title": "What is your default price code for Internal Parts Invoices?",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "7   cost+10%",
+            "decodedValue": "7   cost+10%",
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      },
+      {
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "sectionName": "Fees/Coupons",
+        "sectionOrder": 4,
+        "sectionType": "MAIN",
+        "logic": {
+          "displayActionType": "SHOW",
+          "ruleMatchCondition": "ALL",
+          "rules": []
+        },
+        "fields": [
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 1,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "40252cc1-ee80-4f8d-919b-6adf9873e1bf",
+            "fieldName": null,
+            "title": "Do you charge a Tire Tax fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "10b382dd-a012-4946-a4dc-4f7adce4882c"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 2,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600279",
+            "fieldName": null,
+            "title": "G/L Account # for Tire Tax",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "40252cc1-ee80-4f8d-919b-6adf9873e1bf",
+                  "operator": "IS",
+                  "value": "10b382dd-a012-4946-a4dc-4f7adce4882c"
+                }
+              ]
+            },
+            "fieldOrder": 7,
+            "rawValue": "2017",
+            "decodedValue": "2017",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 3,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600280",
+            "fieldName": null,
+            "title": "Value (% or flat amount) for Tire Tax",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "40252cc1-ee80-4f8d-919b-6adf9873e1bf",
+                  "operator": "IS",
+                  "value": "10b382dd-a012-4946-a4dc-4f7adce4882c"
+                }
+              ]
+            },
+            "fieldOrder": 8,
+            "rawValue": "$2.50",
+            "decodedValue": "$2.50",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 4,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "103600281",
+            "fieldName": null,
+            "title": "Min. / Max. charge for Tire Tax",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "40252cc1-ee80-4f8d-919b-6adf9873e1bf",
+                  "operator": "IS",
+                  "value": "10b382dd-a012-4946-a4dc-4f7adce4882c"
+                }
+              ]
+            },
+            "fieldOrder": 9,
+            "rawValue": "$2.50",
+            "decodedValue": "$2.50",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 5,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "7a3e1565-986e-473a-8e41-631f22aca128",
+            "fieldName": null,
+            "title": "Is Tire Tax taxable?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "40252cc1-ee80-4f8d-919b-6adf9873e1bf",
+                  "operator": "IS",
+                  "value": "10b382dd-a012-4946-a4dc-4f7adce4882c"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": [
+              "50039a1e-5165-43b8-b44d-14f20bb36fba"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 6,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "f21cad19-1ebe-4387-80a7-714dd4b9a1c0",
+            "fieldName": null,
+            "title": "Do you charge a Key Cut fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "50039a1e-5165-43b8-b44d-14f20bb36fba"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 7,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "da7ae3f1-a785-40da-a5ce-96b83d9f043e",
+            "fieldName": null,
+            "title": "G/L Account # for Key Cut fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "f21cad19-1ebe-4387-80a7-714dd4b9a1c0",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "5730",
+            "decodedValue": "5730",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 8,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "4cbe20b8-dab8-47c5-9753-5bf4c18ceb0c",
+            "fieldName": null,
+            "title": "Value (% or flat amount) for Key Cut Fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "f21cad19-1ebe-4387-80a7-714dd4b9a1c0",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "$40.00",
+            "decodedValue": "$40.00",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 9,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "3a9d77cf-7f82-4faa-8557-2a542088bcfd",
+            "fieldName": null,
+            "title": "Min. / Max. charge for Key Cut Fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "f21cad19-1ebe-4387-80a7-714dd4b9a1c0",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "$40.00",
+            "decodedValue": "$40.00",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 10,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "985fadcd-3117-4da0-a765-1e38e46592c2",
+            "fieldName": null,
+            "title": "Is Key Cut fee taxable?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "f21cad19-1ebe-4387-80a7-714dd4b9a1c0",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": [
+              "115f3083-7aa1-4b5f-876a-d94cba733b47"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 11,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "5319fbf5-95aa-4e60-96ca-1682b9b454a0",
+            "fieldName": null,
+            "title": "Do you charge a Tire Disposal fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "2f5cb517-f7a4-4882-b4a5-41d7b2307522"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 16,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "e2184afe-49d8-4ba3-b8cd-fcd583420102",
+            "fieldName": null,
+            "title": "Do you charge a Battery Disposal fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "90103293-b7fe-486d-ad2b-63fe492cd442"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 21,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "96497676-cf40-4dac-927d-509ea8f89026",
+            "fieldName": null,
+            "title": "Do you charge a Wheel Weight fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "50039a1e-5165-43b8-b44d-14f20bb36fba"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 22,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "d86e2f15-09e8-4e4e-8333-127fb548f3b5",
+            "fieldName": null,
+            "title": "G/L Account # for Wheel Weight fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "96497676-cf40-4dac-927d-509ea8f89026",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "2017",
+            "decodedValue": "2017",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 23,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "27240777-eecd-4e63-a0de-acf289aa64ab",
+            "fieldName": null,
+            "title": "Value (% or flat amount) for Wheel Weight fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "96497676-cf40-4dac-927d-509ea8f89026",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "$1.25",
+            "decodedValue": "$1.25",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 24,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "34294de9-4387-4cd7-8adb-74ffba663a9e",
+            "fieldName": null,
+            "title": "Min. / Max. charge for Wheel Weight fee",
+            "type": "SHORT_TEXT",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "96497676-cf40-4dac-927d-509ea8f89026",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": "$1.25",
+            "decodedValue": "$1.25",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 25,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "ff7de828-4ac2-43b3-b56c-f984055288a8",
+            "fieldName": null,
+            "title": "Is Wheel Weight fee taxable?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": {
+              "displayActionType": "SHOW",
+              "ruleMatchCondition": "ALL",
+              "rules": [
+                {
+                  "fieldId": "96497676-cf40-4dac-927d-509ea8f89026",
+                  "operator": "IS",
+                  "value": "50039a1e-5165-43b8-b44d-14f20bb36fba"
+                }
+              ]
+            },
+            "fieldOrder": 0,
+            "rawValue": [
+              "50039a1e-5165-43b8-b44d-14f20bb36fba"
+            ],
+            "decodedValue": [
+              "Yes"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 26,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "78278ab2-63cf-47a6-88ba-b90b87953b4f",
+            "fieldName": null,
+            "title": "Do you charge a Freight fee?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "4bac0908-0e0f-4430-8808-1c135ba5b0d6"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 31,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "4ead6b67-c12e-48d2-8ffc-a209ad339c03",
+            "fieldName": null,
+            "title": "If applicable, please provide the details for all additional fees or other information here:",
+            "type": "LONG_TEXT",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": "NONE",
+            "decodedValue": "NONE",
+            "hasUserValue": true,
+            "subsectionName": null
+          },
+          {
+            "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+            "sectionName": "Fees/Coupons",
+            "sectionOrder": 4,
+            "sectionType": "MAIN",
+            "rowIndex": 32,
+            "columnIndex": 0,
+            "fieldIndex": 0,
+            "fieldId": "7042a2af-e232-456d-82ea-6956850617ca",
+            "fieldName": null,
+            "title": "Do you have any parts coupons/discounts?",
+            "type": "MULTIPLE_CHOICE",
+            "required": true,
+            "logic": null,
+            "fieldOrder": 0,
+            "rawValue": [
+              "a605dc7f-4652-4bff-87bf-e05a1d9e6113"
+            ],
+            "decodedValue": [
+              "No"
+            ],
+            "hasUserValue": true,
+            "subsectionName": null
+          }
+        ]
+      }
+    ],
+    "populatedFlatRows": [
+      {
+        "sectionName": "Ordering, Shipping and Receiving",
+        "subsectionName": null,
+        "sectionId": "7309ed5b-7acb-456e-99ba-10dde0fc918f",
+        "fieldId": "1ba759a5-34f3-42f7-ac54-371c8e7c6a41",
+        "title": "For what Dealer code(s) (OEM ID#) do you submit factory parts orders?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "60976",
+        "decodedValue": "60976",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "27207772-12c3-4a62-888e-684352aa3b68",
+        "title": "Do you use a pricing matrix?",
+        "type": "SINGLE_CHOICE",
+        "required": true,
+        "rawValue": "cd4036d6-fa2f-43da-bb87-0016107145e2",
+        "decodedValue": "Yes",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "e0e0cb7f-5cb4-461f-a48e-80bc7bf48504",
+        "title": "If yes, please upload pricing matrix(s) here",
+        "type": "FILE_UPLOAD",
+        "required": true,
+        "rawValue": [
+          {
+            "mediaId": "d86a95df-dfa2-4c68-aadf-e36fc11e1278",
+            "uploadStatus": "COMPLETED",
+            "normal": {
+              "createdTime": 1793123235756,
+              "mimeType": "image/png",
+              "mediaCategory": "IMAGE",
+              "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/d86a95df-dfa2-4c68-aadf-e36fc11e1278/price matrix.png",
+              "contentType": "image/png",
+              "filename": "price matrix.png",
+              "mediaSize": 30437
+            }
+          }
+        ],
+        "decodedValue": [
+          {
+            "mediaId": "d86a95df-dfa2-4c68-aadf-e36fc11e1278",
+            "uploadStatus": "COMPLETED",
+            "filename": "price matrix.png",
+            "mimeType": "image/png",
+            "mediaCategory": "IMAGE",
+            "url": "com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/d86a95df-dfa2-4c68-aadf-e36fc11e1278/price matrix.png",
+            "mediaSize": 30437,
+            "createdTime": 1793123235756
+          }
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "103600242",
+        "title": "Please list all makes for which you run a factory master / price tape:",
+        "type": "LONG_TEXT",
+        "required": true,
+        "rawValue": "STEALLANTIS",
+        "decodedValue": "STEALLANTIS",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "103600247",
+        "title": "Do you charge a restocking fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "Yes, always"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "103600248",
+        "title": "If yes, what amount is your restocking fee?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "20%",
+        "decodedValue": "20%",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "103600251",
+        "title": "Do you store parts anywhere other then your main parts department area? Ex. offsite warehouse ",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "No"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "9c632165-eefc-4636-aa2b-470716827d60",
+        "title": "If Yes, Do you use Cash on Delivery and who receives the payment?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "GIVEN TO PARTS DEPT THEN GIVING TO CASHIER",
+        "decodedValue": "GIVEN TO PARTS DEPT THEN GIVING TO CASHIER",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "f02d7eb7-f6c9-4c0b-a208-f014ba94d6fd",
+        "title": "What is your default price code for Customer Pay Repair Orders?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "10  COST+125%",
+        "decodedValue": "10  COST+125%",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "edbe16b7-d201-470f-8797-3b79cec39b78",
+        "title": "What is your default price code for Warranty Repair Orders?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "9         COST+110.36%",
+        "decodedValue": "9         COST+110.36%",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "75fa788c-3810-49db-8323-df71e160d0d3",
+        "title": "What is your default price code for Internal Repair Orders?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7     COST+10%",
+        "decodedValue": "7     COST+10%",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "e5032349-dd76-4029-b788-f2ab26c193dd",
+        "title": "What is your default price code for Wholesale Parts Invoices?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "20   List -20%                   25   list -25%",
+        "decodedValue": "20   List -20%                   25   list -25%",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "8335ca7b-fa7b-4759-8da1-e4b25eae1d8e",
+        "title": "What is your default price code for Retail Parts Invoices?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "6     list",
+        "decodedValue": "6     list",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "General Department Information",
+        "subsectionName": null,
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "c1f3a64d-9ac6-4a5d-b6c3-5e2b502062bc",
+        "title": "What is your default price code for Internal Parts Invoices?",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "7   cost+10%",
+        "decodedValue": "7   cost+10%",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "40252cc1-ee80-4f8d-919b-6adf9873e1bf",
+        "title": "Do you charge a Tire Tax fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "10b382dd-a012-4946-a4dc-4f7adce4882c"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "103600279",
+        "title": "G/L Account # for Tire Tax",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "2017",
+        "decodedValue": "2017",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "103600280",
+        "title": "Value (% or flat amount) for Tire Tax",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$2.50",
+        "decodedValue": "$2.50",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "103600281",
+        "title": "Min. / Max. charge for Tire Tax",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$2.50",
+        "decodedValue": "$2.50",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "7a3e1565-986e-473a-8e41-631f22aca128",
+        "title": "Is Tire Tax taxable?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "50039a1e-5165-43b8-b44d-14f20bb36fba"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "f21cad19-1ebe-4387-80a7-714dd4b9a1c0",
+        "title": "Do you charge a Key Cut fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "50039a1e-5165-43b8-b44d-14f20bb36fba"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "da7ae3f1-a785-40da-a5ce-96b83d9f043e",
+        "title": "G/L Account # for Key Cut fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "5730",
+        "decodedValue": "5730",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "4cbe20b8-dab8-47c5-9753-5bf4c18ceb0c",
+        "title": "Value (% or flat amount) for Key Cut Fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$40.00",
+        "decodedValue": "$40.00",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "3a9d77cf-7f82-4faa-8557-2a542088bcfd",
+        "title": "Min. / Max. charge for Key Cut Fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$40.00",
+        "decodedValue": "$40.00",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "985fadcd-3117-4da0-a765-1e38e46592c2",
+        "title": "Is Key Cut fee taxable?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "115f3083-7aa1-4b5f-876a-d94cba733b47"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "5319fbf5-95aa-4e60-96ca-1682b9b454a0",
+        "title": "Do you charge a Tire Disposal fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "2f5cb517-f7a4-4882-b4a5-41d7b2307522"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "e2184afe-49d8-4ba3-b8cd-fcd583420102",
+        "title": "Do you charge a Battery Disposal fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "90103293-b7fe-486d-ad2b-63fe492cd442"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "96497676-cf40-4dac-927d-509ea8f89026",
+        "title": "Do you charge a Wheel Weight fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "50039a1e-5165-43b8-b44d-14f20bb36fba"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "d86e2f15-09e8-4e4e-8333-127fb548f3b5",
+        "title": "G/L Account # for Wheel Weight fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "2017",
+        "decodedValue": "2017",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "27240777-eecd-4e63-a0de-acf289aa64ab",
+        "title": "Value (% or flat amount) for Wheel Weight fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$1.25",
+        "decodedValue": "$1.25",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "34294de9-4387-4cd7-8adb-74ffba663a9e",
+        "title": "Min. / Max. charge for Wheel Weight fee",
+        "type": "SHORT_TEXT",
+        "required": true,
+        "rawValue": "$1.25",
+        "decodedValue": "$1.25",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "ff7de828-4ac2-43b3-b56c-f984055288a8",
+        "title": "Is Wheel Weight fee taxable?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "50039a1e-5165-43b8-b44d-14f20bb36fba"
+        ],
+        "decodedValue": [
+          "Yes"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "78278ab2-63cf-47a6-88ba-b90b87953b4f",
+        "title": "Do you charge a Freight fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "4bac0908-0e0f-4430-8808-1c135ba5b0d6"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "4ead6b67-c12e-48d2-8ffc-a209ad339c03",
+        "title": "If applicable, please provide the details for all additional fees or other information here:",
+        "type": "LONG_TEXT",
+        "required": true,
+        "rawValue": "NONE",
+        "decodedValue": "NONE",
+        "hasUserValue": true
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "subsectionName": null,
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "7042a2af-e232-456d-82ea-6956850617ca",
+        "title": "Do you have any parts coupons/discounts?",
+        "type": "MULTIPLE_CHOICE",
+        "required": true,
+        "rawValue": [
+          "a605dc7f-4652-4bff-87bf-e05a1d9e6113"
+        ],
+        "decodedValue": [
+          "No"
+        ],
+        "hasUserValue": true
+      }
+    ],
+    "csvReadyRows": [
+      {
+        "sectionName": "Ordering, Shipping and Receiving",
+        "sectionId": "7309ed5b-7acb-456e-99ba-10dde0fc918f",
+        "fieldId": "1ba759a5-34f3-42f7-ac54-371c8e7c6a41",
+        "title": "For what Dealer code(s) (OEM ID#) do you submit factory parts orders?",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "60976"
+      },
+      {
+        "sectionName": "General Department Information",
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "27207772-12c3-4a62-888e-684352aa3b68",
+        "title": "Do you use a pricing matrix?",
+        "type": "SINGLE_CHOICE",
+        "required": "true",
+        "decodedValue": "Yes"
+      },
+      {
+        "sectionName": "General Department Information",
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "e0e0cb7f-5cb4-461f-a48e-80bc7bf48504",
+        "title": "If yes, please upload pricing matrix(s) here",
+        "type": "FILE_UPLOAD",
+        "required": "true",
+        "decodedValue": "[{\"mediaId\":\"d86a95df-dfa2-4c68-aadf-e36fc11e1278\",\"uploadStatus\":\"COMPLETED\",\"filename\":\"price matrix.png\",\"mimeType\":\"image/png\",\"mediaCategory\":\"IMAGE\",\"url\":\"com-tekioncloud-tap-dealeronboarding/media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/d86a95df-dfa2-4c68-aadf-e36fc11e1278/price matrix.png\",\"mediaSize\":30437,\"createdTime\":1793123235756}]"
+      },
+      {
+        "sectionName": "General Department Information",
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "103600242",
+        "title": "Please list all makes for which you run a factory master / price tape:",
+        "type": "LONG_TEXT",
+        "required": "true",
+        "decodedValue": "STEALLANTIS"
+      },
+      {
+        "sectionName": "General Department Information",
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "103600247",
+        "title": "Do you charge a restocking fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"Yes\"]"
+      },
+      {
+        "sectionName": "General Department Information",
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "103600248",
+        "title": "If yes, what amount is your restocking fee?",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "20%"
+      },
+      {
+        "sectionName": "General Department Information",
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "103600251",
+        "title": "Do you store parts anywhere other then your main parts department area? Ex. offsite warehouse ",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"No\"]"
+      },
+      {
+        "sectionName": "General Department Information",
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "9c632165-eefc-4636-aa2b-470716827d60",
+        "title": "If Yes, Do you use Cash on Delivery and who receives the payment?",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "GIVEN TO PARTS DEPT THEN GIVING TO CASHIER"
+      },
+      {
+        "sectionName": "General Department Information",
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "f02d7eb7-f6c9-4c0b-a208-f014ba94d6fd",
+        "title": "What is your default price code for Customer Pay Repair Orders?",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "10  COST+125%"
+      },
+      {
+        "sectionName": "General Department Information",
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "edbe16b7-d201-470f-8797-3b79cec39b78",
+        "title": "What is your default price code for Warranty Repair Orders?",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "9         COST+110.36%"
+      },
+      {
+        "sectionName": "General Department Information",
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "75fa788c-3810-49db-8323-df71e160d0d3",
+        "title": "What is your default price code for Internal Repair Orders?",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "7     COST+10%"
+      },
+      {
+        "sectionName": "General Department Information",
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "e5032349-dd76-4029-b788-f2ab26c193dd",
+        "title": "What is your default price code for Wholesale Parts Invoices?",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "20   List -20%                   25   list -25%"
+      },
+      {
+        "sectionName": "General Department Information",
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "8335ca7b-fa7b-4759-8da1-e4b25eae1d8e",
+        "title": "What is your default price code for Retail Parts Invoices?",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "6     list"
+      },
+      {
+        "sectionName": "General Department Information",
+        "sectionId": "ad939019-047d-4513-8e2b-9fbeb34c78de",
+        "fieldId": "c1f3a64d-9ac6-4a5d-b6c3-5e2b502062bc",
+        "title": "What is your default price code for Internal Parts Invoices?",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "7   cost+10%"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "40252cc1-ee80-4f8d-919b-6adf9873e1bf",
+        "title": "Do you charge a Tire Tax fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"Yes\"]"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "103600279",
+        "title": "G/L Account # for Tire Tax",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "2017"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "103600280",
+        "title": "Value (% or flat amount) for Tire Tax",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "$2.50"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "103600281",
+        "title": "Min. / Max. charge for Tire Tax",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "$2.50"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "7a3e1565-986e-473a-8e41-631f22aca128",
+        "title": "Is Tire Tax taxable?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"Yes\"]"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "f21cad19-1ebe-4387-80a7-714dd4b9a1c0",
+        "title": "Do you charge a Key Cut fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"Yes\"]"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "da7ae3f1-a785-40da-a5ce-96b83d9f043e",
+        "title": "G/L Account # for Key Cut fee",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "5730"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "4cbe20b8-dab8-47c5-9753-5bf4c18ceb0c",
+        "title": "Value (% or flat amount) for Key Cut Fee",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "$40.00"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "3a9d77cf-7f82-4faa-8557-2a542088bcfd",
+        "title": "Min. / Max. charge for Key Cut Fee",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "$40.00"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "985fadcd-3117-4da0-a765-1e38e46592c2",
+        "title": "Is Key Cut fee taxable?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"No\"]"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "5319fbf5-95aa-4e60-96ca-1682b9b454a0",
+        "title": "Do you charge a Tire Disposal fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"No\"]"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "e2184afe-49d8-4ba3-b8cd-fcd583420102",
+        "title": "Do you charge a Battery Disposal fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"No\"]"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "96497676-cf40-4dac-927d-509ea8f89026",
+        "title": "Do you charge a Wheel Weight fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"Yes\"]"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "d86e2f15-09e8-4e4e-8333-127fb548f3b5",
+        "title": "G/L Account # for Wheel Weight fee",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "2017"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "27240777-eecd-4e63-a0de-acf289aa64ab",
+        "title": "Value (% or flat amount) for Wheel Weight fee",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "$1.25"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "34294de9-4387-4cd7-8adb-74ffba663a9e",
+        "title": "Min. / Max. charge for Wheel Weight fee",
+        "type": "SHORT_TEXT",
+        "required": "true",
+        "decodedValue": "$1.25"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "ff7de828-4ac2-43b3-b56c-f984055288a8",
+        "title": "Is Wheel Weight fee taxable?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"Yes\"]"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "78278ab2-63cf-47a6-88ba-b90b87953b4f",
+        "title": "Do you charge a Freight fee?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"No\"]"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "4ead6b67-c12e-48d2-8ffc-a209ad339c03",
+        "title": "If applicable, please provide the details for all additional fees or other information here:",
+        "type": "LONG_TEXT",
+        "required": "true",
+        "decodedValue": "NONE"
+      },
+      {
+        "sectionName": "Fees/Coupons",
+        "sectionId": "dd54bf09-121b-4809-ac33-a1f82405fe6c",
+        "fieldId": "7042a2af-e232-456d-82ea-6956850617ca",
+        "title": "Do you have any parts coupons/discounts?",
+        "type": "MULTIPLE_CHOICE",
+        "required": "true",
+        "decodedValue": "[\"No\"]"
+      }
+    ],
+    "humanReadable": "[Ordering, Shipping and Receiving > —] For what Dealer code(s) (OEM ID#) do you submit factory parts orders?: 60976\n[General Department Information > —] Do you use a pricing matrix?: Yes\n[General Department Information > —] If yes, please upload pricing matrix(s) here: price matrix.png (https://tap.tekioncloud.com/dealer-onboarding/forms/pdf?media_/90025164/f6e2d969-4091-4921-a906-b62a01a65fcd/d86a95df-dfa2-4c68-aadf-e36fc11e1278/price%20matrix.png)\n[General Department Information > —] Please list all makes for which you run a factory master / price tape:: STEALLANTIS\n[General Department Information > —] Do you charge a restocking fee?: Yes\n[General Department Information > —] If yes, what amount is your restocking fee?: 20%\n[General Department Information > —] Do you store parts anywhere other then your main parts department area? Ex. offsite warehouse : No\n[General Department Information > —] If Yes, Do you use Cash on Delivery and who receives the payment?: GIVEN TO PARTS DEPT THEN GIVING TO CASHIER\n[General Department Information > —] What is your default price code for Customer Pay Repair Orders?: 10  COST+125%\n[General Department Information > —] What is your default price code for Warranty Repair Orders?: 9         COST+110.36%\n[General Department Information > —] What is your default price code for Internal Repair Orders?: 7     COST+10%\n[General Department Information > —] What is your default price code for Wholesale Parts Invoices?: 20   List -20%                   25   list -25%\n[General Department Information > —] What is your default price code for Retail Parts Invoices?: 6     list\n[General Department Information > —] What is your default price code for Internal Parts Invoices?: 7   cost+10%\n[Fees/Coupons > —] Do you charge a Tire Tax fee?: Yes\n[Fees/Coupons > —] G/L Account # for Tire Tax: 2017\n[Fees/Coupons > —] Value (% or flat amount) for Tire Tax: $2.50\n[Fees/Coupons > —] Min. / Max. charge for Tire Tax: $2.50\n[Fees/Coupons > —] Is Tire Tax taxable?: Yes\n[Fees/Coupons > —] Do you charge a Key Cut fee?: Yes\n[Fees/Coupons > —] G/L Account # for Key Cut fee: 5730\n[Fees/Coupons > —] Value (% or flat amount) for Key Cut Fee: $40.00\n[Fees/Coupons > —] Min. / Max. charge for Key Cut Fee: $40.00\n[Fees/Coupons > —] Is Key Cut fee taxable?: No\n[Fees/Coupons > —] Do you charge a Tire Disposal fee?: No\n[Fees/Coupons > —] Do you charge a Battery Disposal fee?: No\n[Fees/Coupons > —] Do you charge a Wheel Weight fee?: Yes\n[Fees/Coupons > —] G/L Account # for Wheel Weight fee: 2017\n[Fees/Coupons > —] Value (% or flat amount) for Wheel Weight fee: $1.25\n[Fees/Coupons > —] Min. / Max. charge for Wheel Weight fee: $1.25\n[Fees/Coupons > —] Is Wheel Weight fee taxable?: Yes\n[Fees/Coupons > —] Do you charge a Freight fee?: No\n[Fees/Coupons > —] If applicable, please provide the details for all additional fees or other information here:: NONE\n[Fees/Coupons > —] Do you have any parts coupons/discounts?: No"
+  },
+  "savedAt": "2026-11-16T10:39:09.652Z"
+}

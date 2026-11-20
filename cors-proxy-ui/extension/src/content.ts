@@ -54,6 +54,16 @@ window.addEventListener("message", (event) => {
     });
   }
 
+  if (event.data?.type === "ARC_EXTENSION_BRIDGE_REMOVE_STALE_PROFILES") {
+    chrome.runtime.sendMessage(
+      { type: "ARC_REMOVE_STALE_PROFILES", payload: event.data.payload ?? {} },
+      (response) => {
+        const removed = !chrome.runtime.lastError && typeof response?.removed === "number" ? response.removed : 0;
+        postMessageToPage("ARC_EXTENSION_REMOVE_STALE_PROFILES_RESULT", { removed });
+      }
+    );
+  }
+
   if (event.data?.type === PAGE_SAVE_RULES_EVENT) {
     chrome.runtime.sendMessage(
       { type: "ARC_SAVE_CUSTOM_RULES", payload: event.data.payload },

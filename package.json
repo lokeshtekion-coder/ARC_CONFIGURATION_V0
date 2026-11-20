@@ -18,7 +18,8 @@
     "autoprefixer": "^10.5.4",
     "concurrently": "^9.0.1",
     "postcss": "^8.5.26",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2"
   },
   "dependencies": {
     "@microsoft/fetch-event-source": "^2.0.1",

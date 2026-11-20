@@ -23,6 +23,7 @@ export const STORE_EXPORT_HEADERS = [
   "Blueprint CRM Last Released Time",
   "Blueprint Analytics",
   "Blueprint Analytics Last Released Time",
+  "Setup Data",
   "OEM Dealer Codes",
   "Journals Accessible Count",
   "Sales Chains Accessible Count",
@@ -37,10 +38,15 @@ export const STORE_EXPORT_HEADERS = [
   "Setup Data Fetched At",
   "Fixed Ops Assignee",
   "Variable Ops Assignee",
+  "Parts Task",
+  "Parts Comment",
+  "Service Task",
+  "Service Comment",
+  "Accounting Task",
+  "Accounting Comment",
 ] as const;
 
 export type StoreExportHeader = (typeof STORE_EXPORT_HEADERS)[number];
-
 export type StoreExcelRow = Record<StoreExportHeader, string>;
 
 function parseLaunchDate(value: string): Date | null {
@@ -57,16 +63,18 @@ function parseLaunchDate(value: string): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
+/**
+ * Formats launch date strictly as MM/DD/YYYY without weekday prefix
+ */
 function formatLaunchDate(value: string): string {
   const d = parseLaunchDate(value);
   if (!d) return value || "—";
 
-  const weekday = d.toLocaleDateString("en-US", { weekday: "short" });
   const month = `${d.getMonth() + 1}`.padStart(2, "0");
   const day = `${d.getDate()}`.padStart(2, "0");
   const year = d.getFullYear();
 
-  return `${weekday} ${month}/${day}/${year}`;
+  return `${month}/${day}/${year}`;
 }
 
 function getTLabel(value: string): string {
@@ -151,10 +159,6 @@ export function formatDateTimePrecise(value?: string | number): string {
   return `${mm}/${dd}/${yy} | ${formatTimeOnlyPrecise(d.getTime())}`;
 }
 
-/**
- * Parses raw Excel formula outputs, date strings, or numeric fractional serials
- * into a uniform high-precision time: e.g. "1:01:10 PM"
- */
 export function sanitizeExcelTimestamp(rawVal?: string | number): string {
   if (!rawVal || rawVal === "—") return "—";
 
@@ -163,15 +167,13 @@ export function sanitizeExcelTimestamp(rawVal?: string | number): string {
 
   if (str.startsWith("=")) return "—";
 
-  // 1. Already formatted as 12-hour timestamp: e.g. "1:01:10 PM" or "01:01:10 PM"
   if (/^\d{1,2}:\d{2}:\d{2}\s*(AM|PM)$/i.test(str)) {
     return str.toUpperCase();
   }
 
-  // 2. Excel numeric time serial (fraction of a 24-hour day, e.g. 0.54247685)
   const num = Number(str);
   if (!isNaN(num) && num > 0 && num < 1) {
-    const totalSeconds = Math.round(num * 86400);
+    const totalSeconds = Math.min(86399, Math.round(num * 86400));
     const hours24 = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
@@ -183,14 +185,10 @@ export function sanitizeExcelTimestamp(rawVal?: string | number): string {
     return `${hours12}:${pad(minutes)}:${pad(seconds)} ${ampm}`;
   }
 
-  // 3. Fallback standard parse
   const parsed = formatTimeOnlyPrecise(str);
   return parsed || str;
 }
 
-/**
- * Returns the latest timestamp recorded locally or returns fallback
- */
 export function buildLatestFieldTrackingText(
   tekionId: string,
   field: "fixed_ops_status" | "variable_ops_status" | "testing_status",
@@ -227,9 +225,62 @@ export function sortStoresByGoLive(records: StoreRecord[]): StoreRecord[] {
   });
 }
 
+export function computeSetupDataStatus(store: StoreRecord): string {
+  if (store.setup_data_error) {
+    return "Unable to fetch";
+  }
+
+  const coa = store.setup_data?.coaAccessibleDealerCount;
+  if (coa == null) {
+    return "Unable to fetch";
+  }
+
+  return coa > 50 ? "Yes" : "Issue with COA";
+}
+
+/**
+ * Truncates text after 250 words and appends "..."
+ */
+function truncateAfter250Words(text?: string | null): string {
+  if (!text) return "—";
+  const cleaned = text.trim();
+  if (!cleaned) return "—";
+
+  const words = cleaned.split(/\s+/);
+  if (words.length <= 250) {
+    return cleaned;
+  }
+
+  return `${words.slice(0, 250).join(" ")}...`;
+}
+
+function formatTaskStatusDisplay(rawStatus?: string): string {
+  const s = String(rawStatus || "").trim().toLowerCase();
+  if (s === "inprogress") return "In Progress";
+  if (s === "completed") return "Completed";
+  if (s === "duplicate") return "Duplicate";
+  if (s === "new") return "New";
+  return rawStatus ? rawStatus.toUpperCase() : "TO DO";
+}
+
+/**
+ * Generates an Excel HYPERLINK formula pointing to the TAP task list view
+ */
+function buildTaskHyperlink(task?: any): string {
+  if (!task || !task.taskId) return "—";
+  const label = formatTaskStatusDisplay(task.status);
+  const url = `https://tap.tekioncloud.com/tm/mytasks/all/list/${task.taskId}`;
+  return `=HYPERLINK("${url}","${label}")`;
+}
+
 export function mapStoreToExcelRow(store: StoreRecord): StoreExcelRow {
   const setupError = store.setup_data_error ? `Error: ${store.setup_data_error}` : "";
   const oemCodes = store.setup_data?.oemDealerCodes?.join(", ") || setupError;
+
+  const blueprintTasks = store.fetched_blueprint_tasks || {};
+  const partsTask = blueprintTasks.partsTasks?.[0];
+  const serviceTask = blueprintTasks.serviceTasks?.[0];
+  const accountingTask = blueprintTasks.accountingTasks?.[0];
 
   return {
     "Tekion ID": store.tekion_id || "",
@@ -251,6 +302,7 @@ export function mapStoreToExcelRow(store: StoreRecord): StoreExcelRow {
     "Blueprint CRM Last Released Time": formatDateTimePrecise(store.blueprint_statuses?.crm_last_released_time),
     "Blueprint Analytics": toStatusText(store.blueprint_statuses?.analytics),
     "Blueprint Analytics Last Released Time": formatDateTimePrecise(store.blueprint_statuses?.analytics_last_released_time),
+    "Setup Data": computeSetupDataStatus(store),
     "OEM Dealer Codes": oemCodes,
     "Journals Accessible Count":
       store.setup_data?.journalsAccessibleDealerCount != null
@@ -276,6 +328,14 @@ export function mapStoreToExcelRow(store: StoreRecord): StoreExcelRow {
     ),
     "Fixed Ops Assignee": resolveStoreAssignee(store) || store.custom_assignee || "",
     "Variable Ops Assignee": store.custom_variable_assignee || "",
+
+    // Hydrated TAP Task Details
+    "Parts Task": buildTaskHyperlink(partsTask),
+    "Parts Comment": truncateAfter250Words(partsTask?.latestComment?.content),
+    "Service Task": buildTaskHyperlink(serviceTask),
+    "Service Comment": truncateAfter250Words(serviceTask?.latestComment?.content),
+    "Accounting Task": buildTaskHyperlink(accountingTask),
+    "Accounting Comment": truncateAfter250Words(accountingTask?.latestComment?.content),
   };
 }
 

@@ -466,6 +466,8 @@ export function getReportClientScript(serializedData: string): string {
         \`;
 
         DATA.items.forEach(item => {
+          // POD/OFS-handled stores only appear under their own tab
+          if (currentPreset !== 'excluded' && item.isExcluded) return;
           if (currentPreset === 'breached' && !item.isBreached) return;
           if (currentPreset === 'critical' && !item.isCriticalBreached) return;
           if (currentPreset === 'blocked' && !item.isBlockedByFixedOps) return;

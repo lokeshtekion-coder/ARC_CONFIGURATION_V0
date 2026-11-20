@@ -779,7 +779,30 @@ const ServiceSettingsView: React.FC<Props> = () => {
 
       appendLog("info", "Validation snapshot computed", snapshot);
 
-      if (!snapshot.needsUpdate) {
+      // Opcode mapping: DUE / CUST / CUST are always set. RECALL and SUBLET keep the GET value
+      // when present and use the default only when the GET has no value. popularServices is kept.
+      const getRoSetting: any = settingsData?.roSetting ?? {};
+      const getOpcodes: any = getRoSetting.opcodeMapping ?? {};
+      const targetOpcodeMapping = {
+        recallOpcode: getOpcodes.recallOpcode ?? "RECALL",
+        dueBillOpcode: "DUE",
+        customConcernOpcode: "CUST",
+        subletOpcode: getOpcodes.subletOpcode ?? "SUBLET",
+        ltgOpcode: "CUST",
+        popularServices: getOpcodes.popularServices ?? null,
+      };
+      const opcodeNeedsUpdate =
+        getOpcodes.dueBillOpcode !== "DUE" ||
+        getOpcodes.customConcernOpcode !== "CUST" ||
+        getOpcodes.ltgOpcode !== "CUST" ||
+        getOpcodes.recallOpcode === undefined ||
+        getOpcodes.subletOpcode === undefined;
+
+      // "Recreate" RO flag: present in roFlagsList if the GET does not already have it.
+      const isRecreateFlag = (f: any) => String(f?.description ?? "").trim().toLowerCase() === "recreate";
+      const recreateMissing = !(Array.isArray(getRoSetting.roFlagsList) ? getRoSetting.roFlagsList : []).some(isRecreateFlag);
+
+      if (!snapshot.needsUpdate && !opcodeNeedsUpdate && !recreateMissing) {
         appendLog("warn", "Service settings already configured correctly. No update required.");
         setMessage({
           ok: true,
@@ -809,6 +832,14 @@ const ServiceSettingsView: React.FC<Props> = () => {
             languages: null,
           },
           ...roFlagsList,
+        ];
+      }
+
+      if (!roFlagsList.some(isRecreateFlag)) {
+        appendLog("info", 'Adding "Recreate" to RO flags');
+        roFlagsList = [
+          ...roFlagsList,
+          { isLastRow: false, description: "Recreate", colorCode: "#b407f2" } as any,
         ];
       }
 
@@ -847,6 +878,7 @@ const ServiceSettingsView: React.FC<Props> = () => {
           warrantyTaxable: false,
           roFlagsList,
           updateFlagHoursOn,
+          opcodeMapping: targetOpcodeMapping,
           jobClockPunchTimeSetting: {
             ...(currentRoSetting.jobClockPunchTimeSetting ?? {}),
             customerConcernEditable,

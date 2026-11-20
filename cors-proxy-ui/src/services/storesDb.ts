@@ -25,6 +25,23 @@ export interface StoreSetupData {
   userId?: string;
 }
 
+/**
+ * Fast-path index mapping of specific Blueprint Task IDs.
+ */
+export interface BlueprintTaskIndex {
+  partsTaskIds: number[];
+  serviceTaskIds: number[];
+  accountingTaskIds: number[];
+  discoveredAt: string; // ISO timestamp
+}
+
+export interface StoreBlueprintTasksSnapshot {
+  partsTasks?: any[];
+  serviceTasks?: any[];
+  accountingTasks?: any[];
+  fetchedAt?: string;
+}
+
 export interface StoreRecord {
   tekion_id: string;
   dealer_id: string;
@@ -46,7 +63,7 @@ export interface StoreRecord {
   /** Secondary / DataSync project ID fallback when onboarding_project_id is missing. */
   ds_onboarding_project_id?: string;
 
-  // PDL & Leadership Contacts (used by storeSlackHelper)
+  // PDL & Leadership Contacts
   workorder_consolidated_pdl?: string;
   dealer_pdl?: string;
   arc_pdl?: string;
@@ -64,19 +81,35 @@ export interface StoreRecord {
   variable_ops_status?: CustomPhaseStatus;
   testing_status?: CustomPhaseStatus;
   configuration_status?: CustomPhaseStatus;
-  not_worked?: NotWorkedOption | string; // Exclusion/ownership tracking flag
+  not_worked?: NotWorkedOption | string;
   blueprint_statuses?: any;
   signoff_statuses?: any;
   onboarding_status_fetched_at?: string;
   setup_data?: StoreSetupData;
   setup_data_fetched_at?: string;
   setup_data_error?: string;
+
+  // Variable Ops readiness (see storeReadiness.ts)
+  preprod_validation?: import("./preprodMapApiService").PreprodValidationResult;
+  coa_checked_at?: string;
+  acct_checked_at?: string;
+  readiness_stage?: string;
+  variable_ready_at?: string;
+
+  // Blueprint Task Index Cache & Attachments
+  blueprint_task_index?: BlueprintTaskIndex | null;
+  last_blueprint_index_attempt_at?: string;
+  fixed_ops_attachments?: number;
+  variable_ops_attachments?: number;
+  attachments_incomplete?: boolean;
+
+  // Integrations stage tasks (groups[*].name == "Integrations"), with their latest comment.
+  integration_tasks?: { fetchedAt: string; tasks: any[]; error?: string };
+
+  // Blueprints hydrated task details with latest comments
+  fetched_blueprint_tasks?: StoreBlueprintTasksSnapshot;
 }
 
-/**
- * Resolves the active TAP project ID using whichever field is populated:
- * checks onboarding_project_id first, then falls back to ds_onboarding_project_id.
- */
 export function resolveStoreProjectId(store?: Partial<StoreRecord> | null): string {
   if (!store) return "";
   const primary = (store.onboarding_project_id || "").trim();
@@ -267,12 +300,6 @@ export function saveAssigneesToVault(
   }
 }
 
-/**
- * Bulk updates the vault with safety rules:
- * - Completed statuses are locked and cannot be demoted to 'TO DO' or 'WIP'
- *   by automated background sync calls unless allowDowngrade is explicitly true.
- * - Updates and preserves Fixed Ops, Variable Ops assignees, and Not Worked flags if provided.
- */
 export function bulkUpdateStatusVault(
   updates: Array<{
     tekionId: string;
