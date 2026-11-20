@@ -617,7 +617,7 @@ class StoresBotRunner {
         const missingSetup = activeT90Records.filter((r) => {
           // Variable Ops data rule: today to 90 days, Fixed Ops prerequisite done, ACCTS above 50 = done.
           const days = daysToGoLive(r);
-          if (days === null || days < 0 || days > 90) return false;
+          if (days === null || days < 0) return false;
           if (!fixedOpsPrerequisiteDone(r)) return false;
           if (String(r.variable_ops_status ?? "").trim().toLowerCase() === "completed") return false; // Variable Ops done
           if (acctsReady(r)) return false;

@@ -338,7 +338,7 @@ export const StoresAI: React.FC<StoresAIProps> = ({
       .filter((r) => {
         const diff = calculateDiffDays(r.launch_date);
         // Decommissioned / Enterprise stores are not worked by ARC, so they are left out of the Copilot scope
-        return diff >= 0 && diff <= 90 && !isNotWorkedByArc(r);
+        return diff >= 0 && !isNotWorkedByArc(r);
       })
       .sort((a, b) => calculateDiffDays(a.launch_date) - calculateDiffDays(b.launch_date));
   }, [records]);

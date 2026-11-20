@@ -56,7 +56,7 @@ export async function refreshVariableReadiness(
 
   for (const store of out) {
     // Scope: today to 90 days, Fixed Ops prerequisite done. Stores with ACCTS above 50 are never refetched.
-    if (!isVariableScope(store, now, 90)) continue;
+    if (!isVariableScope(store, now, Number.POSITIVE_INFINITY)) continue;
     if (!fixedOpsPrerequisiteDone(store)) continue;
     if (acctsCount(store) > READY_MIN_COUNT) continue;
     const tag = `#${store.dealer_id} ${store.dba_name || ""}`.trim();

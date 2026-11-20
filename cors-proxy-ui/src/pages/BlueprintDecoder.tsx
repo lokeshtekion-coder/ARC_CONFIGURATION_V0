@@ -509,7 +509,7 @@ function getTLabel(
 
 function isT90Store(store: StoreRecord): boolean {
   const t = getTLabel(store.launch_date);
-  return t.diffDays !== null && t.diffDays >= 0 && t.diffDays <= 90;
+  return t.diffDays !== null && t.diffDays >= 0;
 }
 
 type ViewMode = "sections" | "flat" | "csv" | "human";

@@ -1168,7 +1168,6 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
       const queue = filtered.filter((row) => {
         const current = latestMap.get(row.tekion_id) ?? row;
         if (!isUpcoming(current)) return false; // launched stores are not checked
-        if (daysToGoLive(current) === null || (daysToGoLive(current) as number) > 90) return false; // scope: today to 90 days
         if (!fixedOpsPrerequisiteDone(current)) return false; // COA/ACCTS are checked after Fixed Ops is done
         if (String(current.variable_ops_status ?? "").trim().toLowerCase() === "completed") return false; // Variable Ops done
         const done = acctsReady(current); // ACCTS above 50 = done, COA is optional
