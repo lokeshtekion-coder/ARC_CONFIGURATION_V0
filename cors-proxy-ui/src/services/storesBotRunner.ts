@@ -475,7 +475,9 @@ class StoresBotRunner {
       // Phase 1: Ingest T-90 Stores and establish active vs. historical partition
       this.updateStatus("ingesting_stores", "Auto-refreshing store records...");
       // Same duplicate rule as the Stores page: one row per tekion_id, more products wins, then more data.
-      const rawStores = dedupeStoreList(await fetchStores(90));
+      // 200-day fetch so Fixed Ops auto-assignment covers the T-200 window. Variable Ops checks and
+      // reports keep their own 90-day scope in their code, so they are unaffected by the wider fetch.
+      const rawStores = dedupeStoreList(await fetchStores(200));
       const allStoredRecords = await getStores();
       const existingMap = new Map(allStoredRecords.map((s) => [s.tekion_id, s]));
       const vault = getStoredStatusVault();

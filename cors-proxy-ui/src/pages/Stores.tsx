@@ -553,7 +553,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
     setError("");
     setTokenExpiredMessage("");
     try {
-      const fetchRange: TRange = range === "ALL" ? 150 : range;
+      const fetchRange: TRange = range === "ALL" ? 200 : range;
       const rawStores = await fetchStores(fetchRange);
       const existingDbStores = await getStores();
       const existingMap = new Map(existingDbStores.map((s) => [s.tekion_id, s]));
@@ -1696,7 +1696,7 @@ export const Stores: React.FC<Props> = ({ onBack }) => {
               <div className="stores-field">
                 <label className="stores-label">T-Range Presets</label>
                 <div className="stores-preset-grid">
-                  {([7, 30, 60, 90, 150] as const).map((days) => (
+                  {([7, 30, 60, 90, 150, 200] as const).map((days) => (
                     <button
                       key={days}
                       type="button"

@@ -8,7 +8,7 @@ import type { KeyValuePair } from "../types/proxy.types";
 import type { StoreRecord } from "./storesDb";
 export type { StoreRecord };
 
-export type TRange = 7 | 30 | 60 | 90 | 150;
+export type TRange = 7 | 30 | 60 | 90 | 150 | 200;
 
 const STORES_API_URL =
   "https://us-west1-tapapi.tekioncloud.com/tapapi/tap-crm-implementations-backend/public/v1/entity-instance/1";
